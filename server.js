@@ -98,7 +98,7 @@ async function updateOrderStatus(orderId, status) {
 }
 
 async function getOrderStats() {
-  const allOrders = db ? await getAllOrdersFromFirebase() : orders;
+  const allOrders = await getAllOrdersFromFirebase();
   const pending = allOrders.filter(o => o.status === 'pending_payment').length;
   const received = allOrders.filter(o => o.status === 'payment_received').length;
   const approved = allOrders.filter(o => o.status === 'approved').length;
@@ -469,7 +469,7 @@ async function setWebhook() {
   try {
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${webhookUrl}`);
     const result = await response.json();
-    console.log("Webhook set:", result.ok ? "✅ Success" : "❌ Failed");
+    console.log("Webhook set:", result.ok ? "✅ Success" : "❌ Failed", result.description);
   } catch (error) {
     console.error("Webhook error:", error);
   }
