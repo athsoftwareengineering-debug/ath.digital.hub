@@ -127,7 +127,7 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// ========== SUBMIT PAYMENT SCREENSHOT ==========
+// ========== SUBMIT PAYMENT SCREENSHOT (Fixed: FormData instead of base64) ==========
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   try {
     console.log("🔔 Payment submission received");
@@ -145,8 +145,11 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     
     await updateOrderStatus(orderId, 'payment_received');
     
-    const base64Image = screenshot.buffer.toString('base64');
-    const caption = `
+    // Fix: Use FormData to send photo to Telegram (instead of base64 in JSON)
+    const formData = new FormData();
+    formData.append('chat_id', ADMIN_CHAT_ID);
+    formData.append('photo', screenshot.buffer, 'screenshot.jpg');
+    formData.append('caption', `
 📸 **PAYMENT SCREENSHOT RECEIVED**
 ━━━━━━━━━━━━━━━━━━━━
 🆔 Order ID: ${orderId}
@@ -155,19 +158,14 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
 📝 Note: ${note || "None"}
 ━━━━━━━━━━━━━━━━━━━━
 Use: /approve ${orderId} or /reject ${orderId}
-    `;
+    `);
+    formData.append('parse_mode', 'Markdown');
     
-    console.log("📤 Sending photo to Telegram...");
+    console.log("📤 Sending photo to Telegram via FormData...");
     
     const telegramResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: ADMIN_CHAT_ID,
-        photo: `data:image/jpeg;base64,${base64Image}`,
-        caption: caption,
-        parse_mode: 'Markdown'
-      })
+      body: formData
     });
     
     const telegramResult = await telegramResponse.json();
