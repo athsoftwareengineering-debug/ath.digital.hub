@@ -29,7 +29,7 @@ const upload = multer({ storage: storage });
 // ========== TELEGRAM BOT CONFIG ==========
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.CHAT_ID;
-const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID || "-1003783137346";  // သင့် Group ID ထည့်ပါ
+const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID || "-1003783137346";
 
 // In-memory storage
 let orders = [];
@@ -250,7 +250,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         body: JSON.stringify({ callback_query_id: callback_query.id })
       });
       
-      // ========== APPROVE BUTTON ==========
+      // Approve Button
       if (data.startsWith('approve_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
@@ -258,7 +258,6 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         if (order) {
           await updateOrderStatus(orderId, 'approved');
           
-          // Edit original message (Admin chat)
           const approveCaption = `
 ✅ **အတည်ပြုပြီး** - အော်ဒါ #${orderId}
 ━━━━━━━━━━━━━━━━━━━━
@@ -281,10 +280,9 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             })
           });
           
-          // Send to Admin
           await sendTelegramMessage(ADMIN_CHAT_ID, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး!\n📞 ${order.phone}\n📦 ${order.packageName}`);
           
-          // 🚨🚨🚨 SEND TO GROUP - DATA ADDED ALERT 🚨🚨🚨
+          // Send to GROUP
           if (GROUP_CHAT_ID) {
             const groupAlert = `
 🚨 **ဒေတာသွင်းပြီးကြောင်း အကြောင်းကြားချက်** 🚨
@@ -297,17 +295,13 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 ━━━━━━━━━━━━━━━━━━━━
 👤 အတည်ပြုသူ: Admin
             `;
-            const groupResult = await sendTelegramMessage(GROUP_CHAT_ID, groupAlert);
-            console.log(`📢 Group notification sent for order #${orderId}:`, groupResult);
-          } else {
-            console.log("⚠️ GROUP_CHAT_ID not set, skipping group notification");
+            await sendTelegramMessage(GROUP_CHAT_ID, groupAlert);
           }
-          
         }
         return res.sendStatus(200);
       }
       
-      // ========== REJECT BUTTON ==========
+      // Reject Button
       if (data.startsWith('reject_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
@@ -323,7 +317,6 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
 ━━━━━━━━━━━━━━━━━━━━
 ⚠️ ငွေလွှဲပြေစာ မှားယွင်းနေပါသည်။
-ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။
           `;
           
           await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
@@ -338,23 +331,11 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           });
           
           await sendTelegramMessage(ADMIN_CHAT_ID, `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ပြီး.\n📞 ${order.phone}`);
-          
-          // Optional: Send rejection to group too
-          if (GROUP_CHAT_ID) {
-            const rejectAlert = `
-⚠️ **ငြင်းပယ်ခံရသော အော်ဒါ** ⚠️
-━━━━━━━━━━━━━━━━━━━━
-❌ အော်ဒါ #${orderId} အား ပယ်ဖျက်လိုက်ပါသည်။
-📞 ဖုန်း: ${order.phone}
-📦 Package: ${order.packageName}
-            `;
-            await sendTelegramMessage(GROUP_CHAT_ID, rejectAlert);
-          }
         }
         return res.sendStatus(200);
       }
       
-      // ========== DETAIL BUTTON ==========
+      // Detail Button
       if (data.startsWith('detail_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
@@ -390,7 +371,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // ========== VIEW PENDING ORDERS ==========
+      // View Pending Orders
       if (data === 'view_pending') {
         const pendingOrdersList = orders.filter(o => o.status === 'payment_received');
         
@@ -411,7 +392,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // ========== VIEW ALL ORDERS ==========
+      // View All Orders
       if (data === 'view_all') {
         if (orders.length === 0) {
           await sendTelegramMessage(chatId, "📭 အော်ဒါမရှိသေးပါ။");
@@ -433,7 +414,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // ========== PAYMENT INFO ==========
+      // Payment Info
       if (data === 'payment_info') {
         const paymentMsg = `
 💰 **ငွေလွှဲအချက်အလက်**
@@ -450,7 +431,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // ========== HELP ==========
+      // Help
       if (data === 'help') {
         const helpMsg = `
 🤖 *MYTEL ORDER BOT - အကူအညီ*
@@ -468,14 +449,14 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // ========== REFRESH STATS ==========
+      // Refresh Stats
       if (data === 'refresh_stats') {
         const stats = await getOrderStats();
         await sendTelegramMessage(chatId, `🔄 *စာရင်းအင်းအသစ်*\n\n${stats}`);
         return res.sendStatus(200);
       }
       
-      // ========== BACK TO MENU ==========
+      // Back to Menu
       if (data === 'back_to_menu') {
         const stats = await getOrderStats();
         const menuMessage = `
@@ -561,39 +542,21 @@ app.get('/orders-list', (req, res) => {
   res.json({ orders: orders, count: orders.length });
 });
 
-// Test group message endpoint
 app.get('/test-group', async (req, res) => {
   try {
     if (!GROUP_CHAT_ID) {
-      return res.json({ 
-        success: false, 
-        error: "GROUP_CHAT_ID not configured" 
-      });
+      return res.json({ success: false, error: "GROUP_CHAT_ID not configured" });
     }
-    
     const testMessage = `
 🧪 *Group Connection Test*
 ━━━━━━━━━━━━━━━━━━━━
 ✅ Bot က Group ထဲကို message ပို့နိုင်ပါတယ်။
 📅 အချိန်: ${new Date().toLocaleString('my-MM')}
-━━━━━━━━━━━━━━━━━━━━
-🎉 အောင်မြင်ပါသည်။
     `;
-    
     const result = await sendTelegramMessage(GROUP_CHAT_ID, testMessage);
-    
-    res.json({ 
-      success: result, 
-      message: result ? "✅ Message sent to group successfully!" : "❌ Failed to send message",
-      groupId: GROUP_CHAT_ID
-    });
-    
+    res.json({ success: result, groupId: GROUP_CHAT_ID });
   } catch (error) {
-    console.error("Test group error:", error);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message 
-    });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
