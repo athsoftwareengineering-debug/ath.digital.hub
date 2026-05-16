@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
-const FormData = require('form-data');
+const FormData = require('form-data');  // ← ဒီတစ်ကြောင်းပဲ ထပ်ထည့်ထားတယ်
 
 const app = express();
 
@@ -95,7 +95,7 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
   }
 }
 
-// ========== SEND TELEGRAM PHOTO (FIXED - NO Blob) ==========
+// Send photo to Telegram
 async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   if (!BOT_TOKEN) return false;
   try {
