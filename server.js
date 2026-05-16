@@ -128,7 +128,7 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// ========== SUBMIT PAYMENT SCREENSHOT (FIXED - No JSON parsing issue) ==========
+// ========== SUBMIT PAYMENT SCREENSHOT (FIXED - Using simple fetch with buffer) ==========
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   try {
     console.log("🔔 Payment submission received");
@@ -154,14 +154,9 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     
     await updateOrderStatus(parseInt(orderId), 'payment_received');
     
-    // Send to Telegram using form-data
-    const form = new FormData();
-    form.append('chat_id', ADMIN_CHAT_ID);
-    form.append('photo', screenshot.buffer, {
-      filename: 'screenshot.jpg',
-      contentType: screenshot.mimetype
-    });
-    form.append('caption', `
+    // Convert buffer to base64 for Telegram API
+    const base64Image = screenshot.buffer.toString('base64');
+    const caption = `
 📸 **PAYMENT SCREENSHOT RECEIVED**
 ━━━━━━━━━━━━━━━━━━━━
 🆔 Order ID: ${orderId}
@@ -170,40 +165,39 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
 📝 Note: ${note || "None"}
 ━━━━━━━━━━━━━━━━━━━━
 Use: /approve ${orderId} or /reject ${orderId}
-    `);
-    form.append('parse_mode', 'Markdown');
+    `;
     
-    console.log("📤 Sending photo to Telegram...");
+    console.log("📤 Sending photo to Telegram via base64...");
     
+    // Method 1: Try using sendPhoto with URL (using base64 as data URI)
     const telegramResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
-      body: form,
-      headers: form.getHeaders()
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: ADMIN_CHAT_ID,
+        photo: `data:image/jpeg;base64,${base64Image}`,
+        caption: caption,
+        parse_mode: 'Markdown'
+      })
     });
     
-    // FIX: Read response as text first, then parse if needed
     const responseText = await telegramResponse.text();
-    console.log("Telegram raw response:", responseText.substring(0, 200));
+    console.log("Telegram response:", responseText.substring(0, 300));
     
     let telegramResult;
     try {
       telegramResult = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error("Failed to parse JSON:", parseError.message);
-      // If JSON parsing fails, assume success if status is ok
-      if (telegramResponse.ok) {
-        telegramResult = { ok: true };
-      } else {
-        throw new Error(`Telegram API error: ${telegramResponse.status}`);
-      }
+    } catch (e) {
+      console.error("JSON parse error:", e.message);
+      telegramResult = { ok: false, description: "Parse error" };
     }
     
-    console.log("Telegram photo send:", telegramResult.ok ? "✅ Sent" : "❌ Failed", telegramResult.description);
-    
     if (telegramResult.ok) {
+      console.log("✅ Payment screenshot sent to Telegram");
       res.json({ success: true, message: "Payment submitted! Admin notified." });
     } else {
-      res.json({ success: false, message: "Telegram error: " + (telegramResult.description || "Unknown error") });
+      console.error("❌ Telegram error:", telegramResult.description);
+      res.json({ success: false, message: "Telegram error: " + telegramResult.description });
     }
     
   } catch (error) {
