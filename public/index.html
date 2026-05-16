@@ -116,6 +116,7 @@
       border-radius: 12px;
       margin-bottom: 15px;
       font-size: 14px;
+      line-height: 1.6;
     }
     .file-upload-area {
       border: 2px dashed #facc15;
@@ -144,7 +145,9 @@
       border-radius: 10px;
       color: white;
       font-size: 14px;
+      font-family: inherit;
     }
+    textarea::placeholder { color: #64748b; }
     .submit-payment {
       background: #22c55e;
       margin-top: 15px;
@@ -162,8 +165,17 @@
       border-radius: 50px;
       z-index: 1100;
       display: none;
+      font-size: 14px;
+      white-space: nowrap;
     }
-    footer { text-align: center; margin-top: 40px; color: #64748b; }
+    footer { text-align: center; margin-top: 40px; color: #64748b; font-size: 12px; }
+    
+    @media (max-width: 600px) {
+      body { padding: 15px; }
+      .plan-card h3 { font-size: 1.2rem; }
+      .price { font-size: 1.4rem; }
+      .toast { white-space: normal; text-align: center; max-width: 90%; }
+    }
   </style>
 </head>
 <body>
@@ -188,7 +200,7 @@
       <img id="previewImg" class="preview-img">
     </div>
     
-    <textarea id="paymentNote" placeholder="Notes (optional)"></textarea>
+    <textarea id="paymentNote" rows="2" placeholder="Notes (optional)"></textarea>
     <button class="submit-payment" id="submitPaymentBtn">✅ Submit Payment Screenshot</button>
   </div>
   
@@ -282,10 +294,10 @@
         closeModal();
         
         document.getElementById('orderInfo').innerHTML = `
-          ✅ Order ID: <strong>${data.orderId}</strong><br>
-          📦 Package: ${currentOrder.packageName}<br>
-          📞 Phone: ${currentOrder.phone}<br>
-          💰 Amount: ${currentOrder.price.toLocaleString()} KS
+          ✅ <strong>Order ID:</strong> ${data.orderId}<br>
+          📦 <strong>Package:</strong> ${currentOrder.packageName}<br>
+          📞 <strong>Phone:</strong> ${currentOrder.phone}<br>
+          💰 <strong>Amount:</strong> ${currentOrder.price.toLocaleString()} KS
         `;
         document.getElementById('paymentSection').style.display = 'block';
         currentOrder.orderId = data.orderId;
@@ -296,6 +308,7 @@
         showToast(`❌ ${data.message}`, "#ef4444");
       }
     } catch (err) {
+      console.error(err);
       showToast("❌ Network error. Please try again.", "#ef4444");
     } finally {
       confirmBtn.innerText = "Confirm Order";
@@ -333,6 +346,7 @@
     }
     
     const submitBtn = document.getElementById('submitPaymentBtn');
+    const originalText = submitBtn.innerText;
     submitBtn.innerText = "Submitting...";
     submitBtn.disabled = true;
     
@@ -341,7 +355,7 @@
     formData.append('packageName', currentOrder.packageName);
     formData.append('phone', currentOrder.phone);
     formData.append('screenshot', selectedImageFile);
-    formData.append('note', document.getElementById('paymentNote').value);
+    formData.append('note', document.getElementById('paymentNote').value || '');
     
     try {
       const response = await fetch('/submit-payment', {
@@ -364,9 +378,10 @@
         showToast(`❌ ${result.message}`, "#ef4444");
       }
     } catch (err) {
+      console.error(err);
       showToast("❌ Failed to submit. Please try again.", "#ef4444");
     } finally {
-      submitBtn.innerText = "✅ Submit Payment Screenshot";
+      submitBtn.innerText = originalText;
       submitBtn.disabled = false;
     }
   }
