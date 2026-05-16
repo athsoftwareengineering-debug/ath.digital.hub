@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
-const FormData = require('form-data');  // ← ဒီတစ်ကြောင်းပဲ ထပ်ထည့်ထားတယ်
 
 const app = express();
 
@@ -101,18 +100,14 @@ async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   try {
     const form = new FormData();
     form.append('chat_id', chatId);
-    form.append('photo', buffer, {
-      filename: 'screenshot.jpg',
-      contentType: 'image/jpeg'
-    });
+    form.append('photo', new Blob([buffer], { type: 'image/jpeg' }), 'screenshot.jpg');
     form.append('caption', caption);
     form.append('parse_mode', 'Markdown');
     if (keyboard) form.append('reply_markup', JSON.stringify(keyboard));
     
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
-      body: form,
-      headers: form.getHeaders()
+      body: form
     });
     const result = await response.json();
     console.log("Telegram photo:", result.ok ? "✅" : "❌", result.description);
