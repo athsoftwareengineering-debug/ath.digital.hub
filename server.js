@@ -1,7 +1,8 @@
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
-const FormData = require('form-data');
+const fs = require('fs');
+const { Readable } = require('stream');
 
 const app = express();
 
@@ -10,8 +11,21 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ========== FILE UPLOAD ==========
-const upload = multer({ storage: multer.memoryStorage() });
+// ========== FILE UPLOAD (Disk Storage) ==========
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, 'temp_uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '.jpg');
+  }
+});
+const upload = multer({ storage: storage });
 
 // ========== TELEGRAM BOT CONFIG ==========
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -128,8 +142,10 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// ========== SUBMIT PAYMENT SCREENSHOT (FORM-DATA FIX) ==========
+// ========== SUBMIT PAYMENT SCREENSHOT (FILE UPLOAD FIX) ==========
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
+  let tempFilePath = null;
+  
   try {
     console.log("🔔 Payment submission received");
     
@@ -154,13 +170,15 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     
     await updateOrderStatus(parseInt(orderId), 'payment_received');
     
-    // Create form data with proper filename and content type
+    tempFilePath = screenshot.path;
+    
+    // Read the file and create a readable stream
+    const fileBuffer = fs.readFileSync(tempFilePath);
+    
+    // Create form data with the file
     const form = new FormData();
     form.append('chat_id', ADMIN_CHAT_ID);
-    form.append('photo', screenshot.buffer, {
-      filename: `payment_${orderId}.jpg`,
-      contentType: screenshot.mimetype || 'image/jpeg'
-    });
+    form.append('photo', new Blob([fileBuffer], { type: 'image/jpeg' }), `payment_${orderId}.jpg`);
     form.append('caption', `
 📸 **PAYMENT SCREENSHOT RECEIVED**
 ━━━━━━━━━━━━━━━━━━━━
@@ -173,43 +191,32 @@ Use: /approve ${orderId} or /reject ${orderId}
     `);
     form.append('parse_mode', 'Markdown');
     
-    console.log("📤 Sending photo to Telegram via form-data...");
+    console.log("📤 Sending photo to Telegram...");
     
     const telegramResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
-      body: form,
-      headers: form.getHeaders()
+      body: form
     });
     
-    // Read response properly
-    const responseText = await telegramResponse.text();
-    console.log("Telegram response:", responseText.substring(0, 200));
+    const result = await telegramResponse.json();
+    console.log("Telegram response:", result);
     
-    let telegramResult;
-    try {
-      telegramResult = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error("JSON parse error:", parseError.message);
-      // If response is empty but status is OK, consider it success
-      if (telegramResponse.ok) {
-        telegramResult = { ok: true };
-      } else {
-        throw new Error(`HTTP ${telegramResponse.status}: ${responseText}`);
-      }
-    }
-    
-    if (telegramResult && telegramResult.ok) {
+    if (result.ok) {
       console.log("✅ Payment screenshot sent to Telegram");
       res.json({ success: true, message: "Payment submitted! Admin notified." });
     } else {
-      const errorMsg = telegramResult?.description || "Unknown error";
-      console.error("❌ Telegram error:", errorMsg);
-      res.json({ success: false, message: "Telegram error: " + errorMsg });
+      console.error("❌ Telegram error:", result.description);
+      res.json({ success: false, message: "Telegram error: " + result.description });
     }
     
   } catch (error) {
     console.error("Payment submit error:", error);
     res.status(500).json({ success: false, message: "Server error: " + error.message });
+  } finally {
+    // Clean up temp file
+    if (tempFilePath && fs.existsSync(tempFilePath)) {
+      fs.unlinkSync(tempFilePath);
+    }
   }
 });
 
