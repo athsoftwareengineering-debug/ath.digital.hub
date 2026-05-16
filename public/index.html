@@ -2,652 +2,342 @@
 <html lang="my">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>MYTEL DATA VIP | 3D Animated Service</title>
-  <!-- Google Fonts & Three.js CDN -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,500;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>MYTEL DATA SERVICE | VIP Data Plans Myanmar</title>
   <style>
-    body {
+    * {
       margin: 0;
-      overflow-x: hidden;
-      font-family: 'Inter', sans-serif;
-      background-color: #050914;
-      color: #fff;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* 3D canvas background */
-    #canvas-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      pointer-events: none;
+    body {
+      background: radial-gradient(circle at 10% 20%, #0B1120, #030614);
+      color: #F1F5F9;
+      padding: 1.5rem;
+      min-height: 100vh;
     }
 
-    /* UI overlay - glassmorphic, responsive */
-    .ui-content {
-      position: relative;
-      z-index: 10;
+    /* smooth container */
+    .container {
       max-width: 1280px;
       margin: 0 auto;
-      padding: 1.2rem 1.5rem 3rem;
-      backdrop-filter: blur(2px);
     }
 
-    /* header animation */
-    .brand {
+    /* header */
+    .brand-header {
       text-align: center;
-      margin-bottom: 1.5rem;
-      animation: floatGlow 3s ease-in-out infinite;
+      margin-bottom: 2rem;
     }
-    .brand h1 {
-      font-size: 2.4rem;
-      background: linear-gradient(135deg, #FCD34D, #FFE484, #FBBF24);
+    .brand-header h1 {
+      font-size: 2.2rem;
+      background: linear-gradient(135deg, #FACC15, #FFD966);
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
-      letter-spacing: -0.5px;
-      text-shadow: 0 0 12px rgba(251,191,36,0.3);
-      margin: 0;
+      letter-spacing: -0.3px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
     }
-    .brand p {
-      color: #9ca3af;
-      font-weight: 500;
-    }
-
-    @keyframes floatGlow {
-      0% { transform: translateY(0px); text-shadow: 0 0 5px rgba(250,204,21,0.2);}
-      50% { transform: translateY(-4px); text-shadow: 0 0 18px rgba(250,204,21,0.5);}
-      100% { transform: translateY(0px);}
+    .brand-header p {
+      color: #94A3B8;
+      font-size: 0.9rem;
+      margin-top: 0.4rem;
     }
 
-    /* phone input - 3D style */
-    .glass-input {
-      background: rgba(15, 25, 45, 0.65);
+    /* phone input card */
+    .phone-glass {
+      background: rgba(15, 25, 45, 0.7);
       backdrop-filter: blur(12px);
-      border-radius: 80px;
-      border: 1px solid rgba(250,204,21,0.4);
+      border-radius: 100px;
+      border: 1px solid rgba(250, 204, 21, 0.35);
+      max-width: 480px;
+      margin: 0 auto 2rem auto;
       display: flex;
       align-items: center;
-      max-width: 500px;
-      margin: 0 auto 2rem auto;
-      padding: 0.2rem 0.2rem 0.2rem 1.5rem;
-      transition: all 0.3s ease;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      padding: 0.2rem 0.2rem 0.2rem 1.2rem;
+      transition: all 0.2s;
     }
-    .glass-input:focus-within {
+    .phone-glass:focus-within {
       border-color: #FACC15;
-      box-shadow: 0 0 20px rgba(250,204,21,0.4);
-      transform: scale(1.01);
+      box-shadow: 0 0 12px rgba(250, 204, 21, 0.3);
     }
-    .glass-input span { font-size: 1.5rem; margin-right: 8px; }
-    .glass-input input {
+    .phone-glass span {
+      font-size: 1.4rem;
+      margin-right: 0.5rem;
+    }
+    .phone-glass input {
       background: transparent;
       border: none;
       flex: 1;
       padding: 1rem 0.5rem;
       font-size: 1rem;
       color: white;
-      font-weight: 500;
       outline: none;
+      font-weight: 500;
     }
-    .glass-input input::placeholder { color: #6c7a9a; font-weight: 400; }
+    .phone-glass input::placeholder {
+      color: #5B6D8F;
+      font-weight: 400;
+    }
 
-    /* 3D cards grid - perspective */
+    /* plan cards grid */
     .plans-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.8rem;
-      margin: 2rem 0 1rem;
-      perspective: 1200px;
+      margin: 2rem 0 1.5rem;
     }
 
-    .plan-card-3d {
-      background: rgba(12, 22, 45, 0.75);
-      backdrop-filter: blur(12px);
+    .plan-card {
+      background: rgba(12, 22, 40, 0.75);
+      backdrop-filter: blur(10px);
       border-radius: 2rem;
-      padding: 1.5rem;
-      border: 1px solid rgba(255,215,0,0.3);
-      transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-      transform-style: preserve-3d;
+      padding: 1.6rem;
+      border: 1px solid rgba(250, 204, 21, 0.25);
+      transition: transform 0.25s ease, border-color 0.2s, box-shadow 0.2s;
       cursor: pointer;
-      box-shadow: 0 20px 30px -15px rgba(0,0,0,0.5);
-      animation: cardFadeUp 0.6s ease backwards;
-      animation-delay: calc(var(--i, 0) * 0.1s);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
     }
-    .plan-card-3d:hover {
-      transform: translateY(-12px) rotateX(5deg);
+    .plan-card:hover {
+      transform: translateY(-6px);
       border-color: #FACC15;
-      background: rgba(20, 35, 60, 0.85);
-      box-shadow: 0 28px 38px -12px rgba(250,204,21,0.2);
+      box-shadow: 0 20px 28px -12px rgba(0, 0, 0, 0.5);
     }
-    @keyframes cardFadeUp {
-      from { opacity: 0; transform: translateY(40px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .plan-card-3d h3 {
-      font-size: 1.8rem;
-      font-weight: 800;
-      background: linear-gradient(145deg, #FFE484, #FACC15);
+    .plan-card h3 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      background: linear-gradient(115deg, #FFE484, #FACC15);
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
-      margin-bottom: 0.8rem;
+      margin-bottom: 1rem;
+      letter-spacing: -0.3px;
     }
-    .feature-list-3d {
+    .feature-list {
       list-style: none;
       margin: 1rem 0;
     }
-    .feature-list-3d li {
-      padding: 0.45rem 0;
+    .feature-list li {
+      padding: 0.4rem 0;
       display: flex;
       align-items: center;
       gap: 0.6rem;
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       color: #CBD5E1;
-      border-bottom: 1px dashed rgba(250,204,21,0.2);
+      border-bottom: 1px dashed rgba(250, 204, 21, 0.15);
     }
-    .feature-list-3d li::before { content: "✨"; font-size: 0.9rem; }
-    .price-tag {
-      font-size: 2rem;
+    .feature-list li:last-child {
+      border-bottom: none;
+    }
+    .feature-list li::before {
+      content: "⚡";
+      font-size: 0.9rem;
+      filter: drop-shadow(0 0 2px gold);
+    }
+    .price {
+      font-size: 1.9rem;
       font-weight: 800;
       color: #FACC15;
       margin: 1rem 0 1.2rem;
+      display: flex;
+      align-items: baseline;
+      gap: 0.3rem;
     }
-    .btn-order {
+    .price small {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #94A3B8;
+    }
+    .order-btn {
       width: 100%;
-      background: linear-gradient(95deg, #FACC15, #EAB308);
+      background: linear-gradient(105deg, #FACC15, #EAB308);
       border: none;
-      padding: 0.8rem;
+      padding: 0.85rem;
       border-radius: 60px;
       font-weight: 700;
       font-size: 1rem;
-      color: #0a0f1f;
+      color: #0F172A;
       cursor: pointer;
       transition: 0.2s;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-    .btn-order:active { transform: scale(0.97); }
+    .order-btn:hover {
+      transform: scale(0.98);
+      background: #FFD966;
+      box-shadow: 0 6px 14px rgba(250, 204, 21, 0.4);
+    }
 
-    /* Payment panel premium */
-    .payment-premium {
-      background: rgba(8, 18, 32, 0.85);
-      backdrop-filter: blur(16px);
+    /* payment section (modern) */
+    .payment-panel {
+      background: rgba(10, 20, 38, 0.85);
+      backdrop-filter: blur(12px);
       border-radius: 2rem;
-      padding: 1.6rem;
+      padding: 1.8rem;
       margin-top: 2rem;
       border: 1px solid #2DD4BF;
+      transition: all 0.2s;
       display: none;
-      animation: panelPop 0.5s ease;
     }
-    @keyframes panelPop {
-      0% { opacity: 0; transform: scale(0.96); }
-      100% { opacity: 1; transform: scale(1); }
+    .payment-panel h3 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #2DD4BF;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
     }
-    .order-detail-card {
-      background: #0F172F;
+    .order-summary {
+      background: #0B1222;
+      padding: 1rem 1.2rem;
       border-radius: 1.2rem;
-      padding: 1rem;
       margin: 1rem 0;
-      border-left: 5px solid #FACC15;
+      font-size: 0.95rem;
+      border-left: 4px solid #FACC15;
+      line-height: 1.5;
     }
-    .upload-zone {
+    .upload-area {
       border: 2px dashed #FACC15;
       border-radius: 1.5rem;
-      padding: 1.2rem;
+      padding: 1.5rem;
       text-align: center;
-      transition: 0.2s;
+      margin: 1.2rem 0;
       cursor: pointer;
-      background: rgba(0,0,0,0.2);
+      transition: background 0.2s;
     }
-    .upload-zone:hover { background: rgba(250,204,21,0.1); }
-    .preview-pic {
+    .upload-area:hover {
+      background: rgba(250, 204, 21, 0.1);
+    }
+    .preview-img {
       max-width: 100%;
-      max-height: 160px;
+      max-height: 170px;
+      margin-top: 0.8rem;
       border-radius: 1rem;
-      margin-top: 12px;
       display: none;
       object-fit: cover;
+      border: 1px solid #475569;
     }
     textarea {
       width: 100%;
-      background: #0E1628;
+      background: #0E1625;
       border: 1px solid #334155;
       border-radius: 1rem;
-      padding: 0.8rem;
-      color: #eee;
-      margin: 0.7rem 0;
-    }
-    .submit-pay {
-      background: linear-gradient(95deg, #10B981, #059669);
-      border: none;
-      width: 100%;
       padding: 0.9rem;
+      color: white;
+      font-size: 0.9rem;
+      margin: 0.8rem 0;
+      resize: vertical;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #FACC15;
+    }
+    .submit-payment-btn {
+      background: linear-gradient(95deg, #10B981, #059669);
+      color: white;
+      border: none;
+      padding: 0.9rem;
+      width: 100%;
       border-radius: 3rem;
       font-weight: bold;
-      color: white;
-      font-size: 1rem;
+      font-size: 1.05rem;
+      cursor: pointer;
       margin-top: 0.5rem;
+      transition: 0.2s;
+    }
+    .submit-payment-btn:hover {
+      background: #059669;
+      transform: translateY(-2px);
     }
 
-    /* modal 3d */
-    .modal-3d {
+    /* modal modern */
+    .modal-overlay {
       display: none;
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(10px);
-      z-index: 200;
-      align-items: center;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
       justify-content: center;
+      align-items: center;
     }
-    .modal-inner {
+    .modal-card {
       background: #1E293B;
+      max-width: 400px;
+      width: 90%;
       border-radius: 2rem;
-      max-width: 380px;
-      width: 85%;
-      padding: 1.8rem;
-      border-top: 5px solid #FACC15;
-      transform: scale(1);
-      animation: zoomModal 0.25s ease;
+      padding: 1.6rem;
+      border-top: 4px solid #FACC15;
+      text-align: center;
+      box-shadow: 0 30px 40px rgba(0,0,0,0.5);
     }
-    @keyframes zoomModal {
-      from { transform: scale(0.9); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+    .modal-card h2 {
+      color: #FACC15;
+      margin-bottom: 1rem;
     }
-    .flex-buttons {
+    .modal-detail {
+      background: #0F172A;
+      margin: 0.6rem 0;
+      padding: 0.7rem;
+      border-radius: 1rem;
+      text-align: left;
+    }
+    .modal-buttons {
       display: flex;
       gap: 12px;
       margin-top: 1.5rem;
     }
-    .btn-cancel { background: #475569; color: white; }
-    .btn-confirm { background: #FACC15; color: #0F172A; }
-    button { border: none; border-radius: 40px; font-weight: 600; cursor: pointer; }
+    .modal-buttons button {
+      flex: 1;
+      padding: 0.7rem;
+      border-radius: 2rem;
+      font-weight: bold;
+      border: none;
+    }
+    .cancel-modal {
+      background: #475569;
+      color: white;
+    }
+    .confirm-modal-btn {
+      background: #FACC15;
+      color: #0F172A;
+    }
 
-    .toast-3d {
+    /* toast */
+    .toast-message {
       position: fixed;
-      bottom: 25px;
+      bottom: 28px;
       left: 50%;
       transform: translateX(-50%);
-      background: #0F172Ad9;
-      backdrop-filter: blur(12px);
-      padding: 10px 24px;
-      border-radius: 60px;
+      background: #1E293B;
+      backdrop-filter: blur(10px);
+      padding: 12px 24px;
+      border-radius: 80px;
       color: white;
-      z-index: 300;
+      font-weight: 500;
+      z-index: 1200;
       display: none;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+      border-left: 5px solid #FACC15;
+      max-width: 85vw;
+      text-align: center;
       font-size: 0.9rem;
-      border-left: 4px solid #FACC15;
-      pointer-events: none;
     }
     footer {
       text-align: center;
-      margin-top: 2.5rem;
-      font-size: 0.7rem;
-      color: #5A6E8A;
+      margin-top: 3rem;
+      font-size: 0.75rem;
+      color: #5B6D8F;
+      border-top: 1px solid rgba(250,204,21,0.2);
+      padding-top: 1.5rem;
     }
-    @media (max-width: 680px) {
-      .ui-content { padding: 0.8rem 1rem 2rem; }
-      .brand h1 { font-size: 1.8rem; }
-      .plan-card-3d h3 { font-size: 1.4rem; }
-    }
-  </style>
-</head>
-<body>
 
-<div id="canvas-container"></div>
-
-<div class="ui-content">
-  <div class="brand">
-    <h1>⚡ MYTEL DATA SERVICE ⚡</h1>
-    <p>Superfast 5G ready • Unlimited VIBE plans</p>
-  </div>
-
-  <div class="glass-input">
-    <span>📱</span>
-    <input type="tel" id="phoneNumber" placeholder="09xxxxxxxxx (Your Mytel number)" autocomplete="off">
-  </div>
-
-  <div class="plans-grid" id="plansGrid"></div>
-
-  <!-- Payment Section with 3D style -->
-  <div id="paymentPanel" class="payment-premium">
-    <h3 style="color:#2DD4BF; display:flex; gap:8px;">💎 COMPLETE PAYMENT</h3>
-    <div class="order-detail-card" id="orderSummaryBlock"></div>
-    <p style="background:#0B0F1C; border-radius: 60px; padding: 8px 12px; text-align:center;">🏧 <strong>KPay / WavePay : 09789999368 (AUNG THU HTWE)</strong></p>
-    <div class="upload-zone" onclick="document.getElementById('screenshotFile').click()">
-      📸 Click or tap to select payment screenshot
-      <input type="file" id="screenshotFile" accept="image/*" style="display:none">
-      <img id="previewScreenshot" class="preview-pic" alt="preview">
-    </div>
-    <textarea id="paymentNote" rows="2" placeholder="Additional note (optional)"></textarea>
-    <button class="submit-pay" id="finalSubmitBtn">✅ Submit Screenshot & Confirm</button>
-  </div>
-  <footer>
-    <p>🔒 Secure Payment • Instant Activation after verification</p>
-    <p>✨ E-Receipt auto generated after admin confirms ✨</p>
-  </footer>
-</div>
-
-<!-- Modal for confirmation -->
-<div id="orderModal" class="modal-3d">
-  <div class="modal-inner">
-    <h2 style="color:#FACC15;">📋 ORDER SUMMARY</h2>
-    <div class="order-detail-card" style="background:#0F172A;">
-      <div>📦 Package: <strong id="modalPkg"></strong></div>
-      <div>💰 Amount: <strong id="modalPrice"></strong> KS</div>
-      <div>📞 Phone: <strong id="modalPhoneNum"></strong></div>
-    </div>
-    <div class="flex-buttons">
-      <button class="btn-cancel" id="closeModalBtn">Cancel</button>
-      <button class="btn-confirm" id="confirmFinalOrderBtn">Confirm Order</button>
-    </div>
-  </div>
-</div>
-
-<div id="liveToast" class="toast-3d">✨ message</div>
-
-<!-- Three.js library -->
-<script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
-    }
-  }
-</script>
-
-<script type="module">
-  import * as THREE from 'three';
-
-  // ---------- 3D ANIMATION: Rotating glowing particles & floating orbs ----------
-  const container = document.getElementById('canvas-container');
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x050914);
-  scene.fog = new THREE.FogExp2(0x050914, 0.008);
-  
-  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.set(0, 2, 12);
-  camera.lookAt(0, 0, 0);
-  
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
-  container.appendChild(renderer.domElement);
-  
-  // Lights
-  const ambientLight = new THREE.AmbientLight(0x222222);
-  scene.add(ambientLight);
-  const pointLight = new THREE.PointLight(0xfacc15, 1, 25);
-  pointLight.position.set(3, 5, 4);
-  scene.add(pointLight);
-  const backLight = new THREE.PointLight(0x2266ff, 0.5);
-  backLight.position.set(-2, 1, -5);
-  scene.add(backLight);
-  
-  // Central glowing torus knot (modern data vibe)
-  const knotGeo = new THREE.TorusKnotGeometry(1.2, 0.28, 200, 32, 3, 4);
-  const knotMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0x442200, roughness: 0.3, metalness: 0.7 });
-  const knot = new THREE.Mesh(knotGeo, knotMat);
-  scene.add(knot);
-  
-  // Floating orbs (particle system style)
-  const particleCount = 800;
-  const particlesGeometry = new THREE.BufferGeometry();
-  const positions = new Float32Array(particleCount * 3);
-  for (let i = 0; i < particleCount; i++) {
-    positions[i*3] = (Math.random() - 0.5) * 30;
-    positions[i*3+1] = (Math.random() - 0.5) * 18;
-    positions[i*3+2] = (Math.random() - 0.5) * 20 - 10;
-  }
-  particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const particleMat = new THREE.PointsMaterial({ color: 0xffaa44, size: 0.08, transparent: true, opacity: 0.6 });
-  const particleSys = new THREE.Points(particlesGeometry, particleMat);
-  scene.add(particleSys);
-  
-  // Add rotating rings around center
-  const ringGeo = new THREE.TorusGeometry(1.7, 0.05, 64, 300);
-  const ringMat = new THREE.MeshStandardMaterial({ color: 0xffaa33, emissive: 0x442200 });
-  const ring = new THREE.Mesh(ringGeo, ringMat);
-  scene.add(ring);
-  
-  const ring2Geo = new THREE.TorusGeometry(2.1, 0.04, 64, 300);
-  const ring2Mat = new THREE.MeshStandardMaterial({ color: 0x88aaff, emissive: 0x004466 });
-  const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
-  scene.add(ring2);
-  
-  // small floating diamonds (icosahedrons)
-  const gems = [];
-  for (let i = 0; i < 45; i++) {
-    const gemGeo = new THREE.IcosahedronGeometry(0.09, 0);
-    const gemMat = new THREE.MeshStandardMaterial({ color: 0xffcc66, emissive: 0x332200 });
-    const gem = new THREE.Mesh(gemGeo, gemMat);
-    gem.userData = { speedX: (Math.random() - 0.5)*0.01, speedY: (Math.random() - 0.5)*0.01, radius: 2 + Math.random() * 3 };
-    gem.position.x = (Math.random() - 0.5) * 8;
-    gem.position.y = (Math.random() - 0.5) * 5;
-    gem.position.z = (Math.random() - 0.5) * 6 - 2;
-    scene.add(gem);
-    gems.push(gem);
-  }
-  
-  let time = 0;
-  function animate3D() {
-    requestAnimationFrame(animate3D);
-    time += 0.012;
-    knot.rotation.x = time * 0.5;
-    knot.rotation.y = time * 0.7;
-    knot.rotation.z = time * 0.3;
-    ring.rotation.x = time * 0.2;
-    ring.rotation.y = time * 0.4;
-    ring2.rotation.x = -time * 0.25;
-    ring2.rotation.z = time * 0.35;
-    particleSys.rotation.y = time * 0.05;
-    particleSys.rotation.x = Math.sin(time * 0.2) * 0.1;
-    
-    gems.forEach(gem => {
-      gem.position.x += Math.sin(time * 0.8 + gem.position.z) * 0.003;
-      gem.position.y += Math.cos(time * 0.6 + gem.position.x) * 0.003;
-      gem.rotation.x += 0.02;
-      gem.rotation.y += 0.03;
-    });
-    
-    camera.position.x += (0 - camera.position.x) * 0.03;
-    camera.position.y += (Math.sin(time * 0.2) * 0.1 - camera.position.y) * 0.03;
-    camera.lookAt(0, 0.5, 0);
-    renderer.render(scene, camera);
-  }
-  animate3D();
-  
-  window.addEventListener('resize', onWindowResize, false);
-  function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  }
-  
-  // ---------- APP LOGIC (Order + Payment mock with backend simulation) ----------
-  const packagesData = {
-    "VIP LEVEL - 1": { price: 15000, features: ["22 GB (High-speed)", "8000 On-Net Mins", "5000 SMS"] },
-    "VIP LEVEL - 2": { price: 20000, features: ["40 GB (Data)", "250 On-Net Mins", "25 Any Net Mins"] },
-    "VIP LEVEL - 3": { price: 25000, features: ["40 GB (Data)", "1400 On-Net Mins", "8000 SMS"] },
-    "VIP LEVEL - 4 (ULTRA)": { price: 30000, features: ["120 GB (Ultra Speed)", "Unlimited Social"] }
-  };
-  
-  let currentOrderState = null; // { pkgName, price, phone, orderId }
-  let selectedImageFile = null;
-  
-  function showToast(msg, bgHint = "#FACC15") {
-    const toast = document.getElementById('liveToast');
-    toast.innerText = msg;
-    toast.style.display = 'block';
-    toast.style.background = "#0F172Ae6";
-    toast.style.borderLeft = `4px solid ${bgHint}`;
-    setTimeout(() => { toast.style.display = 'none'; }, 4000);
-  }
-  
-  // Render plan cards with 3D style
-  const grid = document.getElementById('plansGrid');
-  function renderPlans() {
-    grid.innerHTML = '';
-    let idx = 0;
-    for (const [name, data] of Object.entries(packagesData)) {
-      const card = document.createElement('div');
-      card.className = 'plan-card-3d';
-      card.style.setProperty('--i', idx);
-      card.innerHTML = `
-        <h3>${name}</h3>
-        <ul class="feature-list-3d">
-          ${data.features.map(f => `<li>${f}</li>`).join('')}
-        </ul>
-        <div class="price-tag">${data.price.toLocaleString()} KS</div>
-        <button class="btn-order" data-pkg="${name}" data-price="${data.price}">🔥 ORDER NOW</button>
-      `;
-      grid.appendChild(card);
-      idx++;
-    }
-    document.querySelectorAll('.btn-order').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const pkg = btn.getAttribute('data-pkg');
-        const price = parseInt(btn.getAttribute('data-price'));
-        openOrderModal(pkg, price);
-      });
-    });
-  }
-  
-  function openOrderModal(pkg, price) {
-    const phone = document.getElementById('phoneNumber').value.trim();
-    if (!phone || phone.length < 9 || !/^(09|\+959)\d{7,9}$/.test(phone)) {
-      showToast("⚠️ ကျေးဇူးပြု၍ မှန်ကန်သော ဖုန်းနံပါတ်ထည့်ပါ (09xxxxxxxxx)", "#f97316");
-      return;
-    }
-    document.getElementById('modalPkg').innerText = pkg;
-    document.getElementById('modalPrice').innerText = price.toLocaleString();
-    document.getElementById('modalPhoneNum').innerText = phone;
-    currentOrderState = { pkgName: pkg, price: price, phone: phone };
-    document.getElementById('orderModal').style.display = 'flex';
-  }
-  
-  document.getElementById('closeModalBtn').addEventListener('click', () => {
-    document.getElementById('orderModal').style.display = 'none';
-  });
-  
-  // Fake async server endpoints (simulate real order creation)
-  async function createOrder(packageName, phone) {
-    // simulate network delay
-    await new Promise(r => setTimeout(r, 500));
-    const fakeOrderId = 'MYT' + Date.now() + Math.floor(Math.random() * 10000);
-    return { success: true, orderId: fakeOrderId };
-  }
-  
-  async function submitPaymentToServer(orderId, packageName, phone, screenshotFile, note) {
-    await new Promise(r => setTimeout(r, 800));
-    // Simulate validation: always success if image present
-    if (!screenshotFile) return { success: false, message: "No screenshot provided" };
-    return { success: true, message: "Payment evidence received, admin will verify soon" };
-  }
-  
-  const confirmBtnModal = document.getElementById('confirmFinalOrderBtn');
-  confirmBtnModal.onclick = async () => {
-    if (!currentOrderState) return;
-    confirmBtnModal.innerText = "Processing...";
-    confirmBtnModal.disabled = true;
-    try {
-      const res = await createOrder(currentOrderState.pkgName, currentOrderState.phone);
-      if (res.success) {
-        currentOrderState.orderId = res.orderId;
-        document.getElementById('orderModal').style.display = 'none';
-        // show payment panel
-        const summaryDiv = document.getElementById('orderSummaryBlock');
-        summaryDiv.innerHTML = `
-          ✅ <strong>Order ID:</strong> ${res.orderId}<br>
-          📦 <strong>Package:</strong> ${currentOrderState.pkgName}<br>
-          📞 <strong>Phone:</strong> ${currentOrderState.phone}<br>
-          💰 <strong>Amount:</strong> ${currentOrderState.price.toLocaleString()} KS
-        `;
-        document.getElementById('paymentPanel').style.display = 'block';
-        showToast(`✨ Order created! Send screenshot to complete.`, "#10B981");
-        // clear phone field optional
-      } else {
-        showToast("Order creation failed", "#ef4444");
-      }
-    } catch (err) {
-      showToast("Network error, please retry", "#ef4444");
-    } finally {
-      confirmBtnModal.innerText = "Confirm Order";
-      confirmBtnModal.disabled = false;
-    }
-  };
-  
-  // screenshot handling
-  const fileInput = document.getElementById('screenshotFile');
-  const previewImg = document.getElementById('previewScreenshot');
-  fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      selectedImageFile = file;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        previewImg.src = ev.target.result;
-        previewImg.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-    } else {
-      selectedImageFile = null;
-      previewImg.style.display = 'none';
-      showToast("Please select a valid image", "#F97316");
-    }
-  });
-  
-  document.getElementById('finalSubmitBtn').addEventListener('click', async () => {
-    if (!currentOrderState || !currentOrderState.orderId) {
-      showToast("No active order, please select a plan first", "#F97316");
-      return;
-    }
-    if (!selectedImageFile) {
-      showToast("📸 Please upload payment screenshot (KPay/WavePay)", "#FACC15");
-      return;
-    }
-    const submitBtn = document.getElementById('finalSubmitBtn');
-    submitBtn.innerText = "Submitting...";
-    submitBtn.disabled = true;
-    const note = document.getElementById('paymentNote').value;
-    try {
-      const result = await submitPaymentToServer(
-        currentOrderState.orderId, currentOrderState.pkgName, currentOrderState.phone, selectedImageFile, note
-      );
-      if (result.success) {
-        showToast("✅ Payment screenshot submitted! Thank you, admin will activate shortly.", "#22c55e");
-        // reset UI
-        document.getElementById('paymentPanel').style.display = 'none';
-        previewImg.style.display = 'none';
-        previewImg.src = '';
-        selectedImageFile = null;
-        fileInput.value = '';
-        document.getElementById('paymentNote').value = '';
-        currentOrderState = null;
-      } else {
-        showToast(`❌ ${result.message}`, "#ef4444");
-      }
-    } catch (error) {
-      showToast("Submission failed, check connection", "#ef4444");
-    } finally {
-      submitBtn.innerText = "✅ Submit Screenshot & Confirm";
-      submitBtn.disabled = false;
-    }
-  });
-  
-  renderPlans();
-  // 3D background adjust pointer events
-  const style = document.createElement('style');
-  style.innerHTML = `#canvas-container canvas { pointer-events: none; }`;
-  document.head.appendChild(style);
-  
-  // Additional floating effect for cards
-  console.log("3D animated Data Service ready — premium mytel interface");
-</script>
-</body>
-</html>
+    @media (max-width: 640px) {
+      body { padding: 1rem; }
+      .plan-card
