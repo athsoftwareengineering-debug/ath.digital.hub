@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
-const FormData = require('form-data');
 
 const app = express();
 
@@ -30,11 +29,12 @@ const upload = multer({ storage: storage });
 // ========== TELEGRAM BOT CONFIG ==========
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.CHAT_ID;
-const ALARM_GROUP_ID = "-1002373340084";
 
 // In-memory storage
 let orders = [];
 let orderIdCounter = 1;
+
+// Store pending orders waiting for screenshot
 let pendingOrders = {};
 
 const PAYMENT_INFO = {
@@ -94,26 +94,21 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
   }
 }
 
-// ========== SEND TELEGRAM PHOTO - ORIGINAL FORM-DATA METHOD ==========
+// Send photo to Telegram
 async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   if (!BOT_TOKEN) return false;
   try {
     const form = new FormData();
     form.append('chat_id', chatId);
-    form.append('photo', buffer, {
-      filename: 'screenshot.jpg',
-      contentType: 'image/jpeg'
-    });
+    form.append('photo', new Blob([buffer], { type: 'image/jpeg' }), 'screenshot.jpg');
     form.append('caption', caption);
     form.append('parse_mode', 'Markdown');
     if (keyboard) form.append('reply_markup', JSON.stringify(keyboard));
     
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
-      body: form,
-      headers: form.getHeaders()
+      body: form
     });
-    
     const result = await response.json();
     console.log("Telegram photo:", result.ok ? "✅" : "❌", result.description);
     return result.ok;
@@ -123,7 +118,7 @@ async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   }
 }
 
-// ========== WEBSITE ORDER ENDPOINT ==========
+// ========== WEBSITE ORDER ENDPOINT (Save order but don't notify admin yet) ==========
 app.post('/order', async (req, res) => {
   try {
     const { packageName, phone } = req.body;
@@ -145,6 +140,8 @@ app.post('/order', async (req, res) => {
       updatedAt: new Date().toISOString()
     };
     orders.unshift(newOrder);
+    
+    // Store temporarily - will send to admin when screenshot arrives
     pendingOrders[newOrder.id] = newOrder;
     
     console.log(`📦 Order #${newOrder.id} created - waiting for screenshot`);
@@ -163,7 +160,7 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// ========== SUBMIT PAYMENT SCREENSHOT ==========
+// ========== SUBMIT PAYMENT SCREENSHOT (Send Order + SS together to Admin) ==========
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
   
@@ -188,14 +185,17 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
       return res.status(400).json({ success: false, message: "Order ID required" });
     }
     
+    // Update order status
     await updateOrderStatus(orderId, 'payment_received');
     
     tempFilePath = screenshot.path;
     const fileBuffer = fs.readFileSync(tempFilePath);
     
+    // Get order details
     const order = orders.find(o => o.id === orderId);
     const packageData = PACKAGES[order.packageName];
     
+    // Send ONE message with Order + Screenshot together to Admin
     const caption = `
 🆕 **အော်ဒါအသစ် + ငွေလွှဲပြေစာ** #${orderId}
 ━━━━━━━━━━━━━━━━━━━━
@@ -214,11 +214,15 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
           { text: "✅ အတည်ပြုမည်", callback_data: `approve_${orderId}` },
           { text: "❌ ပယ်ဖျက်မည်", callback_data: `reject_${orderId}` }
         ],
-        [{ text: "📋 အသေးစိတ်", callback_data: `detail_${orderId}` }]
+        [
+          { text: "📋 အသေးစိတ်", callback_data: `detail_${orderId}` }
+        ]
       ]
     };
     
     const success = await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
+    
+    // Remove from pending orders
     delete pendingOrders[orderId];
     
     if (success) {
@@ -254,6 +258,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         body: JSON.stringify({ callback_query_id: callback_query.id })
       });
       
+      // Approve Button
       if (data.startsWith('approve_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
@@ -261,6 +266,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         if (order) {
           await updateOrderStatus(orderId, 'approved');
           
+          // Edit the original message to show approved
           const approveCaption = `
 ✅ **အတည်ပြုပြီး** - အော်ဒါ #${orderId}
 ━━━━━━━━━━━━━━━━━━━━
@@ -284,28 +290,11 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           });
           
           await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး!\n📞 ${order.phone}\n📦 ${order.packageName}`);
-          
-          const alarmMessage = `
-╔════════════════════════════════════════════╗
-║       ✅ ဒေတာ ထည့်သွင်းပြီးပါပြီ ✅          ║
-╠════════════════════════════════════════════╣
-║  🆔 အော်ဒါအမှတ်    : #${orderId}              ║
-║  📦 Package        : ${order.packageName}   ║
-║  📞 ဖုန်းနံပါတ်     : ${order.phone.slice(0, -4) + "****"} ║
-║  💰 ငွေပမာဏ        : ${order.price.toLocaleString()} KS     ║
-║  ✅ အခြေအနေ        : အောင်မြင်ပြီး           ║
-║  ⏰ အချိန်          : ${new Date().toLocaleString('my-MM')}  ║
-╠════════════════════════════════════════════╣
-║  🎉 ကျေးဇူးတင်ပါတယ်။                     ║
-║      ဒေတာ အသက်ဝင်ပါပြီ။                   ║
-╚════════════════════════════════════════════╝
-          `;
-          await sendTelegramMessage(ALARM_GROUP_ID, alarmMessage);
-          console.log(`📢 Alarm sent to group for order #${orderId}`);
         }
         return res.sendStatus(200);
       }
       
+      // Reject Button
       if (data.startsWith('reject_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
@@ -321,6 +310,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
 ━━━━━━━━━━━━━━━━━━━━
 ⚠️ ငွေလွှဲပြေစာ မှားယွင်းနေပါသည်။
+ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။
           `;
           
           await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
@@ -339,6 +329,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
+      // Detail Button
       if (data.startsWith('detail_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
@@ -374,6 +365,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
+      // View Pending Orders
       if (data === 'view_pending') {
         const pendingOrdersList = orders.filter(o => o.status === 'payment_received');
         
@@ -394,6 +386,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
+      // View All Orders
       if (data === 'view_all') {
         if (orders.length === 0) {
           await sendTelegramMessage(chatId, "📭 အော်ဒါမရှိသေးပါ။");
@@ -415,6 +408,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
+      // Payment Info
       if (data === 'payment_info') {
         const paymentMsg = `
 💰 **ငွေလွှဲအချက်အလက်**
@@ -431,6 +425,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
+      // Help
       if (data === 'help') {
         const helpMsg = `
 🤖 *MYTEL ORDER BOT - အကူအညီ*
@@ -448,12 +443,14 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
+      // Refresh Stats
       if (data === 'refresh_stats') {
         const stats = await getOrderStats();
         await sendTelegramMessage(chatId, `🔄 *စာရင်းအင်းအသစ်*\n\n${stats}`);
         return res.sendStatus(200);
       }
       
+      // Back to Menu
       if (data === 'back_to_menu') {
         const stats = await getOrderStats();
         const menuMessage = `
@@ -563,6 +560,5 @@ app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅ Set' : '❌ Missing'}`);
   console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
-  console.log(`📢 ALARM_GROUP_ID: ${ALARM_GROUP_ID}`);
   await setWebhook();
 });
