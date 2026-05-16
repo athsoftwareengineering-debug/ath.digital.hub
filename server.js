@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
+const FormData = require('form-data');
 
 const app = express();
 
@@ -16,7 +17,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.CHAT_ID;
 
-// In-memory storage (သိမ်းဆည်းရန်)
+// In-memory storage
 let orders = [];
 let orderIdCounter = 1;
 
@@ -127,7 +128,7 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// ========== SUBMIT PAYMENT SCREENSHOT (Fixed: FormData instead of base64) ==========
+// ========== SUBMIT PAYMENT SCREENSHOT (Fixed with form-data package) ==========
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   try {
     console.log("🔔 Payment submission received");
@@ -145,11 +146,14 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     
     await updateOrderStatus(orderId, 'payment_received');
     
-    // Fix: Use FormData to send photo to Telegram (instead of base64 in JSON)
-    const formData = new FormData();
-    formData.append('chat_id', ADMIN_CHAT_ID);
-    formData.append('photo', screenshot.buffer, 'screenshot.jpg');
-    formData.append('caption', `
+    // Use form-data package to send photo to Telegram
+    const form = new FormData();
+    form.append('chat_id', ADMIN_CHAT_ID);
+    form.append('photo', screenshot.buffer, {
+      filename: 'screenshot.jpg',
+      contentType: screenshot.mimetype
+    });
+    form.append('caption', `
 📸 **PAYMENT SCREENSHOT RECEIVED**
 ━━━━━━━━━━━━━━━━━━━━
 🆔 Order ID: ${orderId}
@@ -159,13 +163,14 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
 ━━━━━━━━━━━━━━━━━━━━
 Use: /approve ${orderId} or /reject ${orderId}
     `);
-    formData.append('parse_mode', 'Markdown');
+    form.append('parse_mode', 'Markdown');
     
-    console.log("📤 Sending photo to Telegram via FormData...");
+    console.log("📤 Sending photo to Telegram via form-data...");
     
     const telegramResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
-      body: formData
+      body: form,
+      headers: form.getHeaders()
     });
     
     const telegramResult = await telegramResponse.json();
