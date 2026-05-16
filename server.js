@@ -29,6 +29,7 @@ const upload = multer({ storage: storage });
 // ========== TELEGRAM BOT CONFIG ==========
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.CHAT_ID;
+const ALARM_GROUP_ID = "-1002373340084";  // DATA ORDER ALARMS Group ID
 
 // In-memory storage
 let orders = [];
@@ -98,16 +99,21 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
 async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   if (!BOT_TOKEN) return false;
   try {
+    const FormData = require('form-data');
     const form = new FormData();
     form.append('chat_id', chatId);
-    form.append('photo', new Blob([buffer], { type: 'image/jpeg' }), 'screenshot.jpg');
+    form.append('photo', buffer, {
+      filename: 'screenshot.jpg',
+      contentType: 'image/jpeg'
+    });
     form.append('caption', caption);
     form.append('parse_mode', 'Markdown');
     if (keyboard) form.append('reply_markup', JSON.stringify(keyboard));
     
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
-      body: form
+      body: form,
+      headers: form.getHeaders()
     });
     const result = await response.json();
     console.log("Telegram photo:", result.ok ? "✅" : "❌", result.description);
@@ -290,6 +296,25 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           });
           
           await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး!\n📞 ${order.phone}\n📦 ${order.packageName}`);
+          
+          // ========== SEND ALARM TO GROUP (ADDED) ==========
+          const alarmMessage = `
+╔════════════════════════════════════════════╗
+║       ✅ ဒေတာ ထည့်သွင်းပြီးပါပြီ ✅          ║
+╠════════════════════════════════════════════╣
+║  🆔 အော်ဒါအမှတ်    : #${orderId}              ║
+║  📦 Package        : ${order.packageName}   ║
+║  📞 ဖုန်းနံပါတ်     : ${order.phone.slice(0, -4) + "****"} ║
+║  💰 ငွေပမာဏ        : ${order.price.toLocaleString()} KS     ║
+║  ✅ အခြေအနေ        : အောင်မြင်ပြီး           ║
+║  ⏰ အချိန်          : ${new Date().toLocaleString('my-MM')}  ║
+╠════════════════════════════════════════════╣
+║  🎉 ကျေးဇူးတင်ပါတယ်။                     ║
+║      ဒေတာ အသက်ဝင်ပါပြီ။                   ║
+╚════════════════════════════════════════════╝
+          `;
+          await sendTelegramMessage(ALARM_GROUP_ID, alarmMessage);
+          console.log(`📢 Alarm sent to group for order #${orderId}`);
         }
         return res.sendStatus(200);
       }
@@ -325,6 +350,24 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           });
           
           await sendTelegramMessage(chatId, `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ပြီး.\n📞 ${order.phone}`);
+          
+          // ========== SEND REJECT ALARM TO GROUP (ADDED) ==========
+          const rejectAlarmMessage = `
+╔════════════════════════════════════════════╗
+║           ❌ အော်ဒါပယ်ဖျက်ပြီး ❌           ║
+╠════════════════════════════════════════════╣
+║  🆔 အော်ဒါအမှတ်    : #${orderId}              ║
+║  📦 Package        : ${order.packageName}   ║
+║  📞 ဖုန်းနံပါတ်     : ${order.phone.slice(0, -4) + "****"} ║
+║  💰 ငွေပမာဏ        : ${order.price.toLocaleString()} KS     ║
+║  ❌ အခြေအနေ        : ပယ်ဖျက်ပြီး             ║
+║  ⏰ အချိန်          : ${new Date().toLocaleString('my-MM')}  ║
+╠════════════════════════════════════════════╣
+║  ⚠️ ငွေလွှဲပြေစာ မှားယွင်းနေပါသည်။         ║
+╚════════════════════════════════════════════╝
+          `;
+          await sendTelegramMessage(ALARM_GROUP_ID, rejectAlarmMessage);
+          console.log(`📢 Reject alarm sent to group for order #${orderId}`);
         }
         return res.sendStatus(200);
       }
@@ -560,5 +603,6 @@ app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅ Set' : '❌ Missing'}`);
   console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
+  console.log(`📢 ALARM_GROUP_ID: ${ALARM_GROUP_ID}`);
   await setWebhook();
 });
