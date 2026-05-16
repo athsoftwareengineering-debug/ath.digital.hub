@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MYTEL DATA SERVICE</title>
+</head>
+<body>
+
+<h1>VIP PLANS</h1>
+
+<button onclick="order('VIP 1')">Buy VIP 1</button>
+<button onclick="order('VIP 2')">Buy VIP 2</button>
+<button onclick="order('VIP 3')">Buy VIP 3</button>
+
+<br><br>
+
+<input id="phone" placeholder="Enter phone number">
+
+<script>
+const API = "https://YOUR-RENDER.onrender.com/order";
+
+async function order(pkg){
+  const phone = document.getElementById("phone").value;
+
+  if(!phone){
+    alert("Phone number ထည့်ပါ");
+    return;
+  }
+
+  const res = await fetch(API, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      packageName: pkg,
+      phone: phone
+    })
+  });
+
+  const data = await res.json();
+
+  if(data.ok){
+    alert("Order Successful!");
+  } else {
+    alert("Failed!");
+  }
+}
+</script>
+
+</body>
+</html>
