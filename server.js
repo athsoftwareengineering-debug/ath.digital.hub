@@ -1,20 +1,58 @@
 const express = require('express');
 const path = require('path');
+const multer = require('multer');
+const { initializeApp, cert } = require('firebase-admin/app');
+const { getDatabase } = require('firebase-admin/database');
 
 const app = express();
 
 // ========== MIDDLEWARE ==========
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// ========== STATIC FILES (HTML, CSS, JS) ==========
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ========== TELEGRAM BOT CONFIGURATION ==========
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const ADMIN_CHAT_ID = process.env.CHAT_ID;  // Admin Telegram ID: 8070878424
+// ========== FILE UPLOAD ==========
+const upload = multer({ storage: multer.memoryStorage() });
 
-// Payment Info (ငွေလွှဲရန် အချက်အလက်)
+// ========== FIREBASE ADMIN INITIALIZATION ==========
+// Note: Firebase Admin SDK အတွက် Service Account Key လိုအပ်ပါတယ်
+// Render Environment Variable မှာ FIREBASE_SERVICE_ACCOUNT ထည့်ပေးရပါမယ်
+
+let db;
+try {
+  // Service Account from Environment Variable
+  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
+    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+    : {
+        "type": "service_account",
+        "project_id": "restaurant-141f3",
+        "private_key_id": "YOUR_PRIVATE_KEY_ID",
+        "private_key": "YOUR_PRIVATE_KEY".replace(/\\n/g, '\n'),
+        "client_email": "YOUR_CLIENT_EMAIL",
+        "client_id": "YOUR_CLIENT_ID",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "YOUR_CERT_URL"
+      };
+  
+  initializeApp({
+    credential: cert(serviceAccount),
+    databaseURL: "https://restaurant-141f3-default-rtdb.firebaseio.com"
+  });
+  
+  db = getDatabase();
+  console.log("✅ Firebase connected successfully");
+} catch (error) {
+  console.error("❌ Firebase connection error:", error.message);
+  console.log("⚠️ Running without Firebase (in-memory storage fallback)");
+}
+
+// ========== TELEGRAM BOT CONFIG ==========
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const ADMIN_CHAT_ID = process.env.CHAT_ID;
+
+// Payment Info
 const PAYMENT_INFO = {
   kpay: "09789999368",
   wavepay: "09789999368",
@@ -22,30 +60,92 @@ const PAYMENT_INFO = {
 };
 
 // Package Prices
-const PACKAGE_PRICES = {
-  "VIP LEVEL - 1": 15000,
-  "VIP LEVEL - 2": 20000,
-  "VIP LEVEL - 3": 25000,
-  "VIP LEVEL - 4 (ULTRA)": 30000
+const PACKAGES = {
+  "VIP LEVEL - 1": { price: 15000, desc: "22GB / 8000 Mins / 5000 SMS" },
+  "VIP LEVEL - 2": { price: 20000, desc: "40GB / 250 Mins / 25 Any Net" },
+  "VIP LEVEL - 3": { price: 25000, desc: "40GB / 1400 Mins / 8000 SMS" },
+  "VIP LEVEL - 4 (ULTRA)": { price: 30000, desc: "120GB High-Speed Data" }
 };
 
-// ========== HELPER FUNCTION: Send Telegram Message ==========
-async function sendTelegramMessage(chatId, text, parseMode = 'Markdown') {
-  if (!BOT_TOKEN || !chatId) {
-    console.error("Missing BOT_TOKEN or chatId");
+// In-memory fallback (Firebase မရှိရင် သုံးမယ်)
+let orders = [];
+let orderIdCounter = 1;
+
+// ========== HELPER: Save Order to Firebase ==========
+async function saveOrderToFirebase(order) {
+  if (!db) return null;
+  try {
+    const orderRef = db.ref(`orders/${order.id}`);
+    await orderRef.set(order);
+    return true;
+  } catch (error) {
+    console.error("Firebase save error:", error);
     return false;
   }
+}
+
+// ========== HELPER: Get Order from Firebase ==========
+async function getOrderFromFirebase(orderId) {
+  if (!db) return null;
+  try {
+    const snapshot = await db.ref(`orders/${orderId}`).once('value');
+    return snapshot.val();
+  } catch (error) {
+    console.error("Firebase get error:", error);
+    return null;
+  }
+}
+
+// ========== HELPER: Get All Orders from Firebase ==========
+async function getAllOrdersFromFirebase() {
+  if (!db) return orders;
+  try {
+    const snapshot = await db.ref('orders').once('value');
+    const data = snapshot.val();
+    if (!data) return [];
+    return Object.values(data).sort((a, b) => b.id - a.id);
+  } catch (error) {
+    console.error("Firebase getAll error:", error);
+    return orders;
+  }
+}
+
+// ========== HELPER: Update Order Status ==========
+async function updateOrderStatus(orderId, status) {
+  if (!db) {
+    const order = orders.find(o => o.id == orderId);
+    if (order) order.status = status;
+    return order;
+  }
+  try {
+    await db.ref(`orders/${orderId}/status`).set(status);
+    await db.ref(`orders/${orderId}/updatedAt`).set(new Date().toISOString());
+    return await getOrderFromFirebase(orderId);
+  } catch (error) {
+    console.error("Firebase update error:", error);
+    return null;
+  }
+}
+
+// ========== SEND TELEGRAM MESSAGE ==========
+async function sendTelegramMessage(chatId, text, keyboard = null) {
+  if (!BOT_TOKEN || !chatId) return false;
   
   try {
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+    const body = {
+      chat_id: chatId,
+      text: text,
+      parse_mode: 'Markdown'
+    };
+    if (keyboard) {
+      body.reply_markup = JSON.stringify({ inline_keyboard: keyboard });
+    }
+    
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: text,
-        parse_mode: parseMode
-      })
+      body: JSON.stringify(body)
     });
     const result = await response.json();
     return result.ok;
@@ -55,126 +155,260 @@ async function sendTelegramMessage(chatId, text, parseMode = 'Markdown') {
   }
 }
 
-// ========== TEST ENDPOINT ==========
-app.get('/test-bot', async (req, res) => {
-  try {
-    if (!BOT_TOKEN || !ADMIN_CHAT_ID) {
-      return res.status(500).json({ 
-        success: false, 
-        error: "BOT_TOKEN or CHAT_ID not set" 
-      });
-    }
-    
-    const testMsg = `✅ Bot is working! Time: ${new Date().toLocaleString('my-MM', { timeZone: 'Asia/Yangon' })}`;
-    const success = await sendTelegramMessage(ADMIN_CHAT_ID, testMsg);
-    
-    if (success) {
-      res.json({ success: true, message: "Test message sent to Telegram!" });
-    } else {
-      res.status(500).json({ success: false, error: "Failed to send message" });
-    }
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// ========== ORDER ENDPOINT (Customer အော်ဒါတင်တဲ့အခါ) ==========
+// ========== WEBSITE ORDER ENDPOINT ==========
 app.post('/order', async (req, res) => {
   try {
-    const { packageName, phone } = req.body;
+    const { packageName, phone, customerChatId } = req.body;
     
     if (!packageName || !phone) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Package name and phone number are required" 
-      });
+      return res.status(400).json({ success: false, message: "Missing required fields" });
     }
     
-    if (!BOT_TOKEN || !ADMIN_CHAT_ID) {
-      console.error("Missing BOT_TOKEN or CHAT_ID");
-      return res.status(500).json({ 
-        success: false, 
-        message: "Bot not configured properly" 
-      });
+    const packageData = PACKAGES[packageName];
+    if (!packageData) {
+      return res.status(400).json({ success: false, message: "Invalid package" });
     }
     
-    const price = PACKAGE_PRICES[packageName] || 15000;
-    const currentTime = new Date().toLocaleString('my-MM', { timeZone: 'Asia/Yangon' });
+    // Create new order
+    const newOrder = {
+      id: db ? Date.now() : orderIdCounter++,
+      packageName,
+      phone,
+      price: packageData.price,
+      customerChatId: customerChatId || null,
+      status: "pending_payment",
+      paymentScreenshot: null,
+      paymentNote: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
     
-    // ===== 1. Admin ဆီသတင်းပို့ခြင်း (သင်ရတဲ့ Message) =====
-    const adminMessage = `
-🛒 **NEW MYTEL ORDER** 🛒
+    // Save to Firebase or memory
+    if (db) {
+      await saveOrderToFirebase(newOrder);
+    } else {
+      orders.unshift(newOrder);
+    }
+    
+    // Send to Admin
+    const adminMsg = `
+🆕 **NEW ORDER CREATED**
 ━━━━━━━━━━━━━━━━━━━━
-📦 **Package:** ${packageName}
-📞 **Phone:** ${phone}
-💰 **Amount:** ${price.toLocaleString()} KS
+🆔 Order ID: \`${newOrder.id}\`
+📦 Package: ${packageName}
+📞 Phone: ${phone}
+💰 Amount: ${packageData.price.toLocaleString()} KS
+📅 Time: ${new Date().toLocaleString('my-MM')}
 ━━━━━━━━━━━━━━━━━━━━
-✅ Status: Pending Payment
-🕐 Time: ${currentTime}
+✅ Status: Awaiting Payment Screenshot
     `;
     
-    const adminSent = await sendTelegramMessage(ADMIN_CHAT_ID, adminMessage);
+    await sendTelegramMessage(ADMIN_CHAT_ID, adminMsg);
     
-    // ===== 2. Customer ဆီသတင်းပို့ခြင်း (Auto-reply with Payment Info) =====
-    // မှတ်ချက်: ဒါက Customer ရဲ့ Telegram Chat ID မဟုတ်ဘဲ ဖုန်းနံပါတ်ပါ။
-    // Telegram က phone number ကို chat_id အဖြစ် လက်မခံပါဘူး။
-    // ဒါကြောင့် Customer Telegram ကို auto-reply လုပ်ချင်ရင် Customer Chat ID ထည့်ပေးဖို့လိုပါတယ်။
-    // အခုတော့ Admin ဆီကိုပဲ သတင်းပို့ပြီး Admin က ကိုယ်တိုင်ပြန်ဖြေပါ။
-    
-    if (adminSent) {
-      console.log(`✅ Order processed: ${packageName} for ${phone}`);
-      res.status(200).json({ 
-        success: true, 
-        message: "Order placed successfully! Admin will contact you shortly.",
-        orderDetails: { packageName, phone, price, time: currentTime }
-      });
-    } else {
-      console.error("Failed to send admin notification");
-      res.status(500).json({ 
-        success: false, 
-        message: "Order received but notification failed. Please try again." 
-      });
-    }
+    res.json({
+      success: true,
+      orderId: newOrder.id,
+      packageName,
+      price: packageData.price,
+      phone,
+      paymentInfo: PAYMENT_INFO
+    });
     
   } catch (error) {
     console.error("Order error:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Internal server error. Please try again." 
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// ========== SUBMIT PAYMENT SCREENSHOT ==========
+app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
+  try {
+    const { orderId, packageName, phone, note } = req.body;
+    const screenshot = req.file;
+    
+    if (!screenshot) {
+      return res.status(400).json({ success: false, message: "Screenshot required" });
+    }
+    
+    // Update order status
+    await updateOrderStatus(orderId, 'payment_received');
+    
+    // Convert image to base64 for Telegram
+    const base64Image = screenshot.buffer.toString('base64');
+    const caption = `
+📸 **PAYMENT SCREENSHOT RECEIVED**
+━━━━━━━━━━━━━━━━━━━━
+🆔 Order ID: ${orderId}
+📦 Package: ${packageName}
+📞 Phone: ${phone}
+📝 Note: ${note || "None"}
+━━━━━━━━━━━━━━━━━━━━
+Use: /approve ${orderId} or /reject ${orderId}
+    `;
+    
+    // Send to Admin via Telegram
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: ADMIN_CHAT_ID,
+        photo: `data:image/jpeg;base64,${base64Image}`,
+        caption: caption
+      })
     });
+    
+    res.json({ success: true, message: "Payment submitted! Admin will verify." });
+    
+  } catch (error) {
+    console.error("Payment submit error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-// ========== GET ORDER HISTORY (Admin အတွက် - Optional) ==========
-// သိမ်းထားတဲ့ Order တွေကို ကြည့်ချင်ရင် ထည့်ထားတာ
-let orderHistory = [];  // Memory မှာ သိမ်းတယ် (Server restart ရင် ပျောက်မယ်)
+// ========== TELEGRAM WEBHOOK ==========
+app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message) return res.sendStatus(200);
+    
+    const chatId = message.chat.id;
+    const text = message.text || "";
+    
+    // Admin Commands
+    if (chatId.toString() === ADMIN_CHAT_ID.toString()) {
+      
+      if (text === '/start') {
+        await sendTelegramMessage(chatId, `
+🤖 **MYTEL ORDER BOT - ADMIN PANEL**
 
-app.get('/admin/orders', (req, res) => {
-  // Simple auth - လုံခြုံရေးအတွက် Admin Key ထည့်ထားတယ်
-  const adminKey = req.query.key;
-  if (adminKey !== 'mytel_admin_2026') {
-    return res.status(401).json({ error: "Unauthorized" });
+📋 **Commands:**
+/orders - View pending orders
+/approve [id] - Approve order
+/reject [id] - Reject order
+/all - View all orders
+/status [id] - Check order status
+        `);
+        return res.sendStatus(200);
+      }
+      
+      if (text === '/orders') {
+        const allOrders = db ? await getAllOrdersFromFirebase() : orders;
+        const pendingOrders = allOrders.filter(o => o.status === 'pending_payment' || o.status === 'payment_received');
+        
+        if (pendingOrders.length === 0) {
+          await sendTelegramMessage(chatId, "📭 No pending orders.");
+          return res.sendStatus(200);
+        }
+        
+        let msg = "📋 **PENDING ORDERS**\n━━━━━━━━━━━━━━━━━━\n";
+        for (const order of pendingOrders) {
+          const statusEmoji = order.status === 'payment_received' ? '💰' : '⏳';
+          msg += `${statusEmoji} ID: \`${order.id}\` | ${order.packageName} | ${order.phone}\n`;
+        }
+        msg += "\nUse: `/approve [id]` or `/reject [id]`";
+        await sendTelegramMessage(chatId, msg);
+        return res.sendStatus(200);
+      }
+      
+      if (text.startsWith('/approve')) {
+        const id = parseInt(text.split(' ')[1]);
+        const order = db ? await getOrderFromFirebase(id) : orders.find(o => o.id === id);
+        
+        if (!order) {
+          await sendTelegramMessage(chatId, `❌ Order ID ${id} not found.`);
+          return res.sendStatus(200);
+        }
+        
+        await updateOrderStatus(id, 'approved');
+        await sendTelegramMessage(chatId, `✅ Order #${id} has been **APPROVED**!`);
+        
+        if (order.customerChatId) {
+          await sendTelegramMessage(order.customerChatId, `
+✅ **ORDER APPROVED!** ✅
+━━━━━━━━━━━━━━━━━━━━
+🆔 Order ID: #${id}
+📦 Package: ${order.packageName}
+📞 Phone: ${order.phone}
+━━━━━━━━━━━━━━━━━━━━
+🎉 Data will be activated within 10 minutes!
+          `);
+        }
+        return res.sendStatus(200);
+      }
+      
+      if (text.startsWith('/reject')) {
+        const id = parseInt(text.split(' ')[1]);
+        const order = db ? await getOrderFromFirebase(id) : orders.find(o => o.id === id);
+        
+        if (!order) {
+          await sendTelegramMessage(chatId, `❌ Order ID ${id} not found.`);
+          return res.sendStatus(200);
+        }
+        
+        await updateOrderStatus(id, 'rejected');
+        await sendTelegramMessage(chatId, `❌ Order #${id} has been **REJECTED**.`);
+        
+        if (order.customerChatId) {
+          await sendTelegramMessage(order.customerChatId, `
+❌ **ORDER REJECTED** ❌
+━━━━━━━━━━━━━━━━━━━━
+🆔 Order ID: #${id}
+📦 Package: ${order.packageName}
+━━━━━━━━━━━━━━━━━━━━
+⚠️ Payment could not be verified.
+Contact admin: @Lifei090
+          `);
+        }
+        return res.sendStatus(200);
+      }
+      
+      if (text === '/all') {
+        const allOrders = db ? await getAllOrdersFromFirebase() : orders;
+        if (allOrders.length === 0) {
+          await sendTelegramMessage(chatId, "📭 No orders yet.");
+          return res.sendStatus(200);
+        }
+        
+        let msg = "📋 **ALL ORDERS**\n━━━━━━━━━━━━━━━━━━\n";
+        for (const order of allOrders.slice(0, 20)) {
+          const statusEmoji = {
+            'pending_payment': '⏳',
+            'payment_received': '💰',
+            'approved': '✅',
+            'rejected': '❌'
+          }[order.status] || '📌';
+          msg += `${statusEmoji} #${order.id}: ${order.packageName} | ${order.status}\n`;
+        }
+        await sendTelegramMessage(chatId, msg);
+        return res.sendStatus(200);
+      }
+    }
+    
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Webhook error:", error);
+    res.sendStatus(200);
   }
-  res.json({ orders: orderHistory, count: orderHistory.length });
 });
 
-// Order endpoint မှာ history သိမ်းဖို့ (Optional)
-app.post('/order', async (req, res) => {
-  // ... (အပေါ်က code တွေအတိုင်း)
-  
-  // Order history ထဲသိမ်းတယ်
-  const orderRecord = {
-    id: Date.now(),
-    packageName,
-    phone,
-    price: PACKAGE_PRICES[packageName] || 15000,
-    time: new Date().toISOString(),
-    status: "pending"
-  };
-  orderHistory.unshift(orderRecord);  // အသစ်ကို အပေါ်ဆုံးထည့်
-  if (orderHistory.length > 100) orderHistory.pop();  // အဟောင်း 100 ပဲထား
-  
-  // ... (ကျန်တဲ့ code)
+// ========== SET WEBHOOK ==========
+async function setWebhook() {
+  if (!BOT_TOKEN) return;
+  const webhookUrl = `https://ath-digital-hub.onrender.com/webhook/${BOT_TOKEN}`;
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${webhookUrl}`);
+    const result = await response.json();
+    console.log("Webhook set:", result.ok ? "✅ Success" : "❌ Failed");
+  } catch (error) {
+    console.error("Webhook error:", error);
+  }
+}
+
+// ========== TEST ENDPOINT ==========
+app.get('/test-bot', async (req, res) => {
+  const testMsg = `✅ Bot is working! Time: ${new Date().toLocaleString('my-MM', { timeZone: 'Asia/Yangon' })}`;
+  await sendTelegramMessage(ADMIN_CHAT_ID, testMsg);
+  res.json({ success: true, message: "Test message sent!" });
 });
 
 // ========== ROOT ENDPOINT ==========
@@ -184,24 +418,10 @@ app.get('/', (req, res) => {
 
 // ========== SERVER START ==========
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅ Set' : '❌ Missing'}`);
-  console.log(`📨 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
-  console.log(`💰 Payment Info: KPay/WavePay ${PAYMENT_INFO.kpay} (${PAYMENT_INFO.name})`);
-  console.log(`📦 Packages: ${Object.keys(PACKAGE_PRICES).join(', ')}`);
+  console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
+  console.log(`🔥 Firebase: ${db ? '✅ Connected' : '❌ Not connected (using memory)'}`);
+  await setWebhook();
 });
-
-// ========== KEEP ALIVE (Render မအိပ်အောင်) ==========
-// Optional: Self-ping လုပ်ချင်ရင် သုံးလို့ရတယ်
-if (process.env.SELF_PING === 'true') {
-  const pingInterval = 14 * 60 * 1000; // 14 minutes
-  setInterval(async () => {
-    try {
-      await fetch(`https://ath-digital-hub.onrender.com/`);
-      console.log('🔄 Self-ping: Keep alive');
-    } catch (e) {
-      console.log('Self-ping failed');
-    }
-  }, pingInterval);
-}
