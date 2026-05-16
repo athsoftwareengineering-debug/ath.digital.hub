@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
+const FormData = require('form-data');  // ← ဒီတစ်ကြောင်းပဲ ထပ်ထည့်ထားတယ်
 
 const app = express();
 
@@ -29,7 +30,7 @@ const upload = multer({ storage: storage });
 // ========== TELEGRAM BOT CONFIG ==========
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.CHAT_ID;
-const ALARM_GROUP_ID = "-1002373340084";  // DATA ORDER ALARMS Group ID
+const ALARM_GROUP_ID = "-1002373340084";
 
 // In-memory storage
 let orders = [];
@@ -99,7 +100,6 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
 async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   if (!BOT_TOKEN) return false;
   try {
-    const FormData = require('form-data');
     const form = new FormData();
     form.append('chat_id', chatId);
     form.append('photo', buffer, {
@@ -297,7 +297,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           
           await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး!\n📞 ${order.phone}\n📦 ${order.packageName}`);
           
-          // ========== SEND ALARM TO GROUP (ADDED) ==========
+          // Send ALARM to GROUP
           const alarmMessage = `
 ╔════════════════════════════════════════════╗
 ║       ✅ ဒေတာ ထည့်သွင်းပြီးပါပြီ ✅          ║
@@ -350,24 +350,6 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           });
           
           await sendTelegramMessage(chatId, `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ပြီး.\n📞 ${order.phone}`);
-          
-          // ========== SEND REJECT ALARM TO GROUP (ADDED) ==========
-          const rejectAlarmMessage = `
-╔════════════════════════════════════════════╗
-║           ❌ အော်ဒါပယ်ဖျက်ပြီး ❌           ║
-╠════════════════════════════════════════════╣
-║  🆔 အော်ဒါအမှတ်    : #${orderId}              ║
-║  📦 Package        : ${order.packageName}   ║
-║  📞 ဖုန်းနံပါတ်     : ${order.phone.slice(0, -4) + "****"} ║
-║  💰 ငွေပမာဏ        : ${order.price.toLocaleString()} KS     ║
-║  ❌ အခြေအနေ        : ပယ်ဖျက်ပြီး             ║
-║  ⏰ အချိန်          : ${new Date().toLocaleString('my-MM')}  ║
-╠════════════════════════════════════════════╣
-║  ⚠️ ငွေလွှဲပြေစာ မှားယွင်းနေပါသည်။         ║
-╚════════════════════════════════════════════╝
-          `;
-          await sendTelegramMessage(ALARM_GROUP_ID, rejectAlarmMessage);
-          console.log(`📢 Reject alarm sent to group for order #${orderId}`);
         }
         return res.sendStatus(200);
       }
