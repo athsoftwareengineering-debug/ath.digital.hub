@@ -3,10 +3,34 @@ const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
 
-// ========== FIREBASE ADMIN ==========
-const admin = require('firebase-admin');
+// ========== FIREBASE ADMIN (ADDED - NO ERROR IF NOT CONFIGURED) ==========
+try {
+  const admin = require('firebase-admin');
+  const serviceAccountRaw = process.env.FIREBASE_SERVICE_ACCOUNT;
+  
+  function fixPrivateKey(key) {
+    if (!key) return key;
+    return key.replace(/\\n/g, '\n');
+  }
+  
+  if (serviceAccountRaw) {
+    let serviceAccount = JSON.parse(serviceAccountRaw);
+    if (serviceAccount.private_key) {
+      serviceAccount.private_key = fixPrivateKey(serviceAccount.private_key);
+    }
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: "https://mytelordersystem-default-rtdb.firebaseio.com"
+    });
+    global.firebaseDb = admin.database();
+    console.log("✅ Firebase connected successfully");
+  } else {
+    console.log("⚠️ FIREBASE_SERVICE_ACCOUNT not set, running without Firebase");
+  }
+} catch (error) {
+  console.log("⚠️ Firebase not available, running without Firebase");
+}
 
-// ========== EXPRESS APP ==========
 const app = express();
 
 // ========== MIDDLEWARE ==========
@@ -36,57 +60,16 @@ const ADMIN_CHAT_ID = process.env.CHAT_ID;
 const ALARM_GROUP_ID = "-1002373340084";
 const PRODUCT_CHANNEL_ID = "@athdigitalhub";
 
-// ========== FIREBASE INITIALIZATION (NO ERROR IF NOT CONFIGURED) ==========
-let db = null;
+// In-memory storage (fallback)
 let orders = [];
 let orderIdCounter = 1;
 let pendingOrders = {};
 
-const serviceAccountRaw = process.env.FIREBASE_SERVICE_ACCOUNT;
-
-function fixPrivateKey(key) {
-  if (!key) return key;
-  return key.replace(/\\n/g, '\n');
-}
-
-if (serviceAccountRaw) {
-  try {
-    let serviceAccount = JSON.parse(serviceAccountRaw);
-    if (serviceAccount.private_key) {
-      serviceAccount.private_key = fixPrivateKey(serviceAccount.private_key);
-    }
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      databaseURL: "https://mytelordersystem-default-rtdb.firebaseio.com"
-    });
-    db = admin.database();
-    console.log("✅ Firebase connected successfully");
-    
-    // Load existing orders from Firebase on startup
-    db.ref('orders').once('value', (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const loadedOrders = Object.values(data);
-        orders = loadedOrders.sort((a, b) => b.id - a.id);
-        if (orders.length > 0) {
-          orderIdCounter = Math.max(...orders.map(o => o.id)) + 1;
-        }
-        console.log(`📦 Loaded ${orders.length} orders from Firebase`);
-      }
-    });
-  } catch (error) {
-    console.error("❌ Firebase initialization error:", error.message);
-    console.log("⚠️ Running without Firebase (in-memory storage fallback)");
-  }
-} else {
-  console.log("⚠️ FIREBASE_SERVICE_ACCOUNT not set, running without Firebase");
-}
-
-// ========== FIREBASE HELPER FUNCTIONS ==========
+// ========== FIREBASE HELPER FUNCTIONS (ADDED) ==========
 async function saveOrderToFirebase(order) {
-  if (!db) return null;
+  if (!global.firebaseDb) return null;
   try {
-    await db.ref(`orders/${order.id}`).set(order);
+    await global.firebaseDb.ref(`orders/${order.id}`).set(order);
     return true;
   } catch (error) {
     console.error("Firebase save error:", error);
@@ -95,9 +78,9 @@ async function saveOrderToFirebase(order) {
 }
 
 async function updateOrderInFirebase(orderId, data) {
-  if (!db) return null;
+  if (!global.firebaseDb) return null;
   try {
-    await db.ref(`orders/${orderId}`).update(data);
+    await global.firebaseDb.ref(`orders/${orderId}`).update(data);
     return true;
   } catch (error) {
     console.error("Firebase update error:", error);
@@ -106,9 +89,9 @@ async function updateOrderInFirebase(orderId, data) {
 }
 
 async function getAllOrdersFromFirebase() {
-  if (!db) return orders;
+  if (!global.firebaseDb) return orders;
   try {
-    const snapshot = await db.ref('orders').once('value');
+    const snapshot = await global.firebaseDb.ref('orders').once('value');
     const data = snapshot.val();
     if (!data) return [];
     return Object.values(data).sort((a, b) => b.id - a.id);
@@ -118,7 +101,22 @@ async function getAllOrdersFromFirebase() {
   }
 }
 
-// ========== MYANMAR TIME HELPER ==========
+// Load existing orders from Firebase on startup
+if (global.firebaseDb) {
+  global.firebaseDb.ref('orders').once('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      const loadedOrders = Object.values(data);
+      orders = loadedOrders.sort((a, b) => b.id - a.id);
+      if (orders.length > 0) {
+        orderIdCounter = Math.max(...orders.map(o => o.id)) + 1;
+      }
+      console.log(`📦 Loaded ${orders.length} orders from Firebase`);
+    }
+  });
+}
+
+// ========== MYANMAR TIME HELPER (ADDED) ==========
 function getMyanmarTime() {
   const now = new Date();
   const myanmarTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Yangon" }));
@@ -146,7 +144,7 @@ function getMyanmarTime() {
   };
 }
 
-// ========== EXPIRY DATE HELPER ==========
+// ========== EXPIRY DATE HELPER (ADDED) ==========
 function getExpiryDate(startDate) {
   const expiry = new Date(startDate);
   expiry.setDate(expiry.getDate() + 30);
@@ -160,7 +158,6 @@ function getRemainingDays(expiryDate) {
   return diffDays > 0 ? diffDays : 0;
 }
 
-// ========== PAYMENT INFO ==========
 const PAYMENT_INFO = {
   kpay: "09789999368",
   wavepay: "09789999368",
@@ -180,7 +177,7 @@ async function updateOrderStatus(orderId, status) {
   if (order) {
     order.status = status;
     order.updatedAt = new Date().toISOString();
-    if (db) {
+    if (global.firebaseDb) {
       await updateOrderInFirebase(orderId, { status, updatedAt: order.updatedAt });
     }
   }
@@ -188,7 +185,7 @@ async function updateOrderStatus(orderId, status) {
 }
 
 async function getOrderStats() {
-  const allOrders = db ? await getAllOrdersFromFirebase() : orders;
+  const allOrders = global.firebaseDb ? await getAllOrdersFromFirebase() : orders;
   const pending = allOrders.filter(o => o.status === 'pending_payment').length;
   const received = allOrders.filter(o => o.status === 'payment_received').length;
   const approved = allOrders.filter(o => o.status === 'approved').length;
@@ -196,68 +193,16 @@ async function getOrderStats() {
   return `📊 *စာရင်းအင်း*\n⏳ ဆိုင်းငံ့: ${pending}\n💰 ငွေလွှဲပြီး: ${received}\n✅ အတည်ပြုပြီး: ${approved}\n❌ ပယ်ဖျက်ပြီး: ${rejected}`;
 }
 
-// ========== SEND TELEGRAM MESSAGE ==========
-async function sendTelegramMessage(chatId, text, keyboard = null) {
-  if (!BOT_TOKEN || !chatId) return false;
-  try {
-    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-    const body = {
-      chat_id: chatId,
-      text: text,
-      parse_mode: 'Markdown'
-    };
-    if (keyboard) body.reply_markup = JSON.stringify(keyboard);
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    const result = await response.json();
-    console.log("Telegram send:", result.ok ? "✅" : "❌", result.description);
-    return result.ok;
-  } catch (error) {
-    console.error("Telegram send error:", error);
-    return false;
-  }
-}
-
-// Send photo to Telegram
-async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
-  if (!BOT_TOKEN) return false;
-  try {
-    const FormData = require('form-data');
-    const form = new FormData();
-    form.append('chat_id', chatId);
-    form.append('photo', new Blob([buffer], { type: 'image/jpeg' }), 'screenshot.jpg');
-    form.append('caption', caption);
-    form.append('parse_mode', 'Markdown');
-    if (keyboard) form.append('reply_markup', JSON.stringify(keyboard));
-    
-    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-      method: 'POST',
-      body: form
-    });
-    const result = await response.json();
-    console.log("Telegram photo:", result.ok ? "✅" : "❌", result.description);
-    return result.ok;
-  } catch (error) {
-    console.error("Telegram photo error:", error);
-    return false;
-  }
-}
-
-// ========== AUTO REMINDER SYSTEM (Runs every day at 9 AM Myanmar Time) ==========
+// ========== AUTO REMINDER SYSTEM (ADDED) ==========
 async function checkAndSendReminders() {
   console.log("🔔 Running auto reminder check...");
   
-  const allOrders = db ? await getAllOrdersFromFirebase() : orders;
+  const allOrders = global.firebaseDb ? await getAllOrdersFromFirebase() : orders;
   const activeOrders = allOrders.filter(o => o.status === 'approved' && o.expiryDate);
   
   for (const order of activeOrders) {
     const expiryDate = new Date(order.expiryDate);
     const remainingDays = getRemainingDays(expiryDate);
-    const myanmarTime = getMyanmarTime();
     
     // Send reminder when 3, 2, 1 days remaining
     if (remainingDays === 3 || remainingDays === 2 || remainingDays === 1) {
@@ -276,7 +221,6 @@ async function checkAndSendReminders() {
 ╚════════════════════════════════════════════════════════════╝
       `;
       
-      // Send reminder to customer if we have their chat ID
       if (order.customerChatId) {
         await sendTelegramMessage(order.customerChatId, reminderMsg);
         console.log(`📢 Reminder sent to customer for order #${order.id} (${remainingDays} days left)`);
@@ -335,6 +279,57 @@ if (BOT_TOKEN) {
   scheduleReminderCheck();
 }
 
+// ========== SEND TELEGRAM MESSAGE ==========
+async function sendTelegramMessage(chatId, text, keyboard = null) {
+  if (!BOT_TOKEN || !chatId) return false;
+  try {
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+    const body = {
+      chat_id: chatId,
+      text: text,
+      parse_mode: 'Markdown'
+    };
+    if (keyboard) body.reply_markup = JSON.stringify(keyboard);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const result = await response.json();
+    console.log("Telegram send:", result.ok ? "✅" : "❌", result.description);
+    return result.ok ? result.result : null;
+  } catch (error) {
+    console.error("Telegram send error:", error);
+    return false;
+  }
+}
+
+// Send photo to Telegram
+async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
+  if (!BOT_TOKEN) return false;
+  try {
+    const FormData = require('form-data');
+    const form = new FormData();
+    form.append('chat_id', chatId);
+    form.append('photo', new Blob([buffer], { type: 'image/jpeg' }), 'screenshot.jpg');
+    form.append('caption', caption);
+    form.append('parse_mode', 'Markdown');
+    if (keyboard) form.append('reply_markup', JSON.stringify(keyboard));
+    
+    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+      method: 'POST',
+      body: form
+    });
+    const result = await response.json();
+    console.log("Telegram photo:", result.ok ? "✅" : "❌", result.description);
+    return result.ok;
+  } catch (error) {
+    console.error("Telegram photo error:", error);
+    return false;
+  }
+}
+
 // ========== WEBSITE ORDER ENDPOINT ==========
 app.post('/order', async (req, res) => {
   try {
@@ -359,7 +354,7 @@ app.post('/order', async (req, res) => {
     orders.unshift(newOrder);
     pendingOrders[newOrder.id] = newOrder;
     
-    if (db) {
+    if (global.firebaseDb) {
       await saveOrderToFirebase(newOrder);
     }
     
@@ -384,13 +379,17 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
   
   try {
-    console.log("🔔 Payment submission received");
+    console.log("🔔 Payment submission received with screenshot");
     
     const orderId = parseInt(req.body.orderId);
     const packageName = req.body.packageName;
     const phone = req.body.phone;
     const note = req.body.note;
     const screenshot = req.file;
+    
+    console.log("Order ID:", orderId);
+    console.log("Package:", packageName);
+    console.log("Phone:", phone);
     
     if (!screenshot) {
       return res.status(400).json({ success: false, message: "Screenshot required" });
@@ -402,11 +401,12 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     
     await updateOrderStatus(orderId, 'payment_received');
     
-    const order = orders.find(o => o.id === orderId);
-    const packageData = PACKAGES[order.packageName];
-    
     tempFilePath = screenshot.path;
     const fileBuffer = fs.readFileSync(tempFilePath);
+    
+    const order = orders.find(o => o.id === orderId);
+    const packageData = PACKAGES[order.packageName];
+    const myanmarTime = getMyanmarTime();
     
     const caption = `
 🆕 **အော်ဒါအသစ် + ငွေလွှဲပြေစာ** #${orderId}
@@ -415,7 +415,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
 📞 ဖုန်း: ${order.phone}
 💰 ငွေပမာဏ: ${packageData.price.toLocaleString()} KS
 📝 မှတ်ချက်: ${note || "မရှိ"}
-📅 အချိန်: ${getMyanmarTime().fullDateTime}
+📅 အချိန်: ${myanmarTime.fullDateTime}
 ━━━━━━━━━━━━━━━━━━━━
 ⏳ **အတည်ပြုရန် အသင့်** - အောက်ပါခလုတ်များကို နှိပ်ပါ။
     `;
@@ -426,14 +426,21 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
           { text: "✅ အတည်ပြုမည်", callback_data: `approve_${orderId}` },
           { text: "❌ ပယ်ဖျက်မည်", callback_data: `reject_${orderId}` }
         ],
-        [{ text: "📋 အသေးစိတ်", callback_data: `detail_${orderId}` }]
+        [
+          { text: "📋 အသေးစိတ်", callback_data: `detail_${orderId}` }
+        ]
       ]
     };
     
-    await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
+    const success = await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
     delete pendingOrders[orderId];
     
-    res.json({ success: true, message: "Order and payment submitted! Admin will verify." });
+    if (success) {
+      console.log(`✅ Order #${orderId} + screenshot sent to admin`);
+      res.json({ success: true, message: "Order and payment submitted! Admin will verify." });
+    } else {
+      res.json({ success: false, message: "Telegram error. Please try again." });
+    }
     
   } catch (error) {
     console.error("Payment submit error:", error);
@@ -445,7 +452,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   }
 });
 
-// ========== CHECK REMAINING DAYS API (For Website Button) ==========
+// ========== CHECK REMAINING DAYS API (ADDED) ==========
 app.post('/check-remaining', async (req, res) => {
   try {
     const { phone } = req.body;
@@ -454,7 +461,7 @@ app.post('/check-remaining', async (req, res) => {
       return res.status(400).json({ success: false, message: "ဖုန်းနံပါတ် ထည့်သွင်းပါ" });
     }
     
-    const allOrders = db ? await getAllOrdersFromFirebase() : orders;
+    const allOrders = global.firebaseDb ? await getAllOrdersFromFirebase() : orders;
     const activeOrders = allOrders.filter(o => o.phone === phone && o.status === 'approved');
     
     if (activeOrders.length === 0) {
@@ -506,7 +513,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         body: JSON.stringify({ callback_query_id: callback_query.id })
       });
       
-      // ========== APPROVE BUTTON ==========
+      // Approve Button (UPDATED with expiry date)
       if (data.startsWith('approve_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
@@ -521,7 +528,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           order.startDate = startDate.toISOString();
           order.expiryDate = expiryDate.toLocaleDateString('en-GB');
           
-          if (db) {
+          if (global.firebaseDb) {
             await updateOrderInFirebase(orderId, {
               status: 'approved',
               updatedAt: order.updatedAt,
@@ -530,9 +537,31 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             });
           }
           
-          await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီးပါပြီ။\n📞 ${order.phone}\n📦 ${order.packageName}\n📅 သက်တမ်းကုန်ဆုံးရက်: ${order.expiryDate}`);
+          const approveCaption = `
+✅ **အတည်ပြုပြီး** - အော်ဒါ #${orderId}
+━━━━━━━━━━━━━━━━━━━━
+📦 Package: ${order.packageName}
+📞 ဖုန်း: ${order.phone}
+💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
+📅 စတင်ရက်: ${myanmarTime.date}
+📅 သက်တမ်းကုန်ဆုံးရက်: ${order.expiryDate}
+📅 အတည်ပြုချိန်: ${myanmarTime.time}
+━━━━━━━━━━━━━━━━━━━━
+🎉 ဒေတာ သွင်းပေးပါမည်။ ကျေးဇူးတင်ပါသည်။
+          `;
           
-          // Send ALARM to GROUP
+          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: chatId,
+              message_id: messageId,
+              caption: approveCaption,
+              parse_mode: 'Markdown'
+            })
+          });
+          
+          // Send ALARM to GROUP with expiry date
           const alarmMessage = `
 ╔════════════════════════════════════════════════════════════╗
 ║                ✅ ဒေတာ ထည့်သွင်းပြီးပါပြီ ✅                 ║
@@ -553,41 +582,18 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           await sendTelegramMessage(ALARM_GROUP_ID, alarmMessage);
           console.log(`📢 Alarm sent to group for order #${orderId}`);
           
-          // Edit the original message
-          const approveCaption = `
-✅ **အတည်ပြုပြီး** - အော်ဒါ #${orderId}
-━━━━━━━━━━━━━━━━━━━━
-📦 Package: ${order.packageName}
-📞 ဖုန်း: ${order.phone}
-💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
-📅 စတင်ရက်: ${myanmarTime.date}
-📅 သက်တမ်းကုန်ဆုံးရက်: ${order.expiryDate}
-━━━━━━━━━━━━━━━━━━━━
-🎉 ဒေတာ သွင်းပေးပါမည်။ ကျေးဇူးတင်ပါသည်။
-          `;
-          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: chatId,
-              message_id: messageId,
-              caption: approveCaption,
-              parse_mode: 'Markdown'
-            })
-          });
+          await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး!\n📞 ${order.phone}\n📦 ${order.packageName}\n📅 သက်တမ်းကုန်ဆုံးရက်: ${order.expiryDate}`);
         }
         return res.sendStatus(200);
       }
       
-      // ========== REJECT BUTTON ==========
+      // Reject Button (UPDATED)
       if (data.startsWith('reject_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
         
         if (order) {
           await updateOrderStatus(orderId, 'rejected');
-          
-          await sendTelegramMessage(chatId, `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ပြီး။\n📞 ${order.phone}`);
           
           const rejectCaption = `
 ❌ **ပယ်ဖျက်ပြီး** - အော်ဒါ #${orderId}
@@ -597,7 +603,9 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
 ━━━━━━━━━━━━━━━━━━━━
 ⚠️ ငွေလွှဲပြေစာ မှားယွင်းနေပါသည်။
+ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။
           `;
+          
           await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -608,11 +616,13 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
               parse_mode: 'Markdown'
             })
           });
+          
+          await sendTelegramMessage(chatId, `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ပြီး.\n📞 ${order.phone}`);
         }
         return res.sendStatus(200);
       }
       
-      // ========== DETAIL BUTTON ==========
+      // Detail Button (UPDATED with expiry info)
       if (data.startsWith('detail_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
@@ -648,14 +658,15 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
               [{ text: "🔙 နောက်သို့", callback_data: "back_to_menu" }]
             ]
           };
+          
           await sendTelegramMessage(chatId, detailMsg, keyboard);
         }
         return res.sendStatus(200);
       }
       
-      // ========== VIEW PENDING ORDERS ==========
+      // View Pending Orders
       if (data === 'view_pending') {
-        const allOrders = db ? await getAllOrdersFromFirebase() : orders;
+        const allOrders = global.firebaseDb ? await getAllOrdersFromFirebase() : orders;
         const pendingOrdersList = allOrders.filter(o => o.status === 'payment_received');
         
         if (pendingOrdersList.length === 0) {
@@ -675,9 +686,9 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // ========== VIEW ALL ORDERS ==========
+      // View All Orders
       if (data === 'view_all') {
-        const allOrders = db ? await getAllOrdersFromFirebase() : orders;
+        const allOrders = global.firebaseDb ? await getAllOrdersFromFirebase() : orders;
         if (allOrders.length === 0) {
           await sendTelegramMessage(chatId, "📭 အော်ဒါမရှိသေးပါ။");
         } else {
@@ -698,7 +709,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // ========== PAYMENT INFO ==========
+      // Payment Info
       if (data === 'payment_info') {
         const paymentMsg = `
 💰 **ငွေလွှဲအချက်အလက်**
@@ -715,7 +726,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // ========== HELP ==========
+      // Help
       if (data === 'help') {
         const helpMsg = `
 🤖 *MYTEL ORDER BOT - အကူအညီ*
@@ -733,14 +744,14 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // ========== REFRESH STATS ==========
+      // Refresh Stats
       if (data === 'refresh_stats') {
         const stats = await getOrderStats();
         await sendTelegramMessage(chatId, `🔄 *စာရင်းအင်းအသစ်*\n\n${stats}`);
         return res.sendStatus(200);
       }
       
-      // ========== BACK TO MENU ==========
+      // Back to Menu
       if (data === 'back_to_menu') {
         const stats = await getOrderStats();
         const menuMessage = `
@@ -823,7 +834,7 @@ ${stats}
 });
 
 app.get('/orders-list', async (req, res) => {
-  const allOrders = db ? await getAllOrdersFromFirebase() : orders;
+  const allOrders = global.firebaseDb ? await getAllOrdersFromFirebase() : orders;
   res.json({ orders: allOrders, count: allOrders.length });
 });
 
@@ -852,6 +863,6 @@ app.listen(PORT, async () => {
   console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅ Set' : '❌ Missing'}`);
   console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
   console.log(`📢 ALARM_GROUP_ID: ${ALARM_GROUP_ID}`);
-  console.log(`🔥 Firebase: ${db ? '✅ Connected' : '⚠️ Not connected (using memory)'}`);
+  console.log(`🔥 Firebase: ${global.firebaseDb ? '✅ Connected' : '⚠️ Not connected (using memory)'}`);
   await setWebhook();
 });
