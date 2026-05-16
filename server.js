@@ -128,7 +128,7 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// ========== SUBMIT PAYMENT SCREENSHOT ==========
+// ========== SUBMIT PAYMENT SCREENSHOT (FIXED - No JSON parsing issue) ==========
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   try {
     console.log("🔔 Payment submission received");
@@ -181,13 +181,29 @@ Use: /approve ${orderId} or /reject ${orderId}
       headers: form.getHeaders()
     });
     
-    const telegramResult = await telegramResponse.json();
+    // FIX: Read response as text first, then parse if needed
+    const responseText = await telegramResponse.text();
+    console.log("Telegram raw response:", responseText.substring(0, 200));
+    
+    let telegramResult;
+    try {
+      telegramResult = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error("Failed to parse JSON:", parseError.message);
+      // If JSON parsing fails, assume success if status is ok
+      if (telegramResponse.ok) {
+        telegramResult = { ok: true };
+      } else {
+        throw new Error(`Telegram API error: ${telegramResponse.status}`);
+      }
+    }
+    
     console.log("Telegram photo send:", telegramResult.ok ? "✅ Sent" : "❌ Failed", telegramResult.description);
     
     if (telegramResult.ok) {
       res.json({ success: true, message: "Payment submitted! Admin notified." });
     } else {
-      res.json({ success: false, message: "Telegram error: " + telegramResult.description });
+      res.json({ success: false, message: "Telegram error: " + (telegramResult.description || "Unknown error") });
     }
     
   } catch (error) {
