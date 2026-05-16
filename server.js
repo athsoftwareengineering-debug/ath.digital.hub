@@ -16,7 +16,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.CHAT_ID;
 
-// In-memory storage
+// In-memory storage (သိမ်းဆည်းရန်)
 let orders = [];
 let orderIdCounter = 1;
 
