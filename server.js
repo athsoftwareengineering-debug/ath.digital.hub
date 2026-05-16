@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
+const FormData = require('form-data');
 
 const app = express();
 
@@ -93,24 +94,24 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
   }
 }
 
-// ========== SEND TELEGRAM PHOTO (FIXED - Base64 method) ==========
+// ========== SEND TELEGRAM PHOTO - ORIGINAL FORM-DATA METHOD ==========
 async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   if (!BOT_TOKEN) return false;
   try {
-    const base64Image = buffer.toString('base64');
-    
-    const body = {
-      chat_id: chatId,
-      photo: `data:image/jpeg;base64,${base64Image}`,
-      caption: caption,
-      parse_mode: 'Markdown'
-    };
-    if (keyboard) body.reply_markup = JSON.stringify(keyboard);
+    const form = new FormData();
+    form.append('chat_id', chatId);
+    form.append('photo', buffer, {
+      filename: 'screenshot.jpg',
+      contentType: 'image/jpeg'
+    });
+    form.append('caption', caption);
+    form.append('parse_mode', 'Markdown');
+    if (keyboard) form.append('reply_markup', JSON.stringify(keyboard));
     
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: form,
+      headers: form.getHeaders()
     });
     
     const result = await response.json();
