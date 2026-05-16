@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
+const FormData = require('form-data');
 
 const app = express();
 
@@ -33,8 +34,6 @@ const ADMIN_CHAT_ID = process.env.CHAT_ID;
 // In-memory storage
 let orders = [];
 let orderIdCounter = 1;
-
-// Store pending orders waiting for screenshot
 let pendingOrders = {};
 
 const PAYMENT_INFO = {
@@ -94,21 +93,24 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
   }
 }
 
-// Send photo to Telegram
+// ========== SEND TELEGRAM PHOTO (FIXED) ==========
 async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   if (!BOT_TOKEN) return false;
   try {
-    const FormData = require('form-data');
     const form = new FormData();
     form.append('chat_id', chatId);
-    form.append('photo', new Blob([buffer], { type: 'image/jpeg' }), 'screenshot.jpg');
+    form.append('photo', buffer, {
+      filename: 'screenshot.jpg',
+      contentType: 'image/jpeg'
+    });
     form.append('caption', caption);
     form.append('parse_mode', 'Markdown');
     if (keyboard) form.append('reply_markup', JSON.stringify(keyboard));
     
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
-      body: form
+      body: form,
+      headers: form.getHeaders()
     });
     const result = await response.json();
     console.log("Telegram photo:", result.ok ? "✅" : "❌", result.description);
@@ -119,7 +121,7 @@ async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   }
 }
 
-// ========== WEBSITE ORDER ENDPOINT (Save order but don't notify admin yet) ==========
+// ========== WEBSITE ORDER ENDPOINT ==========
 app.post('/order', async (req, res) => {
   try {
     const { packageName, phone } = req.body;
@@ -141,8 +143,6 @@ app.post('/order', async (req, res) => {
       updatedAt: new Date().toISOString()
     };
     orders.unshift(newOrder);
-    
-    // Store temporarily - will send to admin when screenshot arrives
     pendingOrders[newOrder.id] = newOrder;
     
     console.log(`📦 Order #${newOrder.id} created - waiting for screenshot`);
@@ -161,7 +161,7 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// ========== SUBMIT PAYMENT SCREENSHOT (Send Order + SS together to Admin) ==========
+// ========== SUBMIT PAYMENT SCREENSHOT ==========
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
   
@@ -186,17 +186,14 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
       return res.status(400).json({ success: false, message: "Order ID required" });
     }
     
-    // Update order status
     await updateOrderStatus(orderId, 'payment_received');
     
     tempFilePath = screenshot.path;
     const fileBuffer = fs.readFileSync(tempFilePath);
     
-    // Get order details
     const order = orders.find(o => o.id === orderId);
     const packageData = PACKAGES[order.packageName];
     
-    // Send ONE message with Order + Screenshot together to Admin
     const caption = `
 🆕 **အော်ဒါအသစ် + ငွေလွှဲပြေစာ** #${orderId}
 ━━━━━━━━━━━━━━━━━━━━
@@ -222,8 +219,6 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     };
     
     const success = await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
-    
-    // Remove from pending orders
     delete pendingOrders[orderId];
     
     if (success) {
@@ -267,7 +262,6 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         if (order) {
           await updateOrderStatus(orderId, 'approved');
           
-          // Edit the original message to show approved
           const approveCaption = `
 ✅ **အတည်ပြုပြီး** - အော်ဒါ #${orderId}
 ━━━━━━━━━━━━━━━━━━━━
