@@ -8,27 +8,30 @@ app.use(bodyParser.json());
 const TOKEN = "8930853709:AAHUjWhA2Uc47vcLQTSQ6jDyN7UYbEbkuyY";
 const ADMIN_ID = "8070878424";
 
-// 🔥 IMPORTANT FIX HERE
-const bot = new TelegramBot(TOKEN, { polling: false });
+const bot = new TelegramBot(TOKEN);
 
 app.get("/", (req, res) => {
-  res.send("Bot is running");
+  res.send("Server Running");
 });
 
 app.post("/order", (req, res) => {
   const { packageName, phone } = req.body;
 
-  bot.sendMessage(ADMIN_ID,
-    `🆕 NEW ORDER\n\n📦 Package: ${packageName}\n📞 Phone: ${phone}`
-  ).then(() => {
-    console.log("Message sent");
-  }).catch(err => {
-    console.log("Error:", err.response?.body || err);
-  });
+  if (!packageName || !phone) {
+    return res.json({ ok: false, msg: "Missing data" });
+  }
 
-  res.json({ ok: true });
+  const msg = `
+🆕 NEW ORDER
+
+📦 Package: ${packageName}
+📞 Phone: ${phone}
+`;
+
+  bot.sendMessage(ADMIN_ID, msg);
+
+  res.json({ ok: true, msg: "Order Sent" });
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Server running"));
-bot.sendMessage(ADMIN_ID, "TEST OK");
+app.listen(PORT, () => console.log("Running"));
