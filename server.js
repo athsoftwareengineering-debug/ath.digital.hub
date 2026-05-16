@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
-const { Readable } = require('stream');
 
 const app = express();
 
@@ -35,6 +34,9 @@ const ADMIN_CHAT_ID = process.env.CHAT_ID;
 let orders = [];
 let orderIdCounter = 1;
 
+// Store message IDs for each order (to edit later)
+let orderMessages = {};
+
 const PAYMENT_INFO = {
   kpay: "09789999368",
   wavepay: "09789999368",
@@ -66,6 +68,33 @@ async function getOrderStats() {
   return `📊 *စာရင်းအင်း*\n⏳ ဆိုင်းငံ့: ${pending}\n💰 ငွေလွှဲပြီး: ${received}\n✅ အတည်ပြုပြီး: ${approved}\n❌ ပယ်ဖျက်ပြီး: ${rejected}`;
 }
 
+// Edit existing Telegram message
+async function editTelegramMessage(chatId, messageId, newText, keyboard = null) {
+  if (!BOT_TOKEN) return false;
+  try {
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`;
+    const body = {
+      chat_id: chatId,
+      message_id: messageId,
+      text: newText,
+      parse_mode: 'Markdown'
+    };
+    if (keyboard) body.reply_markup = JSON.stringify(keyboard);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const result = await response.json();
+    console.log("Edit message:", result.ok ? "✅" : "❌", result.description);
+    return result.ok;
+  } catch (error) {
+    console.error("Edit message error:", error);
+    return false;
+  }
+}
+
 // ========== SEND TELEGRAM MESSAGE ==========
 async function sendTelegramMessage(chatId, text, keyboard = null) {
   if (!BOT_TOKEN || !chatId) return false;
@@ -85,7 +114,7 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
     });
     const result = await response.json();
     console.log("Telegram send:", result.ok ? "✅" : "❌", result.description);
-    return result.ok;
+    return result.ok ? result.result : null;
   } catch (error) {
     console.error("Telegram send error:", error);
     return false;
@@ -111,13 +140,14 @@ app.post('/order', async (req, res) => {
       price: packageData.price,
       status: "pending_payment",
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      ssReceived: false
     };
     orders.unshift(newOrder);
     
     console.log(`📦 New order: ${newOrder.id} - ${packageName} - ${phone}`);
     
-    // Send to Admin with Approve/Reject buttons
+    // Send single combined message to Admin (without screenshot yet)
     const adminMsg = `
 🆕 **အော်ဒါအသစ်** #${newOrder.id}
 ━━━━━━━━━━━━━━━━━━━━
@@ -125,21 +155,22 @@ app.post('/order', async (req, res) => {
 📞 ဖုန်း: ${phone}
 💰 ငွေပမာဏ: ${packageData.price.toLocaleString()} KS
 📅 အချိန်: ${new Date().toLocaleString('my-MM')}
+━━━━━━━━━━━━━━━━━━━━
+⏳ အခြေအနေ: ငွေလွှဲပြေစာ စောင့်ဆိုင်းနေသည်။
     `;
     
     const keyboard = {
       inline_keyboard: [
-        [
-          { text: "✅ အတည်ပြုမည်", callback_data: `approve_${newOrder.id}` },
-          { text: "❌ ပယ်ဖျက်မည်", callback_data: `reject_${newOrder.id}` }
-        ],
-        [
-          { text: "📋 အသေးစိတ်", callback_data: `detail_${newOrder.id}` }
-        ]
+        [{ text: "✅ အတည်ပြုမည်", callback_data: `approve_${newOrder.id}` }],
+        [{ text: "❌ ပယ်ဖျက်မည်", callback_data: `reject_${newOrder.id}` }],
+        [{ text: "📋 အသေးစိတ်", callback_data: `detail_${newOrder.id}` }]
       ]
     };
     
-    await sendTelegramMessage(ADMIN_CHAT_ID, adminMsg, keyboard);
+    const sentMsg = await sendTelegramMessage(ADMIN_CHAT_ID, adminMsg, keyboard);
+    if (sentMsg && sentMsg.message_id) {
+      orderMessages[newOrder.id] = sentMsg.message_id;
+    }
     
     res.json({ 
       success: true, 
@@ -155,14 +186,14 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// ========== SUBMIT PAYMENT SCREENSHOT (FILE UPLOAD FIX) ==========
+// ========== SUBMIT PAYMENT SCREENSHOT ==========
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
   
   try {
     console.log("🔔 Payment submission received");
     
-    const orderId = req.body.orderId;
+    const orderId = parseInt(req.body.orderId);
     const packageName = req.body.packageName;
     const phone = req.body.phone;
     const note = req.body.note;
@@ -171,7 +202,6 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     console.log("Order ID:", orderId);
     console.log("Package:", packageName);
     console.log("Phone:", phone);
-    console.log("Screenshot:", screenshot ? `✅ ${screenshot.size} bytes` : "❌ No file");
     
     if (!screenshot) {
       return res.status(400).json({ success: false, message: "Screenshot required" });
@@ -181,21 +211,17 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
       return res.status(400).json({ success: false, message: "Order ID required" });
     }
     
-    await updateOrderStatus(parseInt(orderId), 'payment_received');
+    await updateOrderStatus(orderId, 'payment_received');
     
     tempFilePath = screenshot.path;
     const fileBuffer = fs.readFileSync(tempFilePath);
     
-    // Create form data with the file
+    // Send screenshot to Telegram
     const form = new FormData();
     form.append('chat_id', ADMIN_CHAT_ID);
     form.append('photo', new Blob([fileBuffer], { type: 'image/jpeg' }), `payment_${orderId}.jpg`);
     form.append('caption', `
-📸 **ငွေလွှဲပြေစာ ရောက်ရှိ**
-━━━━━━━━━━━━━━━━━━━━
-🆔 အော်ဒါနံပါတ်: ${orderId}
-📦 Package: ${packageName}
-📞 ဖုန်း: ${phone}
+📸 **ငွေလွှဲပြေစာ ရောက်ရှိ** - အော်ဒါ #${orderId}
 📝 မှတ်ချက်: ${note || "မရှိ"}
     `);
     form.append('parse_mode', 'Markdown');
@@ -208,26 +234,40 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     });
     
     const result = await telegramResponse.json();
-    console.log("Telegram response:", result);
+    console.log("Telegram response:", result.ok ? "✅" : "❌");
     
     if (result.ok) {
-      // After receiving screenshot, send buttons to admin
-      const actionMsg = `
-💰 **ငွေလွှဲပြေစာ ရောက်ရှိပါပြီ** - အော်ဒါ #${orderId}
-အောက်ပါခလုတ်များဖြင့် အတည်ပြု/ပယ်ဖျက်နိုင်ပါသည်။
-      `;
-      const keyboard = {
-        inline_keyboard: [
-          [
-            { text: "✅ အတည်ပြုမည်", callback_data: `approve_${orderId}` },
-            { text: "❌ ပယ်ဖျက်မည်", callback_data: `reject_${orderId}` }
+      // Update the original order message (edit it to show SS received)
+      const originalMsgId = orderMessages[orderId];
+      if (originalMsgId) {
+        const order = orders.find(o => o.id === orderId);
+        const updatedMsg = `
+🆕 **အော်ဒါအသစ်** #${orderId}
+━━━━━━━━━━━━━━━━━━━━
+📦 Package: ${order.packageName}
+📞 ဖုန်း: ${order.phone}
+💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
+📅 အချိန်: ${new Date(order.createdAt).toLocaleString('my-MM')}
+━━━━━━━━━━━━━━━━━━━━
+💰 **ငွေလွှဲပြေစာ ရောက်ရှိပြီး** ✅
+📝 မှတ်ချက်: ${note || "မရှိ"}
+━━━━━━━━━━━━━━━━━━━━
+⏳ အတည်ပြုရန် အသင့်ဖြစ်ပါပြီ။
+        `;
+        
+        const keyboard = {
+          inline_keyboard: [
+            [{ text: "✅ အတည်ပြုမည်", callback_data: `approve_${orderId}` }],
+            [{ text: "❌ ပယ်ဖျက်မည်", callback_data: `reject_${orderId}` }],
+            [{ text: "📋 အသေးစိတ်", callback_data: `detail_${orderId}` }]
           ]
-        ]
-      };
-      await sendTelegramMessage(ADMIN_CHAT_ID, actionMsg, keyboard);
+        };
+        
+        await editTelegramMessage(ADMIN_CHAT_ID, originalMsgId, updatedMsg, keyboard);
+      }
+      
       res.json({ success: true, message: "Payment submitted! Admin notified." });
     } else {
-      console.error("❌ Telegram error:", result.description);
       res.json({ success: false, message: "Telegram error: " + result.description });
     }
     
@@ -241,12 +281,11 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   }
 });
 
-// ========== TELEGRAM WEBHOOK (ALL BUTTONS - COMMANDS ALSO WORK) ==========
+// ========== TELEGRAM WEBHOOK ==========
 app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
   try {
     const { message, callback_query } = req.body;
     
-    // Handle Button Clicks
     if (callback_query) {
       const chatId = callback_query.message.chat.id;
       const data = callback_query.data;
@@ -258,73 +297,64 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         body: JSON.stringify({ callback_query_id: callback_query.id })
       });
       
-      // ========== APPROVE BUTTON ==========
+      // Approve Button
       if (data.startsWith('approve_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
         
         if (order) {
           await updateOrderStatus(orderId, 'approved');
-          await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး!\n📞 ဖုန်း: ${order.phone}\n📦 Package: ${order.packageName}`);
           
-          // Edit original message
-          const editText = `
+          const approveMsg = `
 ✅ **အတည်ပြုပြီး** - အော်ဒါ #${orderId}
-📦 ${order.packageName}
-📞 ${order.phone}
-💰 ${order.price.toLocaleString()} KS
+━━━━━━━━━━━━━━━━━━━━
+📦 Package: ${order.packageName}
+📞 ဖုန်း: ${order.phone}
+💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
+📅 အတည်ပြုချိန်: ${new Date().toLocaleString('my-MM')}
+━━━━━━━━━━━━━━━━━━━━
+🎉 ဒေတာ သွင်းပေးပါမည်။ ကျေးဇူးတင်ပါသည်။
           `;
-          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: chatId,
-              message_id: messageId,
-              text: editText,
-              parse_mode: 'Markdown'
-            })
-          });
+          
+          await editTelegramMessage(chatId, messageId, approveMsg);
+          await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး!\n📞 ${order.phone}\n📦 ${order.packageName}`);
         }
         return res.sendStatus(200);
       }
       
-      // ========== REJECT BUTTON ==========
+      // Reject Button
       if (data.startsWith('reject_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
         
         if (order) {
           await updateOrderStatus(orderId, 'rejected');
-          await sendTelegramMessage(chatId, `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ပြီး.\n📞 ဖုန်း: ${order.phone}`);
           
-          const editText = `
+          const rejectMsg = `
 ❌ **ပယ်ဖျက်ပြီး** - အော်ဒါ #${orderId}
-📦 ${order.packageName}
-📞 ${order.phone}
-💰 ${order.price.toLocaleString()} KS
+━━━━━━━━━━━━━━━━━━━━
+📦 Package: ${order.packageName}
+📞 ဖုန်း: ${order.phone}
+💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
+━━━━━━━━━━━━━━━━━━━━
+⚠️ ငွေလွှဲပြေစာ မှားယွင်းနေပါသည်။
+ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။
           `;
-          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: chatId,
-              message_id: messageId,
-              text: editText,
-              parse_mode: 'Markdown'
-            })
-          });
+          
+          await editTelegramMessage(chatId, messageId, rejectMsg);
+          await sendTelegramMessage(chatId, `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ပြီး.\n📞 ${order.phone}`);
         }
         return res.sendStatus(200);
       }
       
-      // ========== DETAIL BUTTON ==========
+      // Detail Button
       if (data.startsWith('detail_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
         
         if (order) {
           const statusEmoji = {
-            'pending_payment': '⏳ ဆိုင်းငံ့',
+            'pending_payment': '⏳ ဆိုင်းငံ့ (ငွေလွှဲပြေစာစောင့်)',
             'payment_received': '💰 ငွေလွှဲပြီး',
             'approved': '✅ အတည်ပြုပြီး',
             'rejected': '❌ ပယ်ဖျက်ပြီး'
@@ -338,27 +368,23 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
 📅 ရက်စွဲ: ${new Date(order.createdAt).toLocaleString('my-MM')}
 📊 အခြေအနေ: ${statusEmoji}
-
-${order.status === 'payment_received' ? '✅ အတည်ပြုရန် အသင့်ဖြစ်ပါပြီ။' : ''}
+${order.ssReceived ? '✅ ငွေလွှဲပြေစာ ရောက်ရှိပြီး' : '⏳ ငွေလွှဲပြေစာ စောင့်ဆိုင်းနေသည်'}
           `;
           
           const keyboard = {
             inline_keyboard: [
-              [
-                { text: "✅ အတည်ပြုမည်", callback_data: `approve_${order.id}` },
-                { text: "❌ ပယ်ဖျက်မည်", callback_data: `reject_${order.id}` }
-              ],
-              [
-                { text: "🔙 နောက်သို့", callback_data: "back_to_menu" }
-              ]
+              [{ text: "✅ အတည်ပြုမည်", callback_data: `approve_${order.id}` }],
+              [{ text: "❌ ပယ်ဖျက်မည်", callback_data: `reject_${order.id}` }],
+              [{ text: "🔙 နောက်သို့", callback_data: "back_to_menu" }]
             ]
           };
+          
           await sendTelegramMessage(chatId, detailMsg, keyboard);
         }
         return res.sendStatus(200);
       }
       
-      // ========== VIEW PENDING ORDERS ==========
+      // View Pending Orders
       if (data === 'view_pending') {
         const pendingOrders = orders.filter(o => o.status === 'pending_payment' || o.status === 'payment_received');
         
@@ -380,7 +406,7 @@ ${order.status === 'payment_received' ? '✅ အတည်ပြုရန် အ�
         return res.sendStatus(200);
       }
       
-      // ========== VIEW ALL ORDERS ==========
+      // View All Orders
       if (data === 'view_all') {
         if (orders.length === 0) {
           await sendTelegramMessage(chatId, "📭 အော်ဒါမရှိသေးပါ။");
@@ -392,7 +418,7 @@ ${order.status === 'payment_received' ? '✅ အတည်ပြုရန် အ�
             const statusEmoji = {
               'pending_payment': '⏳', 'payment_received': '💰', 'approved': '✅', 'rejected': '❌'
             }[order.status] || '📌';
-            msg += `${statusEmoji} *#${order.id}* | ${order.packageName}\n   📞 ${order.phone}\n   💰 ${order.price.toLocaleString()} KS | ${order.status}\n\n`;
+            msg += `${statusEmoji} *#${order.id}* | ${order.packageName}\n   📞 ${order.phone}\n   💰 ${order.price.toLocaleString()} KS\n\n`;
             buttons.push([{ text: `${statusEmoji} အော်ဒါ #${order.id}`, callback_data: `detail_${order.id}` }]);
           }
           
@@ -402,7 +428,7 @@ ${order.status === 'payment_received' ? '✅ အတည်ပြုရန် အ�
         return res.sendStatus(200);
       }
       
-      // ========== PAYMENT INFO ==========
+      // Payment Info
       if (data === 'payment_info') {
         const paymentMsg = `
 💰 **ငွေလွှဲအချက်အလက်**
@@ -419,7 +445,7 @@ ${order.status === 'payment_received' ? '✅ အတည်ပြုရန် အ�
         return res.sendStatus(200);
       }
       
-      // ========== HELP ==========
+      // Help
       if (data === 'help') {
         const helpMsg = `
 🤖 *MYTEL ORDER BOT - အကူအညီ*
@@ -429,13 +455,6 @@ ${order.status === 'payment_received' ? '✅ အတည်ပြုရန် အ�
 • 📜 အော်ဒါအားလုံး - အော်ဒါမှတ်တမ်းအားလုံး
 • 💰 ငွေလွှဲအချက်အလက် - Customer အတွက် ငွေလွှဲအကောင့်
 • 🔄 စာရင်းအင်းအသစ် - လတ်တလောစာရင်းအင်းများ
-
-*Commands များလည်း အလုပ်လုပ်ပါသေးတယ်:*
-/start - ပင်မစာမျက်နှာ
-/orders - ဆိုင်းငံ့အော်ဒါများ
-/approve [id] - အတည်ပြုရန်
-/reject [id] - ပယ်ဖျက်ရန်
-/all - အော်ဒါအားလုံး
         `;
         const keyboard = {
           inline_keyboard: [[{ text: "🔙 ပင်မစာမျက်နှာ", callback_data: "back_to_menu" }]]
@@ -444,14 +463,14 @@ ${order.status === 'payment_received' ? '✅ အတည်ပြုရန် အ�
         return res.sendStatus(200);
       }
       
-      // ========== REFRESH STATS ==========
+      // Refresh Stats
       if (data === 'refresh_stats') {
         const stats = await getOrderStats();
         await sendTelegramMessage(chatId, `🔄 *စာရင်းအင်းအသစ်*\n\n${stats}`);
         return res.sendStatus(200);
       }
       
-      // ========== BACK TO MENU ==========
+      // Back to Menu
       if (data === 'back_to_menu') {
         const stats = await getOrderStats();
         const menuMessage = `
@@ -477,17 +496,13 @@ ${stats}
       return res.sendStatus(200);
     }
     
-    // Handle regular messages (Commands still work!)
     if (!message) return res.sendStatus(200);
     const chatId = message.chat.id;
     const text = message.text || "";
     
-    if (chatId.toString() === ADMIN_CHAT_ID.toString()) {
-      
-      // ========== /start COMMAND ==========
-      if (text === '/start') {
-        const stats = await getOrderStats();
-        const menuMessage = `
+    if (chatId.toString() === ADMIN_CHAT_ID.toString() && text === '/start') {
+      const stats = await getOrderStats();
+      const menuMessage = `
 🤖 *MYTEL ORDER BOT - ADMIN PANEL*
 
 မင်္ဂလာပါ Admin! 👋
@@ -495,76 +510,16 @@ ${stats}
 ${stats}
 
 🔽 *အောက်ပါခလုတ်များကို အသုံးပြုပါ:*
-        `;
-        const keyboard = {
-          inline_keyboard: [
-            [{ text: "📋 ဆိုင်းငံ့အော်ဒါများ", callback_data: "view_pending" }, { text: "📜 အော်ဒါအားလုံး", callback_data: "view_all" }],
-            [{ text: "💰 ငွေလွှဲအချက်အလက်", callback_data: "payment_info" }, { text: "❓ အကူအညီ", callback_data: "help" }],
-            [{ text: "🔄 စာရင်းအင်းအသစ်", callback_data: "refresh_stats" }]
-          ]
-        };
-        await sendTelegramMessage(chatId, menuMessage, keyboard);
-        return res.sendStatus(200);
-      }
-      
-      // ========== /orders COMMAND ==========
-      if (text === '/orders') {
-        const pendingOrders = orders.filter(o => o.status === 'pending_payment' || o.status === 'payment_received');
-        if (pendingOrders.length === 0) {
-          await sendTelegramMessage(chatId, "📭 ဆိုင်းငံ့ထားသော အော်ဒါမရှိပါ။");
-        } else {
-          let msg = "📋 **ဆိုင်းငံ့ထားသော အော်ဒါများ**\n━━━━━━━━━━━━━━━━━━\n";
-          for (const order of pendingOrders) {
-            const statusEmoji = order.status === 'payment_received' ? '💰' : '⏳';
-            msg += `${statusEmoji} *${order.id}* | ${order.packageName} | ${order.phone} | ${order.price.toLocaleString()} KS\n`;
-          }
-          await sendTelegramMessage(chatId, msg);
-        }
-        return res.sendStatus(200);
-      }
-      
-      // ========== /approve COMMAND ==========
-      if (text.startsWith('/approve')) {
-        const id = parseInt(text.split(' ')[1]);
-        const order = orders.find(o => o.id === id);
-        if (!order) {
-          await sendTelegramMessage(chatId, `❌ အော်ဒါနံပါတ် ${id} မတွေ့ပါ။`);
-        } else {
-          await updateOrderStatus(id, 'approved');
-          await sendTelegramMessage(chatId, `✅ အော်ဒါ #${id} အတည်ပြုပြီး!\n📞 ဖုန်း: ${order.phone}\n📦 Package: ${order.packageName}`);
-        }
-        return res.sendStatus(200);
-      }
-      
-      // ========== /reject COMMAND ==========
-      if (text.startsWith('/reject')) {
-        const id = parseInt(text.split(' ')[1]);
-        const order = orders.find(o => o.id === id);
-        if (!order) {
-          await sendTelegramMessage(chatId, `❌ အော်ဒါနံပါတ် ${id} မတွေ့ပါ။`);
-        } else {
-          await updateOrderStatus(id, 'rejected');
-          await sendTelegramMessage(chatId, `❌ အော်ဒါ #${id} ပယ်ဖျက်ပြီး.\n📞 ဖုန်း: ${order.phone}`);
-        }
-        return res.sendStatus(200);
-      }
-      
-      // ========== /all COMMAND ==========
-      if (text === '/all') {
-        if (orders.length === 0) {
-          await sendTelegramMessage(chatId, "📭 အော်ဒါမရှိသေးပါ။");
-        } else {
-          let msg = "📋 **အော်ဒါအားလုံး**\n━━━━━━━━━━━━━━━━━━\n";
-          for (const order of orders.slice(0, 20)) {
-            const statusEmoji = {
-              'pending_payment': '⏳', 'payment_received': '💰', 'approved': '✅', 'rejected': '❌'
-            }[order.status] || '📌';
-            msg += `${statusEmoji} ${order.id} | ${order.packageName} | ${order.status}\n`;
-          }
-          await sendTelegramMessage(chatId, msg);
-        }
-        return res.sendStatus(200);
-      }
+      `;
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: "📋 ဆိုင်းငံ့အော်ဒါများ", callback_data: "view_pending" }, { text: "📜 အော်ဒါအားလုံး", callback_data: "view_all" }],
+          [{ text: "💰 ငွေလွှဲအချက်အလက်", callback_data: "payment_info" }, { text: "❓ အကူအညီ", callback_data: "help" }],
+          [{ text: "🔄 စာရင်းအင်းအသစ်", callback_data: "refresh_stats" }]
+        ]
+      };
+      await sendTelegramMessage(chatId, menuMessage, keyboard);
+      return res.sendStatus(200);
     }
     
     res.sendStatus(200);
