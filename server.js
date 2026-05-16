@@ -128,11 +128,16 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// ========== SUBMIT PAYMENT SCREENSHOT (Fixed with form-data package) ==========
+// ========== SUBMIT PAYMENT SCREENSHOT ==========
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   try {
     console.log("🔔 Payment submission received");
-    const { orderId, packageName, phone, note } = req.body;
+    
+    // Get form data
+    const orderId = req.body.orderId;
+    const packageName = req.body.packageName;
+    const phone = req.body.phone;
+    const note = req.body.note;
     const screenshot = req.file;
     
     console.log("Order ID:", orderId);
@@ -144,9 +149,13 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
       return res.status(400).json({ success: false, message: "Screenshot required" });
     }
     
-    await updateOrderStatus(orderId, 'payment_received');
+    if (!orderId) {
+      return res.status(400).json({ success: false, message: "Order ID required" });
+    }
     
-    // Use form-data package to send photo to Telegram
+    await updateOrderStatus(parseInt(orderId), 'payment_received');
+    
+    // Send to Telegram using form-data
     const form = new FormData();
     form.append('chat_id', ADMIN_CHAT_ID);
     form.append('photo', screenshot.buffer, {
@@ -165,7 +174,7 @@ Use: /approve ${orderId} or /reject ${orderId}
     `);
     form.append('parse_mode', 'Markdown');
     
-    console.log("📤 Sending photo to Telegram via form-data...");
+    console.log("📤 Sending photo to Telegram...");
     
     const telegramResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
@@ -188,7 +197,7 @@ Use: /approve ${orderId} or /reject ${orderId}
   }
 });
 
-// ========== TELEGRAM WEBHOOK ==========
+// ========== TELEGRAM WEBHOOK (same as before) ==========
 app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
   try {
     const { message, callback_query } = req.body;
