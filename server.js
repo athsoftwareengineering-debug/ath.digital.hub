@@ -29,6 +29,7 @@ const upload = multer({ storage: storage });
 // ========== TELEGRAM BOT CONFIG ==========
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.CHAT_ID;
+const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID || "-1003783137346";  // သင့် Group ID ထည့်ပါ
 
 // In-memory storage
 let orders = [];
@@ -86,7 +87,7 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
       body: JSON.stringify(body)
     });
     const result = await response.json();
-    console.log("Telegram send:", result.ok ? "✅" : "❌", result.description);
+    console.log("Telegram send to:", chatId, "->", result.ok ? "✅" : "❌", result.description);
     return result.ok ? result.result : null;
   } catch (error) {
     console.error("Telegram send error:", error);
@@ -118,7 +119,7 @@ async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   }
 }
 
-// ========== WEBSITE ORDER ENDPOINT (Save order but don't notify admin yet) ==========
+// ========== WEBSITE ORDER ENDPOINT ==========
 app.post('/order', async (req, res) => {
   try {
     const { packageName, phone } = req.body;
@@ -141,7 +142,6 @@ app.post('/order', async (req, res) => {
     };
     orders.unshift(newOrder);
     
-    // Store temporarily - will send to admin when screenshot arrives
     pendingOrders[newOrder.id] = newOrder;
     
     console.log(`📦 Order #${newOrder.id} created - waiting for screenshot`);
@@ -160,7 +160,7 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// ========== SUBMIT PAYMENT SCREENSHOT (Send Order + SS together to Admin) ==========
+// ========== SUBMIT PAYMENT SCREENSHOT ==========
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
   
@@ -173,10 +173,6 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     const note = req.body.note;
     const screenshot = req.file;
     
-    console.log("Order ID:", orderId);
-    console.log("Package:", packageName);
-    console.log("Phone:", phone);
-    
     if (!screenshot) {
       return res.status(400).json({ success: false, message: "Screenshot required" });
     }
@@ -185,17 +181,14 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
       return res.status(400).json({ success: false, message: "Order ID required" });
     }
     
-    // Update order status
     await updateOrderStatus(orderId, 'payment_received');
     
     tempFilePath = screenshot.path;
     const fileBuffer = fs.readFileSync(tempFilePath);
     
-    // Get order details
     const order = orders.find(o => o.id === orderId);
     const packageData = PACKAGES[order.packageName];
     
-    // Send ONE message with Order + Screenshot together to Admin
     const caption = `
 🆕 **အော်ဒါအသစ် + ငွေလွှဲပြေစာ** #${orderId}
 ━━━━━━━━━━━━━━━━━━━━
@@ -222,7 +215,6 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     
     const success = await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
     
-    // Remove from pending orders
     delete pendingOrders[orderId];
     
     if (success) {
@@ -258,7 +250,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         body: JSON.stringify({ callback_query_id: callback_query.id })
       });
       
-      // Approve Button
+      // ========== APPROVE BUTTON ==========
       if (data.startsWith('approve_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
@@ -266,7 +258,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         if (order) {
           await updateOrderStatus(orderId, 'approved');
           
-          // Edit the original message to show approved
+          // Edit original message (Admin chat)
           const approveCaption = `
 ✅ **အတည်ပြုပြီး** - အော်ဒါ #${orderId}
 ━━━━━━━━━━━━━━━━━━━━
@@ -289,12 +281,33 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             })
           });
           
-          await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး!\n📞 ${order.phone}\n📦 ${order.packageName}`);
+          // Send to Admin
+          await sendTelegramMessage(ADMIN_CHAT_ID, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး!\n📞 ${order.phone}\n📦 ${order.packageName}`);
+          
+          // 🚨🚨🚨 SEND TO GROUP - DATA ADDED ALERT 🚨🚨🚨
+          if (GROUP_CHAT_ID) {
+            const groupAlert = `
+🚨 **ဒေတာသွင်းပြီးကြောင်း အကြောင်းကြားချက်** 🚨
+━━━━━━━━━━━━━━━━━━━━
+✅ အော်ဒါ #${orderId} အတွက် ဒေတာသွင်းပြီးပါပြီ။
+📞 ဖုန်းနံပါတ်: ${order.phone}
+📦 Package: ${order.packageName}
+💰 ပမာဏ: ${order.price.toLocaleString()} KS
+⏰ သွင်းချိန်: ${new Date().toLocaleString('my-MM')}
+━━━━━━━━━━━━━━━━━━━━
+👤 အတည်ပြုသူ: Admin
+            `;
+            const groupResult = await sendTelegramMessage(GROUP_CHAT_ID, groupAlert);
+            console.log(`📢 Group notification sent for order #${orderId}:`, groupResult);
+          } else {
+            console.log("⚠️ GROUP_CHAT_ID not set, skipping group notification");
+          }
+          
         }
         return res.sendStatus(200);
       }
       
-      // Reject Button
+      // ========== REJECT BUTTON ==========
       if (data.startsWith('reject_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
@@ -324,12 +337,24 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             })
           });
           
-          await sendTelegramMessage(chatId, `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ပြီး.\n📞 ${order.phone}`);
+          await sendTelegramMessage(ADMIN_CHAT_ID, `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ပြီး.\n📞 ${order.phone}`);
+          
+          // Optional: Send rejection to group too
+          if (GROUP_CHAT_ID) {
+            const rejectAlert = `
+⚠️ **ငြင်းပယ်ခံရသော အော်ဒါ** ⚠️
+━━━━━━━━━━━━━━━━━━━━
+❌ အော်ဒါ #${orderId} အား ပယ်ဖျက်လိုက်ပါသည်။
+📞 ဖုန်း: ${order.phone}
+📦 Package: ${order.packageName}
+            `;
+            await sendTelegramMessage(GROUP_CHAT_ID, rejectAlert);
+          }
         }
         return res.sendStatus(200);
       }
       
-      // Detail Button
+      // ========== DETAIL BUTTON ==========
       if (data.startsWith('detail_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
@@ -365,7 +390,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // View Pending Orders
+      // ========== VIEW PENDING ORDERS ==========
       if (data === 'view_pending') {
         const pendingOrdersList = orders.filter(o => o.status === 'payment_received');
         
@@ -386,7 +411,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // View All Orders
+      // ========== VIEW ALL ORDERS ==========
       if (data === 'view_all') {
         if (orders.length === 0) {
           await sendTelegramMessage(chatId, "📭 အော်ဒါမရှိသေးပါ။");
@@ -408,7 +433,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // Payment Info
+      // ========== PAYMENT INFO ==========
       if (data === 'payment_info') {
         const paymentMsg = `
 💰 **ငွေလွှဲအချက်အလက်**
@@ -425,7 +450,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // Help
+      // ========== HELP ==========
       if (data === 'help') {
         const helpMsg = `
 🤖 *MYTEL ORDER BOT - အကူအညီ*
@@ -443,14 +468,14 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // Refresh Stats
+      // ========== REFRESH STATS ==========
       if (data === 'refresh_stats') {
         const stats = await getOrderStats();
         await sendTelegramMessage(chatId, `🔄 *စာရင်းအင်းအသစ်*\n\n${stats}`);
         return res.sendStatus(200);
       }
       
-      // Back to Menu
+      // ========== BACK TO MENU ==========
       if (data === 'back_to_menu') {
         const stats = await getOrderStats();
         const menuMessage = `
@@ -536,6 +561,42 @@ app.get('/orders-list', (req, res) => {
   res.json({ orders: orders, count: orders.length });
 });
 
+// Test group message endpoint
+app.get('/test-group', async (req, res) => {
+  try {
+    if (!GROUP_CHAT_ID) {
+      return res.json({ 
+        success: false, 
+        error: "GROUP_CHAT_ID not configured" 
+      });
+    }
+    
+    const testMessage = `
+🧪 *Group Connection Test*
+━━━━━━━━━━━━━━━━━━━━
+✅ Bot က Group ထဲကို message ပို့နိုင်ပါတယ်။
+📅 အချိန်: ${new Date().toLocaleString('my-MM')}
+━━━━━━━━━━━━━━━━━━━━
+🎉 အောင်မြင်ပါသည်။
+    `;
+    
+    const result = await sendTelegramMessage(GROUP_CHAT_ID, testMessage);
+    
+    res.json({ 
+      success: result, 
+      message: result ? "✅ Message sent to group successfully!" : "❌ Failed to send message",
+      groupId: GROUP_CHAT_ID
+    });
+    
+  } catch (error) {
+    console.error("Test group error:", error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
 // ========== ROOT ENDPOINT ==========
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -560,5 +621,6 @@ app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅ Set' : '❌ Missing'}`);
   console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
+  console.log(`👥 GROUP_CHAT_ID: ${GROUP_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
   await setWebhook();
 });
