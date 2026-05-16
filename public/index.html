@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>MYTEL DATA SERVICE | 3D Premium</title>
+  
+  <!-- Google Fonts & Font Awesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Three.js CDN -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
+      }
+    }
+  </script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 20% 30%, #0a0f1e, #03050b);
+      color: #ffffff;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Canvas 3D Background */
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Main Content */
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    /* Header Section */
+    .hero {
+      text-align: center;
+      padding: 2rem 0 1rem;
+      backdrop-filter: blur(8px);
+    }
+    .hero h1 {
+      font-size: 3.2rem;
+      background: linear-gradient(135deg, #fff, #38bdf8, #c084fc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.5px;
+      text-shadow: 0 0 30px rgba(56,189,248,0.3);
+      animation: fadeInUp 0.8s ease;
+    }
+    .hero .tagline {
+      color: #94a3b8;
+      margin-top: 0.5rem;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+    }
+    .hero .badge {
+      display: inline-block;
+      background: rgba(34,197,94,0.2);
+      border: 1px solid rgba(34,197,94,0.5);
+      border-radius: 40px;
+      padding: 0.3rem 1rem;
+      font-size: 0.8rem;
+      margin-top: 1rem;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Input Section */
+    .input-card {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      border-radius: 2rem;
+      padding: 0.8rem 1.5rem;
+      margin: 1.5rem auto;
+      max-width: 500px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    .input-card i {
+      font-size: 1.4rem;
+      color: #38bdf8;
+    }
+    .input-card input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 1rem 0;
+      font-size: 1rem;
+      color: white;
+      outline: none;
+    }
+    .input-card input::placeholder {
+      color: #64748b;
+    }
+
+    /* Grid Cards */
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 1.8rem;
+      margin: 2.5rem 0;
+    }
+    .plan-card {
+      background: rgba(20, 30, 55, 0.55);
+      backdrop-filter: blur(14px);
+      border-radius: 2rem;
+      padding: 1.8rem 1.2rem;
+      text-align: center;
+      transition: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      border: 1px solid rgba(71, 85, 105, 0.5);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .plan-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(56,189,248,0.2), transparent);
+      transition: left 0.6s;
+    }
+    .plan-card:hover::before {
+      left: 100%;
+    }
+    .plan-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: #38bdf8;
+      box-shadow: 0 20px 35px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(56,189,248,0.3);
+    }
+    .plan-icon {
+      font-size: 2.8rem;
+      margin-bottom: 1rem;
+    }
+    .plan-card h3 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      background: linear-gradient(120deg, #e2e8f0, #b9e0ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .plan-desc {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      margin: 0.7rem 0;
+      line-height: 1.4;
+    }
+    .price {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #facc15;
+      margin: 0.8rem 0;
+      letter-spacing: -1px;
+    }
+    .price span {
+      font-size: 0.9rem;
+      font-weight: 400;
+    }
+    .buy-btn {
+      background: linear-gradient(95deg, #22c55e, #16a34a);
+      border: none;
+      padding: 0.75rem 1.6rem;
+      border-radius: 3rem;
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+      width: 80%;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(34,197,94,0.3);
+    }
+    .buy-btn:hover {
+      transform: scale(1.02);
+      background: linear-gradient(95deg, #2dd4bf, #22c55e);
+      box-shadow: 0 6px 18px rgba(34,197,94,0.5);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) scale(0.9);
+      background: #1e293be6;
+      backdrop-filter: blur(20px);
+      color: white;
+      padding: 12px 28px;
+      border-radius: 60px;
+      font-weight: 500;
+      z-index: 200;
+      opacity: 0;
+      transition: 0.2s;
+      pointer-events: none;
+      border-left: 5px solid #22c55e;
+      font-size: 0.9rem;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.8rem;
+      color: #5b6e8c;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 680px) {
+      .hero h1 { font-size: 2rem; }
+      .plans-grid { gap: 1rem; }
+      .plan-card { padding: 1.2rem; }
+      .price { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="canvas-container"></div>
+
+  <div class="content">
+    <div class="hero">
+      <h1>✨ MYTEL VIP SERVICE ✨</h1>
+      <div class="tagline">High-Speed Data · Unlimited Experience</div>
+      <div class="badge"><i class="fas fa-bolt"></i> 5G Ready · 24/7 Support</div>
+    </div>
+
+    <div class="input-card">
+      <i class="fas fa-phone-alt"></i>
+      <input type="tel" id="phone" placeholder="09xxxxxxxxx" autocomplete="off">
+    </div>
+
+    <div class="plans-grid" id="plans-container">
+      <!-- cards will be populated via JS but can also static -->
+    </div>
+    <footer>
+      <i class="fas fa-shield-alt"></i> Secure payment · Instant activation
+    </footer>
+  </div>
+
+  <div id="toastMsg" class="toast">✔ Order Sent Successfully</div>
+
+  <script type="module">
+    import * as THREE from 'three';
+
+    // --- 3D Background Setup ---
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = null; // transparent to let gradient show, but we set clear color
+    scene.fog = new THREE.FogExp2(0x03050b, 0.003);
+    
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 2, 12);
+    camera.lookAt(0, 0, 0);
+    
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setClearColor(0x03050b, 1);
+    container.appendChild(renderer.domElement);
+    
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0x111122);
+    scene.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(5, 10, 7);
+    scene.add(dirLight);
+    const backLight = new THREE.PointLight(0x2266ff, 0.5);
+    backLight.position.set(-2, 3, -4);
+    scene.add(backLight);
+    const fillLight = new THREE.PointLight(0xffaa33, 0.4);
+    fillLight.position.set(3, 1, 4);
+    scene.add(fillLight);
+    
+    // Main Object: Futuristic Torus Knot with glow
+    const geometry = new THREE.TorusKnotGeometry(1.2, 0.28, 200, 32, 3, 4);
+    const material = new THREE.MeshStandardMaterial({
+      color: 0x3b82f6,
+      emissive: 0x1e40af,
+      emissiveIntensity: 0.7,
+      roughness: 0.25,
+      metalness: 0.85,
+      flatShading: false
+    });
+    const knot = new THREE.Mesh(geometry, material);
+    scene.add(knot);
+    
+    // Floating particles (stars)
+    const particleCount = 1800;
+    const particlesGeometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
+      positions[i*3] = (Math.random() - 0.5) * 200;
+      positions[i*3+1] = (Math.random() - 0.5) * 100;
+      positions[i*3+2] = (Math.random() - 0.5) * 80 - 40;
+    }
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const particleMat = new THREE.PointsMaterial({
+      color: 0x88aaff,
+      size: 0.08,
+      transparent: true,
+      opacity: 0.5,
+      blending: THREE.AdditiveBlending
+    });
+    const stars = new THREE.Points(particlesGeometry, particleMat);
+    scene.add(stars);
+    
+    // Glow ring around
+    const ringGeo = new THREE.TorusGeometry(1.55, 0.03, 64, 500);
+    const ringMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0f5cbf, emissiveIntensity: 1.2 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    scene.add(ring);
+    
+    // small rotating spheres (electrons)
+    const orbGroup = new THREE.Group();
+    const orbMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.5 });
+    const orb1 = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), orbMat);
+    const orb2 = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), orbMat);
+    const orb3 = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), orbMat);
+    orb1.position.set(1.7, 0.5, 0.8);
+    orb2.position.set(-1.2, 1.2, -1);
+    orb3.position.set(0.5, -1.6, 1.2);
+    orbGroup.add(orb1, orb2, orb3);
+    scene.add(orbGroup);
+    
+    // Animation variables
+    let time = 0;
+    
+    function animate3D() {
+      requestAnimationFrame(animate3D);
+      time += 0.008;
+      
+      knot.rotation.x += 0.005;
+      knot.rotation.y += 0.008;
+      knot.rotation.z += 0.003;
+      
+      ring.rotation.x = Math.sin(time * 0.5) * 0.2;
+      ring.rotation.y = time * 0.3;
+      ring.rotation.z = Math.cos(time * 0.4) * 0.1;
+      
+      stars.rotation.y += 0.0005;
+      stars.rotation.x += 0.0003;
+      
+      orbGroup.children.forEach((child, idx) => {
+        child.position.x += Math.sin(time * 1.2 + idx) * 0.003;
+        child.position.y += Math.cos(time * 1.5 + idx) * 0.003;
+      });
+      
+      camera.position.x += (0 - camera.position.x) * 0.03;
+      camera.position.y += (1.5 - camera.position.y) * 0.03;
+      camera.lookAt(0, 0, 0);
+      
+      renderer.render(scene, camera);
+    }
+    
+    animate3D();
+    
+    window.addEventListener('resize', onWindowResize, false);
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    
+    // --- Data Plans & order logic ---
+    const plans = [
+      { name: "VIP 1", icon: "📱", desc: "22GB · 8000 Mins · 5000 SMS", price: "15,000 KS", tag: "POPULAR" },
+      { name: "VIP 2", icon: "⚡", desc: "40GB · 250 Mins · Any Net", price: "20,000 KS", tag: "EXTRA" },
+      { name: "VIP 3", icon: "🎮", desc: "40GB · 1400 Mins · Unlimited SMS", price: "25,000 KS", tag: "GAMER" },
+      { name: "VIP 4 ULTRA", icon: "💎", desc: "120GB High-Speed Data · 5G", price: "30,000 KS", tag: "ULTRA" }
+    ];
+    
+    const containerPlans = document.getElementById('plans-container');
+    function renderCards() {
+      containerPlans.innerHTML = '';
+      plans.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'plan-card';
+        card.innerHTML = `
+          <div class="plan-icon">${p.icon}</div>
+          <h3>${p.name}</h3>
+          <div class="plan-desc">${p.desc}</div>
+          <div class="price">${p.price.split(' ')[0]}<span> ${p.price.split(' ')[1]}</span></div>
+          <button class="buy-btn" data-plan="${p.name}"><i class="fas fa-shopping-cart"></i> Order Now</button>
+        `;
+        containerPlans.appendChild(card);
+      });
+      // attach events
+      document.querySelectorAll('.buy-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const planName = btn.getAttribute('data-plan');
+          orderPackage(planName);
+        });
+      });
+    }
+    
+    const API_URL = window.location.origin + "/order";
+    
+    async function orderPackage(pkg) {
+      const phoneInput = document.getElementById('phone');
+      const phone = phoneInput.value.trim();
+      if (!phone || phone.length < 8) {
+        showToast("⚠️ Please enter valid phone number", "#f97316");
+        return;
+      }
+      const btn = document.activeElement;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Sending...';
+      btn.disabled = true;
+      
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ packageName: pkg, phone: phone })
+        });
+        if (response.ok) {
+          showToast(`✅ ${pkg} ordered! We'll contact you soon.`, "#22c55e");
+          phoneInput.value = '';
+        } else {
+          showToast(`❌ Server error. Please try again.`, "#ef4444");
+        }
+      } catch (err) {
+        console.error(err);
+        showToast(`❌ Network error. Check connection.`, "#ef4444");
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+    
+    function showToast(msg, color = "#22c55e") {
+      const toast = document.getElementById('toastMsg');
+      toast.style.borderLeftColor = color;
+      toast.innerHTML = `<i class="fas fa-info-circle"></i> ${msg}`;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2800);
+    }
+    
+    renderCards();
+  </script>
+</body>
+</html>
