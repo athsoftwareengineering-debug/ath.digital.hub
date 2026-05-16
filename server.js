@@ -8,17 +8,23 @@ app.use(bodyParser.json());
 const TOKEN = "8930853709:AAHUjWhA2Uc47vcLQTSQ6jDyN7UYbEbkuyY";
 const ADMIN_ID = "8070878424";
 
-const bot = new TelegramBot(TOKEN, { polling: true });
+// 🔥 IMPORTANT FIX HERE
+const bot = new TelegramBot(TOKEN, { polling: false });
 
-// TEST MESSAGE (server start တက်မလားစစ်)
-bot.on("polling_error", console.log);
+app.get("/", (req, res) => {
+  res.send("Bot is running");
+});
 
 app.post("/order", (req, res) => {
   const { packageName, phone } = req.body;
 
   bot.sendMessage(ADMIN_ID,
-    `🆕 NEW ORDER\n📦 ${packageName}\n📞 ${phone}`
-  );
+    `🆕 NEW ORDER\n\n📦 Package: ${packageName}\n📞 Phone: ${phone}`
+  ).then(() => {
+    console.log("Message sent");
+  }).catch(err => {
+    console.log("Error:", err.response?.body || err);
+  });
 
   res.json({ ok: true });
 });
