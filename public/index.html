@@ -53,13 +53,13 @@
       padding: 1.5rem 1.2rem 3rem;
     }
 
-    /* Header Section with Glow */
+    /* Header Section */
     .header {
       text-align: center;
       padding: 1.5rem 0 1rem;
     }
     .header h1 {
-      font-size: 2.2rem;
+      font-size: 2rem;
       letter-spacing: 1px;
       background: linear-gradient(135deg, #FFD700, #FFA500, #FF6B6B);
       -webkit-background-clip: text;
@@ -129,27 +129,13 @@
       position: relative;
       overflow: hidden;
     }
-    .plan-card::after {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -60%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(250,204,21,0.08), transparent);
-      opacity: 0;
-      transition: opacity 0.5s;
-    }
-    .plan-card:hover::after {
-      opacity: 1;
-    }
     .plan-card:hover {
       transform: translateY(-6px);
       border-color: #facc15;
       box-shadow: 0 20px 35px -10px rgba(0,0,0,0.5), 0 0 15px rgba(250,204,21,0.2);
     }
     .plan-title {
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       font-weight: 800;
       background: linear-gradient(120deg, #FFD700, #FFA500);
       -webkit-background-clip: text;
@@ -161,7 +147,7 @@
       gap: 8px;
     }
     .plan-title i {
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       color: #facc15;
     }
     .feature-list {
@@ -170,7 +156,7 @@
     }
     .feature-list li {
       padding: 0.4rem 0;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: #cbd5e1;
       border-bottom: 1px dashed rgba(255,255,255,0.05);
       display: flex;
@@ -178,9 +164,9 @@
       gap: 8px;
     }
     .feature-list li i {
-      width: 22px;
+      width: 20px;
       color: #facc15;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
     }
     .price {
       font-size: 1.8rem;
@@ -209,6 +195,11 @@
       transform: scale(1.02);
       background: linear-gradient(95deg, #ffdb4d, #facc15);
       box-shadow: 0 5px 18px rgba(250,204,21,0.4);
+    }
+    .buy-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
     }
 
     /* Payment Info Card */
@@ -267,9 +258,10 @@
       color: #475569;
     }
 
+    /* Toast Notification */
     .toast {
       position: fixed;
-      bottom: 25px;
+      bottom: 30px;
       left: 50%;
       transform: translateX(-50%) scale(0.9);
       background: #1e293bf2;
@@ -291,7 +283,7 @@
 
     @media (max-width: 680px) {
       .header h1 { font-size: 1.3rem; }
-      .plan-title { font-size: 1.3rem; }
+      .plan-title { font-size: 1.2rem; }
       .price { font-size: 1.5rem; }
       .payment-details { flex-direction: column; gap: 0.7rem; align-items: center; }
     }
@@ -379,7 +371,7 @@
   goldLight.position.set(2, 2, 3);
   scene.add(goldLight);
 
-  // Central glowing ring + sphere
+  // Central glowing objects
   const coreGeo = new THREE.IcosahedronGeometry(0.9, 0);
   const coreMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.6, metalness: 0.8 });
   const core = new THREE.Mesh(coreGeo, coreMat);
@@ -438,15 +430,13 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  // --- Plans Data (exactly from your message) ---
+  // --- Plans Data ---
   const plans = [
-    { name: "VIP LEVEL - 1", features: ["22 GB (Data)", "8000 On-Net Mins", "5000 SMS"], price: "15,000 KS" },
-    { name: "VIP LEVEL - 2", features: ["40 GB (Data)", "250 On-Net Mins", "25 Any Net Mins"], price: "20,000 KS" },
-    { name: "VIP LEVEL - 3", features: ["40 GB (Data)", "1400 On-Net Mins", "8000 SMS"], price: "25,000 KS" },
-    { name: "VIP LEVEL - 4 (ULTRA)", features: ["120 GB (High-Speed Data)"], price: "30,000 KS" }
+    { name: "🏆 VIP LEVEL - 1", features: ["22 GB (Data)", "8000 On-Net Mins", "5000 SMS"], price: "15,000 KS" },
+    { name: "🏆 VIP LEVEL - 2", features: ["40 GB (Data)", "250 On-Net Mins", "25 Any Net Mins"], price: "20,000 KS" },
+    { name: "🏆 VIP LEVEL - 3", features: ["40 GB (Data)", "1400 On-Net Mins", "8000 SMS"], price: "25,000 KS" },
+    { name: "💎 VIP LEVEL - 4 (ULTRA)", features: ["120 GB (High-Speed Data)"], price: "30,000 KS" }
   ];
-  
-  const icons = ["🏆", "🏆", "🏆", "💎"];
   
   function renderPlans() {
     const containerDiv = document.getElementById('plans-container');
@@ -459,13 +449,14 @@
         featuresHtml += `<li><i class="fas fa-bolt"></i> 🔹 ${f}</li>`;
       });
       card.innerHTML = `
-        <div class="plan-title"><i class="fas fa-crown"></i> ${icons[idx]} ${plan.name}</div>
+        <div class="plan-title"><i class="fas fa-crown"></i> ${plan.name}</div>
         <ul class="feature-list">${featuresHtml}</ul>
         <div class="price">💰 ${plan.price.split(' ')[0]} <small>${plan.price.split(' ')[1]}</small></div>
-        <button class="buy-btn" data-plan="${plan.name}"><i class="fas fa-shopping-cart"></i> ORDER NOW</button>
+        <button class="buy-btn" data-plan="${plan.name.replace(/[🏆💎]/g, '').trim()}"><i class="fas fa-shopping-cart"></i> ORDER NOW</button>
       `;
       containerDiv.appendChild(card);
     });
+    
     document.querySelectorAll('.buy-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -475,34 +466,42 @@
     });
   }
   
-  const API_URL = window.location.origin + "/order";
-  
+  // Order function - sends to backend /order endpoint
   async function orderPackage(pkg) {
     const phone = document.getElementById('phone').value.trim();
     if (!phone || phone.length < 9) {
       showToast("⚠️ Please enter valid phone number", "#f97316");
       return;
     }
+    
     const btn = document.activeElement;
-    const original = btn.innerHTML;
+    const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Sending...';
     btn.disabled = true;
+    
     try {
-      const res = await fetch(API_URL, {
+      const response = await fetch('/order', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ packageName: pkg, phone: phone })
+        body: JSON.stringify({ 
+          packageName: pkg, 
+          phone: phone 
+        })
       });
-      if (res.ok) {
-        showToast(`✅ ${pkg} ordered! We'll contact you soon.`, "#22c55e");
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        showToast(`✅ ${pkg} ordered! Check Telegram for confirmation.`, "#22c55e");
         document.getElementById('phone').value = '';
       } else {
-        showToast(`❌ Server error. Try again.`, "#ef4444");
+        showToast(`❌ ${data.message || "Order failed. Try again."}`, "#ef4444");
       }
     } catch (err) {
+      console.error("Order error:", err);
       showToast(`❌ Network error. Please check connection.`, "#ef4444");
     } finally {
-      btn.innerHTML = original;
+      btn.innerHTML = originalText;
       btn.disabled = false;
     }
   }
@@ -512,7 +511,7 @@
     toast.style.borderLeftColor = color;
     toast.innerHTML = `<i class="fas fa-info-circle"></i> ${msg}`;
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2800);
+    setTimeout(() => toast.classList.remove('show'), 3000);
   }
   
   renderPlans();
