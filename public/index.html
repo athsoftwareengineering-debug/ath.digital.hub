@@ -2,517 +2,387 @@
 <html lang="my">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>MYTEL DATA SERVICE | VIP PLANS</title>
-  
-  <!-- Google Fonts & Font Awesome -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  
-  <!-- Three.js -->
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
-      }
-    }
-  </script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>MYTEL DATA SERVICE</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #0a0f1e 0%, #050814 100%);
-      color: #ffffff;
-      overflow-x: hidden;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #0a0f1e, #050814);
+      color: white;
+      padding: 20px;
       min-height: 100vh;
     }
-
-    /* 3D Canvas Background */
-    #canvas-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    /* Main Content */
-    .content {
-      position: relative;
-      z-index: 10;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 1.5rem 1.2rem 3rem;
-    }
-
-    /* Header Section */
-    .header {
-      text-align: center;
-      padding: 1.5rem 0 1rem;
-    }
-    .header h1 {
-      font-size: 2rem;
-      letter-spacing: 1px;
-      background: linear-gradient(135deg, #FFD700, #FFA500, #FF6B6B);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
-      animation: glowPulse 2s ease-in-out infinite;
-    }
-    @keyframes glowPulse {
-      0%, 100% { text-shadow: 0 0 20px rgba(255,215,0,0.3); }
-      50% { text-shadow: 0 0 40px rgba(255,215,0,0.6); }
-    }
-    .separator {
-      text-align: center;
-      font-size: 1.2rem;
-      letter-spacing: 4px;
-      color: #facc15;
-      margin: 0.5rem 0;
-    }
-
-    /* Phone Input Card */
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 20px; color: #facc15; }
+    
     .phone-card {
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(12px);
+      background: rgba(15,23,42,0.6);
+      backdrop-filter: blur(10px);
       border-radius: 60px;
-      padding: 0.8rem 1.5rem;
-      max-width: 450px;
-      margin: 1.5rem auto;
+      padding: 12px 20px;
+      max-width: 400px;
+      margin: 20px auto;
       display: flex;
-      align-items: center;
-      gap: 1rem;
-      border: 1px solid rgba(250, 204, 21, 0.4);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    }
-    .phone-card i {
-      font-size: 1.3rem;
-      color: #facc15;
+      gap: 10px;
+      border: 1px solid #facc15;
     }
     .phone-card input {
       flex: 1;
       background: transparent;
       border: none;
-      padding: 0.9rem 0;
-      font-size: 1rem;
+      padding: 12px;
       color: white;
+      font-size: 16px;
       outline: none;
     }
-    .phone-card input::placeholder {
-      color: #64748b;
-    }
-
-    /* Plans Grid */
+    .phone-card input::placeholder { color: #64748b; }
+    
     .plans-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin: 2rem 0 2rem;
+      gap: 20px;
+      margin: 30px 0;
     }
     .plan-card {
-      background: rgba(10, 20, 35, 0.65);
-      backdrop-filter: blur(12px);
-      border-radius: 1.5rem;
-      padding: 1.5rem;
-      border: 1px solid rgba(250, 204, 21, 0.25);
-      transition: all 0.35s ease;
+      background: rgba(10,20,35,0.65);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid rgba(250,204,21,0.3);
+      transition: 0.3s;
       cursor: pointer;
-      position: relative;
-      overflow: hidden;
     }
-    .plan-card:hover {
-      transform: translateY(-6px);
-      border-color: #facc15;
-      box-shadow: 0 20px 35px -10px rgba(0,0,0,0.5), 0 0 15px rgba(250,204,21,0.2);
-    }
-    .plan-title {
-      font-size: 1.5rem;
-      font-weight: 800;
-      background: linear-gradient(120deg, #FFD700, #FFA500);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      margin-bottom: 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .plan-title i {
-      font-size: 1.3rem;
-      color: #facc15;
-    }
-    .feature-list {
-      list-style: none;
-      margin: 1rem 0;
-    }
-    .feature-list li {
-      padding: 0.4rem 0;
-      font-size: 0.85rem;
-      color: #cbd5e1;
-      border-bottom: 1px dashed rgba(255,255,255,0.05);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .feature-list li i {
-      width: 20px;
-      color: #facc15;
-      font-size: 0.75rem;
-    }
-    .price {
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: #facc15;
-      margin: 1rem 0 0.8rem;
-    }
-    .price small {
-      font-size: 0.8rem;
-      font-weight: 400;
-    }
-    .buy-btn {
+    .plan-card:hover { transform: translateY(-5px); border-color: #facc15; }
+    .plan-card h3 { color: #facc15; margin-bottom: 15px; font-size: 1.5rem; }
+    .plan-card ul { list-style: none; margin: 15px 0; }
+    .plan-card li { padding: 5px 0; color: #cbd5e1; }
+    .price { font-size: 1.8rem; color: #facc15; font-weight: bold; margin: 15px 0; }
+    button {
+      width: 100%;
+      padding: 12px;
       background: linear-gradient(95deg, #facc15, #eab308);
       border: none;
-      width: 100%;
-      padding: 0.8rem;
       border-radius: 40px;
-      font-weight: 700;
-      font-size: 0.9rem;
+      font-weight: bold;
+      font-size: 16px;
       color: #0f172a;
       cursor: pointer;
-      transition: all 0.2s;
-      margin-top: 0.5rem;
+      transition: 0.2s;
     }
-    .buy-btn:hover {
-      transform: scale(1.02);
-      background: linear-gradient(95deg, #ffdb4d, #facc15);
-      box-shadow: 0 5px 18px rgba(250,204,21,0.4);
-    }
-    .buy-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* Payment Info Card */
-    .payment-card {
-      background: linear-gradient(135deg, rgba(15,25,45,0.8), rgba(5,10,20,0.8));
-      backdrop-filter: blur(12px);
-      border-radius: 1.8rem;
-      padding: 1.5rem;
-      margin: 2rem 0 1rem;
-      border: 1px solid rgba(250,204,21,0.4);
-      text-align: center;
-    }
-    .payment-card h3 {
-      font-size: 1.4rem;
-      color: #facc15;
-      margin-bottom: 1rem;
-    }
-    .payment-details {
-      display: flex;
-      flex-wrap: wrap;
+    button:hover { transform: scale(1.02); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 1000;
       justify-content: center;
-      gap: 2rem;
-      margin: 1rem 0;
-    }
-    .payment-item {
-      background: rgba(0,0,0,0.3);
-      padding: 0.6rem 1.2rem;
-      border-radius: 2rem;
-    }
-    .payment-item i {
-      margin-right: 6px;
-      color: #facc15;
-    }
-    .trust-badge {
-      display: inline-flex;
       align-items: center;
-      gap: 8px;
-      background: rgba(34,197,94,0.15);
+    }
+    .modal-content {
+      background: #1e293b;
+      border-radius: 20px;
+      padding: 25px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      border: 1px solid #facc15;
+    }
+    .modal-content h2 { color: #facc15; margin-bottom: 15px; }
+    .modal-content .detail { margin: 10px 0; padding: 8px; background: #0f172a; border-radius: 10px; }
+    .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-buttons button { flex: 1; }
+    .close-modal { background: #475569; }
+    
+    .payment-section {
+      display: none;
+      background: rgba(10,20,35,0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 25px;
+      margin-top: 30px;
       border: 1px solid #22c55e;
-      border-radius: 40px;
-      padding: 0.4rem 1.2rem;
-      margin-top: 1rem;
-      font-size: 0.85rem;
     }
-    .validity {
+    .payment-section h3 { color: #22c55e; margin-bottom: 15px; }
+    .order-info {
+      background: #0f172a;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+    .file-upload-area {
+      border: 2px dashed #facc15;
+      border-radius: 16px;
+      padding: 30px;
       text-align: center;
-      margin: 1rem 0;
-      font-size: 0.9rem;
-      color: #94a3b8;
+      margin: 15px 0;
+      cursor: pointer;
+      transition: 0.3s;
     }
-
-    footer {
-      text-align: center;
-      padding: 1.5rem;
-      font-size: 0.7rem;
-      color: #475569;
+    .file-upload-area:hover { background: rgba(250,204,21,0.1); }
+    .file-upload-area input { display: none; }
+    .preview-img {
+      max-width: 100%;
+      max-height: 200px;
+      margin-top: 10px;
+      border-radius: 10px;
+      display: none;
     }
-
-    /* Toast Notification */
+    textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: white;
+      font-size: 14px;
+    }
+    .submit-payment {
+      background: #22c55e;
+      margin-top: 15px;
+    }
+    .submit-payment:hover { background: #16a34a; }
+    
     .toast {
       position: fixed;
       bottom: 30px;
       left: 50%;
-      transform: translateX(-50%) scale(0.9);
-      background: #1e293bf2;
-      backdrop-filter: blur(20px);
-      padding: 12px 24px;
-      border-radius: 60px;
+      transform: translateX(-50%);
+      background: #22c55e;
       color: white;
-      font-size: 0.85rem;
-      z-index: 200;
-      opacity: 0;
-      transition: 0.2s;
-      pointer-events: none;
-      border-left: 4px solid #facc15;
+      padding: 12px 24px;
+      border-radius: 50px;
+      z-index: 1100;
+      display: none;
     }
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) scale(1);
-    }
-
-    @media (max-width: 680px) {
-      .header h1 { font-size: 1.3rem; }
-      .plan-title { font-size: 1.2rem; }
-      .price { font-size: 1.5rem; }
-      .payment-details { flex-direction: column; gap: 0.7rem; align-items: center; }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .plan-card { animation: fadeIn 0.5s ease backwards; }
-    .plan-card:nth-child(1) { animation-delay: 0.1s; }
-    .plan-card:nth-child(2) { animation-delay: 0.2s; }
-    .plan-card:nth-child(3) { animation-delay: 0.3s; }
-    .plan-card:nth-child(4) { animation-delay: 0.4s; }
+    footer { text-align: center; margin-top: 40px; color: #64748b; }
   </style>
 </head>
 <body>
-
-<div id="canvas-container"></div>
-
-<div class="content">
-  <div class="header">
-    <h1>✨ 𝐌𝐘𝐓𝐄𝐋 𝐃𝐀𝐓𝐀 𝐒𝐄𝐑𝐕𝐈𝐂𝐄 (𝐕𝐈𝐏 𝐏𝐋𝐀𝐍𝐒) ✨</h1>
-    <div class="separator">━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
-  </div>
-
+<div class="container">
+  <h1>✨ MYTEL DATA SERVICE ✨</h1>
+  
   <div class="phone-card">
-    <i class="fas fa-phone-alt"></i>
-    <input type="tel" id="phone" placeholder="📞 09xxxxxxxxx (Phone Number)">
+    <span>📞</span>
+    <input type="tel" id="phone" placeholder="Enter phone number (09xxxxxxxxx)">
   </div>
-
+  
   <div class="plans-grid" id="plans-container"></div>
-
-  <div class="validity">
-    📅 𝐕𝐚𝐥𝐢𝐝𝐢𝐭𝐲: 𝟑𝟎 𝐃𝐚𝐲𝐬 (သက်တမ်း 30 ရက်)<br>
-    ✨ တန်တုန်းလေး အမြန်အားပေးလိုက်ပါခင်ဗျာ 😍
-  </div>
-
-  <div class="payment-card">
-    <h3>💳 𝐏𝐀𝐘𝐌𝐄𝐍𝐓 𝐌𝐄𝐓𝐇𝐎𝐃</h3>
-    <div class="payment-details">
-      <div class="payment-item"><i class="fas fa-university"></i> 🏧 𝐊𝐏𝐀𝐘 / 𝐖𝐀𝐕𝐄𝐏𝐀𝐘</div>
-      <div class="payment-item"><i class="fas fa-user"></i> 👤 𝐍𝐀𝐌𝐄: 𝐀𝐔𝐍𝐆 𝐓𝐇𝐔 𝐇𝐓𝐖𝐄</div>
-      <div class="payment-item"><i class="fas fa-mobile-alt"></i> 📞 𝐍𝐔𝐌𝐁𝐄𝐑: 𝟎𝟗𝟕𝟖𝟗𝟗𝟗𝟗𝟑𝟔𝟖</div>
+  
+  <div id="paymentSection" class="payment-section">
+    <h3>💰 Complete Your Payment</h3>
+    <div class="order-info" id="orderInfo"></div>
+    <p>🏧 Pay to: <strong>KPay/WavePay 09789999368 (AUNG THU HTWE)</strong></p>
+    
+    <div class="file-upload-area" onclick="document.getElementById('screenshotInput').click()">
+      <input type="file" id="screenshotInput" accept="image/*" capture="environment">
+      <span>📸 Click or tap to upload payment screenshot</span>
+      <img id="previewImg" class="preview-img">
     </div>
-    <div class="trust-badge">
-      <i class="fas fa-check-circle"></i> ✅ 𝟏𝟎𝟎% 𝐓𝐑𝐔𝐒𝐓𝐄𝐃 𝐒𝐄𝐑𝐕𝐈𝐂𝐄
-    </div>
+    
+    <textarea id="paymentNote" placeholder="Notes (optional)"></textarea>
+    <button class="submit-payment" id="submitPaymentBtn">✅ Submit Payment Screenshot</button>
   </div>
+  
   <footer>
-    <i class="fas fa-shield-alt"></i> Secure · Fast Activation · 24/7 Support
+    <p>🏧 KPay / WavePay: 09789999368 (AUNG THU HTWE)</p>
+    <p>✅ 100% Trusted Service</p>
   </footer>
 </div>
 
-<div id="toastMsg" class="toast">✔ Order Sent Successfully</div>
+<div id="orderModal" class="modal">
+  <div class="modal-content">
+    <h2>📋 Confirm Your Order</h2>
+    <div class="detail">📦 Package: <span id="modalPackage"></span></div>
+    <div class="detail">💰 Price: <span id="modalPrice"></span> KS</div>
+    <div class="detail">📞 Phone: <span id="modalPhone"></span></div>
+    <div class="modal-buttons">
+      <button class="close-modal" onclick="closeModal()">Cancel</button>
+      <button id="confirmOrderBtn">Confirm Order</button>
+    </div>
+  </div>
+</div>
 
-<script type="module">
-  import * as THREE from 'three';
+<div id="toast" class="toast"></div>
 
-  // --- 3D Scene Setup ---
-  const container = document.getElementById('canvas-container');
-  const scene = new THREE.Scene();
-  scene.background = null;
-  scene.fog = new THREE.FogExp2(0x050814, 0.004);
-
-  const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.set(0, 1.5, 12);
-  camera.lookAt(0, 0, 0);
-
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setClearColor(0x050814, 1);
-  container.appendChild(renderer.domElement);
-
-  // Lights
-  const ambient = new THREE.AmbientLight(0x111122);
-  scene.add(ambient);
-  const mainLight = new THREE.DirectionalLight(0xffcc88, 1);
-  mainLight.position.set(3, 5, 4);
-  scene.add(mainLight);
-  const backLight = new THREE.PointLight(0x4466ff, 0.5);
-  backLight.position.set(-2, 1, -5);
-  scene.add(backLight);
-  const goldLight = new THREE.PointLight(0xffaa44, 0.6);
-  goldLight.position.set(2, 2, 3);
-  scene.add(goldLight);
-
-  // Central glowing objects
-  const coreGeo = new THREE.IcosahedronGeometry(0.9, 0);
-  const coreMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.6, metalness: 0.8 });
-  const core = new THREE.Mesh(coreGeo, coreMat);
-  scene.add(core);
+<script>
+  const packages = {
+    "VIP LEVEL - 1": { price: 15000, features: ["22 GB (Data)", "8000 On-Net Mins", "5000 SMS"] },
+    "VIP LEVEL - 2": { price: 20000, features: ["40 GB (Data)", "250 On-Net Mins", "25 Any Net Mins"] },
+    "VIP LEVEL - 3": { price: 25000, features: ["40 GB (Data)", "1400 On-Net Mins", "8000 SMS"] },
+    "VIP LEVEL - 4 (ULTRA)": { price: 30000, features: ["120 GB (High-Speed Data)"] }
+  };
   
-  const ringGeo = new THREE.TorusGeometry(1.3, 0.05, 64, 300);
-  const ringMat = new THREE.MeshStandardMaterial({ color: 0xffd966, emissive: 0xcc8800, emissiveIntensity: 0.9 });
-  const ring = new THREE.Mesh(ringGeo, ringMat);
-  scene.add(ring);
-  
-  const outerRingGeo = new THREE.TorusGeometry(1.7, 0.03, 64, 400);
-  const outerRingMat = new THREE.MeshStandardMaterial({ color: 0xffaa33, emissive: 0xaa5511, emissiveIntensity: 0.5 });
-  const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
-  scene.add(outerRing);
-  
-  // Floating particles
-  const particlesCount = 2000;
-  const particlesGeo = new THREE.BufferGeometry();
-  const posArray = new Float32Array(particlesCount * 3);
-  for (let i = 0; i < particlesCount; i++) {
-    posArray[i*3] = (Math.random() - 0.5) * 140;
-    posArray[i*3+1] = (Math.random() - 0.5) * 80;
-    posArray[i*3+2] = (Math.random() - 0.5) * 70 - 30;
-  }
-  particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-  const particleMat = new THREE.PointsMaterial({ color: 0xffaa66, size: 0.06, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending });
-  const particles = new THREE.Points(particlesGeo, particleMat);
-  scene.add(particles);
-
-  let time = 0;
-  function animate3D() {
-    requestAnimationFrame(animate3D);
-    time += 0.008;
-    
-    core.rotation.y = time * 0.5;
-    core.rotation.x = Math.sin(time * 0.7) * 0.2;
-    ring.rotation.z = time * 0.6;
-    ring.rotation.x = Math.sin(time * 0.4) * 0.3;
-    outerRing.rotation.y = time * 0.3;
-    outerRing.rotation.x = time * 0.2;
-    
-    particles.rotation.y += 0.0005;
-    particles.rotation.x += 0.0003;
-    
-    camera.position.x += (0 - camera.position.x) * 0.02;
-    camera.position.y += (1.2 - camera.position.y) * 0.02;
-    camera.lookAt(0, 0, 0);
-    
-    renderer.render(scene, camera);
-  }
-  animate3D();
-  
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-
-  // --- Plans Data ---
-  const plans = [
-    { name: "🏆 VIP LEVEL - 1", features: ["22 GB (Data)", "8000 On-Net Mins", "5000 SMS"], price: "15,000 KS" },
-    { name: "🏆 VIP LEVEL - 2", features: ["40 GB (Data)", "250 On-Net Mins", "25 Any Net Mins"], price: "20,000 KS" },
-    { name: "🏆 VIP LEVEL - 3", features: ["40 GB (Data)", "1400 On-Net Mins", "8000 SMS"], price: "25,000 KS" },
-    { name: "💎 VIP LEVEL - 4 (ULTRA)", features: ["120 GB (High-Speed Data)"], price: "30,000 KS" }
-  ];
+  let currentOrder = null;
+  let selectedImageFile = null;
   
   function renderPlans() {
-    const containerDiv = document.getElementById('plans-container');
-    containerDiv.innerHTML = '';
-    plans.forEach((plan, idx) => {
+    const container = document.getElementById('plans-container');
+    container.innerHTML = '';
+    for (const [name, data] of Object.entries(packages)) {
       const card = document.createElement('div');
       card.className = 'plan-card';
-      let featuresHtml = '';
-      plan.features.forEach(f => {
-        featuresHtml += `<li><i class="fas fa-bolt"></i> 🔹 ${f}</li>`;
-      });
       card.innerHTML = `
-        <div class="plan-title"><i class="fas fa-crown"></i> ${plan.name}</div>
-        <ul class="feature-list">${featuresHtml}</ul>
-        <div class="price">💰 ${plan.price.split(' ')[0]} <small>${plan.price.split(' ')[1]}</small></div>
-        <button class="buy-btn" data-plan="${plan.name.replace(/[🏆💎]/g, '').trim()}"><i class="fas fa-shopping-cart"></i> ORDER NOW</button>
+        <h3>${name}</h3>
+        <ul>${data.features.map(f => `<li>🔹 ${f}</li>`).join('')}</ul>
+        <div class="price">${data.price.toLocaleString()} KS</div>
+        <button onclick="showOrderModal('${name}', ${data.price})">ORDER NOW</button>
       `;
-      containerDiv.appendChild(card);
-    });
-    
-    document.querySelectorAll('.buy-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const planName = btn.getAttribute('data-plan');
-        orderPackage(planName);
-      });
-    });
+      container.appendChild(card);
+    }
   }
   
-  // Order function - sends to backend /order endpoint
-  async function orderPackage(pkg) {
+  function showOrderModal(pkg, price) {
     const phone = document.getElementById('phone').value.trim();
     if (!phone || phone.length < 9) {
-      showToast("⚠️ Please enter valid phone number", "#f97316");
+      showToast("⚠️ Please enter valid phone number!", "#f97316");
       return;
     }
     
-    const btn = document.activeElement;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Sending...';
-    btn.disabled = true;
+    document.getElementById('modalPackage').innerText = pkg;
+    document.getElementById('modalPrice').innerText = price.toLocaleString();
+    document.getElementById('modalPhone').innerText = phone;
+    
+    currentOrder = { packageName: pkg, price: price, phone: phone };
+    document.getElementById('orderModal').style.display = 'flex';
+  }
+  
+  function closeModal() {
+    document.getElementById('orderModal').style.display = 'none';
+  }
+  
+  async function confirmOrder() {
+    if (!currentOrder) return;
+    
+    const confirmBtn = document.getElementById('confirmOrderBtn');
+    confirmBtn.innerText = "Processing...";
+    confirmBtn.disabled = true;
     
     try {
       const response = await fetch('/order', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          packageName: pkg, 
-          phone: phone 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          packageName: currentOrder.packageName,
+          phone: currentOrder.phone
         })
       });
       
       const data = await response.json();
       
-      if (response.ok && data.success) {
-        showToast(`✅ ${pkg} ordered! Check Telegram for confirmation.`, "#22c55e");
+      if (data.success) {
+        closeModal();
+        
+        document.getElementById('orderInfo').innerHTML = `
+          ✅ Order ID: <strong>${data.orderId}</strong><br>
+          📦 Package: ${currentOrder.packageName}<br>
+          📞 Phone: ${currentOrder.phone}<br>
+          💰 Amount: ${currentOrder.price.toLocaleString()} KS
+        `;
+        document.getElementById('paymentSection').style.display = 'block';
+        currentOrder.orderId = data.orderId;
+        
+        showToast(`✅ Order created! Please send payment screenshot.`, "#22c55e");
         document.getElementById('phone').value = '';
       } else {
-        showToast(`❌ ${data.message || "Order failed. Try again."}`, "#ef4444");
+        showToast(`❌ ${data.message}`, "#ef4444");
       }
     } catch (err) {
-      console.error("Order error:", err);
-      showToast(`❌ Network error. Please check connection.`, "#ef4444");
+      showToast("❌ Network error. Please try again.", "#ef4444");
     } finally {
-      btn.innerHTML = originalText;
-      btn.disabled = false;
+      confirmBtn.innerText = "Confirm Order";
+      confirmBtn.disabled = false;
     }
   }
   
-  function showToast(msg, color = "#facc15") {
-    const toast = document.getElementById('toastMsg');
-    toast.style.borderLeftColor = color;
-    toast.innerHTML = `<i class="fas fa-info-circle"></i> ${msg}`;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
+  const fileInput = document.getElementById('screenshotInput');
+  const previewImg = document.getElementById('previewImg');
+  
+  fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      selectedImageFile = file;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        previewImg.src = event.target.result;
+        previewImg.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    } else {
+      showToast("Please select an image file", "#f97316");
+    }
+  });
+  
+  async function submitPayment() {
+    if (!currentOrder || !currentOrder.orderId) {
+      showToast("Please create an order first", "#f97316");
+      return;
+    }
+    
+    if (!selectedImageFile) {
+      showToast("Please select a payment screenshot", "#f97316");
+      return;
+    }
+    
+    const submitBtn = document.getElementById('submitPaymentBtn');
+    submitBtn.innerText = "Submitting...";
+    submitBtn.disabled = true;
+    
+    const formData = new FormData();
+    formData.append('orderId', currentOrder.orderId);
+    formData.append('packageName', currentOrder.packageName);
+    formData.append('phone', currentOrder.phone);
+    formData.append('screenshot', selectedImageFile);
+    formData.append('note', document.getElementById('paymentNote').value);
+    
+    try {
+      const response = await fetch('/submit-payment', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        showToast("✅ Payment screenshot submitted! Admin will verify.", "#22c55e");
+        document.getElementById('paymentSection').style.display = 'none';
+        document.getElementById('paymentNote').value = '';
+        previewImg.style.display = 'none';
+        previewImg.src = '';
+        selectedImageFile = null;
+        fileInput.value = '';
+        currentOrder = null;
+      } else {
+        showToast(`❌ ${result.message}`, "#ef4444");
+      }
+    } catch (err) {
+      showToast("❌ Failed to submit. Please try again.", "#ef4444");
+    } finally {
+      submitBtn.innerText = "✅ Submit Payment Screenshot";
+      submitBtn.disabled = false;
+    }
   }
+  
+  function showToast(msg, bgColor) {
+    const toast = document.getElementById('toast');
+    toast.style.background = bgColor;
+    toast.innerText = msg;
+    toast.style.display = 'block';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 5000);
+  }
+  
+  document.getElementById('confirmOrderBtn').onclick = confirmOrder;
+  document.getElementById('submitPaymentBtn').onclick = submitPayment;
   
   renderPlans();
 </script>
