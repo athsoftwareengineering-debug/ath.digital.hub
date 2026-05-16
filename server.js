@@ -16,7 +16,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.CHAT_ID;
 
-// In-memory storage (Firebase မပါဘဲ အရင်စမ်းမယ်)
+// In-memory storage
 let orders = [];
 let orderIdCounter = 1;
 
@@ -36,7 +36,10 @@ const PACKAGES = {
 // ========== HELPER FUNCTIONS ==========
 async function updateOrderStatus(orderId, status) {
   const order = orders.find(o => o.id == orderId);
-  if (order) order.status = status;
+  if (order) {
+    order.status = status;
+    order.updatedAt = new Date().toISOString();
+  }
   return order;
 }
 
@@ -66,6 +69,7 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
       body: JSON.stringify(body)
     });
     const result = await response.json();
+    console.log("Telegram send:", result.ok ? "✅" : "❌", result.description);
     return result.ok;
   } catch (error) {
     console.error("Telegram send error:", error);
@@ -91,9 +95,12 @@ app.post('/order', async (req, res) => {
       phone,
       price: packageData.price,
       status: "pending_payment",
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
     orders.unshift(newOrder);
+    
+    console.log(`📦 New order: ${newOrder.id} - ${packageName} - ${phone}`);
     
     const adminMsg = `
 🆕 **NEW ORDER CREATED**
@@ -102,10 +109,18 @@ app.post('/order', async (req, res) => {
 📦 Package: ${packageName}
 📞 Phone: ${phone}
 💰 Amount: ${packageData.price.toLocaleString()} KS
+📅 Time: ${new Date().toLocaleString('my-MM')}
     `;
     await sendTelegramMessage(ADMIN_CHAT_ID, adminMsg);
     
-    res.json({ success: true, orderId: newOrder.id, packageName, price: packageData.price, phone, paymentInfo: PAYMENT_INFO });
+    res.json({ 
+      success: true, 
+      orderId: newOrder.id, 
+      packageName, 
+      price: packageData.price, 
+      phone, 
+      paymentInfo: PAYMENT_INFO 
+    });
   } catch (error) {
     console.error("Order error:", error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -115,13 +130,21 @@ app.post('/order', async (req, res) => {
 // ========== SUBMIT PAYMENT SCREENSHOT ==========
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   try {
+    console.log("🔔 Payment submission received");
     const { orderId, packageName, phone, note } = req.body;
     const screenshot = req.file;
+    
+    console.log("Order ID:", orderId);
+    console.log("Package:", packageName);
+    console.log("Phone:", phone);
+    console.log("Screenshot:", screenshot ? `✅ ${screenshot.size} bytes` : "❌ No file");
+    
     if (!screenshot) {
       return res.status(400).json({ success: false, message: "Screenshot required" });
     }
     
     await updateOrderStatus(orderId, 'payment_received');
+    
     const base64Image = screenshot.buffer.toString('base64');
     const caption = `
 📸 **PAYMENT SCREENSHOT RECEIVED**
@@ -134,20 +157,31 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
 Use: /approve ${orderId} or /reject ${orderId}
     `;
     
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+    console.log("📤 Sending photo to Telegram...");
+    
+    const telegramResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: ADMIN_CHAT_ID,
         photo: `data:image/jpeg;base64,${base64Image}`,
-        caption: caption
+        caption: caption,
+        parse_mode: 'Markdown'
       })
     });
     
-    res.json({ success: true, message: "Payment submitted!" });
+    const telegramResult = await telegramResponse.json();
+    console.log("Telegram photo send:", telegramResult.ok ? "✅ Sent" : "❌ Failed", telegramResult.description);
+    
+    if (telegramResult.ok) {
+      res.json({ success: true, message: "Payment submitted! Admin notified." });
+    } else {
+      res.json({ success: false, message: "Telegram error: " + telegramResult.description });
+    }
+    
   } catch (error) {
     console.error("Payment submit error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error: " + error.message });
   }
 });
 
@@ -159,7 +193,6 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
     if (callback_query) {
       const chatId = callback_query.message.chat.id;
       const data = callback_query.data;
-      const messageId = callback_query.message.message_id;
       
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
         method: 'POST',
@@ -172,7 +205,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         const order = orders.find(o => o.id === orderId);
         if (order) {
           await updateOrderStatus(orderId, 'approved');
-          await sendTelegramMessage(chatId, `✅ Order #${orderId} approved!`);
+          await sendTelegramMessage(chatId, `✅ Order #${orderId} approved!\n📞 Phone: ${order.phone}\n📦 Package: ${order.packageName}`);
         }
         return res.sendStatus(200);
       }
@@ -182,7 +215,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         const order = orders.find(o => o.id === orderId);
         if (order) {
           await updateOrderStatus(orderId, 'rejected');
-          await sendTelegramMessage(chatId, `❌ Order #${orderId} rejected.`);
+          await sendTelegramMessage(chatId, `❌ Order #${orderId} rejected.\n📞 Phone: ${order.phone}`);
         }
         return res.sendStatus(200);
       }
@@ -194,8 +227,10 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         } else {
           let msg = "📋 **PENDING ORDERS**\n━━━━━━━━━━━━━━━━━━\n";
           for (const order of pendingOrders.slice(0, 10)) {
-            msg += `🆔 ${order.id} | ${order.packageName}\n   📞 ${order.phone}\n\n`;
+            const statusEmoji = order.status === 'payment_received' ? '💰' : '⏳';
+            msg += `${statusEmoji} *ID: ${order.id}*\n   📦 ${order.packageName}\n   📞 ${order.phone}\n   💰 ${order.price.toLocaleString()} KS\n\n`;
           }
+          msg += "\nUse: `/approve [id]` or `/reject [id]`";
           await sendTelegramMessage(chatId, msg);
         }
         return res.sendStatus(200);
@@ -210,7 +245,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             const statusEmoji = {
               'pending_payment': '⏳', 'payment_received': '💰', 'approved': '✅', 'rejected': '❌'
             }[order.status] || '📌';
-            msg += `${statusEmoji} ${order.id} | ${order.packageName}\n   💰 ${order.price.toLocaleString()} KS | ${order.status}\n\n`;
+            msg += `${statusEmoji} *${order.id}* | ${order.packageName}\n   📞 ${order.phone}\n   💰 ${order.price.toLocaleString()} KS | ${order.status}\n\n`;
           }
           await sendTelegramMessage(chatId, msg);
         }
@@ -218,18 +253,18 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       }
       
       if (data === 'payment_info') {
-        await sendTelegramMessage(chatId, `💰 *PAYMENT INFO*\n\n🏧 KPay/WavePay: 09789999368\n👤 Name: AUNG THU HTWE`);
+        await sendTelegramMessage(chatId, `💰 *PAYMENT INFORMATION*\n\n🏧 KPay / WavePay: \`09789999368\`\n👤 Name: AUNG THU HTWE\n\n📌 Customer must send screenshot after payment.`);
         return res.sendStatus(200);
       }
       
       if (data === 'help') {
-        await sendTelegramMessage(chatId, `🤖 *COMMANDS*\n/start - Menu\n/orders - Pending orders\n/approve [id]\n/reject [id]\n/all - All orders`);
+        await sendTelegramMessage(chatId, `🤖 *MYTEL ORDER BOT - HELP*\n\n*Commands:*\n/start - Show main menu\n/orders - View pending orders\n/approve [id] - Approve order\n/reject [id] - Reject order\n/all - View all orders\n/status [id] - Check order status`);
         return res.sendStatus(200);
       }
       
       if (data === 'refresh_stats') {
         const stats = await getOrderStats();
-        await sendTelegramMessage(chatId, `🔄 ${stats}`);
+        await sendTelegramMessage(chatId, `🔄 *Stats Updated*\n\n${stats}`);
         return res.sendStatus(200);
       }
       
@@ -250,7 +285,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             [{ text: "🔄 Refresh Stats", callback_data: "refresh_stats" }]
           ]
         };
-        await sendTelegramMessage(chatId, `🤖 *MYTEL BOT*\nWelcome Admin!\n\n${stats}`, keyboard);
+        await sendTelegramMessage(chatId, `🤖 *MYTEL ORDER BOT - ADMIN PANEL*\n\nWelcome back, Admin! 👋\n\n${stats}\n\n🔽 *Use the buttons below:*`, keyboard);
         return res.sendStatus(200);
       }
       
@@ -259,9 +294,9 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         if (pendingOrders.length === 0) {
           await sendTelegramMessage(chatId, "📭 No pending orders.");
         } else {
-          let msg = "📋 **PENDING ORDERS**\n\n";
+          let msg = "📋 **PENDING ORDERS**\n━━━━━━━━━━━━━━━━━━\n";
           for (const order of pendingOrders) {
-            msg += `🆔 ${order.id} | ${order.packageName} | ${order.phone}\n`;
+            msg += `🆔 ${order.id} | ${order.packageName} | ${order.phone} | ${order.price.toLocaleString()} KS\n`;
           }
           await sendTelegramMessage(chatId, msg);
         }
@@ -272,10 +307,10 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         const id = parseInt(text.split(' ')[1]);
         const order = orders.find(o => o.id === id);
         if (!order) {
-          await sendTelegramMessage(chatId, `❌ Order ${id} not found`);
+          await sendTelegramMessage(chatId, `❌ Order ID ${id} not found.`);
         } else {
-          order.status = 'approved';
-          await sendTelegramMessage(chatId, `✅ Order #${id} approved!`);
+          await updateOrderStatus(id, 'approved');
+          await sendTelegramMessage(chatId, `✅ Order #${id} approved!\n📞 Phone: ${order.phone}\n📦 Package: ${order.packageName}`);
         }
         return res.sendStatus(200);
       }
@@ -284,21 +319,24 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         const id = parseInt(text.split(' ')[1]);
         const order = orders.find(o => o.id === id);
         if (!order) {
-          await sendTelegramMessage(chatId, `❌ Order ${id} not found`);
+          await sendTelegramMessage(chatId, `❌ Order ID ${id} not found.`);
         } else {
-          order.status = 'rejected';
-          await sendTelegramMessage(chatId, `❌ Order #${id} rejected.`);
+          await updateOrderStatus(id, 'rejected');
+          await sendTelegramMessage(chatId, `❌ Order #${id} rejected.\n📞 Phone: ${order.phone}`);
         }
         return res.sendStatus(200);
       }
       
       if (text === '/all') {
         if (orders.length === 0) {
-          await sendTelegramMessage(chatId, "📭 No orders");
+          await sendTelegramMessage(chatId, "📭 No orders yet.");
         } else {
-          let msg = "📋 **ALL ORDERS**\n\n";
+          let msg = "📋 **ALL ORDERS**\n━━━━━━━━━━━━━━━━━━\n";
           for (const order of orders.slice(0, 20)) {
-            msg += `${order.id} | ${order.packageName} | ${order.status}\n`;
+            const statusEmoji = {
+              'pending_payment': '⏳', 'payment_received': '💰', 'approved': '✅', 'rejected': '❌'
+            }[order.status] || '📌';
+            msg += `${statusEmoji} ${order.id} | ${order.packageName} | ${order.status}\n`;
           }
           await sendTelegramMessage(chatId, msg);
         }
@@ -313,10 +351,14 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
   }
 });
 
-// ========== TEST ENDPOINT ==========
+// ========== TEST ENDPOINTS ==========
 app.get('/test-bot', async (req, res) => {
-  await sendTelegramMessage(ADMIN_CHAT_ID, "✅ Bot is working!");
-  res.json({ success: true });
+  const result = await sendTelegramMessage(ADMIN_CHAT_ID, "✅ Bot is working! Time: " + new Date().toLocaleString());
+  res.json({ success: result });
+});
+
+app.get('/orders-list', (req, res) => {
+  res.json({ orders: orders, count: orders.length });
 });
 
 // ========== ROOT ENDPOINT ==========
