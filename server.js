@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
-const FormData = require('form-data');
 
 const app = express();
 
@@ -94,42 +93,27 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
   }
 }
 
-// ========== SEND TELEGRAM PHOTO (FIXED - No JSON parse error) ==========
+// ========== SEND TELEGRAM PHOTO (FIXED - Base64 method) ==========
 async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   if (!BOT_TOKEN) return false;
   try {
-    const form = new FormData();
-    form.append('chat_id', chatId);
-    form.append('photo', buffer, {
-      filename: 'screenshot.jpg',
-      contentType: 'image/jpeg'
-    });
-    form.append('caption', caption);
-    form.append('parse_mode', 'Markdown');
-    if (keyboard) form.append('reply_markup', JSON.stringify(keyboard));
+    const base64Image = buffer.toString('base64');
+    
+    const body = {
+      chat_id: chatId,
+      photo: `data:image/jpeg;base64,${base64Image}`,
+      caption: caption,
+      parse_mode: 'Markdown'
+    };
+    if (keyboard) body.reply_markup = JSON.stringify(keyboard);
     
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
-      body: form,
-      headers: form.getHeaders()
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
     });
     
-    // Read response as text first, then try to parse
-    const responseText = await response.text();
-    console.log("Telegram raw response:", responseText.substring(0, 200));
-    
-    let result;
-    try {
-      result = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error("JSON parse error, using fallback:", parseError.message);
-      if (response.ok) {
-        result = { ok: true };
-      } else {
-        result = { ok: false, description: `HTTP ${response.status}` };
-      }
-    }
-    
+    const result = await response.json();
     console.log("Telegram photo:", result.ok ? "✅" : "❌", result.description);
     return result.ok;
   } catch (error) {
