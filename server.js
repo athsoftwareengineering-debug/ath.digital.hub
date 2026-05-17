@@ -6,24 +6,41 @@ const fs = require('fs');
 const app = express();
 
 // ========== MYANMAR TIME ZONE SETUP ==========
-// မြန်မာစံတော်ချိန် (UTC+6:30) သတ်မှတ်ခြင်း
 process.env.TZ = 'Asia/Yangon';
 
-// မြန်မာချိန်နဲ့ ရက်စွဲဖော်မတ်
-function getMyanmarTime() {
+// 12 နာရီပုံစံ (AM/PM) နဲ့ မြန်မာချိန်ပြခြင်း
+function getMyanmarTime12hr() {
   const now = new Date();
   return {
-    full: now.toLocaleString('my-MM', { timeZone: 'Asia/Yangon' }),
-    date: now.toLocaleDateString('my-MM', { timeZone: 'Asia/Yangon' }),
-    time: now.toLocaleTimeString('my-MM', { timeZone: 'Asia/Yangon' }),
+    full: now.toLocaleString('my-MM', { 
+      timeZone: 'Asia/Yangon',
+      hour12: true,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }),
+    date: now.toLocaleDateString('my-MM', { timeZone: 'Asia/Yangon', year: 'numeric', month: '2-digit', day: '2-digit' }),
+    time: now.toLocaleTimeString('my-MM', { timeZone: 'Asia/Yangon', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
     iso: now.toISOString(),
     timestamp: now.getTime()
   };
 }
 
-function formatMyanmarDate(date) {
+function formatMyanmarDate12hr(date) {
   if (!date) return 'N/A';
-  return new Date(date).toLocaleString('my-MM', { timeZone: 'Asia/Yangon' });
+  return new Date(date).toLocaleString('my-MM', { 
+    timeZone: 'Asia/Yangon',
+    hour12: true,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
 }
 
 // ========== MIDDLEWARE ==========
@@ -37,9 +54,10 @@ const ADMIN_CHAT_ID = process.env.CHAT_ID;
 const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "mytel2024";
 
+const myanmarTime = getMyanmarTime12hr();
 console.log(`\n🔐 ========== ADMIN CREDENTIALS ==========`);
 console.log(`🔑 Password: ${ADMIN_PASSWORD}`);
-console.log(`🕐 Myanmar Time: ${getMyanmarTime().full}`);
+console.log(`🕐 Myanmar Time (12hr): ${myanmarTime.full}`);
 console.log(`=========================================\n`);
 
 // ========== DATA STORAGE ==========
@@ -61,7 +79,7 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    const myanmarTime = getMyanmarTime();
+    const myanmarTime = getMyanmarTime12hr();
     cb(null, myanmarTime.timestamp + '-' + Math.round(Math.random() * 1E9) + '.jpg');
   }
 });
@@ -118,7 +136,7 @@ function calculateRemainingDays(endDate) {
 }
 
 function updateAllOrdersRemainingDays() {
-  const myanmarTime = getMyanmarTime();
+  const myanmarTime = getMyanmarTime12hr();
   console.log(`🔄 Running daily countdown check... (${myanmarTime.full})`);
   
   orders.forEach(order => {
@@ -130,7 +148,7 @@ function updateAllOrdersRemainingDays() {
         order.isExpired = true;
         order.status = 'expired';
         sendTelegramMessage(ADMIN_CHAT_ID, 
-          `⏰ *EXPIRED* Order #${order.id}\n📞 ${order.phone}\n📅 ကုန်ဆုံးရက်: ${formatMyanmarDate(order.endDate)}`
+          `⏰ *EXPIRED* Order #${order.id}\n📞 ${order.phone}\n📅 ကုန်ဆုံးရက်: ${formatMyanmarDate12hr(order.endDate)}`
         );
       }
       
@@ -138,8 +156,14 @@ function updateAllOrdersRemainingDays() {
       if (alertDays.includes(remaining) && order.lastAlertDay !== remaining && remaining > 0) {
         order.lastAlertDay = remaining;
         sendTelegramMessage(ADMIN_CHAT_ID,
-          `⚠️ *REMINDER* Order #${order.id}\n📞 ${order.phone}\n⏳ ${remaining} ရက်သာကျန်ပါတော့သည်။\n📅 ကုန်ဆုံးရက်: ${formatMyanmarDate(order.endDate)}`
+          `⚠️ *REMINDER* Order #${order.id}\n📞 ${order.phone}\n⏳ ${remaining} ရက်သာကျန်ပါတော့သည်။\n📅 ကုန်ဆုံးရက်: ${formatMyanmarDate12hr(order.endDate)}`
         );
+        
+        if (GROUP_CHAT_ID) {
+          sendTelegramMessage(GROUP_CHAT_ID,
+            `🔔 *သတိပေးချက်*\n📞 ${order.phone}\n⏳ ${remaining} ရက်သာကျန်ပါတော့သည်။\n💨 အခုပဲ ပြန်လည်မှာယူနိုင်ပါသည်။`
+          );
+        }
       }
     }
   });
@@ -153,7 +177,7 @@ function scheduleDailyTask() {
   if (now > next9AM) next9AM.setDate(next9AM.getDate() + 1);
   
   const msUntil9AM = next9AM - now;
-  console.log(`⏰ Next countdown check at: ${next9AM.toLocaleString('my-MM', { timeZone: 'Asia/Yangon' })}`);
+  console.log(`⏰ Next countdown check at: ${next9AM.toLocaleString('my-MM', { timeZone: 'Asia/Yangon', hour12: true })}`);
   
   setTimeout(() => {
     updateAllOrdersRemainingDays();
@@ -169,7 +193,7 @@ setTimeout(() => updateAllOrdersRemainingDays(), 5000);
 app.post('/order', async (req, res) => {
   try {
     const { packageName, phone } = req.body;
-    const myanmarTime = getMyanmarTime();
+    const myanmarTime = getMyanmarTime12hr();
     console.log(`📦 New order: ${packageName} for ${phone} (${myanmarTime.full})`);
     
     if (!packageName || !phone) {
@@ -216,7 +240,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   try {
     const orderId = parseInt(req.body.orderId);
     const screenshot = req.file;
-    const myanmarTime = getMyanmarTime();
+    const myanmarTime = getMyanmarTime12hr();
     
     if (!screenshot) return res.status(400).json({ success: false, message: "Screenshot required" });
     
@@ -263,8 +287,8 @@ app.get('/api/track-order', (req, res) => {
   if (order.startDate && order.endDate) {
     const remaining = calculateRemainingDays(order.endDate);
     countdownInfo = {
-      startDate: formatMyanmarDate(order.startDate),
-      endDate: formatMyanmarDate(order.endDate),
+      startDate: formatMyanmarDate12hr(order.startDate),
+      endDate: formatMyanmarDate12hr(order.endDate),
       daysRemaining: remaining > 0 ? remaining : 0,
       isExpired: remaining <= 0
     };
@@ -278,7 +302,7 @@ app.get('/api/track-order', (req, res) => {
       phone: order.phone,
       price: order.price,
       status: order.status,
-      createdAt: formatMyanmarDate(order.createdAt),
+      createdAt: formatMyanmarDate12hr(order.createdAt),
       countdown: countdownInfo
     }
   });
@@ -310,7 +334,9 @@ app.get('/api/admin/orders', (req, res) => {
   
   const formattedOrders = paginated.map(o => ({
     ...o,
-    createdAtMyanmar: formatMyanmarDate(o.createdAt)
+    createdAtMyanmar: formatMyanmarDate12hr(o.createdAt),
+    startDateMyanmar: o.startDate ? formatMyanmarDate12hr(o.startDate) : null,
+    endDateMyanmar: o.endDate ? formatMyanmarDate12hr(o.endDate) : null
   }));
   
   res.json({ success: true, orders: formattedOrders, total: filtered.length, stats });
@@ -326,7 +352,7 @@ app.post('/api/admin/update-order', async (req, res) => {
   const order = orders.find(o => o.id === parseInt(orderId));
   if (!order) return res.status(404).json({ success: false });
   
-  const myanmarTime = getMyanmarTime();
+  const myanmarTime = getMyanmarTime12hr();
   
   if (status === 'approved' && !order.startDate) {
     const startDate = new Date();
@@ -341,7 +367,7 @@ app.post('/api/admin/update-order', async (req, res) => {
     order.updatedAt = myanmarTime.iso;
     
     await sendTelegramMessage(ADMIN_CHAT_ID, 
-      `✅ Order #${orderId} approved! 30 days started.\n📞 ${order.phone}\n📅 စတင်ရက်: ${formatMyanmarDate(startDate)}\n📅 ကုန်ဆုံးရက်: ${formatMyanmarDate(endDate)}`
+      `✅ Order #${orderId} approved! 30 days started.\n📞 ${order.phone}\n📅 စတင်ရက်: ${formatMyanmarDate12hr(startDate)}\n📅 ကုန်ဆုံးရက်: ${formatMyanmarDate12hr(endDate)}`
     );
     
     if (GROUP_CHAT_ID) {
@@ -352,8 +378,8 @@ app.post('/api/admin/update-order', async (req, res) => {
 📞 ဖုန်းနံပါတ်: ${order.phone}
 📦 Package: ${order.packageName}
 💰 ပမာဏ: ${order.price.toLocaleString()} KS
-📅 စတင်ရက်: ${formatMyanmarDate(startDate)}
-⏰ ကုန်ဆုံးရက်: ${formatMyanmarDate(endDate)}
+📅 စတင်ရက်: ${formatMyanmarDate12hr(startDate)}
+⏰ ကုန်ဆုံးရက်: ${formatMyanmarDate12hr(endDate)}
 ━━━━━━━━━━━━━━━━━━━━
 👤 အတည်ပြုသူ: 𝐀𝐃𝐌𝐈𝐍 𝐒𝐔𝐏𝐏𝐎𝐑𝐓 | 𝟐𝟒/𝟕
       `;
@@ -375,7 +401,6 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
     if (callback_query?.data) {
       const data = callback_query.data;
       const chatId = callback_query.message.chat.id;
-      const messageId = callback_query.message.message_id;
       
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
         method: 'POST',
@@ -386,7 +411,6 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       if (data.startsWith('approve_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
-        const myanmarTime = getMyanmarTime();
         
         if (order && !order.startDate) {
           const startDate = new Date();
@@ -398,11 +422,13 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           order.daysRemaining = 30;
           order.status = 'approved';
           
-          await sendTelegramMessage(chatId, `✅ Order #${orderId} approved! 30 days started.\n📅 စတင်ရက်: ${formatMyanmarDate(startDate)}\n📅 ကုန်ဆုံးရက်: ${formatMyanmarDate(endDate)}`);
+          await sendTelegramMessage(chatId, 
+            `✅ Order #${orderId} approved! 30 days started.\n📅 စတင်ရက်: ${formatMyanmarDate12hr(startDate)}\n📅 ကုန်ဆုံးရက်: ${formatMyanmarDate12hr(endDate)}`
+          );
           
           if (GROUP_CHAT_ID) {
             await sendTelegramMessage(GROUP_CHAT_ID, 
-              `🚨 *MYTEL DATA ACTIVATED* 🚨\n━━━━━━━━━━━━━━━━━━━━\n✅ အော်ဒါ #${order.id} အတွက် ဒေတာသွင်းပြီးပါပြီ။\n📞 ${order.phone}\n📦 ${order.packageName}\n💰 ${order.price.toLocaleString()} KS\n📅 စတင်ရက်: ${formatMyanmarDate(startDate)}\n⏰ ကုန်ဆုံးရက်: ${formatMyanmarDate(endDate)}\n━━━━━━━━━━━━━━━━━━━━\n👤 𝐀𝐃𝐌𝐈𝐍 𝐒𝐔𝐏𝐏𝐎𝐑𝐓 | 𝟐𝟒/𝟕`
+              `🚨 *MYTEL DATA ACTIVATED* 🚨\n━━━━━━━━━━━━━━━━━━━━\n✅ အော်ဒါ #${order.id} အတွက် ဒေတာသွင်းပြီးပါပြီ။\n📞 ${order.phone}\n📦 ${order.packageName}\n💰 ${order.price.toLocaleString()} KS\n📅 စတင်ရက်: ${formatMyanmarDate12hr(startDate)}\n⏰ ကုန်ဆုံးရက်: ${formatMyanmarDate12hr(endDate)}\n━━━━━━━━━━━━━━━━━━━━\n👤 𝐀𝐃𝐌𝐈𝐍 𝐒𝐔𝐏𝐏𝐎𝐑𝐓 | 𝟐𝟒/𝟕`
             );
           }
         }
@@ -414,6 +440,12 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         if (order) {
           order.status = 'rejected';
           await sendTelegramMessage(chatId, `❌ Order #${orderId} rejected.`);
+          
+          if (GROUP_CHAT_ID) {
+            await sendTelegramMessage(GROUP_CHAT_ID,
+              `⚠️ *အော်ဒါပယ်ဖျက်ခြင်း* ⚠️\n━━━━━━━━━━━━━━━━━━━━\n❌ အော်ဒါ #${order.id} အား ပယ်ဖျက်လိုက်ပါသည်။\n📞 ${order.phone}\n📦 ${order.packageName}\n📝 အကြောင်းရင်း: ငွေလွှဲ မှန်ကန်မှုမရှိပါ။\n━━━━━━━━━━━━━━━━━━━━\n👤 𝐀𝐃𝐌𝐈𝐍 𝐒𝐔𝐏𝐏𝐎𝐑𝐓 | 𝟐𝟒/𝟕`
+            );
+          }
         }
       }
     }
@@ -433,10 +465,10 @@ app.get('/', (req, res) => {
 // ========== START SERVER ==========
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, async () => {
-  const myanmarTime = getMyanmarTime();
+  const myanmarTime = getMyanmarTime12hr();
   console.log(`\n🚀 ========== SERVER STARTED ==========`);
   console.log(`📡 Port: ${PORT}`);
-  console.log(`🕐 Myanmar Time: ${myanmarTime.full}`);
+  console.log(`🕐 Myanmar Time (12hr): ${myanmarTime.full}`);
   console.log(`========================================`);
   console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅' : '❌'}`);
   console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅' : '❌'}`);
