@@ -2,8 +2,53 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
+const admin = require('firebase-admin');
 
 const app = express();
+
+// ========== FIREBASE ADMIN SDK SETUP ==========
+let serviceAccount;
+let db = null;
+let ordersCollection = null;
+
+try {
+  // Try to load from environment variable (Render.com)
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    console.log('✅ Firebase service account loaded from environment');
+  } 
+  // Local development fallback
+  else {
+    const localPath = path.join(__dirname, 'firebase-service-account.json');
+    if (fs.existsSync(localPath)) {
+      serviceAccount = require(localPath);
+      console.log('✅ Firebase service account loaded from local file');
+    }
+  }
+} catch (error) {
+  console.error('❌ Firebase service account error:', error.message);
+}
+
+// Initialize Firebase if service account exists
+if (serviceAccount && !admin.apps.length) {
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    db = admin.firestore();
+    ordersCollection = db.collection('orders');
+    console.log('✅ Firebase Admin SDK initialized successfully');
+    console.log('🔥 Firestore database connected');
+  } catch (error) {
+    console.error('❌ Firebase initialization error:', error);
+  }
+} else if (admin.apps.length) {
+  db = admin.firestore();
+  ordersCollection = db.collection('orders');
+  console.log('✅ Firebase already initialized');
+} else {
+  console.log('⚠️ Firebase not configured, using in-memory storage fallback');
+}
 
 // ========== MYANMAR TIME ZONE SETUP ==========
 process.env.TZ = 'Asia/Yangon';
@@ -58,10 +103,11 @@ console.log(`🕐 Myanmar Time: ${getMyanmarTime12hr().full}`);
 console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅ SET' : '❌ MISSING'}`);
 console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅ SET' : '❌ MISSING'}`);
 console.log(`👥 GROUP_CHAT_ID: ${GROUP_CHAT_ID ? '✅ SET' : '⚠️ NOT SET'}`);
+console.log(`🔥 Firebase: ${ordersCollection ? '✅ CONNECTED' : '⚠️ NOT CONNECTED'}`);
 console.log(`======================================\n`);
 
-// ========== DATA STORAGE ==========
-let orders = [];
+// ========== FALLBACK IN-MEMORY STORAGE ==========
+let memoryOrders = [];
 let orderIdCounter = 1;
 
 const PACKAGES = {
@@ -70,6 +116,95 @@ const PACKAGES = {
   "VIP LEVEL - 3": { price: 25000, desc: "40GB / 1400 Mins / 8000 SMS" },
   "VIP LEVEL - 4 (ULTRA)": { price: 30000, desc: "120GB High-Speed Data" }
 };
+
+// ========== FIREBASE DATABASE FUNCTIONS ==========
+async function getNextOrderId() {
+  if (ordersCollection) {
+    try {
+      const snapshot = await ordersCollection.orderBy('id', 'desc').limit(1).get();
+      if (!snapshot.empty) {
+        return snapshot.docs[0].data().id + 1;
+      }
+      return 1;
+    } catch (error) {
+      console.error('Firebase getNextOrderId error:', error);
+      return orderIdCounter++;
+    }
+  }
+  return orderIdCounter++;
+}
+
+async function saveOrder(orderData) {
+  if (ordersCollection) {
+    try {
+      await ordersCollection.doc(orderData.id.toString()).set(orderData);
+      console.log(`✅ Order #${orderData.id} saved to Firebase`);
+      return orderData;
+    } catch (error) {
+      console.error('Firebase save error:', error);
+      memoryOrders.unshift(orderData);
+      return orderData;
+    }
+  }
+  memoryOrders.unshift(orderData);
+  return orderData;
+}
+
+async function getOrder(orderId) {
+  if (ordersCollection) {
+    try {
+      const doc = await ordersCollection.doc(orderId.toString()).get();
+      if (doc.exists) {
+        return { id: parseInt(doc.id), ...doc.data() };
+      }
+      return null;
+    } catch (error) {
+      console.error('Firebase get error:', error);
+      return memoryOrders.find(o => o.id === parseInt(orderId));
+    }
+  }
+  return memoryOrders.find(o => o.id === parseInt(orderId));
+}
+
+async function getAllOrders() {
+  if (ordersCollection) {
+    try {
+      const snapshot = await ordersCollection.orderBy('createdAt', 'desc').get();
+      const orders = snapshot.docs.map(doc => ({ id: parseInt(doc.id), ...doc.data() }));
+      console.log(`📊 Retrieved ${orders.length} orders from Firebase`);
+      return orders;
+    } catch (error) {
+      console.error('Firebase getAll error:', error);
+      return [...memoryOrders];
+    }
+  }
+  return [...memoryOrders];
+}
+
+async function updateOrder(orderId, updateData) {
+  if (ordersCollection) {
+    try {
+      await ordersCollection.doc(orderId.toString()).update(updateData);
+      console.log(`✅ Order #${orderId} updated in Firebase`);
+      const updated = await getOrder(orderId);
+      return updated;
+    } catch (error) {
+      console.error('Firebase update error:', error);
+      const order = memoryOrders.find(o => o.id === parseInt(orderId));
+      if (order) {
+        Object.assign(order, updateData);
+        return order;
+      }
+      return null;
+    }
+  }
+  const order = memoryOrders.find(o => o.id === parseInt(orderId));
+  if (order) {
+    Object.assign(order, updateData);
+    return order;
+  }
+  return null;
+}
 
 // ========== FILE UPLOAD ==========
 const storage = multer.diskStorage({
@@ -161,43 +296,43 @@ function calculateRemainingDays(endDate) {
   return diffDays;
 }
 
-function updateAllOrdersRemainingDays() {
+async function updateAllOrdersRemainingDays() {
   console.log('🔄 Running daily countdown check...');
+  const orders = await getAllOrders();
   let updatedCount = 0;
   let expiredCount = 0;
   
-  orders.forEach(order => {
+  for (const order of orders) {
     if (order.status === 'approved' && order.endDate) {
       const remaining = calculateRemainingDays(order.endDate);
-      order.daysRemaining = remaining;
+      await updateOrder(order.id, { daysRemaining: remaining });
       
       if (remaining <= 0 && !order.isExpired) {
-        order.isExpired = true;
-        order.status = 'expired';
+        await updateOrder(order.id, { isExpired: true, status: 'expired' });
         expiredCount++;
         
-        sendTelegramMessage(ADMIN_CHAT_ID, 
+        await sendTelegramMessage(ADMIN_CHAT_ID, 
           `⏰ *EXPIRED* Order #${order.id}\n\n📞 ${order.phone}\n📦 ${order.packageName}\n📅 Ended: ${new Date(order.endDate).toLocaleDateString()}`
         );
       }
       
       const alertDays = [5, 3, 1];
       if (alertDays.includes(remaining) && order.lastAlertDay !== remaining && remaining > 0) {
-        order.lastAlertDay = remaining;
+        await updateOrder(order.id, { lastAlertDay: remaining });
         
-        sendTelegramMessage(ADMIN_CHAT_ID,
+        await sendTelegramMessage(ADMIN_CHAT_ID,
           `⚠️ *REMINDER* Order #${order.id}\n\n📞 ${order.phone}\n📦 ${order.packageName}\n⏳ ${remaining} days remaining!\n📅 Expires: ${new Date(order.endDate).toLocaleDateString()}`
         );
         
         if (GROUP_CHAT_ID) {
-          sendTelegramMessage(GROUP_CHAT_ID,
+          await sendTelegramMessage(GROUP_CHAT_ID,
             `🔔 *သတိပေးချက်*\n\n📞 ${order.phone}\n⏳ ${remaining} ရက်သာကျန်ပါတော့သည်။\n💨 အခုပဲ ပြန်လည်မှာယူနိုင်ပါသည်။`
           );
         }
       }
       updatedCount++;
     }
-  });
+  }
   
   console.log(`✅ Updated: ${updatedCount} orders | ⏰ Expired: ${expiredCount}`);
 }
@@ -271,8 +406,10 @@ app.post('/order', async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid package" });
     }
     
+    const newOrderId = await getNextOrderId();
+    
     const newOrder = {
-      id: orderIdCounter++,
+      id: newOrderId,
       packageName,
       phone,
       price: packageData.price,
@@ -287,7 +424,8 @@ app.post('/order', async (req, res) => {
       lastAlertDay: null,
       screenshotPath: null
     };
-    orders.unshift(newOrder);
+    
+    await saveOrder(newOrder);
     
     console.log(`✅ Order #${newOrder.id} created`);
     
@@ -333,14 +471,18 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
       return res.status(400).json({ success: false, message: "Screenshot required" });
     }
     
-    const order = orders.find(o => o.id === orderId);
+    const order = await getOrder(orderId);
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found" });
     }
     
-    order.status = 'payment_received';
-    order.updatedAt = myanmarTime.iso;
-    order.screenshotPath = `/temp_uploads/${screenshot.filename}`;
+    const screenshotPath = `/temp_uploads/${screenshot.filename}`;
+    
+    await updateOrder(orderId, {
+      status: 'payment_received',
+      updatedAt: myanmarTime.iso,
+      screenshotPath: screenshotPath
+    });
     
     tempFilePath = screenshot.path;
     const fileBuffer = fs.readFileSync(tempFilePath);
@@ -373,21 +515,20 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   } finally {
     if (tempFilePath && fs.existsSync(tempFilePath)) {
-      // Keep file for serving
       console.log(`📸 Screenshot saved at: ${tempFilePath}`);
     }
   }
 });
 
 // Get Screenshot
-app.get('/api/admin/order-screenshot', (req, res) => {
+app.get('/api/admin/order-screenshot', async (req, res) => {
   const authToken = req.headers['x-admin-auth'];
   if (authToken !== ADMIN_PASSWORD) {
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
   
   const orderId = parseInt(req.query.orderId);
-  const order = orders.find(o => o.id === orderId);
+  const order = await getOrder(orderId);
   
   if (order && order.screenshotPath) {
     const fullUrl = `https://ath-digital-hub.onrender.com${order.screenshotPath}`;
@@ -398,16 +539,16 @@ app.get('/api/admin/order-screenshot', (req, res) => {
 });
 
 // Track Order
-app.get('/api/track-order', (req, res) => {
+app.get('/api/track-order', async (req, res) => {
   const { orderId, phone } = req.query;
   
   if (!orderId || !phone) {
     return res.status(400).json({ success: false, message: "Order ID and Phone required" });
   }
   
-  const order = orders.find(o => o.id === parseInt(orderId) && o.phone === phone);
+  const order = await getOrder(parseInt(orderId));
   
-  if (!order) {
+  if (!order || order.phone !== phone) {
     return res.json({ success: false, message: "Order not found" });
   }
   
@@ -437,7 +578,7 @@ app.get('/api/track-order', (req, res) => {
 });
 
 // Admin Orders API
-app.get('/api/admin/orders', (req, res) => {
+app.get('/api/admin/orders', async (req, res) => {
   const authToken = req.headers['x-admin-auth'];
   if (authToken !== ADMIN_PASSWORD) {
     return res.status(401).json({ success: false, message: "Unauthorized" });
@@ -445,7 +586,9 @@ app.get('/api/admin/orders', (req, res) => {
   
   const { status, page = 1, limit = 50 } = req.query;
   
-  let filtered = [...orders];
+  let allOrders = await getAllOrders();
+  
+  let filtered = [...allOrders];
   if (status && status !== 'all') {
     filtered = filtered.filter(o => o.status === status);
   }
@@ -456,13 +599,13 @@ app.get('/api/admin/orders', (req, res) => {
   const paginated = filtered.slice(start, start + parseInt(limit));
   
   const stats = {
-    total: orders.length,
-    pending: orders.filter(o => o.status === 'pending_payment').length,
-    paid: orders.filter(o => o.status === 'payment_received').length,
-    approved: orders.filter(o => o.status === 'approved').length,
-    rejected: orders.filter(o => o.status === 'rejected').length,
-    expired: orders.filter(o => o.status === 'expired').length,
-    revenue: orders.filter(o => o.status === 'approved').reduce((sum, o) => sum + o.price, 0)
+    total: allOrders.length,
+    pending: allOrders.filter(o => o.status === 'pending_payment').length,
+    paid: allOrders.filter(o => o.status === 'payment_received').length,
+    approved: allOrders.filter(o => o.status === 'approved').length,
+    rejected: allOrders.filter(o => o.status === 'rejected').length,
+    expired: allOrders.filter(o => o.status === 'expired').length,
+    revenue: allOrders.filter(o => o.status === 'approved').reduce((sum, o) => sum + o.price, 0)
   };
   
   const formattedOrders = paginated.map(o => ({
@@ -481,7 +624,7 @@ app.post('/api/admin/update-order', async (req, res) => {
   }
   
   const { orderId, status } = req.body;
-  const order = orders.find(o => o.id === parseInt(orderId));
+  const order = await getOrder(parseInt(orderId));
   
   if (!order) {
     return res.status(404).json({ success: false, message: "Order not found" });
@@ -494,12 +637,14 @@ app.post('/api/admin/update-order', async (req, res) => {
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + 30);
     
-    order.startDate = startDate.toISOString();
-    order.endDate = endDate.toISOString();
-    order.daysRemaining = 30;
-    order.status = 'approved';
-    order.isExpired = false;
-    order.updatedAt = myanmarTime.iso;
+    await updateOrder(parseInt(orderId), {
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      daysRemaining: 30,
+      status: 'approved',
+      isExpired: false,
+      updatedAt: myanmarTime.iso
+    });
     
     await sendTelegramMessage(ADMIN_CHAT_ID, 
       `✅ Order #${orderId} approved! 30 days countdown started.\n📞 ${order.phone}\n📅 Expires: ${endDate.toLocaleDateString()}`
@@ -525,8 +670,10 @@ app.post('/api/admin/update-order', async (req, res) => {
       console.log(`⚠️ GROUP_CHAT_ID not set, skipping group notification`);
     }
   } else if (status === 'rejected') {
-    order.status = 'rejected';
-    order.updatedAt = myanmarTime.iso;
+    await updateOrder(parseInt(orderId), { 
+      status: 'rejected', 
+      updatedAt: myanmarTime.iso 
+    });
     await sendTelegramMessage(ADMIN_CHAT_ID, `❌ Order #${orderId} rejected.`);
     
     // Send rejection to group
@@ -544,11 +691,14 @@ app.post('/api/admin/update-order', async (req, res) => {
       await sendTelegramMessage(GROUP_CHAT_ID, rejectAlert);
     }
   } else {
-    order.status = status;
-    order.updatedAt = myanmarTime.iso;
+    await updateOrder(parseInt(orderId), { 
+      status: status, 
+      updatedAt: myanmarTime.iso 
+    });
   }
   
-  res.json({ success: true, order });
+  const updatedOrder = await getOrder(parseInt(orderId));
+  res.json({ success: true, order: updatedOrder });
 });
 
 // ========== TEST GROUP ENDPOINT ==========
@@ -580,7 +730,8 @@ app.get('/test-group', async (req, res) => {
     message: result ? "✅ Message sent to group successfully!" : "❌ Failed to send message",
     groupId: GROUP_CHAT_ID,
     botTokenSet: !!BOT_TOKEN,
-    adminChatIdSet: !!ADMIN_CHAT_ID
+    adminChatIdSet: !!ADMIN_CHAT_ID,
+    firebaseConnected: !!ordersCollection
   });
 });
 
@@ -603,18 +754,20 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       
       if (data.startsWith('approve_')) {
         const orderId = parseInt(data.split('_')[1]);
-        const order = orders.find(o => o.id === orderId);
+        const order = await getOrder(orderId);
         
         if (order && !order.startDate) {
           const startDate = new Date();
           const endDate = new Date();
           endDate.setDate(endDate.getDate() + 30);
           
-          order.startDate = startDate.toISOString();
-          order.endDate = endDate.toISOString();
-          order.daysRemaining = 30;
-          order.status = 'approved';
-          order.isExpired = false;
+          await updateOrder(orderId, {
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+            daysRemaining: 30,
+            status: 'approved',
+            isExpired: false
+          });
           
           await sendTelegramMessage(chatId, 
             `✅ Order #${orderId} approved! 30 days countdown started.\n\n📞 ${order.phone}\n📦 ${order.packageName}\n📅 Expires: ${endDate.toLocaleDateString()}`
@@ -642,10 +795,10 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       
       if (data.startsWith('reject_')) {
         const orderId = parseInt(data.split('_')[1]);
-        const order = orders.find(o => o.id === orderId);
+        const order = await getOrder(orderId);
         
         if (order) {
-          order.status = 'rejected';
+          await updateOrder(orderId, { status: 'rejected' });
           await sendTelegramMessage(chatId, `❌ Order #${orderId} rejected.`);
           
           if (GROUP_CHAT_ID) {
@@ -693,6 +846,7 @@ app.listen(PORT, async () => {
   console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅' : '❌'}`);
   console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅' : '❌'}`);
   console.log(`👥 GROUP_CHAT_ID: ${GROUP_CHAT_ID ? '✅' : '⚠️'}`);
+  console.log(`🔥 Firebase: ${ordersCollection ? '✅ CONNECTED' : '⚠️ NOT CONNECTED'}`);
   console.log(`========================================`);
   console.log(`🔑 Admin Password: ${ADMIN_PASSWORD}`);
   console.log(`📱 Customer: https://ath-digital-hub.onrender.com/`);
@@ -714,7 +868,7 @@ app.listen(PORT, async () => {
   setTimeout(async () => {
     if (ADMIN_CHAT_ID && BOT_TOKEN) {
       await sendTelegramMessage(ADMIN_CHAT_ID, 
-        `🤖 *MYTEL Bot is Online!*\n\n✅ Server started at ${myanmarTime.full}\n🔧 Ready to receive orders.`
+        `🤖 *MYTEL Bot is Online!*\n\n✅ Server started at ${myanmarTime.full}\n🔥 Firebase: ${ordersCollection ? '✅ CONNECTED' : '⚠️ FALLBACK MODE'}\n🔧 Ready to receive orders.`
       );
     }
   }, 3000);
