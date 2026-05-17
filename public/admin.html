@@ -269,52 +269,64 @@
       }
     });
     
-    // Dashboard functions
+    // Dashboard functions with Authorization Header
     async function loadOrders() {
       const status = document.getElementById('statusFilter').value;
       try {
-        const res = await fetch(`/api/admin/orders?status=${status}`);
+        const res = await fetch(`/api/admin/orders?status=${status}`, {
+          headers: {
+            'x-admin-auth': ADMIN_PASSWORD
+          }
+        });
         const data = await res.json();
+        console.log('API Response:', data);
         if (data.success) {
           renderStats(data.stats);
           renderOrders(data.orders);
+        } else {
+          document.getElementById('ordersTable').innerHTML = '<div style="padding:2rem;text-align:center">❌ ' + (data.message || 'Unauthorized') + '</div>';
         }
       } catch(err) {
-        console.error(err);
+        console.error('Error:', err);
+        document.getElementById('ordersTable').innerHTML = '<div style="padding:2rem;text-align:center">❌ Network error</div>';
       }
     }
     
     function renderStats(stats) {
       document.getElementById('statsGrid').innerHTML = `
-        <div class="stat-card"><div class="value">${stats.total}</div><div>Total</div></div>
+        <div class="stat-card"><div class="value">${stats.total}</div><div>Total Orders</div></div>
         <div class="stat-card"><div class="value">${stats.pending}</div><div>Pending</div></div>
         <div class="stat-card"><div class="value">${stats.paid}</div><div>Paid</div></div>
         <div class="stat-card"><div class="value">${stats.approved}</div><div>Active</div></div>
-        <div class="stat-card"><div class="value">${(stats.revenue/1000).toFixed(0)}K</div><div>Revenue</div></div>
+        <div class="stat-card"><div class="value">${(stats.revenue/1000).toFixed(0)}K</div><div>Revenue (KS)</div></div>
       `;
     }
     
     function renderOrders(orders) {
-      if (!orders.length) {
-        document.getElementById('ordersTable').innerHTML = '<div style="padding:2rem;text-align:center">No orders</div>';
+      if (!orders || orders.length === 0) {
+        document.getElementById('ordersTable').innerHTML = '<div style="padding:2rem;text-align:center">📭 No orders found</div>';
         return;
       }
       let html = `<table><thead><tr><th>ID</th><th>Package</th><th>Phone</th><th>Price</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>`;
       orders.forEach(order => {
         let statusClass = '', statusText = '';
-        if (order.status === 'pending_payment') { statusClass = 'status-pending'; statusText = 'Pending'; }
-        else if (order.status === 'payment_received') { statusClass = 'status-paid'; statusText = 'Paid'; }
-        else if (order.status === 'approved') { statusClass = 'status-approved'; statusText = 'Active'; }
-        else if (order.status === 'rejected') { statusClass = 'status-rejected'; statusText = 'Rejected'; }
+        if (order.status === 'pending_payment') { statusClass = 'status-pending'; statusText = '⏳ Pending'; }
+        else if (order.status === 'payment_received') { statusClass = 'status-paid'; statusText = '💰 Paid'; }
+        else if (order.status === 'approved') { statusClass = 'status-approved'; statusText = '✅ Active'; }
+        else if (order.status === 'rejected') { statusClass = 'status-rejected'; statusText = '❌ Rejected'; }
         
         html += `<tr>
-          <td>#${order.id}</td>
+          <td><strong>#${order.id}</strong></td>
           <td>${order.packageName}</td>
           <td>${order.phone}</td>
           <td>${order.price.toLocaleString()} KS</td>
           <td><span class="status-badge ${statusClass}">${statusText}</span></td>
           <td>${new Date(order.createdAt).toLocaleDateString()}</td>
-          <td>${order.status === 'payment_received' ? `<button class="action-btn action-approve" onclick="updateOrder(${order.id}, 'approved')">✅ Approve</button> <button class="action-btn action-reject" onclick="updateOrder(${order.id}, 'rejected')">❌ Reject</button>` : '-'}</td>
+          <td>${order.status === 'payment_received' ? 
+            `<button class="action-btn action-approve" onclick="updateOrder(${order.id}, 'approved')">✅ Approve</button>
+             <button class="action-btn action-reject" onclick="updateOrder(${order.id}, 'rejected')">❌ Reject</button>` : 
+            `<span style="color:#64748b;">-</span>`}
+           </td>
         </tr>`;
       });
       html += `</tbody></table>`;
@@ -322,16 +334,25 @@
     }
     
     async function updateOrder(orderId, status) {
-      if (!confirm(`Order #${orderId} ကို ${status === 'approved' ? 'အတည်ပြုမလား' : 'ပယ်ဖျက်မလား'}`)) return;
-      const res = await fetch('/api/admin/update-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, status })
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert(`Order #${orderId} ${status === 'approved' ? 'approved!' : 'rejected!'}`);
-        loadOrders();
+      if (!confirm(`Order #${orderId} ကို ${status === 'approved' ? 'အတည်ပြုမလား (30 ရက် စတင်မည်)' : 'ပယ်ဖျက်မလား'}`)) return;
+      try {
+        const res = await fetch('/api/admin/update-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-auth': ADMIN_PASSWORD
+          },
+          body: JSON.stringify({ orderId, status })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(`✅ Order #${orderId} ${status === 'approved' ? 'approved! 30 days started.' : 'rejected.'}`);
+          loadOrders();
+        } else {
+          alert('❌ Failed to update order');
+        }
+      } catch(err) {
+        alert('❌ Network error');
       }
     }
     
@@ -340,6 +361,7 @@
       location.reload();
     }
     
+    // Auto refresh every 30 seconds
     setInterval(loadOrders, 30000);
   </script>
 </body>
