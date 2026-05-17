@@ -531,6 +531,8 @@
             .package-name { font-size: 0.85rem; } 
             .package-price { font-size: 1rem; }
             .status-info { grid-template-columns: 1fr; }
+            .phone-input-group { flex-wrap: wrap; }
+            .phone-input-group button { flex: 1; }
         }
     </style>
 </head>
@@ -609,8 +611,10 @@
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: 20px;" id="changePackageBtnContainer" style="display: none;">
+        <!-- Button Container with Refresh Button -->
+        <div style="text-align: center; margin-top: 20px; display: flex; gap: 12px; justify-content: center;" id="changePackageBtnContainer" style="display: none;">
             <button class="btn btn-secondary" id="changePackageBtn">🔄 Package ပြောင်းမည်</button>
+            <button class="btn btn-secondary" id="refreshStatusBtn">🔄 Refresh</button>
         </div>
 
         <div class="footer">
@@ -647,6 +651,7 @@
         let currentOrderId = null;
         let selectedFile = null;
         let countdownInterval = null;
+        let lastCheckedPhone = '';
 
         // Check Order Status
         document.getElementById('checkStatusBtn')?.addEventListener('click', async () => {
@@ -656,6 +661,7 @@
                 return;
             }
             
+            lastCheckedPhone = phone;
             showToast('⏳ စစ်ဆေးနေပါသည်...');
             
             try {
@@ -677,7 +683,43 @@
             }
         });
 
+        // Refresh Status Button
+        document.getElementById('refreshStatusBtn')?.addEventListener('click', async () => {
+            if (!lastCheckedPhone) {
+                const phone = document.getElementById('checkPhone').value.trim();
+                if (!phone || phone.length < 9) {
+                    showToast('⚠️ ဖုန်းနံပါတ် အရင်ထည့်ပါ');
+                    return;
+                }
+                lastCheckedPhone = phone;
+            }
+            
+            showToast('🔄 Status ပြန်စစ်နေပါသည်...');
+            
+            try {
+                const res = await fetch(`/order-status/${lastCheckedPhone}`);
+                const data = await res.json();
+                
+                if (data.success && data.orders.length > 0) {
+                    displayStatus(data.orders);
+                    showToast('✅ Status ပြန်လည်ရယူပြီးပါပြီ');
+                } else {
+                    document.getElementById('statusContainer').innerHTML = `
+                        <div class="status-card" style="text-align: center;">
+                            <p>📭 သင့်အတွက် အတည်ပြုပြီးသော အော်ဒါမရှိသေးပါ။</p>
+                            <p style="font-size: 0.8rem; margin-top: 10px;">အောက်ပါ Package များမှ ဝယ်ယူနိုင်ပါသည်။</p>
+                        </div>
+                    `;
+                    showToast('📭 အော်ဒါမရှိသေးပါ');
+                }
+            } catch (error) {
+                showToast('❌ Error: ' + error.message);
+            }
+        });
+
         function displayStatus(orders) {
+            if (countdownInterval) clearInterval(countdownInterval);
+            
             let html = '';
             for (const order of orders) {
                 const statusClass = order.isActive ? 'status-active' : 'status-expired';
@@ -709,7 +751,6 @@
                             <span> ရက်</span>
                         </div>
                     `;
-                    // Start countdown for this order
                     startCountdown(order.id, order.daysLeft);
                 } else if (!order.isActive) {
                     html += `
@@ -726,8 +767,6 @@
         }
 
         function startCountdown(orderId, daysLeft) {
-            if (countdownInterval) clearInterval(countdownInterval);
-            
             let remainingDays = daysLeft;
             const daysSpan = document.getElementById(`daysLeft-${orderId}`);
             
@@ -738,11 +777,20 @@
                 if (remainingDays <= 0) {
                     clearInterval(countdownInterval);
                     daysSpan.textContent = '0';
-                    location.reload(); // Refresh to update status
+                    // Refresh status when expired
+                    if (lastCheckedPhone) {
+                        fetch(`/order-status/${lastCheckedPhone}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success && data.orders.length > 0) {
+                                    displayStatus(data.orders);
+                                }
+                            });
+                    }
                 } else {
                     daysSpan.textContent = remainingDays;
                 }
-            }, 24 * 60 * 60 * 1000); // Update every day
+            }, 24 * 60 * 60 * 1000);
         }
 
         function scrollToPackages() {
@@ -770,7 +818,7 @@
             selectedPackage = pkgName;
             renderPackages();
             document.getElementById('orderForm').style.display = 'block';
-            document.getElementById('changePackageBtnContainer').style.display = 'block';
+            document.getElementById('changePackageBtnContainer').style.display = 'flex';
             showToast(`✅ ${pkgName} ကို ရွေးချယ်ပြီးပါပြီ`);
         }
 
