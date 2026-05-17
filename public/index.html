@@ -21,6 +21,24 @@
             overflow-x: hidden;
         }
 
+        /* Network Status Bar */
+        .network-status {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 8px;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+        .network-status.online { background: #00c853; color: #fff; }
+        .network-status.offline { background: #dc3545; color: #fff; }
+        .network-status.checking { background: #ff9800; color: #fff; }
+
+        /* Running Background */
         .running-bg {
             position: fixed;
             top: 0;
@@ -31,7 +49,6 @@
             overflow: hidden;
             pointer-events: none;
         }
-
         .running-text {
             position: absolute;
             white-space: nowrap;
@@ -42,13 +59,11 @@
             letter-spacing: 10px;
             animation: runText 20s linear infinite;
         }
-
         .running-text:nth-child(1) { top: 10%; animation-duration: 25s; font-size: 60px; }
         .running-text:nth-child(2) { top: 30%; animation-duration: 20s; font-size: 100px; }
         .running-text:nth-child(3) { top: 50%; animation-duration: 30s; font-size: 45px; }
         .running-text:nth-child(4) { top: 70%; animation-duration: 22s; font-size: 120px; }
         .running-text:nth-child(5) { top: 85%; animation-duration: 28s; font-size: 55px; }
-
         @keyframes runText {
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
@@ -57,17 +72,17 @@
         .container {
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px 0;
+            padding: 40px 0 20px;
             position: relative;
             z-index: 1;
         }
 
+        /* 3D Logo */
         .logo-container {
             text-align: center;
             margin-bottom: 30px;
             perspective: 800px;
         }
-
         .logo-3d {
             width: 100px;
             height: 100px;
@@ -76,7 +91,6 @@
             transform-style: preserve-3d;
             animation: logoRotate3d 8s infinite ease-in-out;
         }
-
         @keyframes logoRotate3d {
             0% { transform: rotateY(0deg) rotateX(0deg); }
             25% { transform: rotateY(180deg) rotateX(10deg); }
@@ -84,7 +98,6 @@
             75% { transform: rotateY(180deg) rotateX(-10deg); }
             100% { transform: rotateY(0deg) rotateX(0deg); }
         }
-
         .logo-front, .logo-back {
             position: absolute;
             width: 100%;
@@ -96,19 +109,16 @@
             backface-visibility: hidden;
             box-shadow: 0 0 30px rgba(227, 30, 36, 0.6);
         }
-
         .logo-front {
             background: linear-gradient(135deg, #E31E24, #8B0000);
             transform: rotateY(0deg);
             border: 3px solid #FFD700;
         }
-
         .logo-back {
             background: linear-gradient(135deg, #FFD700, #E31E24);
             transform: rotateY(180deg);
             border: 3px solid #fff;
         }
-
         .logo-front span, .logo-back span { font-size: 2.2rem; font-weight: bold; }
         .logo-front span { color: #FFD700; }
         .logo-back span { color: #E31E24; }
@@ -125,7 +135,6 @@
             border: 1px solid #FFD700;
             animation: badgePulse 2s infinite;
         }
-
         @keyframes badgePulse {
             0%, 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
             50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
@@ -141,14 +150,22 @@
             margin-top: 10px;
             animation: gradientShift 3s ease infinite;
         }
-
         @keyframes gradientShift {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-
         .subtitle { font-size: 0.7rem; opacity: 0.8; letter-spacing: 2px; }
+
+        /* Firebase Status Badge */
+        .firebase-status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            background: rgba(0,0,0,0.3);
+        }
 
         /* Status Card */
         .status-card {
@@ -159,7 +176,6 @@
             margin-bottom: 25px;
             border: 1px solid rgba(255, 215, 0, 0.3);
         }
-
         .status-header {
             display: flex;
             align-items: center;
@@ -168,29 +184,24 @@
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(255, 215, 0, 0.2);
         }
-
         .status-header h3 { font-size: 1.1rem; color: #FFD700; }
         .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
         .status-active { background: #00c853; color: #fff; }
         .status-expired { background: #dc3545; color: #fff; }
-
         .status-info {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-bottom: 15px;
         }
-
         .status-item {
             background: rgba(0, 0, 0, 0.3);
             border-radius: 16px;
             padding: 10px;
             text-align: center;
         }
-
         .status-item span:first-child { font-size: 0.7rem; opacity: 0.7; display: block; }
         .status-item span:last-child { font-size: 0.9rem; font-weight: bold; display: block; margin-top: 5px; }
-
         .countdown {
             text-align: center;
             padding: 12px;
@@ -198,9 +209,7 @@
             border-radius: 16px;
             margin: 10px 0;
         }
-
         .countdown-number { font-size: 1.5rem; font-weight: bold; color: #FFD700; }
-
         .renew-btn {
             background: linear-gradient(135deg, #FFD700, #E31E24);
             border: none;
@@ -213,6 +222,7 @@
             margin-top: 10px;
         }
 
+        /* Phone Input Card */
         .phone-input-card {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(12px);
@@ -221,7 +231,6 @@
             margin-bottom: 25px;
             border: 1px solid rgba(255, 215, 0, 0.3);
         }
-
         .phone-input-group { display: flex; gap: 10px; }
         .phone-input-group input {
             flex: 1;
@@ -249,7 +258,6 @@
             gap: 16px;
             margin-bottom: 30px;
         }
-
         .package-card {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(12px);
@@ -260,17 +268,11 @@
             transition: all 0.3s ease;
             text-align: center;
         }
-
-        .package-card:hover {
-            transform: translateY(-5px);
-            border-color: #FFD700;
-        }
-
+        .package-card:hover { transform: translateY(-5px); border-color: #FFD700; }
         .package-card.selected {
             border: 2px solid #FFD700;
             background: rgba(227, 30, 36, 0.2);
         }
-
         .package-name { font-size: 0.95rem; font-weight: bold; color: #FFD700; }
         .package-desc { font-size: 0.65rem; opacity: 0.8; margin: 5px 0; }
         .package-price { font-size: 1.2rem; font-weight: bold; }
@@ -309,7 +311,6 @@
             padding: 20px;
             margin-top: 20px;
         }
-
         .payment-info {
             background: rgba(0, 0, 0, 0.4);
             border-radius: 18px;
@@ -317,7 +318,6 @@
             margin: 12px 0;
             text-align: center;
         }
-
         .copy-btn {
             background: linear-gradient(135deg, #FFD700, #E31E24);
             border: none;
@@ -327,7 +327,6 @@
             cursor: pointer;
             margin-top: 6px;
         }
-
         .file-upload {
             border: 2px dashed rgba(255, 215, 0, 0.5);
             border-radius: 18px;
@@ -336,10 +335,10 @@
             cursor: pointer;
         }
         .file-upload input { display: none; }
-
         .screenshot-preview { margin-top: 15px; text-align: center; }
         .screenshot-preview img { max-width: 100%; max-height: 160px; border-radius: 14px; border: 2px solid #FFD700; }
 
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -365,10 +364,12 @@
         }
         .summary-item { margin: 12px 0; padding: 10px; background: rgba(227, 30, 36, 0.15); border-radius: 14px; }
 
+        /* Footer */
         .footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid rgba(255, 215, 0, 0.2); font-size: 0.7rem; }
         .heart { color: #E31E24; animation: heartbeat 1.5s infinite; display: inline-block; }
         @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
 
+        /* Toast */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -385,6 +386,28 @@
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
 
+        .sync-indicator {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            z-index: 1001;
+        }
+        .queue-badge {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: #ff9800;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            z-index: 1001;
+            cursor: pointer;
+        }
+
         hr { border-color: rgba(255, 215, 0, 0.2); margin: 12px 0; }
         
         @media (max-width: 480px) { 
@@ -396,12 +419,17 @@
     </style>
 </head>
 <body>
+    <!-- Network Status Bar -->
+    <div id="networkStatus" class="network-status checking">🔄 Checking connection...</div>
+    <div id="syncIndicator" class="sync-indicator" style="display: none;">🔄 Syncing...</div>
+    <div id="queueBadge" class="queue-badge" style="display: none;" onclick="offlineSync?.processQueue()">📦 0 pending</div>
+
     <div class="running-bg">
-        <div class="running-text">MYTEL • AUNG • THU • HTWE • MYTEL •</div>
+        <div class="running-text">MYTEL • MYTEL • MYTEL • MYTEL • MYTEL •</div>
         <div class="running-text">MYTEL VIP • MYTEL VIP • MYTEL VIP •</div>
         <div class="running-text">OFFICIAL SELLER • OFFICIAL SELLER •</div>
         <div class="running-text">MYTEL • MYTEL • MYTEL • MYTEL • MYTEL •</div>
-        <div class="running-text">DATA • AUNG • THU • HTWE • DATA •</div>
+        <div class="running-text">DATA • DATA • DATA • DATA • DATA •</div>
     </div>
 
     <div class="container">
@@ -416,6 +444,11 @@
                 <div class="subtitle">POWERED BY ATH DIGITAL HUB</div>
                 <p style="font-size: 0.65rem; margin-top: 6px;">အမြန်ဆုံး ဒေတာသွင်းခြင်း</p>
             </div>
+        </div>
+
+        <!-- Firebase Status -->
+        <div style="text-align: center; margin-bottom: 15px;">
+            <div id="firebaseStatusBadge" class="firebase-status-badge">🔄 စစ်ဆေးနေပါသည်...</div>
         </div>
 
         <!-- Phone Input Section -->
@@ -509,14 +542,217 @@
         let selectedFile = null;
         let lastCheckedPhone = '';
 
-        // Refresh Page
-        document.getElementById('refreshPageBtn')?.addEventListener('click', () => {
-            showToast('🔄 Page ပြန်စနေပါသည်...');
-            setTimeout(() => location.reload(), 500);
-        });
+        // ========== OFFLINE SYNC MANAGER ==========
+        class OfflineSyncManager {
+            constructor() {
+                this.queue = [];
+                this.isOnline = navigator.onLine;
+                this.syncInProgress = false;
+                this.init();
+            }
 
-        // Check Order Status
-        document.getElementById('checkStatusBtn')?.addEventListener('click', async () => {
+            init() {
+                this.loadQueue();
+                window.addEventListener('online', () => this.handleOnline());
+                window.addEventListener('offline', () => this.handleOffline());
+                this.updateNetworkStatus();
+                if (this.isOnline) this.processQueue();
+            }
+
+            loadQueue() {
+                const saved = localStorage.getItem('offline_order_queue');
+                if (saved) {
+                    this.queue = JSON.parse(saved);
+                    this.updateQueueDisplay();
+                }
+            }
+
+            saveQueue() {
+                localStorage.setItem('offline_order_queue', JSON.stringify(this.queue));
+                this.updateQueueDisplay();
+            }
+
+            addToQueue(orderData) {
+                this.queue.push({
+                    ...orderData,
+                    queuedAt: new Date().toISOString(),
+                    retryCount: 0
+                });
+                this.saveQueue();
+                showToast(`📦 Order saved offline. Queue: ${this.queue.length}`);
+            }
+
+            async processQueue() {
+                if (!this.isOnline || this.syncInProgress || this.queue.length === 0) return;
+
+                this.syncInProgress = true;
+                document.getElementById('syncIndicator').style.display = 'block';
+
+                for (let i = 0; i < this.queue.length; i++) {
+                    const item = this.queue[i];
+                    
+                    try {
+                        const orderRes = await fetch('/order', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ packageName: item.packageName, phone: item.phone })
+                        });
+                        const orderData = await orderRes.json();
+                        
+                        if (!orderData.success) throw new Error(orderData.message);
+
+                        const formData = new FormData();
+                        formData.append('orderId', orderData.orderId);
+                        formData.append('packageName', item.packageName);
+                        formData.append('phone', item.phone);
+                        formData.append('note', item.note || '');
+                        
+                        const file = this.base64ToFile(item.screenshotBase64, 'screenshot.jpg');
+                        formData.append('screenshot', file);
+
+                        const paymentRes = await fetch('/submit-payment', { method: 'POST', body: formData });
+                        const paymentData = await paymentRes.json();
+
+                        if (paymentData.success) {
+                            this.queue.splice(i, 1);
+                            i--;
+                            this.saveQueue();
+                            showToast('✅ Offline order synced successfully!');
+                        } else {
+                            throw new Error(paymentData.message);
+                        }
+                    } catch (error) {
+                        item.retryCount++;
+                        if (item.retryCount >= 3) {
+                            showToast(`⚠️ Failed to sync order after 3 attempts`);
+                        }
+                    }
+                    await this.delay(1000);
+                }
+
+                this.syncInProgress = false;
+                document.getElementById('syncIndicator').style.display = 'none';
+                
+                if (this.queue.length === 0) {
+                    localStorage.removeItem('offline_order_queue');
+                }
+            }
+
+            async handleOnline() {
+                this.isOnline = true;
+                this.updateNetworkStatus();
+                showToast('🟢 Internet restored. Syncing...');
+                await this.processQueue();
+            }
+
+            handleOffline() {
+                this.isOnline = false;
+                this.updateNetworkStatus();
+                showToast('🔴 Internet lost. Orders will be saved locally.');
+            }
+
+            updateNetworkStatus() {
+                const statusBar = document.getElementById('networkStatus');
+                if (statusBar) {
+                    if (this.isOnline) {
+                        statusBar.className = 'network-status online';
+                        statusBar.innerHTML = '🟢 Online Mode | Real-time Sync Active';
+                    } else {
+                        statusBar.className = 'network-status offline';
+                        statusBar.innerHTML = '🔴 Offline Mode | Orders will be saved locally';
+                    }
+                }
+            }
+
+            updateQueueDisplay() {
+                const badge = document.getElementById('queueBadge');
+                if (badge) {
+                    if (this.queue.length > 0) {
+                        badge.style.display = 'block';
+                        badge.innerHTML = `📦 ${this.queue.length} pending`;
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            }
+
+            base64ToFile(base64, filename) {
+                const arr = base64.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) u8arr[n] = bstr.charCodeAt(n);
+                return new File([u8arr], filename, { type: mime });
+            }
+
+            delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+            async submitOrderOffline(packageName, phone, note, screenshotBase64) {
+                if (!this.isOnline) {
+                    this.addToQueue({ packageName, phone, note, screenshotBase64 });
+                    return { success: true, offline: true };
+                } else {
+                    try {
+                        const orderRes = await fetch('/order', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ packageName, phone })
+                        });
+                        const orderData = await orderRes.json();
+                        if (!orderData.success) throw new Error(orderData.message);
+
+                        const formData = new FormData();
+                        formData.append('orderId', orderData.orderId);
+                        formData.append('packageName', packageName);
+                        formData.append('phone', phone);
+                        formData.append('note', note);
+                        const file = this.base64ToFile(screenshotBase64, 'screenshot.jpg');
+                        formData.append('screenshot', file);
+
+                        const paymentRes = await fetch('/submit-payment', { method: 'POST', body: formData });
+                        const paymentData = await paymentRes.json();
+
+                        if (paymentData.success) {
+                            return { success: true, offline: false };
+                        } else {
+                            throw new Error(paymentData.message);
+                        }
+                    } catch (error) {
+                        this.addToQueue({ packageName, phone, note, screenshotBase64 });
+                        return { success: true, offline: true, message: 'Saved offline due to error' };
+                    }
+                }
+            }
+        }
+
+        const offlineSync = new OfflineSyncManager();
+
+        // ========== CHECK FIREBASE STATUS ==========
+        async function checkFirebaseStatus() {
+            try {
+                const res = await fetch('/firebase-status');
+                const data = await res.json();
+                const badge = document.getElementById('firebaseStatusBadge');
+                
+                if (data.firebaseConnected) {
+                    badge.innerHTML = '🔥 Firebase ချိတ်ဆက်ထားသည် ✅ | ☁️ Cloud + Real-time Sync';
+                    badge.style.background = 'rgba(0, 200, 83, 0.2)';
+                    badge.style.border = '1px solid #00c853';
+                    badge.style.color = '#00c853';
+                } else {
+                    badge.innerHTML = '⚠️ Local Mode သုံးစွဲနေသည် 📁 | Server Restart ချိန်တွင် Data ပျက်နိုင်';
+                    badge.style.background = 'rgba(255, 152, 0, 0.2)';
+                    badge.style.border = '1px solid #ff9800';
+                    badge.style.color = '#ff9800';
+                }
+            } catch (error) {
+                console.error('Error checking Firebase status:', error);
+            }
+        }
+
+        // ========== CHECK ORDER STATUS ==========
+        async function checkOrderStatus() {
             const phone = document.getElementById('checkPhone').value.trim();
             if (!phone || phone.length < 9) {
                 showToast('⚠️ ဖုန်းနံပါတ် မှန်ကန်စွာထည့်ပါ');
@@ -527,7 +763,7 @@
             showToast('⏳ စစ်ဆေးနေပါသည်...');
             
             try {
-                const res = await fetch(`/order-status/${phone}`);
+                const res = await fetch(`/api/orders/${phone}`);
                 const data = await res.json();
                 
                 if (data.success && data.orders.length > 0) {
@@ -543,7 +779,7 @@
             } catch (error) {
                 showToast('❌ Error: ' + error.message);
             }
-        });
+        }
 
         function displayStatus(orders) {
             let html = '';
@@ -552,14 +788,10 @@
                 const statusText = order.isActive ? '✅ Active' : '❌ Expired';
                 
                 let startDate = 'စောင့်ဆိုင်းနေဆဲ';
-                if (order.approvedAt && order.approvedAt !== 'null') {
-                    startDate = order.approvedAt;
-                }
+                if (order.approvedAt && order.approvedAt !== 'null') startDate = order.approvedAt;
                 
                 let expiryDate = 'စောင့်ဆိုင်းနေဆဲ';
-                if (order.expiredAt && order.expiredAt !== 'null') {
-                    expiryDate = order.expiredAt;
-                }
+                if (order.expiredAt && order.expiredAt !== 'null') expiryDate = order.expiredAt;
                 
                 html += `
                     <div class="status-card">
@@ -567,46 +799,25 @@
                             <h3>📦 ${order.packageName}</h3>
                             <div class="status-badge ${statusClass}">${statusText}</div>
                         </div>
-                        <div style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 10px;">
-                            🆔 အော်ဒါနံပါတ်: ${order.id}
-                        </div>
+                        <div style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 10px;">🆔 အော်ဒါနံပါတ်: ${order.id}</div>
                         <div class="status-info">
-                            <div class="status-item">
-                                <span>📅 စတင်ရက်</span>
-                                <span>${startDate}</span>
-                            </div>
-                            <div class="status-item">
-                                <span>⏰ ကုန်ဆုံးရက်</span>
-                                <span>${expiryDate}</span>
-                            </div>
+                            <div class="status-item"><span>📅 စတင်ရက်</span><span>${startDate}</span></div>
+                            <div class="status-item"><span>⏰ ကုန်ဆုံးရက်</span><span>${expiryDate}</span></div>
                         </div>
                 `;
                 
                 if (order.isActive && order.daysLeft > 0) {
-                    html += `
-                        <div class="countdown">
-                            <span>⏳ ကျန်ရှိသောရက်များ</span><br>
-                            <span class="countdown-number">${order.daysLeft}</span>
-                            <span> ရက်</span>
-                        </div>
-                    `;
+                    html += `<div class="countdown"><span>⏳ ကျန်ရှိသောရက်များ</span><br><span class="countdown-number">${order.daysLeft}</span><span> ရက်</span></div>`;
                 } else if (!order.isActive) {
-                    html += `
-                        <div class="countdown" style="background: rgba(220, 53, 69, 0.2);">
-                            <span>🔴 ဒေတာ သက်တမ်းကုန်ဆုံးပြီးဖြစ်ပါသည်။</span>
-                        </div>
-                        <button class="renew-btn" onclick="scrollToPackages()">🔄 အသစ်ဝယ်ယူရန်</button>
-                    `;
+                    html += `<div class="countdown" style="background: rgba(220, 53, 69, 0.2);"><span>🔴 ဒေတာ သက်တမ်းကုန်ဆုံးပြီးဖြစ်ပါသည်။</span></div>
+                             <button class="renew-btn" onclick="scrollToPackages()">🔄 အသစ်ဝယ်ယူရန်</button>`;
                 }
-                
                 html += `</div>`;
             }
             document.getElementById('statusContainer').innerHTML = html;
         }
 
-        function scrollToPackages() {
-            document.querySelector('.packages').scrollIntoView({ behavior: 'smooth' });
-        }
+        function scrollToPackages() { document.querySelector('.packages').scrollIntoView({ behavior: 'smooth' }); }
 
         function renderPackages() {
             const container = document.getElementById('packagesContainer');
@@ -615,11 +826,7 @@
                 const card = document.createElement('div');
                 card.className = 'package-card';
                 if (selectedPackage === name) card.classList.add('selected');
-                card.innerHTML = `
-                    <div class="package-name">${name}</div>
-                    <div class="package-desc">${data.desc}</div>
-                    <div class="package-price">${data.price.toLocaleString()} <small>MMK</small></div>
-                `;
+                card.innerHTML = `<div class="package-name">${name}</div><div class="package-desc">${data.desc}</div><div class="package-price">${data.price.toLocaleString()} <small>MMK</small></div>`;
                 card.onclick = () => selectPackage(name);
                 container.appendChild(card);
             }
@@ -669,26 +876,29 @@
         fileInput.addEventListener('change', (e) => {
             if (e.target.files && e.target.files[0]) {
                 const file = e.target.files[0];
-                if (!file.type.match('image.*')) {
-                    showToast('⚠️ ပုံဖိုင်ကိုသာ ရွေးပါ');
-                    return;
-                }
+                if (!file.type.match('image.*')) { showToast('⚠️ ပုံဖိုင်ကိုသာ ရွေးပါ'); return; }
                 selectedFile = file;
                 const reader = new FileReader();
-                reader.onload = (event) => {
-                    document.getElementById('preview').innerHTML = `<img src="${event.target.result}" alt="Preview">`;
-                };
+                reader.onload = (event) => { document.getElementById('preview').innerHTML = `<img src="${event.target.result}" alt="Preview">`; };
                 reader.readAsDataURL(selectedFile);
                 showToast('📸 ပုံတင်ပြီးပါပြီ');
             }
         });
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
 
         document.getElementById('submitBtn')?.addEventListener('click', () => {
             const phone = document.getElementById('phone').value.trim();
             if (!selectedPackage) { showToast('⚠️ Package တစ်ခုရွေးပါ'); return; }
             if (!phone || phone.length < 9) { showToast('⚠️ ဖုန်းနံပါတ်မှန်ကန်စွာထည့်ပါ'); return; }
             if (!selectedFile) { showToast('⚠️ ငွေလွှဲပြေစာပုံ တင်ပါ'); return; }
-
             document.getElementById('summaryPackage').innerText = selectedPackage;
             document.getElementById('summaryPhone').innerText = phone;
             document.getElementById('summaryPrice').innerText = PACKAGES[selectedPackage].price.toLocaleString() + ' KS';
@@ -697,50 +907,33 @@
 
         document.getElementById('confirmOrderBtn')?.addEventListener('click', async () => {
             closeModal();
-            await submitOrder();
-        });
-
-        async function submitOrder() {
             const phone = document.getElementById('phone').value.trim();
             const note = document.getElementById('note').value;
-            showToast('⏳ အော်ဒါတင်နေပါသည်...');
-            try {
-                const orderRes = await fetch('/order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ packageName: selectedPackage, phone })
-                });
-                const orderData = await orderRes.json();
-                if (!orderData.success) throw new Error(orderData.message);
-                currentOrderId = orderData.orderId;
-                const formData = new FormData();
-                formData.append('orderId', currentOrderId);
-                formData.append('packageName', selectedPackage);
-                formData.append('phone', phone);
-                formData.append('note', note);
-                formData.append('screenshot', selectedFile);
-                const paymentRes = await fetch('/submit-payment', { method: 'POST', body: formData });
-                const paymentData = await paymentRes.json();
-                if (paymentData.success) {
-                    showToast('✅ အော်ဒါအောင်မြင်ပါသည်! Admin အတည်ပြုပါမည်');
-                    selectedPackage = null;
-                    currentOrderId = null;
-                    selectedFile = null;
-                    renderPackages();
-                    document.getElementById('orderForm').style.display = 'none';
-                    document.getElementById('changePackageBtnContainer').style.display = 'none';
-                    document.getElementById('phone').value = '';
-                    document.getElementById('note').value = '';
-                    document.getElementById('preview').innerHTML = '';
-                    document.getElementById('screenshot').value = '';
-                } else {
-                    showToast('❌ အော်ဒါမအောင်မြင်ပါ');
-                }
-            } catch (error) {
-                showToast('❌ Server error');
+            const screenshotBase64 = await fileToBase64(selectedFile);
+            
+            showToast('⏳ Processing order...');
+            const result = await offlineSync.submitOrderOffline(selectedPackage, phone, note, screenshotBase64);
+            
+            if (result.success) {
+                showToast(result.offline ? '📦 Order saved offline. Will sync when online.' : '✅ Order submitted successfully!');
+                selectedPackage = null;
+                currentOrderId = null;
+                selectedFile = null;
+                renderPackages();
+                document.getElementById('orderForm').style.display = 'none';
+                document.getElementById('changePackageBtnContainer').style.display = 'none';
+                document.getElementById('phone').value = '';
+                document.getElementById('note').value = '';
+                document.getElementById('preview').innerHTML = '';
+                document.getElementById('screenshot').value = '';
+            } else {
+                showToast('❌ Failed to submit order');
             }
-        }
+        });
 
+        document.getElementById('checkStatusBtn')?.addEventListener('click', checkOrderStatus);
+        document.getElementById('refreshPageBtn')?.addEventListener('click', () => { showToast('🔄 Page ပြန်စနေပါသည်...'); setTimeout(() => location.reload(), 500); });
+        
         function closeModal() { document.getElementById('summaryModal').classList.remove('active'); }
         function copyNumber() { navigator.clipboard.writeText('09789999368'); showToast('📋 ကူးယူပြီးပါပြီ'); }
         function showToast(msg) {
@@ -751,6 +944,7 @@
         }
         document.getElementById('summaryModal')?.addEventListener('click', (e) => { if (e.target === document.getElementById('summaryModal')) closeModal(); });
         
+        checkFirebaseStatus();
         renderPackages();
     </script>
 </body>
