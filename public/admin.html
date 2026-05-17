@@ -135,16 +135,11 @@
       transition: all 0.3s;
     }
     .logout-btn:hover { background: #dc2626; transform: scale(1.02); }
-    .pagination {
-      display: flex; justify-content: center; gap: 8px;
-      margin-top: 1rem;
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #94a3b8;
     }
-    .pagination button {
-      background: #1e293b; border: 1px solid #334155;
-      padding: 8px 12px; border-radius: 8px;
-      color: white; cursor: pointer;
-    }
-    .pagination button:hover { background: #facc15; color: #0f172a; }
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .main-content { margin-left: 0; }
@@ -152,21 +147,25 @@
   </style>
 </head>
 <body>
+
 <div class="sidebar">
   <div class="logo">✨ MYTEL ADMIN</div>
   <div class="nav-item active" data-page="dashboard">
     <i class="fas fa-chart-line"></i> Dashboard
   </div>
 </div>
+
 <div class="main-content">
   <div id="dashboardPage">
     <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
-    <div class="stats-grid" id="statsGrid"></div>
+    <div class="stats-grid" id="statsGrid">
+      <div class="loading">Loading statistics...</div>
+    </div>
     <div class="filters">
       <select id="statusFilter" onchange="loadOrders()">
         <option value="all">📋 All Orders</option>
         <option value="pending_payment">⏳ Pending</option>
-        <option value="payment_received">💰 Paid</option>
+        <option value="payment_received">💰 Paid (Waiting Approve)</option>
         <option value="approved">✅ Active</option>
         <option value="rejected">❌ Rejected</option>
         <option value="expired">⏰ Expired</option>
@@ -174,17 +173,21 @@
       <button class="refresh-btn" onclick="loadOrders()"><i class="fas fa-sync-alt"></i> Refresh</button>
     </div>
     <div class="orders-table" id="ordersTable">
-      <div style="padding:2rem; text-align:center;">Loading orders...</div>
+      <div class="loading">Loading orders...</div>
     </div>
   </div>
 </div>
+
 <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
 
 <script>
+  // ========== ADMIN AUTHENTICATION ==========
+  // သတ်မှတ်ထားတဲ့ Password (server.js နဲ့ တူရမယ်)
   const ADMIN_PASSWORD = "mytel2024";
   
-  // Check authentication
+  // Check if logged in
   if (!sessionStorage.getItem('adminLoggedIn')) {
+    // Not logged in, redirect to login page
     window.location.href = '/admin-login';
   }
   
@@ -196,112 +199,157 @@
     return originalFetch(url, options);
   };
   
-  let currentPage = 1;
   let currentFilter = 'all';
   
+  // ========== LOAD ORDERS ==========
   async function loadOrders() {
     currentFilter = document.getElementById('statusFilter').value;
-    document.getElementById('ordersTable').innerHTML = '<div style="padding:2rem; text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+    const ordersTable = document.getElementById('ordersTable');
+    ordersTable.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading orders...</div>';
     
     try {
-      const res = await fetch(`/api/admin/orders?status=${currentFilter}&page=${currentPage}&limit=50`);
-      const data = await res.json();
+      const response = await fetch(`/api/admin/orders?status=${currentFilter}&page=1&limit=100`);
+      const data = await response.json();
+      
       if (data.success) {
         renderStats(data.stats);
         renderOrders(data.orders);
       } else {
-        document.getElementById('ordersTable').innerHTML = '<div style="padding:2rem; text-align:center;">❌ Failed to load orders</div>';
+        ordersTable.innerHTML = '<div class="loading">❌ Failed to load orders. Please refresh.</div>';
       }
-    } catch (err) {
-      document.getElementById('ordersTable').innerHTML = '<div style="padding:2rem; text-align:center;">❌ Network error</div>';
+    } catch (error) {
+      console.error('Error loading orders:', error);
+      ordersTable.innerHTML = '<div class="loading">❌ Network error. Please check connection.</div>';
     }
   }
   
+  // ========== RENDER STATISTICS ==========
   function renderStats(stats) {
-    document.getElementById('statsGrid').innerHTML = `
+    const statsGrid = document.getElementById('statsGrid');
+    statsGrid.innerHTML = `
       <div class="stat-card"><div class="value">${stats.total}</div><div class="label">Total Orders</div></div>
       <div class="stat-card"><div class="value">${stats.pending}</div><div class="label">Pending</div></div>
-      <div class="stat-card"><div class="value">${stats.paid}</div><div class="label">Paid</div></div>
+      <div class="stat-card"><div class="value">${stats.paid}</div><div class="label">Paid (Wait)</div></div>
       <div class="stat-card"><div class="value">${stats.approved}</div><div class="label">Active</div></div>
       <div class="stat-card"><div class="value">${stats.expired}</div><div class="label">Expired</div></div>
-      <div class="stat-card"><div class="value">${(stats.revenue/1000).toFixed(0)}K</div><div class="label">Revenue (KS)</div></div>
+      <div class="stat-card"><div class="value">${(stats.revenue / 1000).toFixed(0)}K</div><div class="label">Revenue (KS)</div></div>
     `;
   }
   
+  // ========== STATUS BADGE HELPER ==========
   function getStatusClass(status) {
-    const map = { pending_payment:'status-pending', payment_received:'status-paid', approved:'status-approved', rejected:'status-rejected', expired:'status-expired' };
+    const map = {
+      'pending_payment': 'status-pending',
+      'payment_received': 'status-paid',
+      'approved': 'status-approved',
+      'rejected': 'status-rejected',
+      'expired': 'status-expired'
+    };
     return map[status] || 'status-pending';
   }
   
   function getStatusText(status) {
-    const map = { pending_payment:'⏳ Pending', payment_received:'💰 Paid', approved:'✅ Active', rejected:'❌ Rejected', expired:'⏰ Expired' };
+    const map = {
+      'pending_payment': '⏳ Pending',
+      'payment_received': '💰 Paid',
+      'approved': '✅ Active',
+      'rejected': '❌ Rejected',
+      'expired': '⏰ Expired'
+    };
     return map[status] || status;
   }
   
+  // ========== RENDER ORDERS TABLE ==========
   function renderOrders(orders) {
+    const ordersTable = document.getElementById('ordersTable');
+    
     if (!orders || orders.length === 0) {
-      document.getElementById('ordersTable').innerHTML = '<div style="padding:2rem; text-align:center;">📭 No orders found</div>';
+      ordersTable.innerHTML = '<div class="loading">📭 No orders found</div>';
       return;
     }
     
     let html = `<table><thead><tr>
-      <th>ID</th><th>Package</th><th>Phone</th><th>Price</th><th>Status</th><th>Date</th><th>Action</th>
+      <th>ID</th>
+      <th>Package</th>
+      <th>Phone</th>
+      <th>Price</th>
+      <th>Status</th>
+      <th>Date</th>
+      <th>Action</th>
     </tr></thead><tbody>`;
     
     orders.forEach(order => {
+      const statusClass = getStatusClass(order.status);
+      const statusText = getStatusText(order.status);
+      
       html += `<tr>
         <td><strong>#${order.id}</strong></td>
         <td>${order.packageName}</td>
         <td>${order.phone}</td>
         <td>${order.price.toLocaleString()} KS</td>
-        <td><span class="status-badge ${getStatusClass(order.status)}">${getStatusText(order.status)}</span></td>
+        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
         <td>${new Date(order.createdAt).toLocaleDateString()}</td>
-        <td>${order.status === 'payment_received' ? 
-          `<button class="action-btn action-approve" onclick="updateOrder(${order.id}, 'approved')" title="Approve (Start 30 Days)"><i class="fas fa-check"></i></button>
-           <button class="action-btn action-reject" onclick="updateOrder(${order.id}, 'rejected')" title="Reject"><i class="fas fa-times"></i></button>` : 
-          `<span style="color:#64748b;">-</span>`}
-        </td>
-      </tr>`;
+        <td>`;
+      
+      // Show approve/reject buttons only for paid orders
+      if (order.status === 'payment_received') {
+        html += `
+          <button class="action-btn action-approve" onclick="updateOrder(${order.id}, 'approved')" title="Approve (Start 30 Days)">
+            <i class="fas fa-check"></i>
+          </button>
+          <button class="action-btn action-reject" onclick="updateOrder(${order.id}, 'rejected')" title="Reject">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+      } else {
+        html += `<span style="color:#64748b;">-</span>`;
+      }
+      
+      html += `</td></tr>`;
     });
     
     html += `</tbody></table>`;
-    document.getElementById('ordersTable').innerHTML = html;
+    ordersTable.innerHTML = html;
   }
   
+  // ========== UPDATE ORDER STATUS ==========
   async function updateOrder(orderId, status) {
     const confirmMsg = status === 'approved' 
-      ? `Order #${orderId} ကို အတည်ပြုပြီး 30 ရက် Countdown စတင်မလား?` 
-      : `Order #${orderId} ကို ပယ်ဖျက်မလား?`;
+      ? `✅ Order #${orderId} ကို အတည်ပြုပြီး 30 ရက် Countdown စတင်မလား?` 
+      : `❌ Order #${orderId} ကို ပယ်ဖျက်မလား?`;
     
     if (!confirm(confirmMsg)) return;
     
     try {
-      const res = await fetch('/api/admin/update-order', {
+      const response = await fetch('/api/admin/update-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId, status })
       });
-      const data = await res.json();
+      
+      const data = await response.json();
+      
       if (data.success) {
         alert(`✅ Order #${orderId} ${status === 'approved' ? 'approved! 30 days started.' : 'rejected.'}`);
-        loadOrders();
+        loadOrders(); // Refresh the list
       } else {
         alert('❌ Failed to update order');
       }
-    } catch (err) {
-      alert('❌ Network error');
+    } catch (error) {
+      console.error('Error updating order:', error);
+      alert('❌ Network error. Please try again.');
     }
   }
   
+  // ========== LOGOUT FUNCTION ==========
   function logout() {
     sessionStorage.removeItem('adminLoggedIn');
+    sessionStorage.removeItem('adminUsername');
     window.location.href = '/admin-login';
   }
   
-  // Load orders on page load
+  // ========== AUTO REFRESH EVERY 30 SECONDS ==========
   loadOrders();
-  
-  // Auto refresh every 30 seconds
   setInterval(loadOrders, 30000);
 </script>
 </body>
