@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MYTEL DATA SERVICE | Premium 3D</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>ATH DIGITAL HUB | MYTEL DATA SERVICE</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
   <script type="importmap">
     {
       "imports": {
@@ -13,14 +15,18 @@
       }
     }
   </script>
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
-      background: #050814;
+      background: radial-gradient(circle at 20% 30%, #0a0f1e, #03050b);
       color: white;
       overflow-x: hidden;
+      min-height: 100vh;
     }
+    
+    /* 3D Canvas */
     #canvas-container {
       position: fixed;
       top: 0;
@@ -30,65 +36,99 @@
       z-index: 0;
       pointer-events: none;
     }
+    
     .content {
       position: relative;
       z-index: 10;
-      max-width: 1400px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 1.5rem 1.2rem 3rem;
     }
-    .hero-section {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+    
+    /* Animated Logo */
+    .ath-logo {
       text-align: center;
+      margin-bottom: 1rem;
+      animation: fadeInDown 0.8s ease;
     }
-    .badge-new {
-      background: rgba(250,204,21,0.2);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(250,204,21,0.5);
-      border-radius: 40px;
-      padding: 0.5rem 1.2rem;
-      font-size: 0.75rem;
-      margin-bottom: 1.5rem;
-      animation: pulse 2s infinite;
+    
+    .ath-logo-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #facc15, #eab308);
+      padding: 0.8rem 2rem;
+      border-radius: 60px;
+      animation: glowPulse 2s ease-in-out infinite;
     }
-    @keyframes pulse {
-      0%,100% { box-shadow: 0 0 0 0 rgba(250,204,21,0.4); }
-      50% { box-shadow: 0 0 0 10px rgba(250,204,21,0); }
+    
+    .ath-logo-icon i {
+      font-size: 1.8rem;
+      color: #0f172a;
+      animation: spin 4s linear infinite;
     }
-    .hero-title {
-      font-size: 4rem;
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .ath-logo-icon span {
+      font-size: 1.3rem;
       font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 2px;
+    }
+    
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .hero { text-align: center; padding: 1rem 0; backdrop-filter: blur(8px); }
+    .hero h1 {
+      font-size: 2.2rem;
       background: linear-gradient(135deg, #FFD700, #FFA500, #FF6B6B);
-      background-size: 300% 300%;
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      animation: gradientShift 4s ease infinite;
+      animation: glowPulse 2s ease-in-out infinite;
     }
-    @keyframes gradientShift {
-      0%,100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
+    @keyframes glowPulse {
+      0%, 100% { text-shadow: 0 0 20px rgba(255,215,0,0.3); }
+      50% { text-shadow: 0 0 40px rgba(255,215,0,0.6); }
     }
-    .hero-subtitle {
-      color: #94a3b8;
-      margin: 1rem 0;
+    .tagline { color: #94a3b8; margin-top: 0.5rem; font-size: 1rem; }
+    .badge {
+      display: inline-block;
+      background: rgba(34,197,94,0.2);
+      border: 1px solid rgba(34,197,94,0.5);
+      border-radius: 40px;
+      padding: 0.3rem 1rem;
+      font-size: 0.8rem;
+      margin-top: 1rem;
     }
+    
     .phone-card {
-      background: rgba(15,23,42,0.5);
-      backdrop-filter: blur(20px);
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
       border-radius: 60px;
       padding: 0.8rem 1.5rem;
       max-width: 450px;
-      margin: 2rem auto;
+      margin: 1.5rem auto;
       display: flex;
       align-items: center;
       gap: 1rem;
-      border: 1px solid rgba(250,204,21,0.3);
+      border: 1px solid rgba(250, 204, 21, 0.4);
     }
+    .phone-card i { font-size: 1.3rem; color: #facc15; }
     .phone-card input {
       flex: 1;
       background: transparent;
@@ -99,68 +139,82 @@
       outline: none;
     }
     .phone-card input::placeholder { color: #64748b; }
-    .section-title {
-      text-align: center;
-      font-size: 2.5rem;
-      margin: 4rem 0 2rem;
-      background: linear-gradient(135deg, #fff, #facc15);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
+    
     .plans-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 2rem;
+      gap: 1.5rem;
+      margin: 2rem 0;
     }
     .plan-card {
-      background: rgba(15,23,42,0.6);
-      backdrop-filter: blur(20px);
-      border-radius: 24px;
-      padding: 2rem;
-      border: 1px solid rgba(250,204,21,0.2);
-      transition: all 0.4s;
+      background: rgba(10, 20, 35, 0.65);
+      backdrop-filter: blur(12px);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      border: 1px solid rgba(250, 204, 21, 0.25);
+      transition: all 0.35s ease;
       cursor: pointer;
     }
     .plan-card:hover {
-      transform: translateY(-10px);
+      transform: translateY(-6px);
       border-color: #facc15;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(250,204,21,0.2);
+      box-shadow: 0 20px 35px -10px rgba(0,0,0,0.5), 0 0 15px rgba(250,204,21,0.2);
     }
     .plan-title {
       font-size: 1.4rem;
       font-weight: 800;
-      color: #facc15;
+      background: linear-gradient(120deg, #FFD700, #FFA500);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .plan-price {
-      font-size: 2rem;
+    .plan-title i { font-size: 1.3rem; color: #facc15; }
+    .feature-list { list-style: none; margin: 1rem 0; }
+    .feature-list li {
+      padding: 0.4rem 0;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      border-bottom: 1px dashed rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .feature-list li i { width: 20px; color: #facc15; font-size: 0.75rem; }
+    .price {
+      font-size: 1.8rem;
       font-weight: 800;
       color: #facc15;
-      margin: 1rem 0;
+      margin: 1rem 0 0.8rem;
     }
-    .feature-list {
-      list-style: none;
-      margin: 1rem 0;
-    }
-    .feature-list li {
-      padding: 0.5rem 0;
-      color: #cbd5e1;
-    }
+    .price small { font-size: 0.8rem; font-weight: 400; }
     .buy-btn {
-      width: 100%;
-      padding: 1rem;
       background: linear-gradient(95deg, #facc15, #eab308);
       border: none;
+      width: 100%;
+      padding: 0.8rem;
       border-radius: 40px;
       font-weight: 700;
+      font-size: 0.9rem;
+      color: #0f172a;
       cursor: pointer;
+      transition: all 0.2s;
     }
+    .buy-btn:hover {
+      transform: scale(1.02);
+      background: linear-gradient(95deg, #ffdb4d, #facc15);
+      box-shadow: 0 5px 18px rgba(250,204,21,0.4);
+    }
+    
     .tracking-section {
       background: rgba(15,23,42,0.6);
       backdrop-filter: blur(20px);
       border-radius: 30px;
       padding: 2rem;
-      margin: 4rem 0;
+      margin: 3rem 0;
     }
     .tracking-form {
       display: flex;
@@ -185,6 +239,7 @@
       font-weight: 700;
       cursor: pointer;
     }
+    
     .payment-section {
       background: rgba(15,23,42,0.8);
       backdrop-filter: blur(20px);
@@ -201,12 +256,7 @@
       margin: 1rem 0;
       cursor: pointer;
     }
-    .footer {
-      text-align: center;
-      padding: 3rem;
-      color: #64748b;
-      border-top: 1px solid rgba(255,255,255,0.05);
-    }
+    
     .modal {
       display: none;
       position: fixed;
@@ -221,34 +271,105 @@
     }
     .modal-content {
       background: #1e293b;
-      border-radius: 30px;
-      padding: 2rem;
+      border-radius: 20px;
+      padding: 25px;
       max-width: 400px;
       width: 90%;
       text-align: center;
       border: 1px solid #facc15;
     }
-    /* ❌ Admin Link လုံးဝမပါတော့ဘူး */
-    @media (max-width: 768px) {
-      .hero-title { font-size: 2rem; }
-      .section-title { font-size: 1.8rem; }
+    
+    /* Footer with Brand */
+    .footer {
+      text-align: center;
+      margin-top: 4rem;
+      padding: 2rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .brand-footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .brand-footer .ath-icon {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #facc15, #eab308);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .brand-footer .ath-icon i {
+      animation: spin 4s linear infinite;
+      font-size: 1rem;
+      color: #facc15;
+      background: none;
+      -webkit-background-clip: unset;
+      background-clip: unset;
+    }
+    
+    .copyright {
+      font-size: 0.7rem;
+      color: #475569;
+      margin-top: 0.5rem;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #22c55e;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 50px;
+      z-index: 1100;
+      display: none;
+      font-size: 14px;
+    }
+    
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 1.3rem; }
+      .plan-title { font-size: 1.2rem; }
+      .price { font-size: 1.4rem; }
+      .ath-logo-icon { padding: 0.5rem 1.2rem; }
+      .ath-logo-icon i { font-size: 1.2rem; }
+      .ath-logo-icon span { font-size: 1rem; }
     }
   </style>
 </head>
 <body>
-<div id="canvas-container"></div>
-<div class="content">
-  <section class="hero-section">
-    <div class="badge-new"><i class="fas fa-bolt"></i> 5G READY · TRUSTED SERVICE</div>
-    <h1 class="hero-title">MYTEL DATA SERVICE</h1>
-    <p class="hero-subtitle">Experience lightning-fast 5G connectivity with our premium data packages</p>
-    <div class="phone-card">
-      <i class="fas fa-phone-alt"></i>
-      <input type="tel" id="phone" placeholder="Enter phone number (09xxxxxxxxx)">
-    </div>
-  </section>
 
-  <h2 class="section-title">✨ Choose Your Premium Plan</h2>
+<div id="canvas-container"></div>
+
+<div class="content">
+  <!-- ATH Animated Logo -->
+  <div class="ath-logo">
+    <div class="ath-logo-icon">
+      <i class="fas fa-globe"></i>
+      <span>ATH DIGITAL HUB</span>
+      <i class="fas fa-bolt"></i>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>✨ MYTEL DATA SERVICE ✨</h1>
+    <div class="tagline">High-Speed Data · VIP Plans · 24/7 Support</div>
+    <div class="badge"><i class="fas fa-bolt"></i> 5G Ready · Trusted Service</div>
+  </div>
+
+  <div class="phone-card">
+    <i class="fas fa-phone-alt"></i>
+    <input type="tel" id="phone" placeholder="📞 Enter phone number (09xxxxxxxxx)">
+  </div>
+
   <div class="plans-grid" id="plans-container"></div>
 
   <div class="tracking-section">
@@ -270,86 +391,126 @@
       <i class="fas fa-cloud-upload-alt"></i> Click to upload payment screenshot
       <img id="previewImg" style="max-width:100%; margin-top:10px; display:none">
     </div>
-    <button id="submitPaymentBtn" style="width:100%; padding:1rem; background:#22c55e; border:none; border-radius:12px; font-weight:700; margin-top:1rem;">✅ Submit Payment</button>
+    <button id="submitPaymentBtn" class="buy-btn" style="background:#22c55e; color:white;">✅ Submit Payment</button>
   </div>
-
+  
+  <!-- Footer with Brand -->
   <div class="footer">
-    <p>🏧 KPay / WavePay: 09789999368 (AUNG THU HTWE)</p>
-    <p>© 2024 MYTEL DATA SERVICE</p>
+    <div class="brand-footer">
+      <div class="ath-icon">
+        <i class="fas fa-globe"></i>
+        <span>ATH DIGITAL HUB</span>
+        <i class="fas fa-bolt"></i>
+      </div>
+      <p class="copyright">
+        © 2024 Developed by AUNG THU HTWE. All Rights Reserved.
+      </p>
+      <p style="font-size:0.7rem; color:#334155;">🏧 KPay / WavePay: 09789999368 (AUNG THU HTWE)</p>
+    </div>
   </div>
 </div>
 
 <div id="orderModal" class="modal">
   <div class="modal-content">
-    <h2>📋 Confirm Order</h2>
-    <div id="modalDetails"></div>
-    <div style="display:flex; gap:10px; margin-top:20px;">
-      <button onclick="closeModal()" style="flex:1; padding:12px; background:#334155; border:none; border-radius:12px;">Cancel</button>
-      <button id="confirmOrderBtn" style="flex:1; padding:12px; background:#facc15; border:none; border-radius:12px; font-weight:700;">Confirm</button>
+    <h2>📋 Confirm Your Order</h2>
+    <div class="detail" id="modalPackage"></div>
+    <div class="detail" id="modalPrice"></div>
+    <div class="detail" id="modalPhone"></div>
+    <div class="modal-buttons" style="display:flex; gap:10px; margin-top:20px;">
+      <button onclick="closeModal()" style="flex:1; padding:10px; background:#334155; border:none; border-radius:8px; color:white;">Cancel</button>
+      <button id="confirmOrderBtn" style="flex:1; padding:10px; background:#facc15; border:none; border-radius:8px; font-weight:700;">Confirm</button>
     </div>
   </div>
 </div>
 
+<div id="toast" class="toast"></div>
+
 <script type="module">
   import * as THREE from 'three';
+
   const container = document.getElementById('canvas-container');
   const scene = new THREE.Scene();
   scene.background = null;
-  scene.fog = new THREE.FogExp2(0x050814, 0.002);
+  scene.fog = new THREE.FogExp2(0x03050b, 0.003);
+  
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.set(0, 2, 12);
+  
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0x050814, 1);
+  renderer.setClearColor(0x03050b, 1);
   container.appendChild(renderer.domElement);
   
+  // Lights
   const ambientLight = new THREE.AmbientLight(0x111122);
   scene.add(ambientLight);
   const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-  dirLight.position.set(5,10,7);
+  dirLight.position.set(5, 10, 7);
   scene.add(dirLight);
-  const goldLight = new THREE.PointLight(0xffaa33, 0.8);
-  goldLight.position.set(3,2,4);
+  const goldLight = new THREE.PointLight(0xffaa33, 0.6);
+  goldLight.position.set(3, 1, 4);
   scene.add(goldLight);
   
-  const geometry = new THREE.TorusKnotGeometry(1.3, 0.3, 200, 64, 3, 4);
-  const material = new THREE.MeshStandardMaterial({ color: 0x3b82f6, emissive: 0x1e40af, emissiveIntensity: 0.5, metalness: 0.9, roughness: 0.2 });
+  // Main 3D Object - ATH Logo Style (Torus Knot)
+  const geometry = new THREE.TorusKnotGeometry(1.2, 0.28, 200, 32, 3, 4);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0xfacc15,
+    emissive: 0xca8a04,
+    emissiveIntensity: 0.5,
+    roughness: 0.25,
+    metalness: 0.85
+  });
   const knot = new THREE.Mesh(geometry, material);
   scene.add(knot);
   
-  const ringGeo = new THREE.TorusGeometry(1.7, 0.05, 64, 500);
-  const ringMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xfacc15, emissiveIntensity: 0.8 });
-  const ring = new THREE.Mesh(ringGeo, ringMat);
-  scene.add(ring);
-  
-  const particleCount = 2000;
+  // Particles
+  const particleCount = 1500;
   const particlesGeometry = new THREE.BufferGeometry();
   const positions = new Float32Array(particleCount * 3);
   for (let i = 0; i < particleCount; i++) {
     positions[i*3] = (Math.random() - 0.5) * 200;
     positions[i*3+1] = (Math.random() - 0.5) * 100;
-    positions[i*3+2] = (Math.random() - 0.5) * 80;
+    positions[i*3+2] = (Math.random() - 0.5) * 80 - 40;
   }
   particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const particleMat = new THREE.PointsMaterial({ color: 0x88aaff, size: 0.08, transparent: true, blending: THREE.AdditiveBlending });
+  const particleMat = new THREE.PointsMaterial({
+    color: 0xfacc15,
+    size: 0.08,
+    transparent: true,
+    opacity: 0.4,
+    blending: THREE.AdditiveBlending
+  });
   const stars = new THREE.Points(particlesGeometry, particleMat);
   scene.add(stars);
   
+  // Ring
+  const ringGeo = new THREE.TorusGeometry(1.55, 0.03, 64, 500);
+  const ringMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.8 });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  scene.add(ring);
+  
   let time = 0;
-  function animate() {
-    requestAnimationFrame(animate);
+  function animate3D() {
+    requestAnimationFrame(animate3D);
     time += 0.008;
-    knot.rotation.x += 0.003;
-    knot.rotation.y += 0.005;
+    
+    knot.rotation.x += 0.005;
+    knot.rotation.y += 0.008;
+    knot.rotation.z += 0.003;
+    
     ring.rotation.x = Math.sin(time * 0.5) * 0.2;
     ring.rotation.y = time * 0.3;
+    
     stars.rotation.y += 0.0005;
-    camera.position.x += (0 - camera.position.x) * 0.02;
-    camera.position.y += (1.5 - camera.position.y) * 0.02;
-    camera.lookAt(0,0,0);
+    
+    camera.position.x += (0 - camera.position.x) * 0.03;
+    camera.position.y += (1.5 - camera.position.y) * 0.03;
+    camera.lookAt(0, 0, 0);
+    
     renderer.render(scene, camera);
   }
-  animate();
+  animate3D();
+  
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
@@ -358,116 +519,267 @@
 </script>
 
 <script>
+  // Order System
   const plans = [
-    { name: "VIP LEVEL - 1", features: ["22 GB Data", "8000 On-Net Mins", "5000 SMS"], price: 15000, icon: "🏆" },
-    { name: "VIP LEVEL - 2", features: ["40 GB Data", "250 On-Net Mins", "25 Any Net Mins"], price: 20000, icon: "🏆" },
-    { name: "VIP LEVEL - 3", features: ["40 GB Data", "1400 On-Net Mins", "8000 SMS"], price: 25000, icon: "🏆" },
-    { name: "VIP LEVEL - 4 (ULTRA)", features: ["120 GB High-Speed Data"], price: 30000, icon: "💎" }
+    { name: "VIP LEVEL - 1", icon: "🏆", features: ["22 GB (Data)", "8000 On-Net Mins", "5000 SMS"], price: 15000 },
+    { name: "VIP LEVEL - 2", icon: "🏆", features: ["40 GB (Data)", "250 On-Net Mins", "25 Any Net Mins"], price: 20000 },
+    { name: "VIP LEVEL - 3", icon: "🏆", features: ["40 GB (Data)", "1400 On-Net Mins", "8000 SMS"], price: 25000 },
+    { name: "VIP LEVEL - 4 (ULTRA)", icon: "💎", features: ["120 GB (High-Speed Data)"], price: 30000 }
   ];
   
   let currentOrder = null;
   let selectedImageFile = null;
   
   function renderPlans() {
-    const container = document.getElementById('plans-container');
-    container.innerHTML = '';
+    const containerDiv = document.getElementById('plans-container');
+    containerDiv.innerHTML = '';
     plans.forEach(plan => {
       const card = document.createElement('div');
       card.className = 'plan-card';
+      let featuresHtml = '';
+      plan.features.forEach(f => {
+        featuresHtml += `<li><i class="fas fa-bolt"></i> 🔹 ${f}</li>`;
+      });
       card.innerHTML = `
-        <div class="plan-title">${plan.icon} ${plan.name}</div>
-        <ul class="feature-list">${plan.features.map(f => `<li><i class="fas fa-check-circle"></i> ${f}</li>`).join('')}</ul>
-        <div class="plan-price">${plan.price.toLocaleString()} <small>KS</small></div>
-        <button class="buy-btn" data-plan="${plan.name}">ORDER NOW</button>
+        <div class="plan-title"><i class="fas fa-crown"></i> ${plan.icon} ${plan.name}</div>
+        <ul class="feature-list">${featuresHtml}</ul>
+        <div class="price">💰 ${plan.price.toLocaleString()} <small>KS</small></div>
+        <button class="buy-btn" data-plan="${plan.name}"><i class="fas fa-shopping-cart"></i> ORDER NOW</button>
       `;
-      container.appendChild(card);
+      containerDiv.appendChild(card);
     });
+    
     document.querySelectorAll('.buy-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const phone = document.getElementById('phone').value.trim();
-        if (!phone || phone.length < 9) return alert("Please enter valid phone number!");
+        if (!phone || phone.length < 9) {
+          showToast("⚠️ Please enter valid phone number!", "#f97316");
+          return;
+        }
         const planName = btn.getAttribute('data-plan');
-        const plan = plans.find(p => p.name === planName);
-        document.getElementById('modalDetails').innerHTML = `<div style="margin:1rem 0; padding:1rem; background:#0f172a; border-radius:12px;"><p><strong>Package:</strong> ${planName}</p><p><strong>Price:</strong> ${plan.price.toLocaleString()} KS</p><p><strong>Phone:</strong> ${phone}</p></div>`;
-        currentOrder = { packageName: planName, price: plan.price, phone };
-        document.getElementById('orderModal').style.display = 'flex';
+        showOrderModal(planName, phone);
       });
     });
   }
   
-  function closeModal() { document.getElementById('orderModal').style.display = 'none'; }
+  function showOrderModal(pkg, phone) {
+    const selectedPlan = plans.find(p => p.name === pkg);
+    if (!selectedPlan) return;
+    
+    document.getElementById('modalPackage').innerHTML = `📦 Package: ${pkg}`;
+    document.getElementById('modalPrice').innerHTML = `💰 Price: ${selectedPlan.price.toLocaleString()} KS`;
+    document.getElementById('modalPhone').innerHTML = `📞 Phone: ${phone}`;
+    
+    currentOrder = { packageName: pkg, price: selectedPlan.price, phone: phone };
+    document.getElementById('orderModal').style.display = 'flex';
+  }
+  
+  function closeModal() {
+    document.getElementById('orderModal').style.display = 'none';
+  }
   
   async function confirmOrder() {
     if (!currentOrder) return;
-    const btn = document.getElementById('confirmOrderBtn');
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    btn.disabled = true;
+    
+    const confirmBtn = document.getElementById('confirmOrderBtn');
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    confirmBtn.disabled = true;
+    
     try {
-      const res = await fetch('/order', {
+      const response = await fetch('/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packageName: currentOrder.packageName, phone: currentOrder.phone })
+        body: JSON.stringify({
+          packageName: currentOrder.packageName,
+          phone: currentOrder.phone
+        })
       });
-      const data = await res.json();
+      
+      const data = await response.json();
+      
       if (data.success) {
         closeModal();
-        document.getElementById('orderInfo').innerHTML = `✅ Order ID: ${data.orderId}<br>📦 ${currentOrder.packageName}<br>📞 ${currentOrder.phone}<br>💰 ${currentOrder.price.toLocaleString()} KS`;
+        
+        document.getElementById('orderInfo').innerHTML = `
+          ✅ <strong>Order ID:</strong> ${data.orderId}<br>
+          📦 <strong>Package:</strong> ${currentOrder.packageName}<br>
+          📞 <strong>Phone:</strong> ${currentOrder.phone}<br>
+          💰 <strong>Amount:</strong> ${currentOrder.price.toLocaleString()} KS
+        `;
         document.getElementById('paymentSection').style.display = 'block';
-        currentOrder.id = data.orderId;
-      } else alert('❌ ' + data.message);
-    } catch (err) { alert('❌ Network error'); }
-    finally { btn.innerHTML = 'Confirm'; btn.disabled = false; }
+        currentOrder.orderId = data.orderId;
+        
+        showToast(`✅ Order created! Please send payment screenshot.`, "#22c55e");
+        document.getElementById('phone').value = '';
+      } else {
+        showToast(`❌ ${data.message}`, "#ef4444");
+      }
+    } catch (err) {
+      showToast("❌ Network error. Please try again.", "#ef4444");
+    } finally {
+      confirmBtn.innerHTML = "Confirm Order";
+      confirmBtn.disabled = false;
+    }
   }
   
-  document.getElementById('screenshotInput').addEventListener('change', (e) => {
+  const fileInput = document.getElementById('screenshotInput');
+  const previewImg = document.getElementById('previewImg');
+  
+  fileInput.addEventListener('change', function(e) {
     const file = e.target.files[0];
-    if (file) {
+    if (file && file.type.startsWith('image/')) {
       selectedImageFile = file;
       const reader = new FileReader();
-      reader.onload = (ev) => { document.getElementById('previewImg').src = ev.target.result; document.getElementById('previewImg').style.display = 'block'; };
+      reader.onload = function(event) {
+        previewImg.src = event.target.result;
+        previewImg.style.display = 'block';
+      };
       reader.readAsDataURL(file);
+    } else {
+      showToast("Please select an image file", "#f97316");
     }
   });
   
-  document.getElementById('submitPaymentBtn').onclick = async () => {
-    if (!currentOrder?.id) return alert("Please create order first");
-    if (!selectedImageFile) return alert("Please select screenshot");
+  async function submitPayment() {
+    if (!currentOrder || !currentOrder.orderId) {
+      showToast("Please create an order first", "#f97316");
+      return;
+    }
+    
+    if (!selectedImageFile) {
+      showToast("Please select a payment screenshot", "#f97316");
+      return;
+    }
+    
+    const submitBtn = document.getElementById('submitPaymentBtn');
+    const originalText = submitBtn.innerText;
+    submitBtn.innerText = "Submitting...";
+    submitBtn.disabled = true;
+    
     const formData = new FormData();
-    formData.append('orderId', currentOrder.id);
+    formData.append('orderId', currentOrder.orderId);
     formData.append('packageName', currentOrder.packageName);
     formData.append('phone', currentOrder.phone);
     formData.append('screenshot', selectedImageFile);
-    const res = await fetch('/submit-payment', { method: 'POST', body: formData });
-    const data = await res.json();
-    if (data.success) {
-      alert("✅ Payment submitted! Admin will verify.");
-      document.getElementById('paymentSection').style.display = 'none';
-      selectedImageFile = null;
-    } else alert("❌ Failed");
-  };
+    formData.append('note', document.getElementById('paymentNote')?.value || '');
+    
+    try {
+      const response = await fetch('/submit-payment', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        showToast("✅ Payment submitted! Admin will verify.", "#22c55e");
+        document.getElementById('paymentSection').style.display = 'none';
+        if (document.getElementById('paymentNote')) document.getElementById('paymentNote').value = '';
+        previewImg.style.display = 'none';
+        previewImg.src = '';
+        selectedImageFile = null;
+        fileInput.value = '';
+        currentOrder = null;
+      } else {
+        showToast(`❌ ${result.message}`, "#ef4444");
+      }
+    } catch (err) {
+      showToast("❌ Failed to submit. Please try again.", "#ef4444");
+    } finally {
+      submitBtn.innerText = originalText;
+      submitBtn.disabled = false;
+    }
+  }
   
   async function trackOrder() {
     const orderId = document.getElementById('trackOrderId').value.trim();
     const phone = document.getElementById('trackPhone').value.trim();
-    if (!orderId || !phone) return alert("Enter Order ID and Phone");
-    const res = await fetch(`/api/track-order?orderId=${orderId}&phone=${phone}`);
-    const data = await res.json();
+    
+    if (!orderId || !phone) {
+      showToast("Please enter Order ID and Phone number", "#f97316");
+      return;
+    }
+    
     const resultDiv = document.getElementById('trackResult');
     resultDiv.style.display = 'block';
-    if (!data.success) { resultDiv.innerHTML = `<div style="background:#ef444420; padding:1rem; border-radius:12px; text-align:center;">❌ ${data.message}</div>`; return; }
-    const order = data.order;
-    let statusText = { pending_payment:'⏳ Pending', payment_received:'💰 Paid', approved:'✅ Active', expired:'⏰ Expired', rejected:'❌ Rejected' }[order.status] || order.status;
-    let countdownHtml = '';
-    if (order.countdown) {
-      const remaining = order.countdown.daysRemaining;
-      const percent = Math.max(0, (remaining / 30) * 100);
-      const barColor = remaining <= 5 ? '#ef4444' : remaining <= 10 ? '#f97316' : '#22c55e';
-      countdownHtml = `<div style="margin-top:1rem;"><div style="background:#1e293b; border-radius:10px; height:20px;"><div style="width:${percent}%; background:${barColor}; height:100%; border-radius:10px;"></div></div><div style="text-align:center; margin-top:0.5rem;"><span style="font-size:2rem; font-weight:bold; color:${barColor};">${remaining > 0 ? remaining : 0}</span> days remaining</div></div>`;
+    resultDiv.innerHTML = '<div style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+    
+    try {
+      const response = await fetch(`/api/track-order?orderId=${orderId}&phone=${phone}`);
+      const data = await response.json();
+      
+      if (!data.success) {
+        resultDiv.innerHTML = `<div style="background:#ef444420; border-radius:12px; padding:1rem; text-align:center;">❌ ${data.message}</div>`;
+        return;
+      }
+      
+      const order = data.order;
+      let statusText = '';
+      let statusColor = '';
+      
+      switch(order.status) {
+        case 'pending_payment': statusText = '⏳ Pending Payment'; statusColor = '#f97316'; break;
+        case 'payment_received': statusText = '💰 Payment Received'; statusColor = '#3b82f6'; break;
+        case 'approved': statusText = '✅ Active'; statusColor = '#22c55e'; break;
+        case 'expired': statusText = '⏰ Expired'; statusColor = '#ef4444'; break;
+        case 'rejected': statusText = '❌ Rejected'; statusColor = '#ef4444'; break;
+        default: statusText = order.status; statusColor = '#94a3b8';
+      }
+      
+      let countdownHtml = '';
+      if (order.countdown) {
+        const remaining = order.countdown.daysRemaining;
+        const percent = Math.max(0, (remaining / 30) * 100);
+        const barColor = remaining <= 5 ? '#ef4444' : remaining <= 10 ? '#f97316' : '#22c55e';
+        countdownHtml = `
+          <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid #334155;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+              <span>📅 Start: ${new Date(order.countdown.startDate).toLocaleDateString('en-US')}</span>
+              <span>⏰ Expires: ${new Date(order.countdown.endDate).toLocaleDateString('en-US')}</span>
+            </div>
+            <div style="background:#1e293b; border-radius:10px; height:20px; overflow:hidden;">
+              <div style="width:${percent}%; background:${barColor}; height:100%; transition:width 0.5s;"></div>
+            </div>
+            <div style="text-align:center; margin-top:0.5rem;">
+              <span style="font-size:2rem; font-weight:bold; color:${barColor};">${remaining > 0 ? remaining : 0}</span>
+              <span> days remaining</span>
+            </div>
+          </div>
+        `;
+      }
+      
+      resultDiv.innerHTML = `
+        <div style="background:#0f172a; border-radius:20px; padding:1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:1rem;">
+            <h3><i class="fas fa-box"></i> Order #${order.id}</h3>
+            <span style="background:${statusColor}20; border:1px solid ${statusColor}; padding:4px 12px; border-radius:20px; font-size:0.8rem;">${statusText}</span>
+          </div>
+          <p><i class="fas fa-tag"></i> Package: <strong>${order.packageName}</strong></p>
+          <p><i class="fas fa-phone"></i> Phone: ${order.phone}</p>
+          <p><i class="fas fa-calendar"></i> Order Date: ${new Date(order.createdAt).toLocaleDateString('en-US')}</p>
+          ${countdownHtml}
+        </div>
+      `;
+      
+    } catch (error) {
+      resultDiv.innerHTML = `<div style="background:#ef444420; border-radius:12px; padding:1rem; text-align:center;">❌ Network error. Please try again.</div>`;
     }
-    resultDiv.innerHTML = `<div style="background:#0f172a; border-radius:20px; padding:1.5rem;"><h3>Order #${order.id}</h3><p>📦 ${order.packageName}</p><p>📞 ${order.phone}</p><p>💰 ${order.price.toLocaleString()} KS</p><p>Status: ${statusText}</p>${countdownHtml}</div>`;
+  }
+  
+  function showToast(msg, bgColor) {
+    const toast = document.getElementById('toast');
+    toast.style.background = bgColor;
+    toast.innerText = msg;
+    toast.style.display = 'block';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 4000);
   }
   
   document.getElementById('confirmOrderBtn').onclick = confirmOrder;
+  document.getElementById('submitPaymentBtn').onclick = submitPayment;
+  
   renderPlans();
   window.trackOrder = trackOrder;
   window.closeModal = closeModal;
