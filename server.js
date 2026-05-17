@@ -54,7 +54,6 @@ const PACKAGES = {
 // ========== FIREBASE INITIALIZATION ==========
 let db = null;
 let useFirebase = false;
-let firebaseStatus = { connected: false, mode: 'unknown' };
 
 try {
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
@@ -64,49 +63,28 @@ try {
     });
     db = getFirestore();
     useFirebase = true;
-    firebaseStatus = { connected: true, mode: 'firebase' };
-    console.log("✅ Firebase initialized successfully");
+    console.log("✅ Firebase initialized");
     
     setTimeout(async () => {
       await sendTelegramMessage(ADMIN_CHAT_ID, `
 ✅ *Firebase ချိတ်ဆက်မှု အောင်မြင်ပါသည်*
-
-📊 *အခြေအနေ:*
-━━━━━━━━━━━━━━━━━━━━
 🔥 Database: Firebase (Cloud)
-☁️ Type: Firestore
 💾 Data Persistence: ✅ Yes
-🔄 Real-time Sync: ✅ Enabled
-🔄 Server Restart လုပ်လည်း Data မပျက်ပါ
-
 📅 အချိန်: ${getMyanmarTime()}
-━━━━━━━━━━━━━━━━━━━━
-✅ အော်ဒါစနစ် အဆင်သင့်ဖြစ်ပါပြီ။
       `);
     }, 2000);
   } else {
-    console.log("⚠️ FIREBASE_SERVICE_ACCOUNT not found, using in-memory storage");
-    firebaseStatus = { connected: false, mode: 'fallback' };
+    console.log("⚠️ Using in-memory storage");
     setTimeout(async () => {
       await sendTelegramMessage(ADMIN_CHAT_ID, `
-⚠️ *Firebase ချိတ်ဆက်မှု မအောင်မြင်ပါ*
-
-📊 *အခြေအနေ:*
-━━━━━━━━━━━━━━━━━━━━
-📁 Database: In-Memory (Fallback Mode)
-💾 Data Persistence: ❌ No
-🔄 Real-time Sync: ❌ Disabled
-🔄 Server Restart ချိန်တွင် Data အားလုံး ပျက်နိုင်ပါသည်
-
-📅 အချိန်: ${getMyanmarTime()}
-━━━━━━━━━━━━━━━━━━━━
-⚠️ *သတိပေးချက်:* Server Restart လုပ်ပါက အော်ဒါမှတ်တမ်းများ အားလုံး ပျက်ပါမည်။
+⚠️ *Firebase မချိတ်ဆက်ပါ*
+📁 Database: In-Memory
+💾 Server Restart ချိန်တွင် Data ပျက်နိုင်
       `);
     }, 2000);
   }
 } catch (error) {
   console.error("❌ Firebase init error:", error.message);
-  firebaseStatus = { connected: false, mode: 'fallback' };
 }
 
 // ========== HELPER FUNCTIONS ==========
@@ -124,7 +102,7 @@ function getMyanmarTime(date = new Date()) {
     hours = hours % 12 || 12;
     return `${month}/${day}/${year} ${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
   } catch (error) {
-    return new Date().toLocaleString();
+    return date.toLocaleString();
   }
 }
 
@@ -148,16 +126,13 @@ async function getNextOrderId() {
       const counterRef = db.collection('counters').doc('orders');
       const counterDoc = await counterRef.get();
       let nextId = 1;
-      if (counterDoc.exists) {
-        nextId = counterDoc.data().nextId;
-      }
+      if (counterDoc.exists) nextId = counterDoc.data().nextId;
       await counterRef.set({ nextId: nextId + 1 });
       return nextId;
     } else {
       return orderIdCounterFallback++;
     }
   } catch (error) {
-    console.error("Error getting next order ID:", error);
     return orderIdCounterFallback++;
   }
 }
@@ -167,8 +142,7 @@ async function createOrder(orderData) {
     const orderId = await getNextOrderId();
     
     if (useFirebase && db) {
-      const docRef = db.collection('orders').doc(orderId.toString());
-      await docRef.set({
+      await db.collection('orders').doc(orderId.toString()).set({
         ...orderData,
         id: orderId,
         createdAt: new Date().toISOString(),
@@ -186,7 +160,6 @@ async function createOrder(orderData) {
       return newOrder;
     }
   } catch (error) {
-    console.error("Error creating order:", error);
     const newOrder = {
       id: orderIdCounterFallback++,
       ...orderData,
@@ -202,15 +175,12 @@ async function getOrder(orderId) {
   try {
     if (useFirebase && db) {
       const doc = await db.collection('orders').doc(orderId.toString()).get();
-      if (doc.exists) {
-        return { id: parseInt(doc.id), ...doc.data() };
-      }
+      if (doc.exists) return { id: parseInt(doc.id), ...doc.data() };
       return null;
     } else {
       return ordersFallback.find(o => o.id == orderId);
     }
   } catch (error) {
-    console.error("Error getting order:", error);
     return ordersFallback.find(o => o.id == orderId);
   }
 }
@@ -218,8 +188,9 @@ async function getOrder(orderId) {
 async function updateOrderStatus(orderId, status, approvedAt = null, rejectReason = null) {
   try {
     const updateData = { status, updatedAt: new Date().toISOString() };
+    
     if (status === 'approved' && approvedAt) {
-      updateData.approvedAt = approvedAt;
+      updateData.approvedAt = approvedAt.toISOString();
       const expireDate = new Date(approvedAt);
       expireDate.setDate(expireDate.getDate() + 30);
       updateData.expiredAt = expireDate.toISOString();
@@ -235,18 +206,12 @@ async function updateOrderStatus(orderId, status, approvedAt = null, rejectReaso
       return true;
     } else {
       const order = ordersFallback.find(o => o.id == orderId);
-      if (order) {
-        Object.assign(order, updateData);
-      }
+      if (order) Object.assign(order, updateData);
       return order;
     }
   } catch (error) {
-    console.error("Error updating order status:", error);
     const order = ordersFallback.find(o => o.id == orderId);
-    if (order) {
-      order.status = status;
-      order.updatedAt = new Date().toISOString();
-    }
+    if (order) order.status = status;
     return order;
   }
 }
@@ -260,8 +225,23 @@ async function getAllOrders() {
       return ordersFallback;
     }
   } catch (error) {
-    console.error("Error getting all orders:", error);
     return ordersFallback;
+  }
+}
+
+async function getOrdersByPhone(phone) {
+  try {
+    if (useFirebase && db) {
+      const snapshot = await db.collection('orders')
+        .where('phone', '==', phone)
+        .where('status', '==', 'approved')
+        .get();
+      return snapshot.docs.map(doc => ({ id: parseInt(doc.id), ...doc.data() }));
+    } else {
+      return ordersFallback.filter(o => o.phone === phone && o.status === 'approved');
+    }
+  } catch (error) {
+    return ordersFallback.filter(o => o.phone === phone && o.status === 'approved');
   }
 }
 
@@ -298,7 +278,6 @@ async function getOrderStats() {
 🗑️ ပယ်ဖျက်ပြီး: ${rejected}`
     };
   } catch (error) {
-    console.error("Error getting stats:", error);
     return {
       pending: 0, received: 0, approved: 0, expired: 0, rejected: 0, nearExpire: 0,
       text: "📊 *စာရင်းအင်း*\n━━━━━━━━━━━━━━━━━━━━\n⏳ ဆိုင်းငံ့: 0\n💰 ငွေလွှဲပြီး: 0\n✅ အတည်ပြုပြီး: 0\n❌ Expired: 0\n🗑️ ပယ်ဖျက်ပြီး: 0"
@@ -311,11 +290,7 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
   if (!BOT_TOKEN || !chatId) return false;
   try {
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-    const body = {
-      chat_id: chatId,
-      text: text,
-      parse_mode: 'Markdown'
-    };
+    const body = { chat_id: chatId, text: text, parse_mode: 'Markdown' };
     if (keyboard) body.reply_markup = JSON.stringify(keyboard);
     
     const response = await fetch(url, {
@@ -324,7 +299,6 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
       body: JSON.stringify(body)
     });
     const result = await response.json();
-    console.log("Telegram send:", result.ok ? "✅" : "❌");
     return result.ok;
   } catch (error) {
     console.error("Telegram send error:", error);
@@ -354,48 +328,31 @@ async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   }
 }
 
-// ========== WEBSITE ORDER ENDPOINT ==========
+// ========== WEBSITE ENDPOINTS ==========
 app.post('/order', async (req, res) => {
   try {
     const { packageName, phone } = req.body;
     if (!packageName || !phone) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+      return res.status(400).json({ success: false, message: "Missing fields" });
     }
     const packageData = PACKAGES[packageName];
     if (!packageData) {
       return res.status(400).json({ success: false, message: "Invalid package" });
     }
     
-    const newOrder = {
-      packageName,
-      phone,
-      price: packageData.price,
-      status: "pending_payment",
-      isActive: false
-    };
-    
-    const order = await createOrder(newOrder);
-    
-    console.log(`📦 Order #${order.id} created`);
-    
-    res.json({ 
-      success: true, 
-      orderId: order.id, 
-      packageName, 
-      price: packageData.price, 
-      phone, 
-      paymentInfo: PAYMENT_INFO 
+    const order = await createOrder({
+      packageName, phone, price: packageData.price,
+      status: "pending_payment", isActive: false
     });
+    
+    res.json({ success: true, orderId: order.id, packageName, price: packageData.price, phone, paymentInfo: PAYMENT_INFO });
   } catch (error) {
-    console.error("Order error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-// ========== SUBMIT PAYMENT SCREENSHOT ==========
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
-  
   try {
     const orderId = parseInt(req.body.orderId);
     const packageName = req.body.packageName;
@@ -403,19 +360,13 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     const note = req.body.note;
     const screenshot = req.file;
     
-    if (!screenshot) {
-      return res.status(400).json({ success: false, message: "Screenshot required" });
-    }
-    
-    if (!orderId) {
-      return res.status(400).json({ success: false, message: "Order ID required" });
-    }
+    if (!screenshot) return res.status(400).json({ success: false, message: "Screenshot required" });
+    if (!orderId) return res.status(400).json({ success: false, message: "Order ID required" });
     
     await updateOrderStatus(orderId, 'payment_received');
     
     tempFilePath = screenshot.path;
     const fileBuffer = fs.readFileSync(tempFilePath);
-    
     const order = await getOrder(orderId);
     const packageData = PACKAGES[order.packageName];
     
@@ -432,97 +383,65 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     `;
     
     const keyboard = {
-      inline_keyboard: [
-        [
-          { text: "✅ အတည်ပြုမည်", callback_data: `approve_${orderId}` },
-          { text: "❌ ပယ်ဖျက်မည်", callback_data: `reject_${orderId}` }
-        ],
-        [
-          { text: "📋 အသေးစိတ်", callback_data: `detail_${orderId}` }
-        ]
-      ]
+      inline_keyboard: [[
+        { text: "✅ အတည်ပြုမည်", callback_data: `approve_${orderId}` },
+        { text: "❌ ပယ်ဖျက်မည်", callback_data: `reject_${orderId}` }
+      ], [
+        { text: "📋 အသေးစိတ်", callback_data: `detail_${orderId}` }
+      ]]
     };
     
-    const success = await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
-    
-    if (success) {
-      res.json({ success: true, message: "Order submitted! Admin will verify." });
-    } else {
-      res.json({ success: false, message: "Telegram error. Please try again." });
-    }
+    await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
+    res.json({ success: true, message: "Order submitted! Admin will verify." });
     
   } catch (error) {
-    console.error("Payment submit error:", error);
-    res.status(500).json({ success: false, message: "Server error: " + error.message });
+    res.status(500).json({ success: false, message: "Server error" });
   } finally {
-    if (tempFilePath && fs.existsSync(tempFilePath)) {
-      fs.unlinkSync(tempFilePath);
-    }
+    if (tempFilePath && fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
   }
 });
 
-// ========== GET FIREBASE STATUS ==========
 app.get('/firebase-status', (req, res) => {
-  res.json({
-    success: true,
-    firebaseConnected: useFirebase,
-    mode: firebaseStatus.mode,
-    message: useFirebase ? 'Firebase is connected (Real-time sync enabled)' : 'Using in-memory fallback'
-  });
+  res.json({ success: true, firebaseConnected: useFirebase });
 });
 
-// ========== GET ALL ORDERS (For Website) ==========
 app.get('/api/orders/:phone', async (req, res) => {
   try {
     const phone = req.params.phone;
+    const orders = await getOrdersByPhone(phone);
     
-    if (useFirebase && db) {
-      const snapshot = await db.collection('orders')
-        .where('phone', '==', phone)
-        .where('status', '==', 'approved')
-        .get();
+    const result = orders.map(order => {
+      const daysLeft = order.expiredAt ? getRemainingDays(order.expiredAt) : 0;
+      const isExpired = daysLeft <= 0;
       
-      const orders = snapshot.docs.map(doc => {
-        const data = doc.data();
-        const daysLeft = data.expiredAt ? getRemainingDays(data.expiredAt) : 0;
-        const isExpired = daysLeft <= 0;
-        
-        return {
-          id: data.id,
-          packageName: data.packageName,
-          price: data.price,
-          approvedAt: data.approvedAt ? getMyanmarTime(new Date(data.approvedAt)) : null,
-          expiredAt: data.expiredAt ? getMyanmarTime(new Date(data.expiredAt)) : null,
-          daysLeft: daysLeft,
-          isActive: !isExpired,
-          status: isExpired ? 'expired' : 'active'
-        };
-      });
+      let approvedAt = null;
+      let expiredAt = null;
       
-      res.json({ success: true, orders, count: orders.length, realtime: true });
-    } else {
-      const userOrders = ordersFallback.filter(o => o.phone === phone && o.status === 'approved');
-      const result = userOrders.map(order => {
-        const daysLeft = order.expiredAt ? getRemainingDays(order.expiredAt) : 0;
-        const isExpired = daysLeft <= 0;
-        
-        return {
-          id: order.id,
-          packageName: order.packageName,
-          price: order.price,
-          approvedAt: order.approvedAt ? getMyanmarTime(new Date(order.approvedAt)) : null,
-          expiredAt: order.expiredAt ? getMyanmarTime(new Date(order.expiredAt)) : null,
-          daysLeft: daysLeft,
-          isActive: !isExpired,
-          status: isExpired ? 'expired' : 'active'
-        };
-      });
+      if (order.approvedAt) {
+        try {
+          approvedAt = getMyanmarTime(new Date(order.approvedAt));
+        } catch(e) { approvedAt = null; }
+      }
+      if (order.expiredAt) {
+        try {
+          expiredAt = getMyanmarTime(new Date(order.expiredAt));
+        } catch(e) { expiredAt = null; }
+      }
       
-      res.json({ success: true, orders: result, count: result.length, realtime: false });
-    }
+      return {
+        id: order.id,
+        packageName: order.packageName,
+        price: order.price,
+        approvedAt: approvedAt,
+        expiredAt: expiredAt,
+        daysLeft: daysLeft,
+        isActive: !isExpired
+      };
+    });
+    
+    res.json({ success: true, orders: result, count: result.length });
   } catch (error) {
-    console.error("API error:", error);
-    res.json({ success: true, orders: [], count: 0, realtime: false });
+    res.json({ success: true, orders: [], count: 0 });
   }
 });
 
@@ -551,8 +470,8 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           const approvedTime = new Date();
           await updateOrderStatus(orderId, 'approved', approvedTime);
           
-          const expireDate = new Date(order.expiredAt);
-          const daysUntilExpire = Math.ceil((expireDate - approvedTime) / (1000 * 60 * 60 * 24));
+          const expireDate = new Date(approvedTime);
+          expireDate.setDate(expireDate.getDate() + 30);
           
           const approveCaption = `
 ✅ **အတည်ပြုပြီး** - အော်ဒါ #${orderId}
@@ -562,43 +481,28 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
 📅 စတင်ရက်: ${getMyanmarTime(approvedTime)}
 📅 ကုန်ဆုံးရက်: ${getMyanmarTime(expireDate)}
-⏳ အသုံးပြုနိုင်မည့်ရက်: ${daysUntilExpire} ရက်
 ━━━━━━━━━━━━━━━━━━━━
-🎉 ဒေတာ သွင်းပေးပါမည်။ ကျေးဇူးတင်ပါသည်။
+🎉 ဒေတာ သွင်းပေးပါမည်။
           `;
           
           await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              chat_id: chatId,
-              message_id: messageId,
-              caption: approveCaption,
-              parse_mode: 'Markdown'
+              chat_id: chatId, message_id: messageId,
+              caption: approveCaption, parse_mode: 'Markdown'
             })
           });
           
-          await sendTelegramMessage(ADMIN_CHAT_ID, `
-✅ **အတည်ပြုပြီး** - အော်ဒါ #${orderId}
-📞 ${order.phone}
-📦 ${order.packageName}
-📅 စတင်ရက်: ${getMyanmarTime(approvedTime)}
-📅 ကုန်ဆုံးရက်: ${getMyanmarTime(expireDate)}
-⏳ အသုံးပြုနိုင်မည့်ရက်: ${daysUntilExpire} ရက်
-          `);
+          await sendTelegramMessage(ADMIN_CHAT_ID, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး`);
           
           if (GROUP_CHAT_ID) {
             await sendTelegramMessage(GROUP_CHAT_ID, `
 🚨 **ဒေတာသွင်းပြီးပါပြီ** 🚨
-━━━━━━━━━━━━━━━━━━━━
 ✅ အော်ဒါ #${orderId}
 📞 ${order.phone}
 📦 ${order.packageName}
 💰 ${order.price.toLocaleString()} KS
-📅 စတင်ရက်: ${getMyanmarTime(approvedTime)}
-📅 ကုန်ဆုံးရက်: ${getMyanmarTime(expireDate)}
-━━━━━━━━━━━━━━━━━━━━
-👤 Admin မှ အတည်ပြုပြီးပါပြီ။
             `);
           }
         }
@@ -611,21 +515,15 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         const order = await getOrder(orderId);
         
         if (order) {
-          pendingRejectReasons[chatId] = { orderId, step: 'waiting_for_reason' };
-          
-          const forceReply = {
-            force_reply: true,
-            input_field_placeholder: "ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ..."
-          };
+          pendingRejectReasons[chatId] = { orderId };
           
           await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               chat_id: chatId,
-              text: `❌ **အော်ဒါ #${orderId} ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ။**\n\n📞 ဖုန်း: ${order.phone}\n📦 Package: ${order.packageName}\n💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS`,
-              parse_mode: 'Markdown',
-              reply_markup: forceReply
+              text: `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ။`,
+              reply_markup: { force_reply: true, input_field_placeholder: "အကြောင်းရင်းရေးပါ..." }
             })
           });
         }
@@ -638,35 +536,11 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         const order = await getOrder(orderId);
         
         if (order) {
-          let statusEmoji = '';
           let statusText = '';
-          
-          if (order.status === 'pending_payment') {
-            statusEmoji = '⏳';
-            statusText = 'ဆိုင်းငံ့';
-          } else if (order.status === 'payment_received') {
-            statusEmoji = '💰';
-            statusText = 'ငွေလွှဲပြီး';
-          } else if (order.status === 'approved') {
-            statusEmoji = '✅';
-            statusText = 'အတည်ပြုပြီး';
-          } else if (order.status === 'rejected') {
-            statusEmoji = '❌';
-            statusText = 'ပယ်ဖျက်ပြီး';
-          }
-          
-          let extraInfo = '';
-          if (order.status === 'approved' && order.expiredAt) {
-            const daysLeft = getRemainingDays(order.expiredAt);
-            if (daysLeft > 0) {
-              extraInfo = `\n⏳ ကျန်ရက်: ${daysLeft} ရက်`;
-            } else {
-              extraInfo = `\n❌ သက်တမ်းကုန်ဆုံးပြီး`;
-            }
-          }
-          if (order.status === 'rejected' && order.rejectReason) {
-            extraInfo = `\n📝 အကြောင်း: ${order.rejectReason}`;
-          }
+          if (order.status === 'pending_payment') statusText = '⏳ ဆိုင်းငံ့';
+          else if (order.status === 'payment_received') statusText = '💰 ငွေလွှဲပြီး';
+          else if (order.status === 'approved') statusText = '✅ အတည်ပြုပြီး';
+          else if (order.status === 'rejected') statusText = '❌ ပယ်ဖျက်ပြီး';
           
           const detailMsg = `
 📋 **အော်ဒါအသေးစိတ်** #${order.id}
@@ -674,16 +548,16 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📦 Package: ${order.packageName}
 📞 ဖုန်း: ${order.phone}
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
-📅 ရက်စွဲ: ${getMyanmarTime(new Date(order.createdAt))}
-📊 အခြေအနေ: ${statusEmoji} ${statusText}${extraInfo}
+📊 အခြေအနေ: ${statusText}
           `;
           
           const keyboard = {
-            inline_keyboard: [
-              [{ text: "✅ အတည်ပြုမည်", callback_data: `approve_${order.id}` }],
-              [{ text: "❌ ပယ်ဖျက်မည်", callback_data: `reject_${order.id}` }],
-              [{ text: "🔙 နောက်သို့", callback_data: "back_to_menu" }]
-            ]
+            inline_keyboard: [[
+              { text: "✅ အတည်ပြုမည်", callback_data: `approve_${order.id}` },
+              { text: "❌ ပယ်ဖျက်မည်", callback_data: `reject_${order.id}` }
+            ], [
+              { text: "🔙 နောက်သို့", callback_data: "back_to_menu" }
+            ]]
           };
           
           await sendTelegramMessage(chatId, detailMsg, keyboard);
@@ -694,19 +568,17 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       // View Pending Orders
       if (data === 'view_pending') {
         const allOrders = await getAllOrders();
-        const pendingOrdersList = allOrders.filter(o => o.status === 'payment_received');
+        const pendingList = allOrders.filter(o => o.status === 'payment_received');
         
-        if (pendingOrdersList.length === 0) {
+        if (pendingList.length === 0) {
           await sendTelegramMessage(chatId, "📭 ဆိုင်းငံ့ထားသော အော်ဒါမရှိပါ။");
         } else {
           let msg = "📋 **ဆိုင်းငံ့ထားသော အော်ဒါများ**\n━━━━━━━━━━━━━━━━━━\n";
           const buttons = [];
-          
-          for (const order of pendingOrdersList.slice(0, 10)) {
+          for (const order of pendingList.slice(0, 10)) {
             msg += `💰 *#${order.id}* | ${order.packageName}\n   📞 ${order.phone}\n   💰 ${order.price.toLocaleString()} KS\n\n`;
             buttons.push([{ text: `💰 အော်ဒါ #${order.id}`, callback_data: `detail_${order.id}` }]);
           }
-          
           buttons.push([{ text: "🔙 ပင်မစာမျက်နှာ", callback_data: "back_to_menu" }]);
           await sendTelegramMessage(chatId, msg, { inline_keyboard: buttons });
         }
@@ -722,28 +594,16 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         } else {
           let msg = "📋 **အော်ဒါအားလုံး**\n━━━━━━━━━━━━━━━━━━\n";
           const buttons = [];
-          
           for (const order of allOrders.slice(0, 15)) {
-            let statusEmoji = '📌';
-            if (order.status === 'pending_payment') statusEmoji = '⏳';
-            else if (order.status === 'payment_received') statusEmoji = '💰';
-            else if (order.status === 'approved') statusEmoji = '✅';
-            else if (order.status === 'rejected') statusEmoji = '❌';
+            let emoji = '📌';
+            if (order.status === 'pending_payment') emoji = '⏳';
+            else if (order.status === 'payment_received') emoji = '💰';
+            else if (order.status === 'approved') emoji = '✅';
+            else if (order.status === 'rejected') emoji = '❌';
             
-            msg += `${statusEmoji} *#${order.id}* | ${order.packageName}\n   📞 ${order.phone}\n   💰 ${order.price.toLocaleString()} KS`;
-            
-            if (order.status === 'approved' && order.expiredAt) {
-              const daysLeft = getRemainingDays(order.expiredAt);
-              if (daysLeft > 0) {
-                msg += `\n   ⏳ ကျန်: ${daysLeft} ရက်`;
-              } else {
-                msg += `\n   ❌ Expired`;
-              }
-            }
-            msg += `\n\n`;
-            buttons.push([{ text: `${statusEmoji} အော်ဒါ #${order.id}`, callback_data: `detail_${order.id}` }]);
+            msg += `${emoji} *#${order.id}* | ${order.packageName}\n   📞 ${order.phone}\n   💰 ${order.price.toLocaleString()} KS\n\n`;
+            buttons.push([{ text: `${emoji} အော်ဒါ #${order.id}`, callback_data: `detail_${order.id}` }]);
           }
-          
           buttons.push([{ text: "🔙 ပင်မစာမျက်နှာ", callback_data: "back_to_menu" }]);
           await sendTelegramMessage(chatId, msg, { inline_keyboard: buttons });
         }
@@ -753,24 +613,21 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       // Near Expire Orders
       if (data === 'near_expire') {
         const allOrders = await getAllOrders();
-        const nearExpireOrders = allOrders.filter(o => {
+        const nearExpire = allOrders.filter(o => {
           if (o.status !== 'approved' || !o.isActive) return false;
-          const daysLeft = getRemainingDays(o.expiredAt);
-          return daysLeft > 0 && daysLeft <= 7;
+          const days = getRemainingDays(o.expiredAt);
+          return days > 0 && days <= 7;
         });
         
-        if (nearExpireOrders.length === 0) {
+        if (nearExpire.length === 0) {
           await sendTelegramMessage(chatId, "📭 ၇ ရက်အတွင်း သက်တမ်းကုန်မည့် အော်ဒါမရှိပါ။");
         } else {
           let msg = "⚠️ **၇ ရက်အတွင်း သက်တမ်းကုန်မည့် အော်ဒါများ**\n━━━━━━━━━━━━━━━━━━\n";
-          for (const order of nearExpireOrders.slice(0, 10)) {
-            const daysLeft = getRemainingDays(order.expiredAt);
-            msg += `🔴 *#${order.id}* | ${order.packageName}\n   📞 ${order.phone}\n   ⏳ ကျန်: ${daysLeft} ရက်\n   📅 Expire: ${getMyanmarTime(new Date(order.expiredAt))}\n\n`;
+          for (const order of nearExpire) {
+            const days = getRemainingDays(order.expiredAt);
+            msg += `🔴 *#${order.id}* | ${order.packageName}\n   📞 ${order.phone}\n   ⏳ ကျန်: ${days} ရက်\n\n`;
           }
-          const keyboard = {
-            inline_keyboard: [[{ text: "🔙 ပင်မစာမျက်နှာ", callback_data: "back_to_menu" }]]
-          };
-          await sendTelegramMessage(chatId, msg, keyboard);
+          await sendTelegramMessage(chatId, msg);
         }
         return res.sendStatus(200);
       }
@@ -780,10 +637,8 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         await sendTelegramMessage(chatId, `
 💰 **ငွေလွှဲအချက်အလက်**
 
-🏧 *KPay / WavePay:* \`09789999368\`
-👤 *Name:* AUNG THU HTWE
-
-📌 ငွေလွှဲပြီးပါက Screenshot ပေးပို့ရန် ပြောပါ။
+🏧 KPay / WavePay: \`09789999368\`
+👤 Name: AUNG THU HTWE
         `);
         return res.sendStatus(200);
       }
@@ -815,8 +670,6 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         const menuMessage = `
 🤖 *MYTEL ORDER BOT - ADMIN PANEL*
 
-မင်္ဂလာပါ Admin! 👋
-
 ${stats.text}
 
 🔽 *အောက်ပါခလုတ်များကို အသုံးပြုပါ:*
@@ -836,7 +689,7 @@ ${stats.text}
     }
     
     // Handle text messages (reject reasons)
-    if (message && pendingRejectReasons[message.chat.id] && pendingRejectReasons[message.chat.id].step === 'waiting_for_reason') {
+    if (message && pendingRejectReasons[message.chat.id]) {
       const chatId = message.chat.id;
       const { orderId } = pendingRejectReasons[chatId];
       const reason = message.text;
@@ -845,46 +698,39 @@ ${stats.text}
       if (order && reason && !reason.startsWith('/')) {
         await updateOrderStatus(orderId, 'rejected', null, reason);
         
-        const rejectCaption = `
+        const rejectMsg = `
 ❌ **ပယ်ဖျက်ပြီး** - အော်ဒါ #${orderId}
 ━━━━━━━━━━━━━━━━━━━━
 📦 Package: ${order.packageName}
 📞 ဖုန်း: ${order.phone}
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
-📝 **ပယ်ဖျက်ရသည့်အကြောင်း:** ${reason}
-━━━━━━━━━━━━━━━━━━━━
-⚠️ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပြီး မှန်ကန်စွာ ငွေလွှဲပါ။
+📝 အကြောင်း: ${reason}
         `;
         
-        await sendTelegramMessage(ADMIN_CHAT_ID, rejectCaption);
+        await sendTelegramMessage(ADMIN_CHAT_ID, rejectMsg);
         
         if (GROUP_CHAT_ID) {
           await sendTelegramMessage(GROUP_CHAT_ID, `
-⚠️ **အော်ဒါပယ်ဖျက်ခြင်း** ⚠️
-━━━━━━━━━━━━━━━━━━━━
+⚠️ **အော်ဒါပယ်ဖျက်ခြင်း**
 ❌ အော်ဒါ #${orderId}
 📞 ${order.phone}
 📦 ${order.packageName}
-📝 **အကြောင်းရင်း:** ${reason}
-━━━━━━━━━━━━━━━━━━━━
-⚠️ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။
+📝 အကြောင်း: ${reason}
           `);
         }
         
-        await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အား *"${reason}"* ဖြင့် ပယ်ဖျက်ပြီးပါပြီ။`);
+        await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အား "${reason}" ဖြင့် ပယ်ဖျက်ပြီးပါပြီ။`);
       }
       
       delete pendingRejectReasons[chatId];
       return res.sendStatus(200);
     }
     
-    // Handle /start command
+    // /start command
     if (message && message.chat.id.toString() === ADMIN_CHAT_ID.toString() && message.text === '/start') {
       const stats = await getOrderStats();
       const menuMessage = `
 🤖 *MYTEL ORDER BOT - ADMIN PANEL*
-
-မင်္ဂလာပါ Admin! 👋
 
 ${stats.text}
 
@@ -910,11 +756,7 @@ ${stats.text}
 // ========== TEST ENDPOINTS ==========
 app.get('/test-bot', async (req, res) => {
   const stats = await getOrderStats();
-  const menuMessage = `
-🤖 *MYTEL ORDER BOT - ADMIN PANEL*
-
-${stats.text}
-  `;
+  const menuMessage = `🤖 *MYTEL ORDER BOT*\n\n${stats.text}`;
   const keyboard = {
     inline_keyboard: [
       [{ text: "📋 ငွေလွှဲပြီးအော်ဒါများ", callback_data: "view_pending" }, { text: "📜 အော်ဒါအားလုံး", callback_data: "view_all" }],
@@ -927,8 +769,8 @@ ${stats.text}
 });
 
 app.get('/orders-list', async (req, res) => {
-  const allOrders = await getAllOrders();
-  res.json({ orders: allOrders, count: allOrders.length });
+  const orders = await getAllOrders();
+  res.json({ orders, count: orders.length });
 });
 
 app.get('/test-group', async (req, res) => {
@@ -952,7 +794,7 @@ async function setWebhook() {
   try {
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${webhookUrl}`);
     const result = await response.json();
-    console.log("Webhook set:", result.ok ? "✅ Success" : "❌ Failed", result.description);
+    console.log("Webhook set:", result.ok ? "✅ Success" : "❌ Failed");
   } catch (error) {
     console.error("Webhook error:", error);
   }
@@ -964,7 +806,6 @@ app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅ Set' : '❌ Missing'}`);
   console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
-  console.log(`👥 GROUP_CHAT_ID: ${GROUP_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
-  console.log(`🔥 Firebase: ${useFirebase ? '✅ Connected' : '⚠️ Using fallback'}`);
+  console.log(`🔥 Firebase: ${useFirebase ? '✅ Connected' : '⚠️ Fallback'}`);
   await setWebhook();
 });
