@@ -1,121 +1,946 @@
-<!-- Order Tracking Section - Website မှာ ထည့်ရန် -->
-<div class="track-order-section" style="margin-top: 3rem; padding: 1.5rem; background: rgba(15,23,42,0.6); border-radius: 20px;">
-  <h3 style="color: #facc15; margin-bottom: 1rem;">
-    <i class="fas fa-search"></i> အော်ဒါအခြေအနေ စစ်ဆေးရန်
-  </h3>
-  <p style="color: #94a3b8; margin-bottom: 1rem;">သင့်အော်ဒါရဲ့ ကျန်ရက်များကို စစ်ဆေးနိုင်ပါသည်။</p>
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>MYTEL DATA SERVICE | Premium 3D Experience</title>
   
-  <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-    <input type="text" id="trackOrderId" placeholder="အော်ဒါနံပါတ် (ဥပမာ - 1001)" 
-           style="flex:1; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: white;">
-    <input type="tel" id="trackPhone" placeholder="ဖုန်းနံပါတ် (09xxxxxxxxx)" 
-           style="flex:1; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: white;">
-    <button onclick="trackOrder()" style="padding: 12px 24px; background: #facc15; border: none; border-radius: 10px; font-weight: 600;">
-      <i class="fas fa-search"></i> စစ်ဆေးမည်
-    </button>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+  
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
+      }
+    }
+  </script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #050814;
+      color: white;
+      overflow-x: hidden;
+    }
+    
+    /* Custom Cursor */
+    .cursor {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #facc15;
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transition: all 0.1s ease;
+      transform: translate(-50%, -50%);
+    }
+    
+    .cursor-follower {
+      width: 40px;
+      height: 40px;
+      background: rgba(250, 204, 21, 0.1);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transition: all 0.2s ease;
+      transform: translate(-50%, -50%);
+      backdrop-filter: blur(2px);
+    }
+    
+    /* Canvas 3D Background */
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    
+    /* Loading Screen */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #050814;
+      z-index: 10000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      transition: opacity 1s ease;
+    }
+    
+    .loading-screen.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .loader {
+      width: 60px;
+      height: 60px;
+      border: 3px solid #1e293b;
+      border-top-color: #facc15;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #facc15;
+      letter-spacing: 2px;
+    }
+    
+    /* Main Content */
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    /* Hero Section */
+    .hero-section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+    
+    .badge-new {
+      display: inline-block;
+      background: rgba(250, 204, 21, 0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(250, 204, 21, 0.5);
+      border-radius: 40px;
+      padding: 0.5rem 1.2rem;
+      font-size: 0.75rem;
+      margin-bottom: 1.5rem;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.4); }
+      50% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); }
+    }
+    
+    .hero-title {
+      font-size: 4.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #FFD700, #FFA500, #FF6B6B, #FFD700);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: gradientShift 4s ease infinite;
+      margin-bottom: 1rem;
+    }
+    
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    
+    .hero-subtitle {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      margin-bottom: 2rem;
+      max-width: 600px;
+    }
+    
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      gap: 3rem;
+      justify-content: center;
+      margin-top: 3rem;
+      flex-wrap: wrap;
+    }
+    
+    .stat-item {
+      text-align: center;
+    }
+    
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #facc15;
+    }
+    
+    .stat-label {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+    
+    /* Phone Card */
+    .phone-card {
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(20px);
+      border-radius: 60px;
+      padding: 0.8rem 1.5rem;
+      max-width: 450px;
+      margin: 2rem auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border: 1px solid rgba(250, 204, 21, 0.3);
+      transition: all 0.3s;
+    }
+    
+    .phone-card:focus-within {
+      border-color: #facc15;
+      box-shadow: 0 0 20px rgba(250, 204, 21, 0.2);
+    }
+    
+    .phone-card i {
+      font-size: 1.3rem;
+      color: #facc15;
+    }
+    
+    .phone-card input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 0.9rem 0;
+      font-size: 1rem;
+      color: white;
+      outline: none;
+    }
+    
+    .phone-card input::placeholder {
+      color: #64748b;
+    }
+    
+    /* Plans Section */
+    .section-title {
+      text-align: center;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 4rem 0 2rem;
+      background: linear-gradient(135deg, #fff, #facc15);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+    
+    .plan-card-3d {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 2rem;
+      border: 1px solid rgba(250, 204, 21, 0.2);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .plan-card-3d::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(250, 204, 21, 0.1), transparent);
+      transition: left 0.5s;
+    }
+    
+    .plan-card-3d:hover::before {
+      left: 100%;
+    }
+    
+    .plan-card-3d:hover {
+      transform: translateY(-10px) scale(1.02);
+      border-color: #facc15;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(250, 204, 21, 0.2);
+    }
+    
+    .plan-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    
+    .plan-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(120deg, #FFD700, #FFA500);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 1rem;
+    }
+    
+    .plan-price {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #facc15;
+      margin: 1rem 0;
+    }
+    
+    .plan-price small {
+      font-size: 0.8rem;
+      font-weight: 400;
+    }
+    
+    .feature-list {
+      list-style: none;
+      margin: 1rem 0;
+    }
+    
+    .feature-list li {
+      padding: 0.5rem 0;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .feature-list li i {
+      color: #facc15;
+      font-size: 0.75rem;
+    }
+    
+    .buy-btn-3d {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(95deg, #facc15, #eab308);
+      border: none;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 1rem;
+      color: #0f172a;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 1rem;
+    }
+    
+    .buy-btn-3d:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(250, 204, 21, 0.4);
+    }
+    
+    /* Tracking Section */
+    .tracking-section {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(20px);
+      border-radius: 30px;
+      padding: 2.5rem;
+      margin: 4rem 0;
+      border: 1px solid rgba(250, 204, 21, 0.2);
+    }
+    
+    .tracking-title {
+      font-size: 1.8rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .tracking-form {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .tracking-form input {
+      flex: 1;
+      padding: 1rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      color: white;
+      font-size: 1rem;
+    }
+    
+    .tracking-form button {
+      padding: 1rem 2rem;
+      background: #facc15;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .tracking-form button:hover {
+      transform: scale(1.05);
+    }
+    
+    /* Countdown Result */
+    .countdown-result {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: #0f172a;
+      border-radius: 20px;
+      display: none;
+    }
+    
+    .progress-ring {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 1rem;
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 3rem;
+      color: #64748b;
+      font-size: 0.8rem;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      margin-top: 4rem;
+    }
+    
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(10px);
+    }
+    
+    .modal-content {
+      background: #1e293b;
+      border-radius: 30px;
+      padding: 2rem;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      border: 1px solid #facc15;
+    }
+    
+    /* Scroll Reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s ease;
+    }
+    
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    @media (max-width: 768px) {
+      .hero-title { font-size: 2.2rem; }
+      .section-title { font-size: 1.8rem; }
+      .plans-grid { gap: 1rem; }
+      .content { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Custom Cursor -->
+<div class="cursor"></div>
+<div class="cursor-follower"></div>
+
+<!-- Loading Screen -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loader"></div>
+  <div class="loading-text">LOADING EXPERIENCE</div>
+</div>
+
+<!-- 3D Canvas -->
+<div id="canvas-container"></div>
+
+<!-- Main Content -->
+<div class="content">
+  
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="badge-new" data-aos="fade-down">
+      <i class="fas fa-bolt"></i> 5G READY · TRUSTED SERVICE
+    </div>
+    <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100">
+      MYTEL DATA SERVICE
+    </h1>
+    <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200">
+      Experience lightning-fast 5G connectivity with our premium data packages
+    </p>
+    
+    <div class="stats-bar" data-aos="fade-up" data-aos-delay="300">
+      <div class="stat-item">
+        <div class="stat-number">10K+</div>
+        <div class="stat-label">Happy Customers</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">24/7</div>
+        <div class="stat-label">Support</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">99.9%</div>
+        <div class="stat-label">Uptime</div>
+      </div>
+    </div>
+    
+    <div class="phone-card" data-aos="fade-up" data-aos-delay="400">
+      <i class="fas fa-phone-alt"></i>
+      <input type="tel" id="phone" placeholder="Enter phone number (09xxxxxxxxx)">
+    </div>
+  </section>
+  
+  <!-- Plans Section -->
+  <h2 class="section-title reveal" data-aos="fade-up">✨ Choose Your Premium Plan</h2>
+  <div class="plans-grid" id="plans-container"></div>
+  
+  <!-- Tracking Section -->
+  <div class="tracking-section reveal" data-aos="fade-up">
+    <h3 class="tracking-title"><i class="fas fa-search"></i> Track Your Order</h3>
+    <div class="tracking-form">
+      <input type="text" id="trackOrderId" placeholder="Order ID">
+      <input type="tel" id="trackPhone" placeholder="Phone Number">
+      <button onclick="trackOrder()"><i class="fas fa-chart-line"></i> Check Status</button>
+    </div>
+    <div id="trackResult" class="countdown-result"></div>
   </div>
   
-  <div id="trackResult" style="margin-top: 1.5rem; display: none;">
-    <!-- Result will show here -->
+  <!-- Footer -->
+  <div class="footer">
+    <p>🏧 KPay / WavePay: 09789999368 (AUNG THU HTWE)</p>
+    <p>© 2024 MYTEL DATA SERVICE | All Rights Reserved</p>
   </div>
 </div>
 
-<script>
-async function trackOrder() {
-  const orderId = document.getElementById('trackOrderId').value;
-  const phone = document.getElementById('trackPhone').value;
+<!-- Modal -->
+<div id="orderModal" class="modal">
+  <div class="modal-content">
+    <h2>📋 Confirm Order</h2>
+    <div id="modalDetails"></div>
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+      <button onclick="closeModal()" style="flex:1; padding: 12px; background:#334155; border:none; border-radius:12px; color:white;">Cancel</button>
+      <button id="confirmOrderBtn" style="flex:1; padding: 12px; background:#facc15; border:none; border-radius:12px; font-weight:700;">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script type="module">
+  import * as THREE from 'three';
+
+  AOS.init({
+    duration: 1000,
+    once: true,
+    offset: 100
+  });
+
+  // Hide loading screen
+  setTimeout(() => {
+    document.getElementById('loadingScreen').classList.add('hide');
+    setTimeout(() => {
+      document.getElementById('loadingScreen').style.display = 'none';
+    }, 1000);
+  }, 1500);
+
+  // Custom Cursor
+  const cursor = document.querySelector('.cursor');
+  const cursorFollower = document.querySelector('.cursor-follower');
   
-  if (!orderId || !phone) {
-    alert("အော်ဒါနံပါတ်နှင့် ဖုန်းနံပါတ် နှစ်ခုလုံးထည့်ပါ။");
-    return;
+  document.addEventListener('mousemove', (e) => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    cursorFollower.style.left = e.clientX + 'px';
+    cursorFollower.style.top = e.clientY + 'px';
+  });
+  
+  document.addEventListener('mouseenter', () => {
+    cursor.style.opacity = '1';
+    cursorFollower.style.opacity = '1';
+  });
+
+  // ========== 3D SCENE ==========
+  const container = document.getElementById('canvas-container');
+  const scene = new THREE.Scene();
+  scene.background = null;
+  scene.fog = new THREE.FogExp2(0x050814, 0.002);
+  
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.set(0, 2, 12);
+  
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setClearColor(0x050814, 1);
+  container.appendChild(renderer.domElement);
+  
+  // Lights
+  const ambientLight = new THREE.AmbientLight(0x111122);
+  scene.add(ambientLight);
+  
+  const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+  mainLight.position.set(5, 10, 7);
+  scene.add(mainLight);
+  
+  const backLight = new THREE.PointLight(0x2266ff, 0.5);
+  backLight.position.set(-2, 3, -5);
+  scene.add(backLight);
+  
+  const goldLight = new THREE.PointLight(0xffaa33, 0.8);
+  goldLight.position.set(3, 2, 4);
+  scene.add(goldLight);
+  
+  const purpleLight = new THREE.PointLight(0xaa44ff, 0.5);
+  purpleLight.position.set(-3, 1, 5);
+  scene.add(purpleLight);
+  
+  // Main 3D Object - Torus Knot with metal material
+  const geometry = new THREE.TorusKnotGeometry(1.3, 0.3, 200, 64, 3, 4);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0x3b82f6,
+    emissive: 0x1e40af,
+    emissiveIntensity: 0.5,
+    roughness: 0.2,
+    metalness: 0.9,
+    wireframe: false
+  });
+  const knot = new THREE.Mesh(geometry, material);
+  scene.add(knot);
+  
+  // Glowing Ring around knot
+  const ringGeo = new THREE.TorusGeometry(1.7, 0.05, 64, 500);
+  const ringMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xfacc15, emissiveIntensity: 0.8 });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  scene.add(ring);
+  
+  // Floating orbs
+  const orbGroup = new THREE.Group();
+  const orbMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.6 });
+  const orbPositions = [[1.8, 0.6, 0.9], [-1.4, 1.3, -1.1], [0.6, -1.7, 1.3], [1.2, -0.8, -1.5], [-1.1, -0.5, 1.6]];
+  orbPositions.forEach(pos => {
+    const orb = new THREE.Mesh(new THREE.SphereGeometry(0.12, 32, 32), orbMat);
+    orb.position.set(pos[0], pos[1], pos[2]);
+    orbGroup.add(orb);
+  });
+  scene.add(orbGroup);
+  
+  // Particle System (Data Stream)
+  const particleCount = 3000;
+  const particlesGeometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(particleCount * 3);
+  const colors = new Float32Array(particleCount * 3);
+  
+  for (let i = 0; i < particleCount; i++) {
+    positions[i*3] = (Math.random() - 0.5) * 200;
+    positions[i*3+1] = (Math.random() - 0.5) * 100;
+    positions[i*3+2] = (Math.random() - 0.5) * 80 - 40;
+    
+    const color = new THREE.Color().setHSL(0.12 + Math.random() * 0.1, 1, 0.6);
+    colors[i*3] = color.r;
+    colors[i*3+1] = color.g;
+    colors[i*3+2] = color.b;
   }
   
-  const resultDiv = document.getElementById('trackResult');
-  resultDiv.style.display = 'block';
-  resultDiv.innerHTML = '<div style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> စစ်ဆေးနေပါသည်...</div>';
+  particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   
-  try {
-    const res = await fetch(`/api/track-order?orderId=${orderId}&phone=${phone}`);
-    const data = await res.json();
+  const particleMat = new THREE.PointsMaterial({ size: 0.08, vertexColors: true, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending });
+  const stars = new THREE.Points(particlesGeometry, particleMat);
+  scene.add(stars);
+  
+  // Second particle system (flowing particles)
+  const flowParticleCount = 500;
+  const flowGeometry = new THREE.BufferGeometry();
+  const flowPositions = new Float32Array(flowParticleCount * 3);
+  for (let i = 0; i < flowParticleCount; i++) {
+    flowPositions[i*3] = (Math.random() - 0.5) * 15;
+    flowPositions[i*3+1] = (Math.random() - 0.5) * 10;
+    flowPositions[i*3+2] = (Math.random() - 0.5) * 15;
+  }
+  flowGeometry.setAttribute('position', new THREE.BufferAttribute(flowPositions, 3));
+  const flowMat = new THREE.PointsMaterial({ color: 0x44aaff, size: 0.05, transparent: true, blending: THREE.AdditiveBlending });
+  const flowParticles = new THREE.Points(flowGeometry, flowMat);
+  scene.add(flowParticles);
+  
+  // Animation variables
+  let time = 0;
+  
+  function animate3D() {
+    requestAnimationFrame(animate3D);
+    time += 0.008;
     
-    if (!data.success) {
-      resultDiv.innerHTML = `
-        <div style="background: #ef444420; border: 1px solid #ef4444; border-radius: 12px; padding: 1rem; text-align: center;">
-          <i class="fas fa-exclamation-circle" style="color: #ef4444; font-size: 2rem;"></i>
-          <p style="margin-top: 0.5rem;">${data.message}</p>
-        </div>
+    // Rotate main objects
+    knot.rotation.x += 0.003;
+    knot.rotation.y += 0.005;
+    knot.rotation.z += 0.002;
+    
+    ring.rotation.x = Math.sin(time * 0.5) * 0.2;
+    ring.rotation.y = time * 0.3;
+    ring.rotation.z = Math.cos(time * 0.4) * 0.1;
+    
+    // Animate floating orbs
+    orbGroup.children.forEach((child, idx) => {
+      child.position.x += Math.sin(time * 1.2 + idx) * 0.002;
+      child.position.y += Math.cos(time * 1.5 + idx) * 0.002;
+    });
+    
+    // Rotate star field
+    stars.rotation.y += 0.0003;
+    stars.rotation.x += 0.0002;
+    
+    // Flow particles animation
+    flowParticles.rotation.y += 0.005;
+    flowParticles.rotation.x += 0.003;
+    
+    // Camera subtle movement
+    camera.position.x += (0 - camera.position.x) * 0.02;
+    camera.position.y += (1.5 - camera.position.y) * 0.02;
+    camera.lookAt(0, 0, 0);
+    
+    renderer.render(scene, camera);
+  }
+  
+  animate3D();
+  
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+</script>
+
+<script>
+  // ========== WEBSITE LOGIC ==========
+  
+  const plans = [
+    { name: "VIP LEVEL - 1", icon: "🏆", features: ["22 GB Data", "8000 On-Net Mins", "5000 SMS"], price: 15000, color: "#3b82f6" },
+    { name: "VIP LEVEL - 2", icon: "🏆", features: ["40 GB Data", "250 On-Net Mins", "25 Any Net Mins"], price: 20000, color: "#8b5cf6" },
+    { name: "VIP LEVEL - 3", icon: "🏆", features: ["40 GB Data", "1400 On-Net Mins", "8000 SMS"], price: 25000, color: "#ec4899" },
+    { name: "VIP LEVEL - 4", icon: "💎", features: ["120 GB High-Speed Data", "Unlimited Streaming", "Priority Support"], price: 30000, color: "#facc15" }
+  ];
+  
+  let currentOrder = null;
+  
+  function renderPlans() {
+    const containerDiv = document.getElementById('plans-container');
+    containerDiv.innerHTML = '';
+    plans.forEach(plan => {
+      const card = document.createElement('div');
+      card.className = 'plan-card-3d reveal';
+      card.setAttribute('data-aos', 'fade-up');
+      
+      let featuresHtml = '';
+      plan.features.forEach(f => {
+        featuresHtml += `<li><i class="fas fa-check-circle"></i> ${f}</li>`;
+      });
+      
+      card.innerHTML = `
+        <div class="plan-icon">${plan.icon}</div>
+        <div class="plan-title">${plan.name}</div>
+        <ul class="feature-list">${featuresHtml}</ul>
+        <div class="plan-price">${plan.price.toLocaleString()} <small>KS</small></div>
+        <button class="buy-btn-3d" data-plan="${plan.name}"><i class="fas fa-shopping-cart"></i> Order Now</button>
       `;
+      containerDiv.appendChild(card);
+    });
+    
+    document.querySelectorAll('.buy-btn-3d').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const planName = btn.getAttribute('data-plan');
+        showOrderModal(planName);
+      });
+    });
+  }
+  
+  function showOrderModal(packageName) {
+    const phone = document.getElementById('phone').value.trim();
+    if (!phone || phone.length < 9) {
+      alert("⚠️ Please enter valid phone number!");
       return;
     }
     
-    const order = data.order;
-    const countdown = order.countdown;
+    const selectedPlan = plans.find(p => p.name === packageName);
+    if (!selectedPlan) return;
     
-    let statusHtml = '';
-    let countdownHtml = '';
+    document.getElementById('modalDetails').innerHTML = `
+      <div style="margin: 15px 0; padding: 10px; background: #0f172a; border-radius: 12px;">
+        <p><strong>📦 Package:</strong> ${packageName}</p>
+        <p><strong>💰 Price:</strong> ${selectedPlan.price.toLocaleString()} KS</p>
+        <p><strong>📞 Phone:</strong> ${phone}</p>
+      </div>
+    `;
     
-    // Status badge
-    const statusMap = {
-      'pending_payment': { text: '⏳ ဆိုင်းငံ့ (ငွေလွှဲရန်)', color: '#f97316' },
-      'payment_received': { text: '💰 ငွေလွှဲပြီး (စစ်ဆေးနေပါသည်)', color: '#3b82f6' },
-      'approved': { text: '✅ ဒေတာသွင်းပြီး (အသုံးပြုနိုင်ပါပြီ)', color: '#22c55e' },
-      'expired': { text: '⏰ သက်တမ်းကုန်ဆုံးပါပြီ', color: '#ef4444' },
-      'rejected': { text: '❌ ပယ်ဖျက်ပြီး', color: '#ef4444' }
-    };
-    const statusInfo = statusMap[order.status] || { text: order.status, color: '#94a3b8' };
+    currentOrder = { packageName, price: selectedPlan.price, phone };
+    document.getElementById('orderModal').style.display = 'flex';
+  }
+  
+  function closeModal() {
+    document.getElementById('orderModal').style.display = 'none';
+  }
+  
+  async function confirmOrder() {
+    if (!currentOrder) return;
     
-    statusHtml = `<span style="display: inline-block; padding: 4px 12px; background: ${statusInfo.color}20; border: 1px solid ${statusInfo.color}; border-radius: 20px; font-size: 0.8rem;">${statusInfo.text}</span>`;
+    const confirmBtn = document.getElementById('confirmOrderBtn');
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    confirmBtn.disabled = true;
     
-    // Countdown display
-    if (countdown) {
-      const remaining = countdown.daysRemaining;
-      let progressPercent = (remaining / 30) * 100;
-      let barColor = '#22c55e';
-      if (remaining <= 5) barColor = '#ef4444';
-      else if (remaining <= 10) barColor = '#f97316';
+    try {
+      const response = await fetch('/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          packageName: currentOrder.packageName,
+          phone: currentOrder.phone
+        })
+      });
       
-      countdownHtml = `
-        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #334155;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-            <span><i class="fas fa-calendar-check"></i> စတင်ရက်: ${new Date(countdown.startDate).toLocaleDateString('my-MM')}</span>
-            <span><i class="fas fa-calendar-times"></i> ကုန်ဆုံးရက်: ${new Date(countdown.endDate).toLocaleDateString('my-MM')}</span>
-          </div>
-          <div style="background: #0f172a; border-radius: 10px; height: 20px; overflow: hidden;">
-            <div style="width: ${progressPercent}%; background: ${barColor}; height: 100%; transition: width 0.5s;"></div>
-          </div>
-          <div style="text-align: center; margin-top: 0.5rem;">
-            <span style="font-size: 1.5rem; font-weight: bold; color: ${barColor};">${remaining > 0 ? remaining : 0}</span>
-            <span> ရက် ကျန်ပါသေးသည်</span>
-            ${remaining <= 5 && remaining > 0 ? '<p style="color: #ef4444; margin-top: 0.5rem;"><i class="fas fa-bell"></i> သက်တမ်းကုန်ခါနီးပါပြီ။ ပြန်လည်မှာယူနိုင်ပါသည်။</p>' : ''}
-            ${remaining <= 0 ? '<p style="color: #ef4444; margin-top: 0.5rem;"><i class="fas fa-hourglass-end"></i> ဒေတာသက်တမ်း ကုန်ဆုံးသွားပါပြီ။ အသစ်မှာယူနိုင်ပါသည်။</p>' : ''}
-          </div>
-        </div>
-      `;
-    } else if (order.status === 'approved' && !countdown) {
-      countdownHtml = '<div style="margin-top: 1rem; padding: 1rem; background: #facc1520; border-radius: 10px; text-align: center;">⏳ ဒေတာ Countdown စတင်ရန် စောင့်ဆိုင်းနေပါသည်...</div>';
+      const data = await response.json();
+      
+      if (data.success) {
+        closeModal();
+        alert(`✅ Order #${data.orderId} created!\n\nPlease send payment screenshot to complete your order.`);
+        document.getElementById('phone').value = '';
+        
+        // Scroll to tracking section
+        document.querySelector('.tracking-section').scrollIntoView({ behavior: 'smooth' });
+      } else {
+        alert(`❌ ${data.message}`);
+      }
+    } catch (err) {
+      alert("❌ Network error. Please try again.");
+    } finally {
+      confirmBtn.innerHTML = 'Confirm';
+      confirmBtn.disabled = false;
+    }
+  }
+  
+  async function trackOrder() {
+    const orderId = document.getElementById('trackOrderId').value.trim();
+    const phone = document.getElementById('trackPhone').value.trim();
+    
+    if (!orderId || !phone) {
+      alert("Please enter both Order ID and Phone number");
+      return;
     }
     
-    resultDiv.innerHTML = `
-      <div style="background: #0f172a; border-radius: 16px; padding: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-          <h4><i class="fas fa-box"></i> အော်ဒါ #${order.id}</h4>
-          ${statusHtml}
-        </div>
-        <div style="margin-top: 1rem;">
-          <p><i class="fas fa-tag"></i> Package: <strong>${order.packageName}</strong></p>
-          <p><i class="fas fa-phone"></i> ဖုန်းနံပါတ်: ${order.phone}</p>
-          <p><i class="fas fa-calendar"></i> မှာယူသည့်ရက်: ${new Date(order.createdAt).toLocaleDateString('my-MM')}</p>
-        </div>
-        ${countdownHtml}
-      </div>
-    `;
+    const resultDiv = document.getElementById('trackResult');
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<div style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
     
-  } catch (error) {
-    resultDiv.innerHTML = `
-      <div style="background: #ef444420; border-radius: 12px; padding: 1rem; text-align: center;">
-        <p>❌ ဆာဗာအမှား။ နောက်မှပြန်စမ်းပါ။</p>
-      </div>
-    `;
+    try {
+      const response = await fetch(`/api/track-order?orderId=${orderId}&phone=${phone}`);
+      const data = await response.json();
+      
+      if (!data.success) {
+        resultDiv.innerHTML = `
+          <div style="background: #ef444420; border-radius: 16px; padding: 1rem; text-align: center;">
+            <i class="fas fa-exclamation-circle" style="color: #ef4444; font-size: 2rem;"></i>
+            <p>${data.message}</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const order = data.order;
+      const countdown = order.countdown;
+      
+      let statusBadge = '';
+      let statusColor = '#94a3b8';
+      let statusText = order.status;
+      
+      const statusMap = {
+        'pending_payment': { text: '⏳ Pending Payment', color: '#f97316' },
+        'payment_received': { text: '💰 Payment Received', color: '#3b82f6' },
+        'approved': { text: '✅ Active', color: '#22c55e' },
+        'expired': { text: '⏰ Expired', color: '#ef4444' },
+        'rejected': { text: '❌ Rejected', color: '#ef4444' }
+      };
+      
+      if (statusMap[order.status]) {
+        statusText = statusMap[order.status].text;
+        statusColor = statusMap[order.status].color;
+      }
+      
+      let countdownHtml = '';
+      if (countdown) {
+        const remaining = countdown.daysRemaining;
+        const progressPercent = (remaining / 30) * 100;
+        let barColor = '#22c55e';
+        if (remaining <= 5) barColor = '#ef4444';
+        else if (remaining <= 10) barColor = '#f97316';
+        
+        countdownHtml = `
+          <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #334155;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+              <span><i class="fas fa-calendar-check"></i> Start: ${new Date(countdown.startDate).toLocaleDateString('my-MM')}</span>
+              <span><i class="fas fa-calendar-times"></i> Expires: ${new Date(countdown.endDate).toLocaleDateString('my-MM')}</span>
+            </div>
+            <div style="background: #1e293b; border-radius: 10px; height: 20px; overflow: hidden;">
+              <div style="width: ${progressPercent}%; background: ${barColor}; height: 100%; transition: width 0.5s;"></div>
+            </div>
+            <div style="text-align: center; margin-top: 0.5rem;">
+              <span style="font-size: 2rem; font-weight: bold; color: ${barColor};">${remaining > 0 ? remaining : 0}</span>
+              <span> days remaining</span>
+            </div>
+          </div>
+        `;
+      }
+      
+      resultDiv.innerHTML = `
+        <div style="background: #0f172a; border-radius: 20px; padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;">
+            <h3><i class="fas fa-box"></i> Order #${order.id}</h3>
+            <span style="background: ${statusColor}20; border: 1px solid ${statusColor}; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;">${statusText}</span>
+          </div>
+          <p><i class="fas fa-tag"></i> Package: <strong>${order.packageName}</strong></p>
+          <p><i class="fas fa-phone"></i> Phone: ${order.phone}</p>
+          <p><i class="fas fa-calendar"></i> Order Date: ${new Date(order.createdAt).toLocaleDateString('my-MM')}</p>
+          ${countdownHtml}
+        </div>
+      `;
+      
+    } catch (error) {
+      resultDiv.innerHTML = `
+        <div style="background: #ef444420; border-radius: 16px; padding: 1rem; text-align: center;">
+          <p>❌ Network error. Please try again.</p>
+        </div>
+      `;
+    }
   }
-}
+  
+  document.getElementById('confirmOrderBtn').onclick = confirmOrder;
+  
+  renderPlans();
 </script>
+</body>
+</html>
