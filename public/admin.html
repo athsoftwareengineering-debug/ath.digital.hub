@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MYTEL Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0;
+      width: 260px; height: 100%;
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+      border-right: 1px solid #334155;
+      padding: 1.5rem;
+    }
+    .logo {
+      font-size: 1.5rem; font-weight: 800;
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; margin: 8px 0;
+      border-radius: 12px; cursor: pointer;
+      color: #94a3b8;
+      transition: all 0.3s;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: #facc1520;
+      color: #facc15;
+    }
+    .main-content {
+      margin-left: 260px;
+      padding: 1.5rem;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: #1e293b;
+      border-radius: 1rem;
+      padding: 1rem;
+      border: 1px solid #334155;
+      transition: all 0.3s;
+    }
+    .stat-card:hover { border-color: #facc15; transform: translateY(-2px); }
+    .stat-card .value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #facc15;
+    }
+    .stat-card .label { font-size: 0.7rem; color: #64748b; margin-top: 0.3rem; }
+    .filters {
+      display: flex; gap: 1rem;
+      margin-bottom: 1rem; flex-wrap: wrap;
+      align-items: center;
+    }
+    .filters select, .filters input {
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 8px 16px;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+    }
+    .refresh-btn {
+      background: #facc15;
+      color: #0f172a;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .orders-table {
+      background: #1e293b;
+      border-radius: 1rem;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    th { background: #0f172a; color: #facc15; font-weight: 600; }
+    tr:hover { background: rgba(250,204,21,0.05); }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .status-pending { background: #f9731620; color: #f97316; border: 1px solid #f97316; }
+    .status-paid { background: #3b82f620; color: #3b82f6; border: 1px solid #3b82f6; }
+    .status-approved { background: #22c55e20; color: #22c55e; border: 1px solid #22c55e; }
+    .status-rejected { background: #ef444420; color: #ef4444; border: 1px solid #ef4444; }
+    .status-expired { background: #64748b20; color: #64748b; border: 1px solid #64748b; }
+    .action-btn {
+      background: none; border: none;
+      cursor: pointer; padding: 6px 10px;
+      border-radius: 6px;
+      margin: 0 2px;
+      transition: all 0.2s;
+    }
+    .action-approve { background: #22c55e20; color: #22c55e; }
+    .action-approve:hover { background: #22c55e; color: white; }
+    .action-reject { background: #ef444420; color: #ef4444; }
+    .action-reject:hover { background: #ef4444; color: white; }
+    .logout-btn {
+      position: fixed; top: 20px; right: 20px;
+      background: #ef4444; border: none;
+      padding: 10px 20px; border-radius: 12px;
+      color: white; cursor: pointer; font-weight: 600;
+      z-index: 1000;
+      transition: all 0.3s;
+    }
+    .logout-btn:hover { background: #dc2626; transform: scale(1.02); }
+    .pagination {
+      display: flex; justify-content: center; gap: 8px;
+      margin-top: 1rem;
+    }
+    .pagination button {
+      background: #1e293b; border: 1px solid #334155;
+      padding: 8px 12px; border-radius: 8px;
+      color: white; cursor: pointer;
+    }
+    .pagination button:hover { background: #facc15; color: #0f172a; }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-content { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">✨ MYTEL ADMIN</div>
+  <div class="nav-item active" data-page="dashboard">
+    <i class="fas fa-chart-line"></i> Dashboard
+  </div>
+</div>
+<div class="main-content">
+  <div id="dashboardPage">
+    <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="filters">
+      <select id="statusFilter" onchange="loadOrders()">
+        <option value="all">📋 All Orders</option>
+        <option value="pending_payment">⏳ Pending</option>
+        <option value="payment_received">💰 Paid</option>
+        <option value="approved">✅ Active</option>
+        <option value="rejected">❌ Rejected</option>
+        <option value="expired">⏰ Expired</option>
+      </select>
+      <button class="refresh-btn" onclick="loadOrders()"><i class="fas fa-sync-alt"></i> Refresh</button>
+    </div>
+    <div class="orders-table" id="ordersTable">
+      <div style="padding:2rem; text-align:center;">Loading orders...</div>
+    </div>
+  </div>
+</div>
+<button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+
+<script>
+  const ADMIN_PASSWORD = "mytel2024";
+  
+  // Check authentication
+  if (!sessionStorage.getItem('adminLoggedIn')) {
+    window.location.href = '/admin-login';
+  }
+  
+  // Add auth token to all fetch requests
+  const originalFetch = window.fetch;
+  window.fetch = function(url, options = {}) {
+    options.headers = options.headers || {};
+    options.headers['x-admin-auth'] = ADMIN_PASSWORD;
+    return originalFetch(url, options);
+  };
+  
+  let currentPage = 1;
+  let currentFilter = 'all';
+  
+  async function loadOrders() {
+    currentFilter = document.getElementById('statusFilter').value;
+    document.getElementById('ordersTable').innerHTML = '<div style="padding:2rem; text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+    
+    try {
+      const res = await fetch(`/api/admin/orders?status=${currentFilter}&page=${currentPage}&limit=50`);
+      const data = await res.json();
+      if (data.success) {
+        renderStats(data.stats);
+        renderOrders(data.orders);
+      } else {
+        document.getElementById('ordersTable').innerHTML = '<div style="padding:2rem; text-align:center;">❌ Failed to load orders</div>';
+      }
+    } catch (err) {
+      document.getElementById('ordersTable').innerHTML = '<div style="padding:2rem; text-align:center;">❌ Network error</div>';
+    }
+  }
+  
+  function renderStats(stats) {
+    document.getElementById('statsGrid').innerHTML = `
+      <div class="stat-card"><div class="value">${stats.total}</div><div class="label">Total Orders</div></div>
+      <div class="stat-card"><div class="value">${stats.pending}</div><div class="label">Pending</div></div>
+      <div class="stat-card"><div class="value">${stats.paid}</div><div class="label">Paid</div></div>
+      <div class="stat-card"><div class="value">${stats.approved}</div><div class="label">Active</div></div>
+      <div class="stat-card"><div class="value">${stats.expired}</div><div class="label">Expired</div></div>
+      <div class="stat-card"><div class="value">${(stats.revenue/1000).toFixed(0)}K</div><div class="label">Revenue (KS)</div></div>
+    `;
+  }
+  
+  function getStatusClass(status) {
+    const map = { pending_payment:'status-pending', payment_received:'status-paid', approved:'status-approved', rejected:'status-rejected', expired:'status-expired' };
+    return map[status] || 'status-pending';
+  }
+  
+  function getStatusText(status) {
+    const map = { pending_payment:'⏳ Pending', payment_received:'💰 Paid', approved:'✅ Active', rejected:'❌ Rejected', expired:'⏰ Expired' };
+    return map[status] || status;
+  }
+  
+  function renderOrders(orders) {
+    if (!orders || orders.length === 0) {
+      document.getElementById('ordersTable').innerHTML = '<div style="padding:2rem; text-align:center;">📭 No orders found</div>';
+      return;
+    }
+    
+    let html = `<table><thead><tr>
+      <th>ID</th><th>Package</th><th>Phone</th><th>Price</th><th>Status</th><th>Date</th><th>Action</th>
+    </tr></thead><tbody>`;
+    
+    orders.forEach(order => {
+      html += `<tr>
+        <td><strong>#${order.id}</strong></td>
+        <td>${order.packageName}</td>
+        <td>${order.phone}</td>
+        <td>${order.price.toLocaleString()} KS</td>
+        <td><span class="status-badge ${getStatusClass(order.status)}">${getStatusText(order.status)}</span></td>
+        <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+        <td>${order.status === 'payment_received' ? 
+          `<button class="action-btn action-approve" onclick="updateOrder(${order.id}, 'approved')" title="Approve (Start 30 Days)"><i class="fas fa-check"></i></button>
+           <button class="action-btn action-reject" onclick="updateOrder(${order.id}, 'rejected')" title="Reject"><i class="fas fa-times"></i></button>` : 
+          `<span style="color:#64748b;">-</span>`}
+        </td>
+      </tr>`;
+    });
+    
+    html += `</tbody></table>`;
+    document.getElementById('ordersTable').innerHTML = html;
+  }
+  
+  async function updateOrder(orderId, status) {
+    const confirmMsg = status === 'approved' 
+      ? `Order #${orderId} ကို အတည်ပြုပြီး 30 ရက် Countdown စတင်မလား?` 
+      : `Order #${orderId} ကို ပယ်ဖျက်မလား?`;
+    
+    if (!confirm(confirmMsg)) return;
+    
+    try {
+      const res = await fetch('/api/admin/update-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, status })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`✅ Order #${orderId} ${status === 'approved' ? 'approved! 30 days started.' : 'rejected.'}`);
+        loadOrders();
+      } else {
+        alert('❌ Failed to update order');
+      }
+    } catch (err) {
+      alert('❌ Network error');
+    }
+  }
+  
+  function logout() {
+    sessionStorage.removeItem('adminLoggedIn');
+    window.location.href = '/admin-login';
+  }
+  
+  // Load orders on page load
+  loadOrders();
+  
+  // Auto refresh every 30 seconds
+  setInterval(loadOrders, 30000);
+</script>
+</body>
+</html>
