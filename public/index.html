@@ -3,757 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>MYTEL VIP - ATH DIGITAL HUB | Professional Order System</title>
+    <title>MYTEL VIP - ATH DIGITAL HUB</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Poppins', system-ui, sans-serif;
             background: radial-gradient(circle at 20% 30%, #0a0a2a, #1a0a2a, #0a0a1a);
             min-height: 100vh;
             padding: 20px;
             color: #fff;
-            position: relative;
-            overflow-x: hidden;
         }
-
-        /* 3D Animated Background */
-        .bg-3d {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .bg-layer-1 {
-            position: absolute;
-            width: 150%;
-            height: 150%;
-            background: radial-gradient(circle, rgba(227,30,36,0.15), transparent);
-            animation: rotate3d 30s linear infinite;
-            top: -25%;
-            left: -25%;
-        }
-
-        .bg-layer-2 {
-            position: absolute;
-            width: 120%;
-            height: 120%;
-            background: radial-gradient(circle, rgba(255,215,0,0.08), transparent);
-            animation: rotate3d-reverse 20s linear infinite;
-            top: -10%;
-            left: -10%;
-        }
-
-        @keyframes rotate3d {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.1); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-
-        @keyframes rotate3d-reverse {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(-180deg) scale(1.05); }
-            100% { transform: rotate(-360deg) scale(1); }
-        }
-
-        /* Network Status Bar */
         .network-status {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 8px;
-            text-align: center;
-            font-size: 0.7rem;
-            font-weight: bold;
-            z-index: 1001;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
+            position: fixed; top: 0; left: 0; right: 0;
+            padding: 8px; text-align: center; font-size: 0.7rem;
+            font-weight: bold; z-index: 1001;
         }
-        .network-status.online { background: rgba(0, 200, 83, 0.9); color: #fff; }
-        .network-status.offline { background: rgba(220, 53, 69, 0.9); color: #fff; }
-        .network-status.checking { background: rgba(255, 152, 0, 0.9); color: #fff; }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 50px 0 20px;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Professional 3D Logo */
-        .logo-container {
-            text-align: center;
-            margin-bottom: 30px;
-            perspective: 1000px;
-        }
+        .network-status.online { background: #00c853; }
+        .network-status.offline { background: #dc3545; }
+        .container { max-width: 600px; margin: 0 auto; padding: 50px 0 20px; position: relative; z-index: 1; }
         
+        /* Logo */
+        .logo-container { text-align: center; margin-bottom: 30px; }
         .logo-3d {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 15px;
-            position: relative;
-            transform-style: preserve-3d;
-            animation: logoGlow 3s ease-in-out infinite, logoFloat 4s ease-in-out infinite;
-            cursor: pointer;
-        }
-        
-        @keyframes logoGlow {
-            0%, 100% { filter: drop-shadow(0 0 10px rgba(227,30,36,0.5)); }
-            50% { filter: drop-shadow(0 0 30px rgba(227,30,36,0.8)); }
-        }
-        
-        @keyframes logoFloat {
-            0%, 100% { transform: translateY(0px) rotateY(0deg); }
-            50% { transform: translateY(-10px) rotateY(10deg); }
-        }
-        
-        .logo-front, .logo-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backface-visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .logo-front {
+            width: 100px; height: 100px; margin: 0 auto 15px;
             background: linear-gradient(135deg, #E31E24, #8B0000);
-            transform: rotateY(0deg);
-            border: 3px solid #FFD700;
-            box-shadow: 0 0 30px rgba(227,30,36,0.6);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            border: 3px solid #FFD700; animation: pulse 2s infinite;
         }
-        
-        .logo-back {
-            background: linear-gradient(135deg, #FFD700, #E31E24);
-            transform: rotateY(180deg);
-            border: 3px solid #fff;
-        }
-        
-        .logo-front span, .logo-back span { 
-            font-size: 2.5rem; 
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        .logo-front span { color: #FFD700; }
-        .logo-back span { color: #E31E24; }
-        
-        .logo-3d:hover {
-            animation: logoHover 0.5s ease forwards;
-        }
-        
-        @keyframes logoHover {
-            to { transform: scale(1.05) rotateY(15deg); }
-        }
-
+        @keyframes pulse { 0%,100% { transform: scale(1); box-shadow: 0 0 20px rgba(227,30,36,0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(227,30,36,0.8); } }
+        .logo-3d span { font-size: 2.5rem; font-weight: bold; color: #FFD700; }
         .official-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, #E31E24, #8B0000);
-            padding: 6px 18px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin-top: 10px;
+            display: inline-block; background: linear-gradient(135deg, #E31E24, #8B0000);
+            padding: 5px 15px; border-radius: 40px; font-size: 0.7rem;
             border: 1px solid #FFD700;
-            animation: badgePulse 2s infinite;
-            backdrop-filter: blur(5px);
         }
+        .header h1 { font-size: 1.5rem; background: linear-gradient(135deg, #FFD700, #E31E24);
+            -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .subtitle { font-size: 0.7rem; opacity: 0.8; }
         
-        @keyframes badgePulse {
-            0%, 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); transform: scale(1); }
-            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); transform: scale(1.02); }
-        }
-
-        .header h1 {
-            font-size: 1.6rem;
-            background: linear-gradient(135deg, #FFD700, #E31E24, #FFD700);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-top: 10px;
-            animation: gradientShift 3s ease infinite;
-        }
-        
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        .subtitle { 
-            font-size: 0.7rem; 
-            opacity: 0.8; 
-            letter-spacing: 3px;
-            margin-top: 5px;
-        }
-
-        /* Firebase Status Badge */
-        .firebase-status-badge {
-            display: inline-block;
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-        }
-
-        /* 3D Status Card */
+        /* Status Card */
         .status-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(12px);
-            border-radius: 28px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform-style: preserve-3d;
-            perspective: 1000px;
+            background: rgba(255,255,255,0.08); backdrop-filter: blur(12px);
+            border-radius: 24px; padding: 20px; margin-bottom: 20px;
+            border: 1px solid rgba(255,215,0,0.3);
         }
-        
-        .status-card:hover {
-            transform: translateY(-5px) translateZ(10px);
-            border-color: #FFD700;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(227,30,36,0.3);
-        }
-        
-        .status-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-        }
-        
-        .status-header h3 { font-size: 1.1rem; color: #FFD700; }
-        
-        .status-badge { 
-            padding: 4px 12px; 
-            border-radius: 20px; 
-            font-size: 0.7rem; 
-            font-weight: bold;
-            animation: badgeGlow 2s infinite;
-        }
-        
-        @keyframes badgeGlow {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
-        }
-        
-        .status-active { background: #00c853; color: #fff; box-shadow: 0 0 10px rgba(0,200,83,0.5); }
-        .status-expired { background: #dc3545; color: #fff; box-shadow: 0 0 10px rgba(220,53,69,0.5); }
-        
-        .status-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-        
-        .status-item {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 16px;
-            padding: 10px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        
-        .status-item:hover {
-            background: rgba(0, 0, 0, 0.5);
-            transform: scale(1.02);
-        }
-        
+        .status-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .status-header h3 { color: #FFD700; font-size: 1rem; }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
+        .status-active { background: #00c853; }
+        .status-expired { background: #dc3545; }
+        .status-info { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .status-item { background: rgba(0,0,0,0.3); border-radius: 16px; padding: 10px; text-align: center; }
         .status-item span:first-child { font-size: 0.7rem; opacity: 0.7; display: block; }
-        .status-item span:last-child { font-size: 0.9rem; font-weight: bold; display: block; margin-top: 5px; }
+        .status-item span:last-child { font-size: 0.85rem; font-weight: bold; display: block; margin-top: 5px; }
+        .countdown { text-align: center; padding: 12px; background: rgba(227,30,36,0.2); border-radius: 16px; }
+        .countdown-number { font-size: 1.5rem; font-weight: bold; color: #FFD700; }
+        .renew-btn { background: linear-gradient(135deg, #FFD700, #E31E24); border: none;
+            padding: 10px; border-radius: 40px; color: #1a1a2e; font-weight: bold;
+            cursor: pointer; width: 100%; margin-top: 10px; }
         
-        /* 3D Countdown */
-        .countdown {
-            text-align: center;
-            padding: 12px;
-            background: linear-gradient(135deg, rgba(227,30,36,0.2), rgba(255,215,0,0.1));
-            border-radius: 20px;
-            margin: 10px 0;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .countdown::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,215,0,0.1), transparent);
-            animation: shine 3s infinite;
-        }
-        
-        @keyframes shine {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-        
-        .countdown-number { 
-            font-size: 1.8rem; 
-            font-weight: bold; 
-            color: #FFD700;
-            text-shadow: 0 0 10px rgba(255,215,0,0.5);
-            display: inline-block;
-            animation: numberPop 0.5s ease;
-        }
-        
-        @keyframes numberPop {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        
-        .renew-btn {
-            background: linear-gradient(135deg, #FFD700, #E31E24);
-            border: none;
-            padding: 12px 20px;
-            border-radius: 40px;
-            color: #1a1a2e;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .renew-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(227,30,36,0.4);
-        }
-        
-        .renew-btn::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.5);
-            transform: translate(-50%, -50%);
-            transition: width 0.5s, height 0.5s;
-        }
-        
-        .renew-btn:active::after {
-            width: 200px;
-            height: 200px;
-        }
-
-        /* Phone Input Card */
+        /* Phone Input */
         .phone-input-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(12px);
-            border-radius: 28px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.08); backdrop-filter: blur(12px);
+            border-radius: 24px; padding: 20px; margin-bottom: 20px;
+            border: 1px solid rgba(255,215,0,0.3);
         }
-        
-        .phone-input-card:hover {
-            border-color: #FFD700;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
         .phone-input-group { display: flex; gap: 10px; }
-        
         .phone-input-group input {
-            flex: 1;
-            padding: 14px 18px;
-            border-radius: 50px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
+            flex: 1; padding: 14px 18px; border-radius: 50px;
+            border: 1px solid rgba(255,215,0,0.3); background: rgba(255,255,255,0.1);
+            color: #fff; font-size: 0.9rem;
         }
-        
-        .phone-input-group input:focus {
-            outline: none;
-            border-color: #FFD700;
-            box-shadow: 0 0 15px rgba(255,215,0,0.3);
-            transform: scale(1.01);
-        }
-        
         .phone-input-group button {
-            padding: 14px 24px;
-            border-radius: 50px;
+            padding: 14px 24px; border-radius: 50px;
             background: linear-gradient(135deg, #FFD700, #E31E24);
-            border: none;
-            color: #1a1a2e;
-            font-weight: bold;
-            cursor: pointer;
+            border: none; color: #1a1a2e; font-weight: bold; cursor: pointer;
+        }
+        
+        /* Package Grid */
+        .packages { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 30px; }
+        .package-card {
+            background: rgba(255,255,255,0.08); backdrop-filter: blur(12px);
+            border-radius: 20px; padding: 18px 12px; text-align: center;
+            border: 1px solid rgba(255,215,0,0.3); cursor: pointer;
             transition: all 0.3s ease;
         }
+        .package-card:hover { transform: translateY(-5px); border-color: #FFD700; }
+        .package-card.selected { border: 2px solid #FFD700; background: rgba(227,30,36,0.2); }
+        .package-name { color: #FFD700; font-weight: bold; margin-bottom: 5px; }
+        .package-desc { font-size: 0.65rem; opacity: 0.8; margin: 5px 0; }
+        .package-price { font-size: 1.2rem; font-weight: bold; }
         
-        .phone-input-group button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(227,30,36,0.4);
-        }
-
-        /* 3D Package Grid */
-        .packages {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
-            margin-bottom: 30px;
-        }
-        
-        .package-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(12px);
-            border-radius: 24px;
-            padding: 20px 12px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-align: center;
-            transform-style: preserve-3d;
-        }
-        
-        .package-card:hover {
-            transform: translateY(-8px) scale(1.03);
-            border-color: #FFD700;
-            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(227,30,36,0.4);
-        }
-        
-        .package-card.selected {
-            border: 2px solid #FFD700;
-            background: linear-gradient(135deg, rgba(227,30,36,0.25), rgba(255,215,0,0.1));
-            box-shadow: 0 0 30px rgba(227,30,36,0.5);
-            animation: selectedPulse 1.5s infinite;
-        }
-        
-        @keyframes selectedPulse {
-            0%, 100% { box-shadow: 0 0 15px rgba(227,30,36,0.4); }
-            50% { box-shadow: 0 0 35px rgba(227,30,36,0.7); }
-        }
-        
-        .package-card.selected::before {
-            content: "✓";
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            background: linear-gradient(135deg, #FFD700, #E31E24);
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: #fff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            animation: checkPop 0.3s ease;
-        }
-        
-        @keyframes checkPop {
-            from { transform: scale(0); }
-            to { transform: scale(1); }
-        }
-        
-        .package-name { font-size: 1rem; font-weight: bold; color: #FFD700; margin-bottom: 5px; }
-        .package-desc { font-size: 0.65rem; opacity: 0.8; margin: 8px 0; line-height: 1.3; }
-        .package-price { font-size: 1.3rem; font-weight: bold; }
-        .package-price small { font-size: 0.6rem; opacity: 0.7; }
-
         /* Form */
         .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-size: 0.85rem; font-weight: 500; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 0.85rem; }
         .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 14px 18px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            background: rgba(255, 255, 255, 0.08);
+            width: 100%; padding: 12px; border-radius: 20px;
+            border: 1px solid rgba(255,215,0,0.3); background: rgba(255,255,255,0.1);
             color: #fff;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
         }
-        .form-group input:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #FFD700;
-            background: rgba(255, 255, 255, 0.12);
-            transform: scale(1.01);
-            box-shadow: 0 0 20px rgba(227,30,36,0.3);
-        }
-
-        /* Buttons */
-        .btn-group { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
-        .btn {
-            flex: 1;
-            padding: 12px 16px;
-            border-radius: 50px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: none;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
+        .btn-group { display: flex; gap: 12px; margin-top: 20px; }
+        .btn { flex: 1; padding: 12px; border-radius: 40px; font-weight: bold; cursor: pointer; border: none; text-align: center; }
+        .btn-success { background: linear-gradient(135deg, #FFD700, #E31E24); color: #1a1a2e; }
+        .btn-danger { background: rgba(220,53,69,0.9); color: #fff; }
+        .btn-secondary { background: rgba(255,215,0,0.2); color: #FFD700; border: 1px solid rgba(255,215,0,0.5); }
         
-        .btn::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
-            transform: translate(-50%, -50%);
-            transition: width 0.5s, height 0.5s;
-        }
-        
-        .btn:active::after { width: 200px; height: 200px; }
-        
-        .btn-success { background: linear-gradient(135deg, #FFD700, #E31E24); color: #1a1a2e; font-weight: bold; }
-        .btn-success:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(227,30,36,0.5); }
-        .btn-danger { background: rgba(220, 53, 69, 0.9); color: #fff; }
-        .btn-danger:hover { transform: translateY(-2px); background: #dc3545; }
-        .btn-secondary { background: rgba(255, 215, 0, 0.2); color: #FFD700; border: 1px solid rgba(255, 215, 0, 0.5); }
-        .btn-secondary:hover { background: rgba(255, 215, 0, 0.3); transform: translateY(-2px); }
-
-        /* Payment Section */
-        .payment-section {
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(12px);
-            border-radius: 24px;
-            padding: 20px;
-            margin-top: 20px;
-            border: 1px solid rgba(255, 215, 0, 0.2);
-        }
-        
-        .payment-info {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 18px;
-            padding: 14px;
-            margin: 12px 0;
-            text-align: center;
-            border: 1px solid rgba(255, 215, 0, 0.2);
-        }
-        
-        .copy-btn {
-            background: linear-gradient(135deg, #FFD700, #E31E24);
-            border: none;
-            padding: 6px 18px;
-            border-radius: 50px;
-            color: #1a1a2e;
-            cursor: pointer;
-            font-size: 0.7rem;
-            font-weight: bold;
-            margin-top: 6px;
-            transition: all 0.3s ease;
-        }
-        .copy-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(227,30,36,0.5); }
-        
-        .file-upload {
-            border: 2px dashed rgba(255, 215, 0, 0.5);
-            border-radius: 18px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .file-upload:hover { border-color: #FFD700; background: rgba(227,30,36,0.1); transform: scale(1.01); }
+        .payment-section { background: rgba(255,255,255,0.06); border-radius: 24px; padding: 20px; margin-top: 20px; }
+        .payment-info { background: rgba(0,0,0,0.4); border-radius: 18px; padding: 14px; text-align: center; }
+        .copy-btn { background: linear-gradient(135deg, #FFD700, #E31E24); border: none;
+            padding: 6px 18px; border-radius: 50px; cursor: pointer; margin-top: 6px; }
+        .file-upload { border: 2px dashed rgba(255,215,0,0.5); border-radius: 18px;
+            padding: 20px; text-align: center; cursor: pointer; }
         .file-upload input { display: none; }
-        
         .screenshot-preview { margin-top: 15px; text-align: center; }
-        .screenshot-preview img { max-width: 100%; max-height: 160px; border-radius: 16px; border: 2px solid #FFD700; animation: zoomIn 0.3s ease; }
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal.active { display: flex; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal-content {
-            background: linear-gradient(135deg, #1a0a2a, #0a0a2a);
-            border-radius: 32px;
-            padding: 30px 25px;
-            max-width: 320px;
-            width: 90%;
-            text-align: center;
-            border: 2px solid #FFD700;
-            transform: scale(0.9);
-            animation: modalPop 0.3s ease forwards;
-        }
-        @keyframes modalPop { to { transform: scale(1); } }
-        .summary-item { margin: 12px 0; padding: 10px; background: rgba(227,30,36,0.15); border-radius: 14px; border: 1px solid rgba(255,215,0,0.3); }
-
-        /* Footer */
-        .footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid rgba(255,215,0,0.2); font-size: 0.7rem; }
-        .footer .brand { font-size: 0.85rem; font-weight: bold; background: linear-gradient(135deg, #FFD700, #E31E24); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .heart { color: #E31E24; animation: heartbeat 1.5s infinite; display: inline-block; }
-        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(0, 0, 0, 0.95);
-            color: #FFD700;
-            padding: 10px 20px;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            z-index: 1100;
-            transition: transform 0.3s ease;
-            white-space: nowrap;
-            border: 1px solid #FFD700;
-        }
-        .toast.show { transform: translateX(-50%) translateY(0); }
-
-        .sync-indicator {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.7);
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            z-index: 1001;
-            backdrop-filter: blur(5px);
-        }
-        .queue-badge {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: #ff9800;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            z-index: 1001;
-            cursor: pointer;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
-        }
-        .queue-badge:hover { transform: scale(1.05); background: #ff5722; }
-
-        hr { border-color: rgba(255,215,0,0.2); margin: 12px 0; }
+        .screenshot-preview img { max-width: 100%; max-height: 160px; border-radius: 14px; border: 2px solid #FFD700; }
         
-        @media (max-width: 480px) { 
-            .packages { gap: 12px; }
-            .status-info { grid-template-columns: 1fr; }
-            .phone-input-group { flex-wrap: wrap; }
-            .phone-input-group button { flex: 1; }
-            .container { padding-top: 60px; }
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(8px); z-index: 1000;
+            justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: linear-gradient(135deg, #1a0a2a, #0a0a2a); border-radius: 28px;
+            padding: 25px; max-width: 320px; width: 90%; text-align: center;
+            border: 2px solid #FFD700; }
+        .summary-item { margin: 12px 0; padding: 10px; background: rgba(227,30,36,0.15); border-radius: 14px; }
+        
+        .footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid rgba(255,215,0,0.2); font-size: 0.7rem; }
+        .heart { color: #E31E24; animation: heartbeat 1.5s infinite; display: inline-block; }
+        @keyframes heartbeat { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: rgba(0,0,0,0.95); color: #FFD700; padding: 10px 20px;
+            border-radius: 50px; font-size: 0.8rem; z-index: 1100; transition: transform 0.3s ease;
+            border: 1px solid #FFD700; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .queue-badge { position: fixed; bottom: 10px; left: 10px; background: #ff9800;
+            padding: 5px 10px; border-radius: 20px; font-size: 0.7rem; cursor: pointer; }
+        
+        hr { border-color: rgba(255,215,0,0.2); margin: 12px 0; }
+        @media (max-width: 480px) { .packages { gap: 12px; } .status-info { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <!-- 3D Animated Background -->
-    <div class="bg-3d">
-        <div class="bg-layer-1"></div>
-        <div class="bg-layer-2"></div>
-    </div>
-
-    <!-- Network Status Bar -->
-    <div id="networkStatus" class="network-status checking">🔄 Checking connection...</div>
-    <div id="syncIndicator" class="sync-indicator" style="display: none;">🔄 Syncing...</div>
+    <div id="networkStatus" class="network-status online">🟢 Online Mode</div>
     <div id="queueBadge" class="queue-badge" style="display: none;" onclick="offlineSync?.processQueue()">📦 0 pending</div>
 
     <div class="container">
         <div class="logo-container">
-            <div class="logo-3d">
-                <div class="logo-front"><span>ATH</span></div>
-                <div class="logo-back"><span>ATH</span></div>
-            </div>
+            <div class="logo-3d"><span>ATH</span></div>
             <div class="official-badge">✨ OFFICIAL SELLER ✨</div>
-            <div class="header">
-                <h1>MYTEL VIP</h1>
-                <div class="subtitle">POWERED BY ATH DIGITAL HUB</div>
-                <p style="font-size: 0.65rem; margin-top: 6px;">အမြန်ဆုံး ဒေတာသွင်းခြင်း | 3D Real-time System</p>
-            </div>
+            <div class="header"><h1>MYTEL VIP</h1><div class="subtitle">POWERED BY ATH DIGITAL HUB</div></div>
         </div>
 
-        <!-- Firebase Status -->
         <div style="text-align: center; margin-bottom: 15px;">
-            <div id="firebaseStatusBadge" class="firebase-status-badge">🔄 စစ်ဆေးနေပါသည်...</div>
+            <div id="firebaseStatus" style="display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; background: rgba(0,0,0,0.3);">🔄 စစ်ဆေးနေပါသည်...</div>
         </div>
 
-        <!-- Phone Input Section -->
         <div class="phone-input-card">
             <div class="phone-input-group">
                 <input type="tel" id="checkPhone" placeholder="ဖုန်းနံပါတ်ထည့်ပါ (09xxxxxxxxx)">
                 <button id="checkStatusBtn">🔍 စစ်ဆေးမည်</button>
             </div>
-            <div style="margin-top: 12px; text-align: center;">
-                <button class="btn btn-secondary" id="refreshPageBtn" style="width: 100%;">🔄 Page ပြန်စမည်</button>
-            </div>
+            <div style="margin-top: 12px;"><button class="btn btn-secondary" id="refreshPageBtn" style="width:100%;">🔄 Page ပြန်စမည်</button></div>
         </div>
 
         <div id="statusContainer"></div>
 
-        <!-- Packages -->
         <div class="packages" id="packagesContainer"></div>
 
         <div id="orderForm" style="display: none;">
-            <div class="form-group">
-                <label>📞 ဖုန်းနံပါတ်</label>
-                <input type="tel" id="phone" placeholder="09xxxxxxxxx">
-            </div>
-            <div class="form-group">
-                <label>📝 မှတ်ချက် (Optional)</label>
-                <textarea id="note" rows="2" placeholder="အပိုမှတ်ချက်ရှိပါက..."></textarea>
-            </div>
-
+            <div class="form-group"><label>📞 ဖုန်းနံပါတ်</label><input type="tel" id="phone" placeholder="09xxxxxxxxx"></div>
+            <div class="form-group"><label>📝 မှတ်ချက် (Optional)</label><textarea id="note" rows="2" placeholder="အပိုမှတ်ချက်ရှိပါက..."></textarea></div>
             <div class="payment-section">
                 <h4>💰 ငွေလွှဲရမည့်နေရာ</h4>
                 <div class="payment-info">
                     <p>🏧 <strong>KPay / WavePay</strong></p>
-                    <p style="font-size: 1.2rem; font-weight: bold;">09789999368</p>
+                    <p style="font-size:1.2rem; font-weight:bold;">09789999368</p>
                     <p>👤 <strong>AUNG THU HTWE</strong></p>
                     <button class="copy-btn" onclick="copyNumber()">📋 ကူးယူမည်</button>
                 </div>
-
                 <div class="file-upload" id="fileUploadArea">
-                    <span>📸</span>
-                    <p>ငွေလွှဲပြေစာပုံ တင်ရန်</p>
-                    <p style="font-size: 0.6rem;">Gallery ထဲက ပုံရွေးရန် နှိပ်ပါ</p>
+                    <span>📸</span><p>ငွေလွှဲပြေစာပုံ တင်ရန်</p>
                     <input type="file" id="screenshot" accept="image/*">
                 </div>
                 <div class="screenshot-preview" id="preview"></div>
-
                 <hr>
-
                 <div class="btn-group">
                     <button class="btn btn-success" id="submitBtn">✅ အော်ဒါတင်မည်</button>
                     <button class="btn btn-danger" id="cancelOrderBtn">🗑️ ပယ်ဖျက်မည်</button>
@@ -767,7 +201,7 @@
 
         <div class="footer">
             <div class="brand">ATH DIGITAL HUB</div>
-            <p>© Developed by <strong>𝐀𝐔𝐍𝐆 𝐓𝐇𝐔 𝐇𝐓𝐖𝐄</strong></p>
+            <p>© Developed by <strong>Aung Thu Htwe</strong></p>
             <p>All Rights Reserved. <span class="heart">❤️</span></p>
         </div>
     </div>
@@ -778,7 +212,7 @@
             <div class="summary-item"><strong>📦 Package</strong><br><span id="summaryPackage">-</span></div>
             <div class="summary-item"><strong>📞 ဖုန်းနံပါတ်</strong><br><span id="summaryPhone">-</span></div>
             <div class="summary-item"><strong>💰 ကျသင့်ငွေ</strong><br><span id="summaryPrice">- KS</span></div>
-            <div class="modal-buttons" style="display: flex; gap: 12px; margin-top: 20px;">
+            <div style="display: flex; gap: 12px; margin-top: 20px;">
                 <button class="btn btn-secondary" onclick="closeModal()">🔙 ပြန်မယ်</button>
                 <button class="btn btn-success" id="confirmOrderBtn">✅ အတည်ပြုမယ်</button>
             </div>
@@ -796,19 +230,16 @@
         };
 
         let selectedPackage = null;
-        let currentOrderId = null;
         let selectedFile = null;
         let lastCheckedPhone = '';
 
-        // ========== OFFLINE SYNC MANAGER ==========
+        // Offline Sync Manager
         class OfflineSyncManager {
             constructor() {
                 this.queue = [];
                 this.isOnline = navigator.onLine;
-                this.syncInProgress = false;
                 this.init();
             }
-
             init() {
                 this.loadQueue();
                 window.addEventListener('online', () => this.handleOnline());
@@ -816,229 +247,114 @@
                 this.updateNetworkStatus();
                 if (this.isOnline) this.processQueue();
             }
-
             loadQueue() {
-                const saved = localStorage.getItem('offline_order_queue');
-                if (saved) {
-                    this.queue = JSON.parse(saved);
-                    this.updateQueueDisplay();
-                    console.log(`📦 Loaded ${this.queue.length} pending orders`);
-                }
+                const saved = localStorage.getItem('offline_queue');
+                if (saved) { this.queue = JSON.parse(saved); this.updateQueueDisplay(); }
             }
-
-            saveQueue() {
-                localStorage.setItem('offline_order_queue', JSON.stringify(this.queue));
-                this.updateQueueDisplay();
-            }
-
-            addToQueue(orderData) {
-                this.queue.push({
-                    ...orderData,
-                    queuedAt: new Date().toISOString(),
-                    retryCount: 0
-                });
-                this.saveQueue();
-                showToast(`📦 Order saved offline. Queue: ${this.queue.length}`);
-            }
-
+            saveQueue() { localStorage.setItem('offline_queue', JSON.stringify(this.queue)); this.updateQueueDisplay(); }
+            addToQueue(data) { this.queue.push({ ...data, queuedAt: new Date().toISOString(), retry: 0 }); this.saveQueue(); showToast(`📦 Saved offline (${this.queue.length} pending)`); }
             async processQueue() {
-                if (!this.isOnline || this.syncInProgress || this.queue.length === 0) return;
-
-                this.syncInProgress = true;
-                const syncIndicator = document.getElementById('syncIndicator');
-                if (syncIndicator) syncIndicator.style.display = 'block';
-
+                if (!this.isOnline || this.queue.length === 0) return;
                 for (let i = 0; i < this.queue.length; i++) {
                     const item = this.queue[i];
-                    
                     try {
-                        const orderRes = await fetch('/order', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ packageName: item.packageName, phone: item.phone })
-                        });
+                        const orderRes = await fetch('/order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ packageName: item.pkg, phone: item.phone }) });
                         const orderData = await orderRes.json();
-                        
-                        if (!orderData.success) throw new Error(orderData.message);
-
+                        if (!orderData.success) throw new Error();
                         const formData = new FormData();
                         formData.append('orderId', orderData.orderId);
-                        formData.append('packageName', item.packageName);
+                        formData.append('packageName', item.pkg);
                         formData.append('phone', item.phone);
-                        formData.append('note', item.note || '');
-                        
-                        const file = this.base64ToFile(item.screenshotBase64, 'screenshot.jpg');
+                        formData.append('note', item.note);
+                        const file = this.base64ToFile(item.img, 'screenshot.jpg');
                         formData.append('screenshot', file);
-
-                        const paymentRes = await fetch('/submit-payment', { method: 'POST', body: formData });
-                        const paymentData = await paymentRes.json();
-
-                        if (paymentData.success) {
-                            this.queue.splice(i, 1);
-                            i--;
-                            this.saveQueue();
-                            showToast('✅ Offline order synced successfully!');
-                        } else {
-                            throw new Error(paymentData.message);
-                        }
-                    } catch (error) {
-                        item.retryCount++;
-                        if (item.retryCount >= 3) {
-                            showToast(`⚠️ Failed to sync order after 3 attempts`);
-                        }
-                    }
+                        const payRes = await fetch('/submit-payment', { method: 'POST', body: formData });
+                        const payData = await payRes.json();
+                        if (payData.success) { this.queue.splice(i,1); i--; this.saveQueue(); showToast('✅ Offline order synced!'); }
+                        else throw new Error();
+                    } catch(e) { item.retry++; if (item.retry >= 3) showToast(`⚠️ Failed to sync order`); }
                     await this.delay(1000);
                 }
-
-                this.syncInProgress = false;
-                if (syncIndicator) syncIndicator.style.display = 'none';
-                
-                if (this.queue.length === 0) {
-                    localStorage.removeItem('offline_order_queue');
-                }
             }
-
-            async handleOnline() {
-                this.isOnline = true;
-                this.updateNetworkStatus();
-                showToast('🟢 Internet restored. Syncing...');
-                await this.processQueue();
-            }
-
-            handleOffline() {
-                this.isOnline = false;
-                this.updateNetworkStatus();
-                showToast('🔴 Internet lost. Orders will be saved locally.');
-            }
-
+            async handleOnline() { this.isOnline = true; this.updateNetworkStatus(); showToast('🟢 Online - Syncing...'); await this.processQueue(); }
+            handleOffline() { this.isOnline = false; this.updateNetworkStatus(); showToast('🔴 Offline - Orders will be saved locally'); }
             updateNetworkStatus() {
-                const statusBar = document.getElementById('networkStatus');
-                if (statusBar) {
-                    if (this.isOnline) {
-                        statusBar.className = 'network-status online';
-                        statusBar.innerHTML = '🟢 Online Mode | Real-time Sync Active | 3D System Ready';
-                    } else {
-                        statusBar.className = 'network-status offline';
-                        statusBar.innerHTML = '🔴 Offline Mode | Orders will be saved locally | Auto-sync when online';
-                    }
+                const bar = document.getElementById('networkStatus');
+                if (bar) {
+                    bar.className = `network-status ${this.isOnline ? 'online' : 'offline'}`;
+                    bar.innerHTML = this.isOnline ? '🟢 Online Mode | Real-time Sync Active' : '🔴 Offline Mode | Orders saved locally';
                 }
             }
-
             updateQueueDisplay() {
                 const badge = document.getElementById('queueBadge');
-                if (badge) {
-                    if (this.queue.length > 0) {
-                        badge.style.display = 'block';
-                        badge.innerHTML = `📦 ${this.queue.length} pending`;
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                }
+                if (badge) badge.style.display = this.queue.length > 0 ? 'block' : 'none';
+                if (badge) badge.innerHTML = `📦 ${this.queue.length} pending`;
             }
-
             base64ToFile(base64, filename) {
-                const arr = base64.split(',');
-                const mime = arr[0].match(/:(.*?);/)[1];
-                const bstr = atob(arr[1]);
-                let n = bstr.length;
-                const u8arr = new Uint8Array(n);
+                const arr = base64.split(','); const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]); let n = bstr.length; const u8arr = new Uint8Array(n);
                 while (n--) u8arr[n] = bstr.charCodeAt(n);
                 return new File([u8arr], filename, { type: mime });
             }
-
-            delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-
-            async submitOrderOffline(packageName, phone, note, screenshotBase64) {
-                if (!this.isOnline) {
-                    this.addToQueue({ packageName, phone, note, screenshotBase64 });
-                    return { success: true, offline: true };
-                } else {
-                    try {
-                        const orderRes = await fetch('/order', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ packageName, phone })
-                        });
-                        const orderData = await orderRes.json();
-                        if (!orderData.success) throw new Error(orderData.message);
-
-                        const formData = new FormData();
-                        formData.append('orderId', orderData.orderId);
-                        formData.append('packageName', packageName);
-                        formData.append('phone', phone);
-                        formData.append('note', note);
-                        const file = this.base64ToFile(screenshotBase64, 'screenshot.jpg');
-                        formData.append('screenshot', file);
-
-                        const paymentRes = await fetch('/submit-payment', { method: 'POST', body: formData });
-                        const paymentData = await paymentRes.json();
-
-                        if (paymentData.success) {
-                            return { success: true, offline: false };
-                        } else {
-                            throw new Error(paymentData.message);
-                        }
-                    } catch (error) {
-                        this.addToQueue({ packageName, phone, note, screenshotBase64 });
-                        return { success: true, offline: true, message: 'Saved offline due to error' };
-                    }
-                }
+            delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+            async submit(pkg, phone, note, imgBase64) {
+                if (!this.isOnline) { this.addToQueue({ pkg, phone, note, img: imgBase64 }); return { success: true, offline: true }; }
+                try {
+                    const orderRes = await fetch('/order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ packageName: pkg, phone }) });
+                    const orderData = await orderRes.json();
+                    if (!orderData.success) throw new Error();
+                    const formData = new FormData();
+                    formData.append('orderId', orderData.orderId);
+                    formData.append('packageName', pkg);
+                    formData.append('phone', phone);
+                    formData.append('note', note);
+                    const file = this.base64ToFile(imgBase64, 'screenshot.jpg');
+                    formData.append('screenshot', file);
+                    const payRes = await fetch('/submit-payment', { method: 'POST', body: formData });
+                    const payData = await payRes.json();
+                    if (payData.success) return { success: true, offline: false };
+                    throw new Error();
+                } catch(e) { this.addToQueue({ pkg, phone, note, img: imgBase64 }); return { success: true, offline: true }; }
             }
         }
 
         const offlineSync = new OfflineSyncManager();
 
-        // ========== CHECK FIREBASE STATUS ==========
         async function checkFirebaseStatus() {
             try {
                 const res = await fetch('/firebase-status');
                 const data = await res.json();
-                const badge = document.getElementById('firebaseStatusBadge');
-                
+                const el = document.getElementById('firebaseStatus');
                 if (data.firebaseConnected) {
-                    badge.innerHTML = '🔥 Firebase ချိတ်ဆက်ထားသည် ✅ | ☁️ Cloud + Real-time Sync | Data မပျက်';
-                    badge.style.background = 'rgba(0, 200, 83, 0.2)';
-                    badge.style.border = '1px solid #00c853';
-                    badge.style.color = '#00c853';
+                    el.innerHTML = '🔥 Firebase Connected ✅ | Cloud Database';
+                    el.style.background = 'rgba(0,200,83,0.2)';
+                    el.style.border = '1px solid #00c853';
+                    el.style.color = '#00c853';
                 } else {
-                    badge.innerHTML = '⚠️ Local Mode သုံးစွဲနေသည် 📁 | Server Restart ချိန်တွင် Data ပျက်နိုင်';
-                    badge.style.background = 'rgba(255, 152, 0, 0.2)';
-                    badge.style.border = '1px solid #ff9800';
-                    badge.style.color = '#ff9800';
+                    el.innerHTML = '⚠️ Local Mode | Data may reset on restart';
+                    el.style.background = 'rgba(255,152,0,0.2)';
+                    el.style.border = '1px solid #ff9800';
+                    el.style.color = '#ff9800';
                 }
-            } catch (error) {
-                console.error('Error checking Firebase status:', error);
-            }
+            } catch(e) {}
         }
 
-        // ========== CHECK ORDER STATUS ==========
         async function checkOrderStatus() {
             const phone = document.getElementById('checkPhone').value.trim();
-            if (!phone || phone.length < 9) {
-                showToast('⚠️ ဖုန်းနံပါတ် မှန်ကန်စွာထည့်ပါ');
-                return;
-            }
-            
+            if (!phone || phone.length < 9) { showToast('⚠️ ဖုန်းနံပါတ် မှန်ကန်စွာထည့်ပါ'); return; }
             lastCheckedPhone = phone;
             showToast('⏳ စစ်ဆေးနေပါသည်...');
-            
             try {
                 const res = await fetch(`/api/orders/${phone}`);
                 const data = await res.json();
-                
-                if (data.success && data.orders.length > 0) {
-                    displayStatus(data.orders);
-                } else {
-                    document.getElementById('statusContainer').innerHTML = `
-                        <div class="status-card" style="text-align: center;">
-                            <p>📭 အတည်ပြုပြီးသော အော်ဒါမရှိသေးပါ။</p>
-                            <p style="font-size: 0.8rem; margin-top: 10px;">အောက်ပါ Package များမှ ဝယ်ယူနိုင်ပါသည်။</p>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                showToast('❌ Error: ' + error.message);
-            }
+                if (data.success && data.orders.length > 0) displayStatus(data.orders);
+                else document.getElementById('statusContainer').innerHTML = `<div class="status-card"><p>📭 အတည်ပြုပြီးသော အော်ဒါမရှိသေးပါ။</p></div>`;
+            } catch(e) { showToast('❌ Error'); }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr || dateStr === 'null' || dateStr.includes('NaN')) return '⏳ စောင့်ဆိုင်းနေဆဲ';
+            return dateStr;
         }
 
         function displayStatus(orders) {
@@ -1046,62 +362,18 @@
             for (const order of orders) {
                 const statusClass = order.isActive ? 'status-active' : 'status-expired';
                 const statusText = order.isActive ? '✅ Active' : '❌ Expired';
-                
-                // Format start date - handle null/undefined
-                let startDate = '⏳ စောင့်ဆိုင်းနေဆဲ (Admin အတည်ပြုရန်)';
-                if (order.approvedAt && order.approvedAt !== 'null' && order.approvedAt !== 'undefined' && !order.approvedAt.includes('NaN')) {
-                    startDate = order.approvedAt;
-                }
-                
-                // Format expiry date
-                let expiryDate = '⏳ စောင့်ဆိုင်းနေဆဲ';
-                if (order.expiredAt && order.expiredAt !== 'null' && order.expiredAt !== 'undefined' && !order.expiredAt.includes('NaN')) {
-                    expiryDate = order.expiredAt;
-                }
-                
                 html += `
                     <div class="status-card">
-                        <div class="status-header">
-                            <h3>📦 ${order.packageName}</h3>
-                            <div class="status-badge ${statusClass}">${statusText}</div>
-                        </div>
-                        <div style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 10px;">🆔 အော်ဒါနံပါတ်: ${order.id || '-'}</div>
+                        <div class="status-header"><h3>📦 ${order.packageName}</h3><div class="status-badge ${statusClass}">${statusText}</div></div>
+                        <div style="font-size:0.7rem; opacity:0.7;">🆔 အော်ဒါနံပါတ်: ${order.id}</div>
                         <div class="status-info">
-                            <div class="status-item">
-                                <span>📅 စတင်ရက်</span>
-                                <span>${startDate}</span>
-                            </div>
-                            <div class="status-item">
-                                <span>⏰ ကုန်ဆုံးရက်</span>
-                                <span>${expiryDate}</span>
-                            </div>
+                            <div class="status-item"><span>📅 စတင်ရက်</span><span>${formatDate(order.approvedAt)}</span></div>
+                            <div class="status-item"><span>⏰ ကုန်ဆုံးရက်</span><span>${formatDate(order.expiredAt)}</span></div>
                         </div>
+                        ${order.isActive && order.daysLeft > 0 ? `<div class="countdown"><span>⏳ ကျန်ရက်များ</span><br><span class="countdown-number">${order.daysLeft}</span><span> ရက်</span></div>` : ''}
+                        ${!order.isActive ? `<button class="renew-btn" onclick="scrollToPackages()">🔄 အသစ်ဝယ်ယူရန်</button>` : ''}
+                    </div>
                 `;
-                
-                if (order.isActive && order.daysLeft > 0 && !isNaN(order.daysLeft)) {
-                    html += `
-                        <div class="countdown">
-                            <span>⏳ ကျန်ရှိသောရက်များ</span><br>
-                            <span class="countdown-number">${order.daysLeft}</span>
-                            <span> ရက်</span>
-                        </div>
-                    `;
-                } else if (order.isActive && order.daysLeft === 0) {
-                    html += `
-                        <div class="countdown" style="background: rgba(255, 152, 0, 0.2);">
-                            <span>⚠️ ဒီနေ့ သက်တမ်းကုန်ဆုံးမည်</span>
-                        </div>
-                    `;
-                } else if (!order.isActive) {
-                    html += `
-                        <div class="countdown" style="background: rgba(220, 53, 69, 0.2);">
-                            <span>🔴 ဒေတာ သက်တမ်းကုန်ဆုံးပြီးဖြစ်ပါသည်။</span>
-                        </div>
-                        <button class="renew-btn" onclick="scrollToPackages()">🔄 အသစ်ဝယ်ယူရန်</button>
-                    `;
-                }
-                
-                html += `</div>`;
             }
             document.getElementById('statusContainer').innerHTML = html;
         }
@@ -1121,18 +393,16 @@
             }
         }
 
-        function selectPackage(pkgName) {
-            selectedPackage = pkgName;
+        function selectPackage(name) {
+            selectedPackage = name;
             renderPackages();
             document.getElementById('orderForm').style.display = 'block';
             document.getElementById('changePackageBtnContainer').style.display = 'flex';
-            showToast(`✅ ${pkgName} ကို ရွေးချယ်ပြီးပါပြီ`);
+            showToast(`✅ ${name} ရွေးပြီးပါပြီ`);
         }
 
         document.getElementById('changePackageBtn')?.addEventListener('click', () => {
-            selectedPackage = null;
-            currentOrderId = null;
-            selectedFile = null;
+            selectedPackage = null; selectedFile = null;
             renderPackages();
             document.getElementById('orderForm').style.display = 'none';
             document.getElementById('changePackageBtnContainer').style.display = 'none';
@@ -1144,10 +414,8 @@
         });
 
         document.getElementById('cancelOrderBtn')?.addEventListener('click', () => {
-            if (confirm('အော်ဒါကို ပယ်ဖျက်မှာသေချာလား？')) {
-                selectedPackage = null;
-                currentOrderId = null;
-                selectedFile = null;
+            if (confirm('အော်ဒါကို ပယ်ဖျက်မှာလား？')) {
+                selectedPackage = null; selectedFile = null;
                 renderPackages();
                 document.getElementById('orderForm').style.display = 'none';
                 document.getElementById('changePackageBtnContainer').style.display = 'none';
@@ -1175,10 +443,9 @@
         });
 
         function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
         }
@@ -1198,16 +465,12 @@
             closeModal();
             const phone = document.getElementById('phone').value.trim();
             const note = document.getElementById('note').value;
-            const screenshotBase64 = await fileToBase64(selectedFile);
-            
-            showToast('⏳ Processing order...');
-            const result = await offlineSync.submitOrderOffline(selectedPackage, phone, note, screenshotBase64);
-            
+            const imgBase64 = await fileToBase64(selectedFile);
+            showToast('⏳ Processing...');
+            const result = await offlineSync.submit(selectedPackage, phone, note, imgBase64);
             if (result.success) {
-                showToast(result.offline ? '📦 Order saved offline. Will sync when online.' : '✅ Order submitted successfully!');
-                selectedPackage = null;
-                currentOrderId = null;
-                selectedFile = null;
+                showToast(result.offline ? '📦 Saved offline. Will sync when online.' : '✅ Order submitted!');
+                selectedPackage = null; selectedFile = null;
                 renderPackages();
                 document.getElementById('orderForm').style.display = 'none';
                 document.getElementById('changePackageBtnContainer').style.display = 'none';
@@ -1215,22 +478,14 @@
                 document.getElementById('note').value = '';
                 document.getElementById('preview').innerHTML = '';
                 document.getElementById('screenshot').value = '';
-            } else {
-                showToast('❌ Failed to submit order');
-            }
+            } else { showToast('❌ Failed'); }
         });
 
         document.getElementById('checkStatusBtn')?.addEventListener('click', checkOrderStatus);
-        document.getElementById('refreshPageBtn')?.addEventListener('click', () => { showToast('🔄 Page ပြန်စနေပါသည်...'); setTimeout(() => location.reload(), 500); });
-        
+        document.getElementById('refreshPageBtn')?.addEventListener('click', () => { showToast('🔄 Page reloading...'); setTimeout(() => location.reload(), 500); });
         function closeModal() { document.getElementById('summaryModal').classList.remove('active'); }
         function copyNumber() { navigator.clipboard.writeText('09789999368'); showToast('📋 ကူးယူပြီးပါပြီ'); }
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
+        function showToast(msg) { const toast = document.getElementById('toast'); toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
         document.getElementById('summaryModal')?.addEventListener('click', (e) => { if (e.target === document.getElementById('summaryModal')) closeModal(); });
         
         checkFirebaseStatus();
