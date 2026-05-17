@@ -438,7 +438,7 @@
     .status-rejected { background: #ef444420; color: #ef4444; border: 1px solid #ef4444; }
     .status-expired { background: #64748b20; color: #64748b; border: 1px solid #64748b; }
     
-    /* Desktop Layout: Date → View → Action */
+    /* Desktop: Date → View → Action */
     .order-date {
       min-width: 160px;
       font-size: 0.75rem;
@@ -497,8 +497,8 @@
     .header-col-screenshot { width: 80px; }
     .header-col-action { width: 160px; }
     
-    /* ========== MOBILE VERSION - နေရာလဲထားပြီး ========== */
-    @media (max-width: 768px) {
+    /* ========== MOBILE & TABLET VERSION - View → Date → Action ========== */
+    @media (max-width: 1024px) {
       .orders-header { display: none; }
       
       .order-grid {
@@ -514,10 +514,11 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.5rem 0;
+        padding: 0.6rem 0;
         border-bottom: 1px dashed var(--border);
       }
       
+      /* Label for each field */
       .order-id:before, .order-package:before, .order-phone:before, 
       .order-price:before, .order-status:before, .order-screenshot:before, 
       .order-date:before, .order-actions:before {
@@ -525,6 +526,7 @@
         font-weight: 600;
         color: var(--primary);
         font-size: 0.75rem;
+        min-width: 100px;
       }
       
       .order-id:before { content: "Order ID:"; }
@@ -532,23 +534,40 @@
       .order-phone:before { content: "Phone:"; }
       .order-price:before { content: "Price:"; }
       .order-status:before { content: "Status:"; }
-      /* Mobile: View ကို Date ရဲ့ ရှေ့ထား */
       .order-screenshot:before { content: "Screenshot:"; }
       .order-date:before { content: "Date:"; }
       .order-actions:before { content: "Actions:"; }
       
-      /* Mobile: View နဲ့ Date ကို နေရာလဲထား */
+      /* Order order for Mobile: View → Date → Action */
       .order-screenshot { order: 6; }
       .order-date { order: 7; }
+      .order-actions { order: 8; }
       
+      /* Remove border for first and last items */
       .order-id { border-bottom: none; }
       .order-package { border-bottom: none; }
+      .order-actions { border-bottom: none; }
     }
     
+    /* Small phones (below 480px) */
     @media (max-width: 480px) {
       .order-phone { flex-direction: column; align-items: flex-start; }
+      .order-phone:before { margin-bottom: 4px; }
       .order-actions { flex-direction: column; align-items: stretch; }
       .action-btn { justify-content: center; }
+      
+      .order-id, .order-package, .order-phone, .order-price, 
+      .order-status, .order-screenshot, .order-date, .order-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+      
+      .order-id:before, .order-package:before, .order-phone:before, 
+      .order-price:before, .order-status:before, .order-screenshot:before, 
+      .order-date:before, .order-actions:before {
+        margin-bottom: 4px;
+      }
     }
     
     /* Modal */
@@ -946,11 +965,12 @@
             <div class="order-status" data-label="Status">
               <span class="status-badge ${statusClass}">${statusText}</span>
             </div>
-            <div class="order-date" data-label="Date">
-              ${formattedDate}
-            </div>
+            <!-- Mobile/Tablet: View → Date → Action order -->
             <div class="order-screenshot" data-label="Screenshot">
               <button class="action-view" onclick="viewScreenshot(${order.id})"><i class="fas fa-image"></i> View</button>
+            </div>
+            <div class="order-date" data-label="Date">
+              ${formattedDate}
             </div>
             <div class="order-actions" data-label="Actions">
               ${order.status === 'payment_received' ? `
