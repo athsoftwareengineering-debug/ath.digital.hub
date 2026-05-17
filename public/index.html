@@ -562,11 +562,15 @@
             </div>
         </div>
 
-        <!-- Order Status Section -->
+        <!-- Order Status Section with Refresh Button Below -->
         <div class="phone-input-card" id="phoneInputCard">
             <div class="phone-input-group">
                 <input type="tel" id="checkPhone" placeholder="ဖုန်းနံပါတ်ထည့်ပါ (09xxxxxxxxx)">
                 <button id="checkStatusBtn">🔍 စစ်ဆေးမည်</button>
+            </div>
+            <!-- Refresh Button - Below Check Button -->
+            <div style="margin-top: 12px; text-align: center;">
+                <button class="btn btn-secondary" id="refreshPageBtn" style="width: 100%;">🔄 Page ပြန်စမည် (Refresh)</button>
             </div>
         </div>
 
@@ -611,10 +615,9 @@
             </div>
         </div>
 
-        <!-- Button Container with Refresh Button -->
+        <!-- Change Package Button Container -->
         <div style="text-align: center; margin-top: 20px; display: flex; gap: 12px; justify-content: center;" id="changePackageBtnContainer" style="display: none;">
             <button class="btn btn-secondary" id="changePackageBtn">🔄 Package ပြောင်းမည်</button>
-            <button class="btn btn-secondary" id="refreshStatusBtn">🔄 Refresh</button>
         </div>
 
         <div class="footer">
@@ -683,38 +686,12 @@
             }
         });
 
-        // Refresh Status Button
-        document.getElementById('refreshStatusBtn')?.addEventListener('click', async () => {
-            if (!lastCheckedPhone) {
-                const phone = document.getElementById('checkPhone').value.trim();
-                if (!phone || phone.length < 9) {
-                    showToast('⚠️ ဖုန်းနံပါတ် အရင်ထည့်ပါ');
-                    return;
-                }
-                lastCheckedPhone = phone;
-            }
-            
-            showToast('🔄 Status ပြန်စစ်နေပါသည်...');
-            
-            try {
-                const res = await fetch(`/order-status/${lastCheckedPhone}`);
-                const data = await res.json();
-                
-                if (data.success && data.orders.length > 0) {
-                    displayStatus(data.orders);
-                    showToast('✅ Status ပြန်လည်ရယူပြီးပါပြီ');
-                } else {
-                    document.getElementById('statusContainer').innerHTML = `
-                        <div class="status-card" style="text-align: center;">
-                            <p>📭 သင့်အတွက် အတည်ပြုပြီးသော အော်ဒါမရှိသေးပါ။</p>
-                            <p style="font-size: 0.8rem; margin-top: 10px;">အောက်ပါ Package များမှ ဝယ်ယူနိုင်ပါသည်။</p>
-                        </div>
-                    `;
-                    showToast('📭 အော်ဒါမရှိသေးပါ');
-                }
-            } catch (error) {
-                showToast('❌ Error: ' + error.message);
-            }
+        // Refresh Page Button - Page အသစ်ပြန်စမယ်
+        document.getElementById('refreshPageBtn')?.addEventListener('click', () => {
+            showToast('🔄 Page ပြန်စနေပါသည်...');
+            setTimeout(() => {
+                location.reload();
+            }, 500);
         });
 
         function displayStatus(orders) {
@@ -777,7 +754,6 @@
                 if (remainingDays <= 0) {
                     clearInterval(countdownInterval);
                     daysSpan.textContent = '0';
-                    // Refresh status when expired
                     if (lastCheckedPhone) {
                         fetch(`/order-status/${lastCheckedPhone}`)
                             .then(res => res.json())
