@@ -377,32 +377,30 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // Reject Button - Ask for reason
+      // Reject Button - Ask for reason with Force Reply
       if (data.startsWith('reject_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = orders.find(o => o.id === orderId);
         
         if (order) {
-          const keyboard = {
-            inline_keyboard: [
-              [{ text: "📝 အကြောင်းရင်းရေးရန်", callback_data: `reject_reason_${orderId}` }],
-              [{ text: "🔙 နောက်သို့", callback_data: "back_to_menu" }]
-            ]
+          // Store that we're waiting for reason
+          pendingRejectReasons[chatId] = { orderId, step: 'waiting_for_reason' };
+          
+          // Force reply keyboard - user can type message
+          const forceReply = {
+            force_reply: true,
+            input_field_placeholder: "ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ..."
           };
           
-          await sendTelegramMessage(chatId, `❌ အော်ဒါ #${orderId} ကို ပယ်ဖျက်ရန် ရွေးချယ်ပါသည်။\n\nကျေးဇူးပြု၍ ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ။`, keyboard);
-        }
-        return res.sendStatus(200);
-      }
-      
-      // Handle reject reason request
-      if (data.startsWith('reject_reason_')) {
-        const orderId = parseInt(data.split('_')[2]);
-        const order = orders.find(o => o.id === orderId);
-        
-        if (order) {
-          pendingRejectReasons[chatId] = { orderId, step: 'waiting_for_reason' };
-          await sendTelegramMessage(chatId, `📝 အော်ဒါ #${orderId} ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ။\n\n(စာသားပုံစံဖြင့် ရေးသားပါ)`);
+          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: chatId,
+              text: `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ။\n\n(အောက်ပါစာသားအကွက်တွင် ရေးသားပါ)`,
+              reply_markup: forceReply
+            })
+          });
         }
         return res.sendStatus(200);
       }
@@ -631,11 +629,21 @@ ${stats.text}
       const order = orders.find(o => o.id === orderId);
       const reason = text;
       
-      if (order) {
+      if (order && reason && !reason.startsWith('/')) {
         await updateOrderStatus(orderId, 'rejected');
         
-        // Send to Admin
-        await sendTelegramMessage(ADMIN_CHAT_ID, `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ပြီး။\n📞 ${order.phone}\n📝 အကြောင်း: ${reason}`);
+        // Send reject message to admin
+        const rejectMessage = `
+❌ **ပယ်ဖျက်ပြီး** - အော်ဒါ #${orderId}
+━━━━━━━━━━━━━━━━━━━━
+📦 Package: ${order.packageName}
+📞 ဖုန်း: ${order.phone}
+💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
+📝 ပယ်ဖျက်ရသည့်အကြောင်း: ${reason}
+━━━━━━━━━━━━━━━━━━━━
+⚠️ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပြီး မှန်ကန်စွာ ငွေလွှဲပါ။
+        `;
+        await sendTelegramMessage(ADMIN_CHAT_ID, rejectMessage);
         
         // Send to GROUP with reason
         if (GROUP_CHAT_ID) {
@@ -652,11 +660,15 @@ ${stats.text}
           await sendTelegramMessage(GROUP_CHAT_ID, groupAlert);
         }
         
-        // Send to admin who rejected
+        // Confirm to admin who rejected
         await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အား "${reason}" အကြောင်းဖြင့် ပယ်ဖျက်ပြီးပါပြီ။`);
+        
+        delete pendingRejectReasons[chatId];
+      } else if (reason && reason.startsWith('/')) {
+        // If user typed a command, ignore and clear
+        delete pendingRejectReasons[chatId];
+        await sendTelegramMessage(chatId, `❌ ပယ်ဖျက်ခြင်းကို ဖျက်သိမ်းလိုက်ပါသည်။`);
       }
-      
-      delete pendingRejectReasons[chatId];
       return res.sendStatus(200);
     }
     
