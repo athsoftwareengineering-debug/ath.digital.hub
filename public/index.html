@@ -160,6 +160,134 @@
 
         .subtitle { font-size: 0.7rem; opacity: 0.8; letter-spacing: 2px; }
 
+        /* Order Status Card */
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .status-header h3 {
+            font-size: 1.1rem;
+            color: #FFD700;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .status-active { background: #00c853; color: #fff; }
+        .status-expired { background: #dc3545; color: #fff; }
+        .status-warning { background: #ff9800; color: #fff; }
+
+        .status-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .status-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .status-item span:first-child {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            display: block;
+        }
+
+        .status-item span:last-child {
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .countdown {
+            text-align: center;
+            padding: 12px;
+            background: rgba(227, 30, 36, 0.2);
+            border-radius: 16px;
+            margin: 10px 0;
+        }
+
+        .countdown-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .renew-btn {
+            background: linear-gradient(135deg, #FFD700, #E31E24);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            color: #1a1a2e;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .renew-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .phone-input-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .phone-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .phone-input-group input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .phone-input-group button {
+            padding: 12px 20px;
+            border-radius: 40px;
+            background: linear-gradient(135deg, #FFD700, #E31E24);
+            border: none;
+            color: #1a1a2e;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
         /* Grid Packages */
         .packages {
             display: grid;
@@ -308,7 +436,6 @@
         }
         .copy-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(227, 30, 36, 0.5); }
         
-        /* File Upload - Gallery Access (ပြင်ဆင်ပြီး) */
         .file-upload {
             border: 2px dashed rgba(255, 215, 0, 0.5);
             border-radius: 18px;
@@ -323,22 +450,10 @@
             background: rgba(227, 30, 36, 0.15);
             transform: scale(1.01);
         }
-        .file-upload span {
-            font-size: 2rem;
-            display: block;
-            margin-bottom: 8px;
-        }
-        .file-upload p {
-            font-size: 0.8rem;
-        }
-        .file-upload .small-text {
-            font-size: 0.6rem;
-            opacity: 0.6;
-            margin-top: 5px;
-        }
-        .file-upload input {
-            display: none;
-        }
+        .file-upload span { font-size: 2rem; display: block; margin-bottom: 8px; }
+        .file-upload p { font-size: 0.8rem; }
+        .file-upload .small-text { font-size: 0.6rem; opacity: 0.6; margin-top: 5px; }
+        .file-upload input { display: none; }
         
         .screenshot-preview {
             margin-top: 15px;
@@ -415,8 +530,7 @@
             .packages { gap: 12px; } 
             .package-name { font-size: 0.85rem; } 
             .package-price { font-size: 1rem; }
-            .file-upload { padding: 15px 12px; }
-            .file-upload span { font-size: 1.5rem; }
+            .status-info { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -446,6 +560,17 @@
             </div>
         </div>
 
+        <!-- Order Status Section -->
+        <div class="phone-input-card" id="phoneInputCard">
+            <div class="phone-input-group">
+                <input type="tel" id="checkPhone" placeholder="ဖုန်းနံပါတ်ထည့်ပါ (09xxxxxxxxx)">
+                <button id="checkStatusBtn">🔍 စစ်ဆေးမည်</button>
+            </div>
+        </div>
+
+        <div id="statusContainer"></div>
+
+        <!-- Packages -->
         <div class="packages" id="packagesContainer"></div>
 
         <div id="orderForm" style="display: none;">
@@ -467,7 +592,6 @@
                     <button class="copy-btn" onclick="copyNumber()">📋 ကူးယူမည်</button>
                 </div>
 
-                <!-- Gallery Upload Section - capture ဖယ်ရှားပြီး -->
                 <div class="file-upload" id="fileUploadArea">
                     <span>📸</span>
                     <p>ငွေလွှဲပြေစာပုံ တင်ရန်</p>
@@ -522,6 +646,108 @@
         let selectedPackage = null;
         let currentOrderId = null;
         let selectedFile = null;
+        let countdownInterval = null;
+
+        // Check Order Status
+        document.getElementById('checkStatusBtn')?.addEventListener('click', async () => {
+            const phone = document.getElementById('checkPhone').value.trim();
+            if (!phone || phone.length < 9) {
+                showToast('⚠️ ဖုန်းနံပါတ် မှန်ကန်စွာထည့်ပါ');
+                return;
+            }
+            
+            showToast('⏳ စစ်ဆေးနေပါသည်...');
+            
+            try {
+                const res = await fetch(`/order-status/${phone}`);
+                const data = await res.json();
+                
+                if (data.success && data.orders.length > 0) {
+                    displayStatus(data.orders);
+                } else {
+                    document.getElementById('statusContainer').innerHTML = `
+                        <div class="status-card" style="text-align: center;">
+                            <p>📭 သင့်အတွက် အတည်ပြုပြီးသော အော်ဒါမရှိသေးပါ။</p>
+                            <p style="font-size: 0.8rem; margin-top: 10px;">အောက်ပါ Package များမှ ဝယ်ယူနိုင်ပါသည်။</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                showToast('❌ Error: ' + error.message);
+            }
+        });
+
+        function displayStatus(orders) {
+            let html = '';
+            for (const order of orders) {
+                const statusClass = order.isActive ? 'status-active' : 'status-expired';
+                const statusText = order.isActive ? '✅ Active' : '❌ Expired';
+                
+                html += `
+                    <div class="status-card">
+                        <div class="status-header">
+                            <h3>📦 ${order.packageName}</h3>
+                            <div class="status-badge ${statusClass}">${statusText}</div>
+                        </div>
+                        <div class="status-info">
+                            <div class="status-item">
+                                <span>📅 စတင်ရက်</span>
+                                <span>${order.approvedAt || '-'}</span>
+                            </div>
+                            <div class="status-item">
+                                <span>⏰ ကုန်ဆုံးရက်</span>
+                                <span>${order.expiredAt || '-'}</span>
+                            </div>
+                        </div>
+                `;
+                
+                if (order.isActive && order.daysLeft > 0) {
+                    html += `
+                        <div class="countdown" id="countdown-${order.id}">
+                            <span>⏳ ကျန်ရှိသောရက်များ</span><br>
+                            <span class="countdown-number" id="daysLeft-${order.id}">${order.daysLeft}</span>
+                            <span> ရက်</span>
+                        </div>
+                    `;
+                    // Start countdown for this order
+                    startCountdown(order.id, order.daysLeft);
+                } else if (!order.isActive) {
+                    html += `
+                        <div class="countdown" style="background: rgba(220, 53, 69, 0.2);">
+                            <span>🔴 ဒေတာ သက်တမ်းကုန်ဆုံးပြီးဖြစ်ပါသည်။</span>
+                        </div>
+                        <button class="renew-btn" onclick="scrollToPackages()">🔄 အသစ်ဝယ်ယူရန်</button>
+                    `;
+                }
+                
+                html += `</div>`;
+            }
+            document.getElementById('statusContainer').innerHTML = html;
+        }
+
+        function startCountdown(orderId, daysLeft) {
+            if (countdownInterval) clearInterval(countdownInterval);
+            
+            let remainingDays = daysLeft;
+            const daysSpan = document.getElementById(`daysLeft-${orderId}`);
+            
+            if (!daysSpan) return;
+            
+            countdownInterval = setInterval(() => {
+                remainingDays--;
+                if (remainingDays <= 0) {
+                    clearInterval(countdownInterval);
+                    daysSpan.textContent = '0';
+                    location.reload(); // Refresh to update status
+                } else {
+                    daysSpan.textContent = remainingDays;
+                }
+            }, 24 * 60 * 60 * 1000); // Update every day
+        }
+
+        function scrollToPackages() {
+            document.querySelector('.packages').scrollIntoView({ behavior: 'smooth' });
+        }
 
         function renderPackages() {
             const container = document.getElementById('packagesContainer');
@@ -578,21 +804,16 @@
             }
         });
 
-        // Gallery File Upload Handler
         const fileInput = document.getElementById('screenshot');
         const fileUploadArea = document.getElementById('fileUploadArea');
-        
         fileUploadArea.addEventListener('click', () => fileInput.click());
-        
         fileInput.addEventListener('change', (e) => {
             if (e.target.files && e.target.files[0]) {
                 const file = e.target.files[0];
-                // Check file type
                 if (!file.type.match('image.*')) {
                     showToast('⚠️ ပုံဖိုင်ကိုသာ ရွေးပါ');
                     return;
                 }
-                // Check file size (max 10MB)
                 if (file.size > 10 * 1024 * 1024) {
                     showToast('⚠️ ပုံအရွယ်အစား 10MB အောက်သာတင်ပါ');
                     return;
@@ -675,6 +896,7 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
         document.getElementById('summaryModal')?.addEventListener('click', (e) => { if (e.target === document.getElementById('summaryModal')) closeModal(); });
+        
         renderPackages();
     </script>
 </body>
