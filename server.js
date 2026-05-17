@@ -51,7 +51,19 @@ const PACKAGES = {
   "VIP LEVEL - 4 (ULTRA)": { price: 30000, desc: "120GB High-Speed Data" }
 };
 
-// ========== HELPER FUNCTIONS ==========
+// ========== HELPER FUNCTION for English Time ==========
+function getEnglishTime(date = new Date()) {
+  return date.toLocaleString('en-US', { 
+    year: 'numeric', 
+    month: '2-digit', 
+    day: '2-digit', 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    second: '2-digit', 
+    hour12: true 
+  });
+}
+
 async function updateOrderStatus(orderId, status) {
   const order = orders.find(o => o.id == orderId);
   if (order) {
@@ -196,7 +208,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
 📞 ဖုန်း: ${order.phone}
 💰 ငွေပမာဏ: ${packageData.price.toLocaleString()} KS
 📝 မှတ်ချက်: ${note || "မရှိ"}
-📅 အချိန်: ${new Date().toLocaleString('my-MM')}
+📅 အချိန်: ${getEnglishTime()}
 ━━━━━━━━━━━━━━━━━━━━
 ⏳ **အတည်ပြုရန် အသင့်** - အောက်ပါခလုတ်များကို နှိပ်ပါ။
     `;
@@ -264,7 +276,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📦 Package: ${order.packageName}
 📞 ဖုန်း: ${order.phone}
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
-📅 အတည်ပြုချိန်: ${new Date().toLocaleString('my-MM')}
+📅 အတည်ပြုချိန်: ${getEnglishTime()}
 ━━━━━━━━━━━━━━━━━━━━
 🎉 ဒေတာ သွင်းပေးပါမည်။ ကျေးဇူးတင်ပါသည်။
           `;
@@ -291,7 +303,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📞 ဖုန်းနံပါတ်: ${order.phone}
 📦 Package: ${order.packageName}
 💰 ပမာဏ: ${order.price.toLocaleString()} KS
-⏰ သွင်းချိန်: ${new Date().toLocaleString('my-MM')}
+⏰ သွင်းချိန်: ${getEnglishTime()}
 ━━━━━━━━━━━━━━━━━━━━
 👤 အတည်ပြုသူ: Admin
             `;
@@ -354,7 +366,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📦 Package: ${order.packageName}
 📞 ဖုန်း: ${order.phone}
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
-📅 ရက်စွဲ: ${new Date(order.createdAt).toLocaleString('my-MM')}
+📅 ရက်စွဲ: ${getEnglishTime(new Date(order.createdAt))}
 📊 အခြေအနေ: ${statusEmoji}
           `;
           
@@ -551,7 +563,7 @@ app.get('/test-group', async (req, res) => {
 🧪 *Group Connection Test*
 ━━━━━━━━━━━━━━━━━━━━
 ✅ Bot က Group ထဲကို message ပို့နိုင်ပါတယ်။
-📅 အချိန်: ${new Date().toLocaleString('my-MM')}
+📅 အချိန်: ${getEnglishTime()}
     `;
     const result = await sendTelegramMessage(GROUP_CHAT_ID, testMessage);
     res.json({ success: result, groupId: GROUP_CHAT_ID });
