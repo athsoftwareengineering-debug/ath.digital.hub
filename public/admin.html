@@ -10,7 +10,6 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
-    /* Prevent zoom on refresh */
     html {
       -webkit-text-size-adjust: 100%;
       -ms-text-size-adjust: 100%;
@@ -53,25 +52,9 @@
     }
     
     /* Responsive Base Font Size */
-    html {
-      font-size: 16px;
-    }
-    
-    @media (max-width: 768px) {
-      html {
-        font-size: 14px;
-      }
-      :root {
-        --sidebar-width: 240px;
-        --sidebar-collapsed-width: 60px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      html {
-        font-size: 13px;
-      }
-    }
+    html { font-size: 16px; }
+    @media (max-width: 768px) { html { font-size: 14px; } :root { --sidebar-width: 240px; --sidebar-collapsed-width: 60px; } }
+    @media (max-width: 480px) { html { font-size: 13px; } }
     
     /* Login Section */
     .login-container {
@@ -103,10 +86,7 @@
     }
     
     .logo-icon i { font-size: 2rem; color: #0f172a; animation: spin 4s linear infinite; }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     
     .login-btn {
       width: 100%; padding: 14px;
@@ -119,18 +99,13 @@
     }
     .login-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(250,204,21,0.4); }
     
-    /* ========== TOGGLE SIDEBAR ========== */
-    .app-wrapper {
-      display: flex;
-      min-height: 100vh;
-      position: relative;
-    }
+    /* App Wrapper */
+    .app-wrapper { display: flex; min-height: 100vh; position: relative; }
     
     /* Sidebar */
     .sidebar {
       position: fixed;
-      left: 0;
-      top: 0;
+      left: 0; top: 0;
       width: var(--sidebar-width);
       height: 100%;
       background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
@@ -141,42 +116,18 @@
       overflow-x: hidden;
     }
     
-    /* Collapsed Sidebar */
-    .sidebar.collapsed {
-      width: var(--sidebar-collapsed-width);
-    }
-    
+    .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
     .sidebar.collapsed .logo span,
-    .sidebar.collapsed .nav-item span {
-      display: none;
-    }
+    .sidebar.collapsed .nav-item span { display: none; }
+    .sidebar.collapsed .nav-item { justify-content: center; padding: 12px 0; }
+    .sidebar.collapsed .logo { justify-content: center; }
     
-    .sidebar.collapsed .nav-item {
-      justify-content: center;
-      padding: 12px 0;
-    }
-    
-    .sidebar.collapsed .nav-item i {
-      margin: 0;
-      font-size: 1.2rem;
-    }
-    
-    .sidebar.collapsed .logo {
-      justify-content: center;
-      padding: 0;
-    }
-    
-    .sidebar.collapsed .logo i {
-      margin: 0;
-    }
-    
-    /* Sidebar Toggle Button */
+    /* Sidebar Toggle */
     .sidebar-toggle {
       position: fixed;
       left: calc(var(--sidebar-width) - 12px);
       top: 20px;
-      width: 28px;
-      height: 28px;
+      width: 28px; height: 28px;
       background: var(--primary);
       border-radius: 50%;
       display: flex;
@@ -184,41 +135,25 @@
       justify-content: center;
       cursor: pointer;
       z-index: 1001;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s;
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
-    
-    .sidebar.collapsed + .sidebar-toggle {
-      left: calc(var(--sidebar-collapsed-width) - 12px);
-    }
-    
-    .sidebar-toggle i {
-      color: #0f172a;
-      font-size: 0.8rem;
-      transition: transform 0.3s;
-    }
-    
-    .sidebar.collapsed .sidebar-toggle i {
-      transform: rotate(180deg);
-    }
+    .sidebar.collapsed + .sidebar-toggle { left: calc(var(--sidebar-collapsed-width) - 12px); }
+    .sidebar.collapsed .sidebar-toggle i { transform: rotate(180deg); }
     
     /* Main Content */
     .main-content {
       flex: 1;
       margin-left: var(--sidebar-width);
       padding: 1.5rem;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s;
       min-height: 100vh;
     }
-    
-    .sidebar.collapsed ~ .main-content {
-      margin-left: var(--sidebar-collapsed-width);
-    }
+    .sidebar.collapsed ~ .main-content { margin-left: var(--sidebar-collapsed-width); }
     
     /* Sidebar Content */
     .logo {
-      font-size: 1.1rem;
-      font-weight: 800;
+      font-size: 1.1rem; font-weight: 800;
       background: linear-gradient(135deg, #FFD700, #FFA500);
       -webkit-background-clip: text;
       background-clip: text;
@@ -230,9 +165,8 @@
       justify-content: center;
       gap: 8px;
       white-space: nowrap;
-      transition: all 0.3s;
     }
-    .logo i { animation: spin 4s linear infinite; color: var(--primary); background: none; font-size: 1.2rem; }
+    .logo i { animation: spin 4s linear infinite; color: var(--primary); font-size: 1.2rem; }
     
     .nav-item {
       display: flex;
@@ -248,29 +182,23 @@
       font-size: 0.9rem;
       white-space: nowrap;
     }
-    
     .nav-item:hover, .nav-item.active {
       background: rgba(250,204,21,0.15);
       color: var(--primary);
     }
     .nav-item i { width: 24px; font-size: 1rem; text-align: center; }
     
-    /* Overlay for mobile when sidebar is open */
+    /* Mobile Overlay */
     .overlay {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: rgba(0,0,0,0.5);
       z-index: 999;
       cursor: pointer;
     }
-    
-    .overlay.show {
-      display: block;
-    }
+    .overlay.show { display: block; }
     
     /* Top Bar */
     .top-bar {
@@ -305,7 +233,14 @@
       animation: pulse 2s infinite;
     }
     
-    .theme-toggle, .refresh-toggle {
+    .button-group {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    .theme-toggle, .refresh-toggle, .logout-top-btn {
       background: var(--bg-surface);
       border: 1px solid var(--border);
       padding: 8px 16px;
@@ -316,7 +251,9 @@
       font-size: 0.8rem;
       transition: all 0.3s;
     }
-    .theme-toggle:hover, .refresh-toggle:hover { background: var(--primary); color: #0f172a; }
+    .theme-toggle:hover, .refresh-toggle:hover, .logout-top-btn:hover { background: var(--primary); color: #0f172a; }
+    .logout-top-btn { background: var(--danger); color: white; border-color: var(--danger); }
+    .logout-top-btn:hover { background: #dc2626; }
     
     /* Stats Grid */
     .stats-grid {
@@ -325,7 +262,6 @@
       gap: 1rem;
       margin-bottom: 1.5rem;
     }
-    
     .stat-card {
       background: var(--bg-surface);
       border-radius: 16px;
@@ -344,7 +280,6 @@
       gap: 1.2rem;
       margin-bottom: 1.5rem;
     }
-    
     .chart-card {
       background: var(--bg-surface);
       border-radius: 16px;
@@ -365,7 +300,6 @@
       flex-wrap: wrap;
       align-items: center;
     }
-    
     .filters-bar input, .filters-bar select {
       background: var(--bg-dark);
       border: 1px solid var(--border);
@@ -418,14 +352,12 @@
       overflow-x: auto;
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
-    
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.8rem;
       min-width: 600px;
     }
-    
     th {
       padding: 12px 12px;
       text-align: left;
@@ -434,14 +366,43 @@
       font-weight: 600;
       font-size: 0.75rem;
     }
-    
     td {
       padding: 10px 12px;
       border-bottom: 1px solid var(--border);
       vertical-align: middle;
     }
-    
     tr:hover td { background: rgba(250,204,21,0.05); }
+    
+    /* Phone Number with Copy Button */
+    .phone-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .phone-number {
+      font-family: monospace;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .copy-phone-btn {
+      background: rgba(250,204,21,0.2);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 0.6rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .copy-phone-btn:hover {
+      background: var(--primary);
+      color: #0f172a;
+      transform: scale(1.02);
+    }
     
     /* Status Badges */
     .status-badge {
@@ -546,24 +507,7 @@
     }
     .refresh-indicator i { animation: spin 1s linear infinite; display: inline-block; margin-right: 5px; }
     
-    /* Footer Buttons */
-    .logout-btn {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: var(--danger);
-      border: none;
-      padding: 8px 16px;
-      border-radius: 40px;
-      color: white;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.8rem;
-      z-index: 100;
-      transition: all 0.3s;
-    }
-    .logout-btn:hover { transform: scale(1.02); }
-    
+    /* Footer Brand */
     .footer-brand {
       position: fixed;
       bottom: 20px;
@@ -601,55 +545,23 @@
         transform: translateX(0);
         box-shadow: 2px 0 10px rgba(0,0,0,0.3);
       }
-      .sidebar-toggle {
-        display: none;
-      }
-      .mobile-menu-btn {
-        display: flex;
-      }
-      .main-content {
-        margin-left: 0 !important;
-      }
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.8rem;
-      }
-      .logout-btn {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        left: auto;
-      }
-      .footer-brand {
-        bottom: 80px;
-      }
+      .sidebar-toggle { display: none; }
+      .mobile-menu-btn { display: flex; }
+      .main-content { margin-left: 0 !important; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+      .footer-brand { bottom: 20px; }
+      .button-group { width: 100%; justify-content: flex-start; }
     }
     
     @media (max-width: 480px) {
-      .stats-grid {
-        grid-template-columns: 1fr;
-      }
-      .filters-bar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .search-box {
-        width: 100%;
-      }
-      .top-bar {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .modal-buttons {
-        flex-direction: column;
-      }
-      .modal-btn {
-        justify-content: center;
-      }
-      .action-buttons {
-        flex-direction: column;
-        gap: 4px;
-      }
+      .stats-grid { grid-template-columns: 1fr; }
+      .filters-bar { flex-direction: column; align-items: stretch; }
+      .search-box { width: 100%; }
+      .top-bar { flex-direction: column; align-items: flex-start; }
+      .modal-buttons { flex-direction: column; }
+      .modal-btn { justify-content: center; }
+      .action-buttons { flex-direction: column; gap: 4px; }
+      .phone-cell { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
@@ -669,42 +581,24 @@
   </div>
 </div>
 
-<!-- Dashboard Section with Toggle Sidebar -->
+<!-- Dashboard Section -->
 <div id="dashboardSection" style="display:none">
   <div class="app-wrapper">
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
-      <div class="logo">
-        <i class="fas fa-globe"></i>
-        <span>ATH DIGITAL HUB</span>
-      </div>
-      <div class="nav-item active" data-page="dashboard">
-        <i class="fas fa-chart-line"></i>
-        <span>Dashboard</span>
-      </div>
-      <div class="nav-item" data-page="orders">
-        <i class="fas fa-box"></i>
-        <span>Orders</span>
-      </div>
-      <div class="nav-item" data-page="expiring">
-        <i class="fas fa-clock"></i>
-        <span>Expiring Soon</span>
-      </div>
-      <div class="nav-item" data-page="analytics">
-        <i class="fas fa-chart-bar"></i>
-        <span>Analytics</span>
-      </div>
+      <div class="logo"><i class="fas fa-globe"></i><span>ATH DIGITAL HUB</span></div>
+      <div class="nav-item active" data-page="dashboard"><i class="fas fa-chart-line"></i><span>Dashboard</span></div>
+      <div class="nav-item" data-page="orders"><i class="fas fa-box"></i><span>Orders</span></div>
+      <div class="nav-item" data-page="expiring"><i class="fas fa-clock"></i><span>Expiring Soon</span></div>
+      <div class="nav-item" data-page="analytics"><i class="fas fa-chart-bar"></i><span>Analytics</span></div>
     </div>
     
-    <!-- Sidebar Toggle Button (Desktop) -->
     <div class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
       <i class="fas fa-chevron-left"></i>
     </div>
     
-    <!-- Overlay for mobile -->
     <div class="overlay" id="overlay" onclick="closeMobileSidebar()"></div>
     
-    <!-- Main Content -->
     <div class="main-content">
       <div class="top-bar">
         <div style="display: flex; align-items: center; gap: 1rem;">
@@ -712,16 +606,15 @@
             <i class="fas fa-bars"></i>
           </button>
           <h1><i class="fas fa-chart-line"></i> <span id="pageTitle">Dashboard</span>
-            <span class="auto-refresh-badge" id="autoRefreshStatus">
-              <i class="fas fa-sync-alt"></i> Auto Refresh ON
-            </span>
+            <span class="auto-refresh-badge" id="autoRefreshStatus"><i class="fas fa-sync-alt"></i> Auto Refresh ON</span>
           </h1>
         </div>
-        <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+        <div class="button-group">
           <button class="refresh-toggle" id="toggleAutoRefreshBtn" onclick="toggleAutoRefresh()">
             <i class="fas fa-pause"></i> Pause Auto Refresh
           </button>
           <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> Dark / Light</button>
+          <button class="logout-top-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
       </div>
       
@@ -738,9 +631,7 @@
       </div>
       
       <div class="filters-bar">
-        <div class="search-box">
-          <input type="text" id="searchPhone" placeholder="🔍 Search by phone number...">
-        </div>
+        <div class="search-box"><input type="text" id="searchPhone" placeholder="🔍 Search by phone number..."></div>
         <input type="date" id="startDate" placeholder="Start Date">
         <input type="date" id="endDate" placeholder="End Date">
         <select id="statusFilter">
@@ -756,7 +647,7 @@
       </div>
       
       <div class="bulk-actions" id="bulkActions">
-        <span id="selectedCount" style="font-size:0.75rem;">0 selected</span>
+        <span id="selectedCount">0 selected</span>
         <button onclick="bulkApprove()" style="background:#22c55e20; color:#22c55e; border:1px solid #22c55e;"><i class="fas fa-check"></i> Approve Selected</button>
         <button onclick="bulkReject()" style="background:#ef444420; color:#ef4444; border:1px solid #ef4444;"><i class="fas fa-times"></i> Reject Selected</button>
         <button onclick="clearSelection()" style="background:#64748b20; color:#64748b; border:1px solid #64748b;">Cancel</button>
@@ -769,7 +660,6 @@
       </div>
     </div>
     
-    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
     <div class="footer-brand">
       <i class="fas fa-globe"></i> ATH DIGITAL HUB<br>
       © Developed by AUNG THU HTWE
@@ -783,12 +673,8 @@
     <h3><i class="fas fa-image"></i> Payment Screenshot</h3>
     <img id="screenshotImg" src="" alt="Screenshot">
     <div class="modal-buttons">
-      <button class="modal-btn modal-btn-download" id="downloadScreenshotBtn">
-        <i class="fas fa-download"></i> Download
-      </button>
-      <button class="modal-btn modal-btn-close" onclick="closeModal()">
-        <i class="fas fa-times"></i> Close
-      </button>
+      <button class="modal-btn modal-btn-download" id="downloadScreenshotBtn"><i class="fas fa-download"></i> Download</button>
+      <button class="modal-btn modal-btn-close" onclick="closeModal()"><i class="fas fa-times"></i> Close</button>
     </div>
   </div>
 </div>
@@ -804,7 +690,6 @@
   let refreshCount = 0;
   let isSidebarCollapsed = false;
   
-  // Fix viewport zoom
   function fixViewportZoom() {
     const viewport = document.querySelector('meta[name="viewport"]');
     if (viewport) {
@@ -812,33 +697,37 @@
     }
   }
   
-  // Toggle Sidebar Functions
+  function copyPhoneNumber(phone, element) {
+    navigator.clipboard.writeText(phone).then(() => {
+      const originalText = element.innerHTML;
+      element.innerHTML = '<i class="fas fa-check"></i> Copied!';
+      setTimeout(() => {
+        element.innerHTML = originalText;
+      }, 1500);
+      showNotification(`📞 ${phone} copied!`, 'success');
+    }).catch(() => {
+      showNotification('Failed to copy', 'error');
+    });
+  }
+  
   function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     isSidebarCollapsed = !isSidebarCollapsed;
-    if (isSidebarCollapsed) {
-      sidebar.classList.add('collapsed');
-    } else {
-      sidebar.classList.remove('collapsed');
-    }
+    if (isSidebarCollapsed) sidebar.classList.add('collapsed');
+    else sidebar.classList.remove('collapsed');
     localStorage.setItem('sidebarCollapsed', isSidebarCollapsed);
   }
   
   function openMobileSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-    sidebar.classList.add('mobile-open');
-    overlay.classList.add('show');
+    document.getElementById('sidebar').classList.add('mobile-open');
+    document.getElementById('overlay').classList.add('show');
   }
   
   function closeMobileSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-    sidebar.classList.remove('mobile-open');
-    overlay.classList.remove('show');
+    document.getElementById('sidebar').classList.remove('mobile-open');
+    document.getElementById('overlay').classList.remove('show');
   }
   
-  // Load saved sidebar state
   function loadSidebarState() {
     const saved = localStorage.getItem('sidebarCollapsed');
     if (saved === 'true') {
@@ -900,9 +789,7 @@
         allOrders = data.orders;
         renderStats(data.stats);
         applyFilters();
-        if (isAutoRefreshOn) {
-          updateRefreshIndicator();
-        }
+        if (isAutoRefreshOn) updateRefreshIndicator();
       }
     } catch(err) { console.error(err); }
   }
@@ -939,7 +826,7 @@
       return;
     }
     
-    let html = `<table><thead><tr>
+    let html = `<tr><thead><tr>
       <th class="checkbox-col"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
       <th>ID</th><th>Package</th><th>Phone</th><th>Price</th><th>Status</th><th>Date</th><th>SS</th><th>Action</th>
     </tr></thead><tbody>`;
@@ -960,7 +847,10 @@
         <td class="checkbox-col"><input type="checkbox" class="order-checkbox" value="${order.id}" onchange="updateSelectedCount()"></td>
         <td><strong>#${order.id}</strong></td>
         <td>${order.packageName}</td>
-        <td>${order.phone}</td>
+        <td><div class="phone-cell">
+          <span class="phone-number">${order.phone}</span>
+          <button class="copy-phone-btn" onclick="copyPhoneNumber('${order.phone}', this)"><i class="fas fa-copy"></i> Copy</button>
+        </div></td>
         <td>${order.price.toLocaleString()} KS}</td>
         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
         <td style="font-size:0.75rem;">${formattedDate}</td>
@@ -971,13 +861,13 @@
         html += `<button class="action-btn action-approve" onclick="updateOrder(${order.id}, 'approved')"><i class="fas fa-check"></i> Approve</button>
                  <button class="action-btn action-reject" onclick="updateOrder(${order.id}, 'rejected')"><i class="fas fa-times"></i> Reject</button>`;
       } else {
-        html += `<span class="action-disabled" style="color:#64748b;">-</span>`;
+        html += `<span style="color:#64748b;">-</span>`;
       }
       
       html += `</td></tr>`;
     });
     
-    html += `</tbody><table>`;
+    html += `</tbody></table>`;
     document.getElementById('ordersTable').innerHTML = html;
   }
   
@@ -1055,7 +945,7 @@
         document.getElementById('screenshotImg').src = currentScreenshotUrl;
         document.getElementById('screenshotModal').style.display = 'flex';
       } else {
-        showNotification('No screenshot available for this order', 'error');
+        showNotification('No screenshot available', 'error');
       }
     } catch(err) {
       showNotification('Failed to load screenshot', 'error');
@@ -1106,13 +996,10 @@
   }
   
   async function loadCharts() {
-    const res = await fetch('/api/admin/orders?status=all', {
-      headers: { 'x-admin-auth': ADMIN_PASSWORD }
-    });
+    const res = await fetch('/api/admin/orders?status=all', { headers: { 'x-admin-auth': ADMIN_PASSWORD } });
     const data = await res.json();
     if (data.success) {
       const orders = data.orders;
-      
       const last7Days = [];
       const dailyCounts = [];
       for (let i = 6; i >= 0; i--) {
@@ -1120,28 +1007,19 @@
         date.setDate(date.getDate() - i);
         const dateStr = date.toISOString().split('T')[0];
         last7Days.push(dateStr);
-        const count = orders.filter(o => o.createdAt.startsWith(dateStr)).length;
-        dailyCounts.push(count);
+        dailyCounts.push(orders.filter(o => o.createdAt.startsWith(dateStr)).length);
       }
-      
       if (dailyChart) dailyChart.destroy();
-      const ctx1 = document.getElementById('dailyChart').getContext('2d');
-      dailyChart = new Chart(ctx1, {
+      dailyChart = new Chart(document.getElementById('dailyChart'), {
         type: 'line',
         data: { labels: last7Days, datasets: [{ label: 'Orders', data: dailyCounts, borderColor: '#facc15', backgroundColor: '#facc1520', fill: true, tension: 0.4 }] },
         options: { responsive: true, maintainAspectRatio: true }
       });
       
       const packageRevenue = {};
-      orders.forEach(o => {
-        if (o.status === 'approved') {
-          packageRevenue[o.packageName] = (packageRevenue[o.packageName] || 0) + o.price;
-        }
-      });
-      
+      orders.forEach(o => { if (o.status === 'approved') packageRevenue[o.packageName] = (packageRevenue[o.packageName] || 0) + o.price; });
       if (packageChart) packageChart.destroy();
-      const ctx2 = document.getElementById('packageChart').getContext('2d');
-      packageChart = new Chart(ctx2, {
+      packageChart = new Chart(document.getElementById('packageChart'), {
         type: 'bar',
         data: { labels: Object.keys(packageRevenue), datasets: [{ label: 'Revenue (KS)', data: Object.values(packageRevenue), backgroundColor: '#facc15', borderRadius: 8 }] },
         options: { responsive: true, maintainAspectRatio: true }
@@ -1183,7 +1061,6 @@
     isAutoRefreshOn = !isAutoRefreshOn;
     const btn = document.getElementById('toggleAutoRefreshBtn');
     const statusBadge = document.getElementById('autoRefreshStatus');
-    
     if (isAutoRefreshOn) {
       btn.innerHTML = '<i class="fas fa-pause"></i> Pause Auto Refresh';
       statusBadge.innerHTML = '<i class="fas fa-sync-alt"></i> Auto Refresh ON';
@@ -1241,10 +1118,7 @@
         applyFilters();
       }
       fixViewportZoom();
-      // Close sidebar on mobile after click
-      if (window.innerWidth <= 768) {
-        closeMobileSidebar();
-      }
+      if (window.innerWidth <= 768) closeMobileSidebar();
     });
   });
   
@@ -1255,11 +1129,10 @@
   
   window.addEventListener('resize', () => {
     fixViewportZoom();
-    if (window.innerWidth > 768) {
-      closeMobileSidebar();
-    }
+    if (window.innerWidth > 768) closeMobileSidebar();
   });
   
+  window.copyPhoneNumber = copyPhoneNumber;
   window.toggleSidebar = toggleSidebar;
   window.openMobileSidebar = openMobileSidebar;
   window.closeMobileSidebar = closeMobileSidebar;
