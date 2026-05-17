@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
+const { initializeApp, cert } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
 
 const app = express();
 
@@ -9,6 +11,32 @@ const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ========== FIREBASE ADMIN INIT ==========
+// Note: You need to download serviceAccountKey.json from Firebase Console
+// For Render.com, use environment variable for service account
+let db;
+try {
+  // For local development with service account file
+  if (fs.existsSync(path.join(__dirname, 'serviceAccountKey.json'))) {
+    const serviceAccount = require('./serviceAccountKey.json');
+    initializeApp({
+      credential: cert(serviceAccount)
+    });
+  } else {
+    // For production without file (using environment variable)
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    initializeApp({
+      credential: cert(serviceAccount)
+    });
+  }
+  db = getFirestore();
+  console.log("✅ Firebase initialized successfully");
+} catch (error) {
+  console.error("❌ Firebase init error:", error.message);
+  // Fallback to in-memory if Firebase fails
+  console.log("⚠️ Running in fallback mode (in-memory storage)");
+}
 
 // ========== FILE UPLOAD ==========
 const storage = multer.diskStorage({
@@ -31,10 +59,9 @@ const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.CHAT_ID;
 const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID || "-1003783137346";
 
-// In-memory storage
-let orders = [];
-let orderIdCounter = 1;
-let pendingRejectReasons = {}; // Store pending reject reasons
+// In-memory fallback
+let ordersFallback = [];
+let orderIdCounterFallback = 1;
 
 const PAYMENT_INFO = {
   kpay: "09789999368",
@@ -49,7 +76,7 @@ const PACKAGES = {
   "VIP LEVEL - 4 (ULTRA)": { price: 30000, desc: "120GB High-Speed Data" }
 };
 
-// ========== HELPER FUNCTION for Myanmar Time (UTC+6:30) ==========
+// ========== HELPER FUNCTIONS ==========
 function getMyanmarTime(date = new Date()) {
   const myanmarOffset = 6.5 * 60 * 60 * 1000;
   const myanmarTime = new Date(date.getTime() + myanmarOffset);
@@ -64,7 +91,6 @@ function getMyanmarTime(date = new Date()) {
   return `${month}/${day}/${year} ${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
 }
 
-// Calculate remaining days
 function getRemainingDays(expiredAt) {
   const now = new Date();
   const expire = new Date(expiredAt);
@@ -73,23 +99,99 @@ function getRemainingDays(expiredAt) {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
+// ========== FIREBASE DB OPERATIONS ==========
+async function createOrder(orderData) {
+  if (db) {
+    const docRef = await db.collection('orders').add({
+      ...orderData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+    return { id: docRef.id, ...orderData };
+  } else {
+    // Fallback to in-memory
+    const newOrder = {
+      id: orderIdCounterFallback++,
+      ...orderData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    ordersFallback.unshift(newOrder);
+    return newOrder;
+  }
+}
+
+async function getOrder(orderId) {
+  if (db) {
+    const doc = await db.collection('orders').doc(orderId).get();
+    if (doc.exists) {
+      return { id: doc.id, ...doc.data() };
+    }
+    return null;
+  } else {
+    return ordersFallback.find(o => o.id == orderId);
+  }
+}
+
 async function updateOrderStatus(orderId, status, approvedAt = null) {
-  const order = orders.find(o => o.id == orderId);
-  if (order) {
-    order.status = status;
-    order.updatedAt = new Date().toISOString();
+  if (db) {
+    const updateData = { status, updatedAt: new Date().toISOString() };
     if (status === 'approved' && approvedAt) {
-      order.approvedAt = approvedAt;
+      updateData.approvedAt = approvedAt;
       const expireDate = new Date(approvedAt);
       expireDate.setDate(expireDate.getDate() + 30);
-      order.expiredAt = expireDate.toISOString();
-      order.isActive = true;
+      updateData.expiredAt = expireDate.toISOString();
+      updateData.isActive = true;
     }
+    await db.collection('orders').doc(orderId).update(updateData);
+    return true;
+  } else {
+    const order = ordersFallback.find(o => o.id == orderId);
+    if (order) {
+      order.status = status;
+      order.updatedAt = new Date().toISOString();
+      if (status === 'approved' && approvedAt) {
+        order.approvedAt = approvedAt;
+        const expireDate = new Date(approvedAt);
+        expireDate.setDate(expireDate.getDate() + 30);
+        order.expiredAt = expireDate.toISOString();
+        order.isActive = true;
+      }
+    }
+    return order;
   }
-  return order;
+}
+
+async function getOrdersByPhone(phone) {
+  if (db) {
+    const snapshot = await db.collection('orders')
+      .where('phone', '==', phone)
+      .where('status', '==', 'approved')
+      .get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } else {
+    return ordersFallback.filter(o => o.phone === phone && o.status === 'approved');
+  }
+}
+
+async function getAllOrders() {
+  if (db) {
+    const snapshot = await db.collection('orders').orderBy('createdAt', 'desc').limit(100).get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } else {
+    return ordersFallback;
+  }
 }
 
 async function getOrderStats() {
+  let orders;
+  if (db) {
+    const snapshot = await db.collection('orders').get();
+    orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } else {
+    orders = ordersFallback;
+  }
+  
   const pending = orders.filter(o => o.status === 'pending_payment').length;
   const received = orders.filter(o => o.status === 'payment_received').length;
   const approved = orders.filter(o => o.status === 'approved' && o.isActive !== false).length;
@@ -133,14 +235,13 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
     });
     const result = await response.json();
     console.log("Telegram send to:", chatId, "->", result.ok ? "✅" : "❌", result.description);
-    return result.ok ? result.result : null;
+    return result.ok;
   } catch (error) {
     console.error("Telegram send error:", error);
     return false;
   }
 }
 
-// Send photo to Telegram
 async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   if (!BOT_TOKEN) return false;
   try {
@@ -156,7 +257,6 @@ async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
       body: form
     });
     const result = await response.json();
-    console.log("Telegram photo:", result.ok ? "✅" : "❌", result.description);
     return result.ok;
   } catch (error) {
     console.error("Telegram photo error:", error);
@@ -177,22 +277,20 @@ app.post('/order', async (req, res) => {
     }
     
     const newOrder = {
-      id: orderIdCounter++,
       packageName,
       phone,
       price: packageData.price,
       status: "pending_payment",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
       isActive: false
     };
-    orders.unshift(newOrder);
     
-    console.log(`📦 Order #${newOrder.id} created - waiting for screenshot`);
+    const order = await createOrder(newOrder);
+    
+    console.log(`📦 Order #${order.id} created - waiting for screenshot`);
     
     res.json({ 
       success: true, 
-      orderId: newOrder.id, 
+      orderId: order.id, 
       packageName, 
       price: packageData.price, 
       phone, 
@@ -209,9 +307,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
   
   try {
-    console.log("🔔 Payment submission received with screenshot");
-    
-    const orderId = parseInt(req.body.orderId);
+    const orderId = req.body.orderId;
     const packageName = req.body.packageName;
     const phone = req.body.phone;
     const note = req.body.note;
@@ -230,7 +326,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     tempFilePath = screenshot.path;
     const fileBuffer = fs.readFileSync(tempFilePath);
     
-    const order = orders.find(o => o.id === orderId);
+    const order = await getOrder(orderId);
     const packageData = PACKAGES[order.packageName];
     
     const caption = `
@@ -260,7 +356,6 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     const success = await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
     
     if (success) {
-      console.log(`✅ Order #${orderId} + screenshot sent to admin`);
       res.json({ success: true, message: "Order and payment submitted! Admin will verify." });
     } else {
       res.json({ success: false, message: "Telegram error. Please try again." });
@@ -276,18 +371,14 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   }
 });
 
-// ========== GET ORDER STATUS WITH EXPIRY (For Customer Website) ==========
-app.get('/order-status/:phone', (req, res) => {
+// ========== GET ORDER STATUS (For Customer Website) ==========
+app.get('/order-status/:phone', async (req, res) => {
   const phone = req.params.phone;
-  const userOrders = orders.filter(o => o.phone === phone && o.status === 'approved');
+  const userOrders = await getOrdersByPhone(phone);
   
   const result = userOrders.map(order => {
     const daysLeft = order.expiredAt ? getRemainingDays(order.expiredAt) : 0;
     const isExpired = daysLeft <= 0;
-    
-    if (isExpired && order.isActive !== false) {
-      order.isActive = false;
-    }
     
     return {
       id: order.id,
@@ -322,8 +413,8 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       
       // Approve Button
       if (data.startsWith('approve_')) {
-        const orderId = parseInt(data.split('_')[1]);
-        const order = orders.find(o => o.id === orderId);
+        const orderId = data.split('_')[1];
+        const order = await getOrder(orderId);
         
         if (order) {
           const approvedTime = new Date();
@@ -356,7 +447,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             })
           });
           
-          await sendTelegramMessage(ADMIN_CHAT_ID, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး!\n📞 ${order.phone}\n📦 ${order.packageName}\n⏰ ${daysUntilExpire} ရက် အသုံးပြုနိုင်မည်။`);
+          await sendTelegramMessage(ADMIN_CHAT_ID, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး!\n📞 ${order.phone}\n📦 ${order.packageName}`);
           
           if (GROUP_CHAT_ID) {
             const groupAlert = `
@@ -366,8 +457,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📞 ဖုန်းနံပါတ်: ${order.phone}
 📦 Package: ${order.packageName}
 💰 ပမာဏ: ${order.price.toLocaleString()} KS
-📅 စတင်ရက်: ${getMyanmarTime(approvedTime)}
-⏰ ကုန်ဆုံးရက်: ${getMyanmarTime(expireDate)}
+⏰ သွင်းချိန်: ${getMyanmarTime()}
 ━━━━━━━━━━━━━━━━━━━━
 👤 အတည်ပြုသူ: Admin
             `;
@@ -377,38 +467,44 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // Reject Button - Ask for reason with Force Reply
+      // Reject Button - Quick reject without reason
       if (data.startsWith('reject_')) {
-        const orderId = parseInt(data.split('_')[1]);
-        const order = orders.find(o => o.id === orderId);
+        const orderId = data.split('_')[1];
+        const order = await getOrder(orderId);
         
         if (order) {
-          // Store that we're waiting for reason
-          pendingRejectReasons[chatId] = { orderId, step: 'waiting_for_reason' };
+          await updateOrderStatus(orderId, 'rejected');
           
-          // Force reply keyboard - user can type message
-          const forceReply = {
-            force_reply: true,
-            input_field_placeholder: "ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ..."
-          };
+          const rejectCaption = `
+❌ **ပယ်ဖျက်ပြီး** - အော်ဒါ #${orderId}
+━━━━━━━━━━━━━━━━━━━━
+📦 Package: ${order.packageName}
+📞 ဖုန်း: ${order.phone}
+💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
+━━━━━━━━━━━━━━━━━━━━
+⚠️ ငွေလွှဲပြေစာ မှားယွင်းနေပါသည်။
+          `;
           
-          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               chat_id: chatId,
-              text: `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ။\n\n(အောက်ပါစာသားအကွက်တွင် ရေးသားပါ)`,
-              reply_markup: forceReply
+              message_id: messageId,
+              caption: rejectCaption,
+              parse_mode: 'Markdown'
             })
           });
+          
+          await sendTelegramMessage(ADMIN_CHAT_ID, `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ပြီး.\n📞 ${order.phone}`);
         }
         return res.sendStatus(200);
       }
       
       // Detail Button
       if (data.startsWith('detail_')) {
-        const orderId = parseInt(data.split('_')[1]);
-        const order = orders.find(o => o.id === orderId);
+        const orderId = data.split('_')[1];
+        const order = await getOrder(orderId);
         
         if (order) {
           let statusEmoji = '';
@@ -468,7 +564,8 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       
       // View Pending Orders
       if (data === 'view_pending') {
-        const pendingOrdersList = orders.filter(o => o.status === 'payment_received');
+        const allOrders = await getAllOrders();
+        const pendingOrdersList = allOrders.filter(o => o.status === 'payment_received');
         
         if (pendingOrdersList.length === 0) {
           await sendTelegramMessage(chatId, "📭 ဆိုင်းငံ့ထားသော အော်ဒါမရှိပါ။");
@@ -489,13 +586,15 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       
       // View All Orders
       if (data === 'view_all') {
-        if (orders.length === 0) {
+        const allOrders = await getAllOrders();
+        
+        if (allOrders.length === 0) {
           await sendTelegramMessage(chatId, "📭 အော်ဒါမရှိသေးပါ။");
         } else {
           let msg = "📋 **အော်ဒါအားလုံး**\n━━━━━━━━━━━━━━━━━━\n";
           const buttons = [];
           
-          for (const order of orders.slice(0, 15)) {
+          for (const order of allOrders.slice(0, 15)) {
             let statusEmoji = '📌';
             if (order.status === 'pending_payment') statusEmoji = '⏳';
             else if (order.status === 'payment_received') statusEmoji = '💰';
@@ -527,7 +626,8 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       
       // Near Expire Orders
       if (data === 'near_expire') {
-        const nearExpireOrders = orders.filter(o => {
+        const allOrders = await getAllOrders();
+        const nearExpireOrders = allOrders.filter(o => {
           if (o.status !== 'approved' || !o.isActive) return false;
           const daysLeft = getRemainingDays(o.expiredAt);
           return daysLeft > 0 && daysLeft <= 7;
@@ -618,59 +718,9 @@ ${stats.text}
       return res.sendStatus(200);
     }
     
-    // Handle text messages (including reject reasons)
     if (!message) return res.sendStatus(200);
     const chatId = message.chat.id;
     const text = message.text || "";
-    
-    // Check if waiting for reject reason
-    if (pendingRejectReasons[chatId] && pendingRejectReasons[chatId].step === 'waiting_for_reason') {
-      const { orderId } = pendingRejectReasons[chatId];
-      const order = orders.find(o => o.id === orderId);
-      const reason = text;
-      
-      if (order && reason && !reason.startsWith('/')) {
-        await updateOrderStatus(orderId, 'rejected');
-        
-        // Send reject message to admin
-        const rejectMessage = `
-❌ **ပယ်ဖျက်ပြီး** - အော်ဒါ #${orderId}
-━━━━━━━━━━━━━━━━━━━━
-📦 Package: ${order.packageName}
-📞 ဖုန်း: ${order.phone}
-💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
-📝 ပယ်ဖျက်ရသည့်အကြောင်း: ${reason}
-━━━━━━━━━━━━━━━━━━━━
-⚠️ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပြီး မှန်ကန်စွာ ငွေလွှဲပါ။
-        `;
-        await sendTelegramMessage(ADMIN_CHAT_ID, rejectMessage);
-        
-        // Send to GROUP with reason
-        if (GROUP_CHAT_ID) {
-          const groupAlert = `
-⚠️ **အော်ဒါပယ်ဖျက်ခြင်း** ⚠️
-━━━━━━━━━━━━━━━━━━━━
-❌ အော်ဒါ #${orderId} အား ပယ်ဖျက်လိုက်ပါသည်။
-📞 ဖုန်း: ${order.phone}
-📦 Package: ${order.packageName}
-📝 အကြောင်းရင်း: ${reason}
-━━━━━━━━━━━━━━━━━━━━
-⚠️ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။
-          `;
-          await sendTelegramMessage(GROUP_CHAT_ID, groupAlert);
-        }
-        
-        // Confirm to admin who rejected
-        await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အား "${reason}" အကြောင်းဖြင့် ပယ်ဖျက်ပြီးပါပြီ။`);
-        
-        delete pendingRejectReasons[chatId];
-      } else if (reason && reason.startsWith('/')) {
-        // If user typed a command, ignore and clear
-        delete pendingRejectReasons[chatId];
-        await sendTelegramMessage(chatId, `❌ ပယ်ဖျက်ခြင်းကို ဖျက်သိမ်းလိုက်ပါသည်။`);
-      }
-      return res.sendStatus(200);
-    }
     
     if (chatId.toString() === ADMIN_CHAT_ID.toString() && text === '/start') {
       const stats = await getOrderStats();
@@ -722,8 +772,9 @@ ${stats.text}
   res.json({ success: true });
 });
 
-app.get('/orders-list', (req, res) => {
-  res.json({ orders: orders, count: orders.length });
+app.get('/orders-list', async (req, res) => {
+  const allOrders = await getAllOrders();
+  res.json({ orders: allOrders, count: allOrders.length });
 });
 
 app.get('/test-group', async (req, res) => {
@@ -769,5 +820,6 @@ app.listen(PORT, async () => {
   console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅ Set' : '❌ Missing'}`);
   console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
   console.log(`👥 GROUP_CHAT_ID: ${GROUP_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
+  console.log(`🔥 Firebase: ${db ? '✅ Connected' : '❌ Not connected (using fallback)'}`);
   await setWebhook();
 });
