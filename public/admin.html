@@ -352,7 +352,7 @@
       gap: 1rem;
     }
     
-    /* Table Header */
+    /* Table Header - Desktop */
     .orders-header {
       display: flex;
       background: linear-gradient(135deg, var(--bg-dark), #1e293b);
@@ -383,7 +383,7 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
     
-    /* Order Card Inner Grid - NEW ORDER: View နဲ့ Date နေရာလဲပြီး */
+    /* Order Card Inner Grid - Desktop Layout (Date → View → Action) */
     .order-grid {
       display: flex;
       flex-wrap: wrap;
@@ -438,9 +438,15 @@
     .status-rejected { background: #ef444420; color: #ef4444; border: 1px solid #ef4444; }
     .status-expired { background: #64748b20; color: #64748b; border: 1px solid #64748b; }
     
-    /* Screenshot (View) - ဘယ်ဘက်ကို ရွှေ့ထား */
+    /* Desktop Layout: Date → View → Action */
+    .order-date {
+      min-width: 160px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    
     .order-screenshot {
-      min-width: 70px;
+      min-width: 80px;
     }
     .action-view {
       background: rgba(59,130,246,0.15);
@@ -456,13 +462,6 @@
       gap: 5px;
     }
     .action-view:hover { background: #3b82f6; color: white; }
-    
-    /* Date - ညာဘက်ကို ရွှေ့ထား */
-    .order-date {
-      min-width: 160px;
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-    }
     
     .order-actions {
       min-width: 160px;
@@ -487,18 +486,18 @@
     .action-reject { background: #ef444420; color: #ef4444; border: 1px solid #ef4444; }
     .action-reject:hover { background: #ef4444; color: white; }
     
-    /* Header Columns - နေရာလဲပြီး */
+    /* Header Columns - Desktop */
     .header-col-checkbox { width: 40px; }
     .header-col-id { width: 70px; }
     .header-col-package { width: 130px; }
     .header-col-phone { width: 170px; }
     .header-col-price { width: 100px; }
     .header-col-status { width: 110px; }
-    .header-col-screenshot { width: 80px; }
     .header-col-date { width: 160px; }
+    .header-col-screenshot { width: 80px; }
     .header-col-action { width: 160px; }
     
-    /* Responsive - Mobile Card Layout */
+    /* ========== MOBILE VERSION - နေရာလဲထားပြီး ========== */
     @media (max-width: 768px) {
       .orders-header { display: none; }
       
@@ -533,9 +532,14 @@
       .order-phone:before { content: "Phone:"; }
       .order-price:before { content: "Price:"; }
       .order-status:before { content: "Status:"; }
+      /* Mobile: View ကို Date ရဲ့ ရှေ့ထား */
       .order-screenshot:before { content: "Screenshot:"; }
       .order-date:before { content: "Date:"; }
       .order-actions:before { content: "Actions:"; }
+      
+      /* Mobile: View နဲ့ Date ကို နေရာလဲထား */
+      .order-screenshot { order: 6; }
+      .order-date { order: 7; }
       
       .order-id { border-bottom: none; }
       .order-package { border-bottom: none; }
@@ -722,7 +726,7 @@
         <button onclick="clearSelection()" style="background:#64748b20; color:#64748b; border:1px solid #64748b;">Cancel</button>
       </div>
       
-      <!-- Card Style Orders Container - View နဲ့ Date နေရာလဲပြီး -->
+      <!-- Card Style Orders Container -->
       <div class="orders-container" id="ordersContainer">
         <div class="orders-header">
           <div class="header-col-checkbox"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></div>
@@ -731,8 +735,8 @@
           <div class="header-col-phone">Phone</div>
           <div class="header-col-price">Price</div>
           <div class="header-col-status">Status</div>
-          <div class="header-col-screenshot">Screenshot</div>
           <div class="header-col-date">Date</div>
+          <div class="header-col-screenshot">Screenshot</div>
           <div class="header-col-action">Action</div>
         </div>
         <div id="ordersList">Loading orders...</div>
@@ -942,13 +946,11 @@
             <div class="order-status" data-label="Status">
               <span class="status-badge ${statusClass}">${statusText}</span>
             </div>
-            <!-- Screenshot (View) - ဘယ်ဘက်ကို ရွှေ့ထား -->
-            <div class="order-screenshot" data-label="Screenshot">
-              <button class="action-view" onclick="viewScreenshot(${order.id})"><i class="fas fa-image"></i> View</button>
-            </div>
-            <!-- Date - ညာဘက်ကို ရွှေ့ထား -->
             <div class="order-date" data-label="Date">
               ${formattedDate}
+            </div>
+            <div class="order-screenshot" data-label="Screenshot">
+              <button class="action-view" onclick="viewScreenshot(${order.id})"><i class="fas fa-image"></i> View</button>
             </div>
             <div class="order-actions" data-label="Actions">
               ${order.status === 'payment_received' ? `
