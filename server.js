@@ -111,59 +111,84 @@ try {
 
 // ========== HELPER FUNCTIONS ==========
 function getMyanmarTime(date = new Date()) {
-  const myanmarOffset = 6.5 * 60 * 60 * 1000;
-  const myanmarTime = new Date(date.getTime() + myanmarOffset);
-  const year = myanmarTime.getUTCFullYear();
-  const month = String(myanmarTime.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(myanmarTime.getUTCDate()).padStart(2, '0');
-  let hours = myanmarTime.getUTCHours();
-  const minutes = String(myanmarTime.getUTCMinutes()).padStart(2, '0');
-  const seconds = String(myanmarTime.getUTCSeconds()).padStart(2, '0');
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12 || 12;
-  return `${month}/${day}/${year} ${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+  try {
+    const myanmarOffset = 6.5 * 60 * 60 * 1000;
+    const myanmarTime = new Date(date.getTime() + myanmarOffset);
+    const year = myanmarTime.getUTCFullYear();
+    const month = String(myanmarTime.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(myanmarTime.getUTCDate()).padStart(2, '0');
+    let hours = myanmarTime.getUTCHours();
+    const minutes = String(myanmarTime.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(myanmarTime.getUTCSeconds()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${month}/${day}/${year} ${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+  } catch (error) {
+    return new Date().toLocaleString();
+  }
 }
 
 function getRemainingDays(expiredAt) {
   if (!expiredAt) return 0;
-  const now = new Date();
-  const expire = new Date(expiredAt);
-  const diffTime = expire - now;
-  if (diffTime <= 0) return 0;
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  try {
+    const now = new Date();
+    const expire = new Date(expiredAt);
+    const diffTime = expire - now;
+    if (diffTime <= 0) return 0;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  } catch (error) {
+    return 0;
+  }
 }
 
 // ========== DATABASE OPERATIONS ==========
 async function getNextOrderId() {
-  if (useFirebase && db) {
-    const counterRef = db.collection('counters').doc('orders');
-    const counterDoc = await counterRef.get();
-    let nextId = 1;
-    if (counterDoc.exists) {
-      nextId = counterDoc.data().nextId;
+  try {
+    if (useFirebase && db) {
+      const counterRef = db.collection('counters').doc('orders');
+      const counterDoc = await counterRef.get();
+      let nextId = 1;
+      if (counterDoc.exists) {
+        nextId = counterDoc.data().nextId;
+      }
+      await counterRef.set({ nextId: nextId + 1 });
+      return nextId;
+    } else {
+      return orderIdCounterFallback++;
     }
-    await counterRef.set({ nextId: nextId + 1 });
-    return nextId;
-  } else {
+  } catch (error) {
+    console.error("Error getting next order ID:", error);
     return orderIdCounterFallback++;
   }
 }
 
 async function createOrder(orderData) {
-  const orderId = await getNextOrderId();
-  
-  if (useFirebase && db) {
-    const docRef = db.collection('orders').doc(orderId.toString());
-    await docRef.set({
-      ...orderData,
-      id: orderId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    });
-    return { id: orderId, ...orderData };
-  } else {
+  try {
+    const orderId = await getNextOrderId();
+    
+    if (useFirebase && db) {
+      const docRef = db.collection('orders').doc(orderId.toString());
+      await docRef.set({
+        ...orderData,
+        id: orderId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      return { id: orderId, ...orderData };
+    } else {
+      const newOrder = {
+        id: orderId,
+        ...orderData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      ordersFallback.unshift(newOrder);
+      return newOrder;
+    }
+  } catch (error) {
+    console.error("Error creating order:", error);
     const newOrder = {
-      id: orderId,
+      id: orderIdCounterFallback++,
       ...orderData,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -174,75 +199,96 @@ async function createOrder(orderData) {
 }
 
 async function getOrder(orderId) {
-  if (useFirebase && db) {
-    const doc = await db.collection('orders').doc(orderId.toString()).get();
-    if (doc.exists) {
-      return { id: parseInt(doc.id), ...doc.data() };
+  try {
+    if (useFirebase && db) {
+      const doc = await db.collection('orders').doc(orderId.toString()).get();
+      if (doc.exists) {
+        return { id: parseInt(doc.id), ...doc.data() };
+      }
+      return null;
+    } else {
+      return ordersFallback.find(o => o.id == orderId);
     }
-    return null;
-  } else {
+  } catch (error) {
+    console.error("Error getting order:", error);
     return ordersFallback.find(o => o.id == orderId);
   }
 }
 
 async function updateOrderStatus(orderId, status, approvedAt = null, rejectReason = null) {
-  const updateData = { status, updatedAt: new Date().toISOString() };
-  if (status === 'approved' && approvedAt) {
-    updateData.approvedAt = approvedAt;
-    const expireDate = new Date(approvedAt);
-    expireDate.setDate(expireDate.getDate() + 30);
-    updateData.expiredAt = expireDate.toISOString();
-    updateData.isActive = true;
-  }
-  if (status === 'rejected' && rejectReason) {
-    updateData.rejectReason = rejectReason;
-    updateData.isActive = false;
-  }
-  
-  if (useFirebase && db) {
-    await db.collection('orders').doc(orderId.toString()).update(updateData);
-    return true;
-  } else {
+  try {
+    const updateData = { status, updatedAt: new Date().toISOString() };
+    if (status === 'approved' && approvedAt) {
+      updateData.approvedAt = approvedAt;
+      const expireDate = new Date(approvedAt);
+      expireDate.setDate(expireDate.getDate() + 30);
+      updateData.expiredAt = expireDate.toISOString();
+      updateData.isActive = true;
+    }
+    if (status === 'rejected' && rejectReason) {
+      updateData.rejectReason = rejectReason;
+      updateData.isActive = false;
+    }
+    
+    if (useFirebase && db) {
+      await db.collection('orders').doc(orderId.toString()).update(updateData);
+      return true;
+    } else {
+      const order = ordersFallback.find(o => o.id == orderId);
+      if (order) {
+        Object.assign(order, updateData);
+      }
+      return order;
+    }
+  } catch (error) {
+    console.error("Error updating order status:", error);
     const order = ordersFallback.find(o => o.id == orderId);
     if (order) {
-      Object.assign(order, updateData);
+      order.status = status;
+      order.updatedAt = new Date().toISOString();
     }
     return order;
   }
 }
 
 async function getAllOrders() {
-  if (useFirebase && db) {
-    const snapshot = await db.collection('orders').orderBy('createdAt', 'desc').limit(100).get();
-    return snapshot.docs.map(doc => ({ id: parseInt(doc.id), ...doc.data() }));
-  } else {
+  try {
+    if (useFirebase && db) {
+      const snapshot = await db.collection('orders').orderBy('createdAt', 'desc').limit(100).get();
+      return snapshot.docs.map(doc => ({ id: parseInt(doc.id), ...doc.data() }));
+    } else {
+      return ordersFallback;
+    }
+  } catch (error) {
+    console.error("Error getting all orders:", error);
     return ordersFallback;
   }
 }
 
 async function getOrderStats() {
-  let ordersList;
-  if (useFirebase && db) {
-    const snapshot = await db.collection('orders').get();
-    ordersList = snapshot.docs.map(doc => ({ id: parseInt(doc.id), ...doc.data() }));
-  } else {
-    ordersList = ordersFallback;
-  }
-  
-  const pending = ordersList.filter(o => o.status === 'pending_payment').length;
-  const received = ordersList.filter(o => o.status === 'payment_received').length;
-  const approved = ordersList.filter(o => o.status === 'approved' && o.isActive !== false).length;
-  const expired = ordersList.filter(o => o.status === 'approved' && o.isActive === false).length;
-  const rejected = ordersList.filter(o => o.status === 'rejected').length;
-  const nearExpire = ordersList.filter(o => {
-    if (o.status !== 'approved' || !o.isActive) return false;
-    const daysLeft = getRemainingDays(o.expiredAt);
-    return daysLeft > 0 && daysLeft <= 7;
-  }).length;
-  
-  return {
-    pending, received, approved, expired, rejected, nearExpire,
-    text: `📊 *စာရင်းအင်း*
+  try {
+    let ordersList;
+    if (useFirebase && db) {
+      const snapshot = await db.collection('orders').get();
+      ordersList = snapshot.docs.map(doc => ({ id: parseInt(doc.id), ...doc.data() }));
+    } else {
+      ordersList = ordersFallback;
+    }
+    
+    const pending = ordersList.filter(o => o.status === 'pending_payment').length;
+    const received = ordersList.filter(o => o.status === 'payment_received').length;
+    const approved = ordersList.filter(o => o.status === 'approved' && o.isActive !== false).length;
+    const expired = ordersList.filter(o => o.status === 'approved' && o.isActive === false).length;
+    const rejected = ordersList.filter(o => o.status === 'rejected').length;
+    const nearExpire = ordersList.filter(o => {
+      if (o.status !== 'approved' || !o.isActive) return false;
+      const daysLeft = getRemainingDays(o.expiredAt);
+      return daysLeft > 0 && daysLeft <= 7;
+    }).length;
+    
+    return {
+      pending, received, approved, expired, rejected, nearExpire,
+      text: `📊 *စာရင်းအင်း*
 ━━━━━━━━━━━━━━━━━━━━
 ⏳ ဆိုင်းငံ့: ${pending}
 💰 ငွေလွှဲပြီး: ${received}
@@ -250,7 +296,14 @@ async function getOrderStats() {
 ⚠️ ၇ ရက်အတွင်း Expire: ${nearExpire}
 ❌ Expired: ${expired}
 🗑️ ပယ်ဖျက်ပြီး: ${rejected}`
-  };
+    };
+  } catch (error) {
+    console.error("Error getting stats:", error);
+    return {
+      pending: 0, received: 0, approved: 0, expired: 0, rejected: 0, nearExpire: 0,
+      text: "📊 *စာရင်းအင်း*\n━━━━━━━━━━━━━━━━━━━━\n⏳ ဆိုင်းငံ့: 0\n💰 ငွေလွှဲပြီး: 0\n✅ အတည်ပြုပြီး: 0\n❌ Expired: 0\n🗑️ ပယ်ဖျက်ပြီး: 0"
+    };
+  }
 }
 
 // ========== SEND TELEGRAM MESSAGE ==========
@@ -420,51 +473,56 @@ app.get('/firebase-status', (req, res) => {
 
 // ========== GET ALL ORDERS (For Website) ==========
 app.get('/api/orders/:phone', async (req, res) => {
-  const phone = req.params.phone;
-  
-  if (useFirebase && db) {
-    const snapshot = await db.collection('orders')
-      .where('phone', '==', phone)
-      .where('status', '==', 'approved')
-      .get();
+  try {
+    const phone = req.params.phone;
     
-    const orders = snapshot.docs.map(doc => {
-      const data = doc.data();
-      const daysLeft = data.expiredAt ? getRemainingDays(data.expiredAt) : 0;
-      const isExpired = daysLeft <= 0;
+    if (useFirebase && db) {
+      const snapshot = await db.collection('orders')
+        .where('phone', '==', phone)
+        .where('status', '==', 'approved')
+        .get();
       
-      return {
-        id: data.id,
-        packageName: data.packageName,
-        price: data.price,
-        approvedAt: data.approvedAt ? getMyanmarTime(new Date(data.approvedAt)) : null,
-        expiredAt: data.expiredAt ? getMyanmarTime(new Date(data.expiredAt)) : null,
-        daysLeft: daysLeft,
-        isActive: !isExpired,
-        status: isExpired ? 'expired' : 'active'
-      };
-    });
-    
-    res.json({ success: true, orders, count: orders.length, realtime: true });
-  } else {
-    const userOrders = ordersFallback.filter(o => o.phone === phone && o.status === 'approved');
-    const result = userOrders.map(order => {
-      const daysLeft = order.expiredAt ? getRemainingDays(order.expiredAt) : 0;
-      const isExpired = daysLeft <= 0;
+      const orders = snapshot.docs.map(doc => {
+        const data = doc.data();
+        const daysLeft = data.expiredAt ? getRemainingDays(data.expiredAt) : 0;
+        const isExpired = daysLeft <= 0;
+        
+        return {
+          id: data.id,
+          packageName: data.packageName,
+          price: data.price,
+          approvedAt: data.approvedAt ? getMyanmarTime(new Date(data.approvedAt)) : null,
+          expiredAt: data.expiredAt ? getMyanmarTime(new Date(data.expiredAt)) : null,
+          daysLeft: daysLeft,
+          isActive: !isExpired,
+          status: isExpired ? 'expired' : 'active'
+        };
+      });
       
-      return {
-        id: order.id,
-        packageName: order.packageName,
-        price: order.price,
-        approvedAt: order.approvedAt ? getMyanmarTime(new Date(order.approvedAt)) : null,
-        expiredAt: order.expiredAt ? getMyanmarTime(new Date(order.expiredAt)) : null,
-        daysLeft: daysLeft,
-        isActive: !isExpired,
-        status: isExpired ? 'expired' : 'active'
-      };
-    });
-    
-    res.json({ success: true, orders: result, count: result.length, realtime: false });
+      res.json({ success: true, orders, count: orders.length, realtime: true });
+    } else {
+      const userOrders = ordersFallback.filter(o => o.phone === phone && o.status === 'approved');
+      const result = userOrders.map(order => {
+        const daysLeft = order.expiredAt ? getRemainingDays(order.expiredAt) : 0;
+        const isExpired = daysLeft <= 0;
+        
+        return {
+          id: order.id,
+          packageName: order.packageName,
+          price: order.price,
+          approvedAt: order.approvedAt ? getMyanmarTime(new Date(order.approvedAt)) : null,
+          expiredAt: order.expiredAt ? getMyanmarTime(new Date(order.expiredAt)) : null,
+          daysLeft: daysLeft,
+          isActive: !isExpired,
+          status: isExpired ? 'expired' : 'active'
+        };
+      });
+      
+      res.json({ success: true, orders: result, count: result.length, realtime: false });
+    }
+  } catch (error) {
+    console.error("API error:", error);
+    res.json({ success: true, orders: [], count: 0, realtime: false });
   }
 });
 
@@ -503,10 +561,10 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📞 ဖုန်း: ${order.phone}
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
 📅 စတင်ရက်: ${getMyanmarTime(approvedTime)}
-⏰ ကုန်ဆုံးရက်: ${getMyanmarTime(expireDate)}
+📅 ကုန်ဆုံးရက်: ${getMyanmarTime(expireDate)}
 ⏳ အသုံးပြုနိုင်မည့်ရက်: ${daysUntilExpire} ရက်
 ━━━━━━━━━━━━━━━━━━━━
-🎉 ဒေတာ သွင်းပေးပါမည်။
+🎉 ဒေတာ သွင်းပေးပါမည်။ ကျေးဇူးတင်ပါသည်။
           `;
           
           await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
@@ -520,7 +578,14 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             })
           });
           
-          await sendTelegramMessage(ADMIN_CHAT_ID, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး!\n📞 ${order.phone}`);
+          await sendTelegramMessage(ADMIN_CHAT_ID, `
+✅ **အတည်ပြုပြီး** - အော်ဒါ #${orderId}
+📞 ${order.phone}
+📦 ${order.packageName}
+📅 စတင်ရက်: ${getMyanmarTime(approvedTime)}
+📅 ကုန်ဆုံးရက်: ${getMyanmarTime(expireDate)}
+⏳ အသုံးပြုနိုင်မည့်ရက်: ${daysUntilExpire} ရက်
+          `);
           
           if (GROUP_CHAT_ID) {
             await sendTelegramMessage(GROUP_CHAT_ID, `
@@ -530,13 +595,17 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📞 ${order.phone}
 📦 ${order.packageName}
 💰 ${order.price.toLocaleString()} KS
+📅 စတင်ရက်: ${getMyanmarTime(approvedTime)}
+📅 ကုန်ဆုံးရက်: ${getMyanmarTime(expireDate)}
+━━━━━━━━━━━━━━━━━━━━
+👤 Admin မှ အတည်ပြုပြီးပါပြီ။
             `);
           }
         }
         return res.sendStatus(200);
       }
       
-      // Reject Button - Ask for reason
+      // Reject Button
       if (data.startsWith('reject_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = await getOrder(orderId);
@@ -554,7 +623,8 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               chat_id: chatId,
-              text: `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ။`,
+              text: `❌ **အော်ဒါ #${orderId} ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ။**\n\n📞 ဖုန်း: ${order.phone}\n📦 Package: ${order.packageName}\n💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS`,
+              parse_mode: 'Markdown',
               reply_markup: forceReply
             })
           });
@@ -712,6 +782,8 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 
 🏧 *KPay / WavePay:* \`09789999368\`
 👤 *Name:* AUNG THU HTWE
+
+📌 ငွေလွှဲပြီးပါက Screenshot ပေးပို့ရန် ပြောပါ။
         `);
         return res.sendStatus(200);
       }
@@ -779,9 +851,9 @@ ${stats.text}
 📦 Package: ${order.packageName}
 📞 ဖုန်း: ${order.phone}
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
-📝 ပယ်ဖျက်ရသည့်အကြောင်း: ${reason}
+📝 **ပယ်ဖျက်ရသည့်အကြောင်း:** ${reason}
 ━━━━━━━━━━━━━━━━━━━━
-⚠️ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။
+⚠️ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပြီး မှန်ကန်စွာ ငွေလွှဲပါ။
         `;
         
         await sendTelegramMessage(ADMIN_CHAT_ID, rejectCaption);
@@ -793,11 +865,13 @@ ${stats.text}
 ❌ အော်ဒါ #${orderId}
 📞 ${order.phone}
 📦 ${order.packageName}
-📝 အကြောင်း: ${reason}
+📝 **အကြောင်းရင်း:** ${reason}
+━━━━━━━━━━━━━━━━━━━━
+⚠️ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။
           `);
         }
         
-        await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အား "${reason}" ဖြင့် ပယ်ဖျက်ပြီးပါပြီ။`);
+        await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အား *"${reason}"* ဖြင့် ပယ်ဖျက်ပြီးပါပြီ။`);
       }
       
       delete pendingRejectReasons[chatId];
