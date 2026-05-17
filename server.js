@@ -35,9 +35,6 @@ const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID || "-1003783137346";
 let orders = [];
 let orderIdCounter = 1;
 
-// Store pending orders waiting for screenshot
-let pendingOrders = {};
-
 const PAYMENT_INFO = {
   kpay: "09789999368",
   wavepay: "09789999368",
@@ -53,11 +50,8 @@ const PACKAGES = {
 
 // ========== HELPER FUNCTION for Myanmar Time (UTC+6:30) ==========
 function getMyanmarTime(date = new Date()) {
-  // Myanmar Timezone offset: UTC+6:30 (6.5 hours = 390 minutes)
-  const myanmarOffset = 6.5 * 60 * 60 * 1000; // 6.5 hours in milliseconds
+  const myanmarOffset = 6.5 * 60 * 60 * 1000;
   const myanmarTime = new Date(date.getTime() + myanmarOffset);
-  
-  // Format to MM/DD/YYYY HH:MM:SS AM/PM
   const year = myanmarTime.getUTCFullYear();
   const month = String(myanmarTime.getUTCMonth() + 1).padStart(2, '0');
   const day = String(myanmarTime.getUTCDate()).padStart(2, '0');
@@ -66,15 +60,31 @@ function getMyanmarTime(date = new Date()) {
   const seconds = String(myanmarTime.getUTCSeconds()).padStart(2, '0');
   const ampm = hours >= 12 ? 'PM' : 'AM';
   hours = hours % 12 || 12;
-  
   return `${month}/${day}/${year} ${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
 }
 
-async function updateOrderStatus(orderId, status) {
+// Calculate remaining days
+function getRemainingDays(expiredAt) {
+  const now = new Date();
+  const expire = new Date(expiredAt);
+  const diffTime = expire - now;
+  if (diffTime <= 0) return 0;
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+async function updateOrderStatus(orderId, status, approvedAt = null) {
   const order = orders.find(o => o.id == orderId);
   if (order) {
     order.status = status;
     order.updatedAt = new Date().toISOString();
+    if (status === 'approved' && approvedAt) {
+      order.approvedAt = approvedAt;
+      // expiredAt = approvedAt + 30 days
+      const expireDate = new Date(approvedAt);
+      expireDate.setDate(expireDate.getDate() + 30);
+      order.expiredAt = expireDate.toISOString();
+      order.isActive = true;
+    }
   }
   return order;
 }
@@ -82,9 +92,26 @@ async function updateOrderStatus(orderId, status) {
 async function getOrderStats() {
   const pending = orders.filter(o => o.status === 'pending_payment').length;
   const received = orders.filter(o => o.status === 'payment_received').length;
-  const approved = orders.filter(o => o.status === 'approved').length;
+  const approved = orders.filter(o => o.status === 'approved' && o.isActive !== false).length;
+  const expired = orders.filter(o => o.status === 'approved' && o.isActive === false).length;
   const rejected = orders.filter(o => o.status === 'rejected').length;
-  return `📊 *စာရင်းအင်း*\n⏳ ဆိုင်းငံ့: ${pending}\n💰 ငွေလွှဲပြီး: ${received}\n✅ အတည်ပြုပြီး: ${approved}\n❌ ပယ်ဖျက်ပြီး: ${rejected}`;
+  const nearExpire = orders.filter(o => {
+    if (o.status !== 'approved' || !o.isActive) return false;
+    const daysLeft = getRemainingDays(o.expiredAt);
+    return daysLeft > 0 && daysLeft <= 7;
+  }).length;
+  
+  return {
+    pending, received, approved, expired, rejected, nearExpire,
+    text: `📊 *စာရင်းအင်း*
+━━━━━━━━━━━━━━━━━━━━
+⏳ ဆိုင်းငံ့: ${pending}
+💰 ငွေလွှဲပြီး: ${received}
+✅ အတည်ပြုပြီး: ${approved}
+⚠️ ၇ ရက်အတွင်း Expire: ${nearExpire}
+❌ Expired: ${expired}
+🗑️ ပယ်ဖျက်ပြီး: ${rejected}`
+  };
 }
 
 // ========== SEND TELEGRAM MESSAGE ==========
@@ -156,11 +183,10 @@ app.post('/order', async (req, res) => {
       price: packageData.price,
       status: "pending_payment",
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      isActive: false
     };
     orders.unshift(newOrder);
-    
-    pendingOrders[newOrder.id] = newOrder;
     
     console.log(`📦 Order #${newOrder.id} created - waiting for screenshot`);
     
@@ -233,8 +259,6 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     
     const success = await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
     
-    delete pendingOrders[orderId];
-    
     if (success) {
       console.log(`✅ Order #${orderId} + screenshot sent to admin`);
       res.json({ success: true, message: "Order and payment submitted! Admin will verify." });
@@ -250,6 +274,35 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
       fs.unlinkSync(tempFilePath);
     }
   }
+});
+
+// ========== GET ORDER STATUS WITH EXPIRY (For Customer Website) ==========
+app.get('/order-status/:phone', (req, res) => {
+  const phone = req.params.phone;
+  const userOrders = orders.filter(o => o.phone === phone && o.status === 'approved');
+  
+  const result = userOrders.map(order => {
+    const daysLeft = order.expiredAt ? getRemainingDays(order.expiredAt) : 0;
+    const isExpired = daysLeft <= 0;
+    
+    // Auto update expired status
+    if (isExpired && order.isActive !== false) {
+      order.isActive = false;
+    }
+    
+    return {
+      id: order.id,
+      packageName: order.packageName,
+      price: order.price,
+      approvedAt: order.approvedAt ? getMyanmarTime(new Date(order.approvedAt)) : null,
+      expiredAt: order.expiredAt ? getMyanmarTime(new Date(order.expiredAt)) : null,
+      daysLeft: daysLeft,
+      isActive: !isExpired,
+      status: isExpired ? 'expired' : 'active'
+    };
+  });
+  
+  res.json({ success: true, orders: result, count: result.length });
 });
 
 // ========== TELEGRAM WEBHOOK ==========
@@ -274,7 +327,11 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         const order = orders.find(o => o.id === orderId);
         
         if (order) {
-          await updateOrderStatus(orderId, 'approved');
+          const approvedTime = new Date();
+          await updateOrderStatus(orderId, 'approved', approvedTime);
+          
+          const expireDate = new Date(order.expiredAt);
+          const daysUntilExpire = Math.ceil((expireDate - approvedTime) / (1000 * 60 * 60 * 24));
           
           const approveCaption = `
 ✅ **အတည်ပြုပြီး** - အော်ဒါ #${orderId}
@@ -282,7 +339,9 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📦 Package: ${order.packageName}
 📞 ဖုန်း: ${order.phone}
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
-📅 အတည်ပြုချိန်: ${getMyanmarTime()}
+📅 စတင်ရက်: ${getMyanmarTime(approvedTime)}
+⏰ ကုန်ဆုံးရက်: ${getMyanmarTime(expireDate)}
+⏳ အသုံးပြုနိုင်မည့်ရက်: ${daysUntilExpire} ရက်
 ━━━━━━━━━━━━━━━━━━━━
 🎉 ဒေတာ သွင်းပေးပါမည်။ ကျေးဇူးတင်ပါသည်။
           `;
@@ -298,7 +357,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             })
           });
           
-          await sendTelegramMessage(ADMIN_CHAT_ID, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး!\n📞 ${order.phone}\n📦 ${order.packageName}`);
+          await sendTelegramMessage(ADMIN_CHAT_ID, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး!\n📞 ${order.phone}\n📦 ${order.packageName}\n⏰ ${daysUntilExpire} ရက် အသုံးပြုနိုင်မည်။`);
           
           // Send to GROUP
           if (GROUP_CHAT_ID) {
@@ -309,7 +368,8 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📞 ဖုန်းနံပါတ်: ${order.phone}
 📦 Package: ${order.packageName}
 💰 ပမာဏ: ${order.price.toLocaleString()} KS
-⏰ သွင်းချိန်: ${getMyanmarTime()}
+📅 စတင်ရက်: ${getMyanmarTime(approvedTime)}
+⏰ ကုန်ဆုံးရက်: ${getMyanmarTime(expireDate)}
 ━━━━━━━━━━━━━━━━━━━━
 👤 အတည်ပြုသူ: Admin
             `;
@@ -359,12 +419,37 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         const order = orders.find(o => o.id === orderId);
         
         if (order) {
-          const statusEmoji = {
-            'pending_payment': '⏳ ဆိုင်းငံ့',
-            'payment_received': '💰 ငွေလွှဲပြီး',
-            'approved': '✅ အတည်ပြုပြီး',
-            'rejected': '❌ ပယ်ဖျက်ပြီး'
-          }[order.status] || order.status;
+          let statusEmoji = '';
+          let statusText = '';
+          
+          if (order.status === 'pending_payment') {
+            statusEmoji = '⏳';
+            statusText = 'ဆိုင်းငံ့';
+          } else if (order.status === 'payment_received') {
+            statusEmoji = '💰';
+            statusText = 'ငွေလွှဲပြီး';
+          } else if (order.status === 'approved') {
+            if (order.isActive === false) {
+              statusEmoji = '❌';
+              statusText = 'Expired';
+            } else {
+              statusEmoji = '✅';
+              statusText = 'အတည်ပြုပြီး (Active)';
+            }
+          } else if (order.status === 'rejected') {
+            statusEmoji = '🗑️';
+            statusText = 'ပယ်ဖျက်ပြီး';
+          }
+          
+          let extraInfo = '';
+          if (order.status === 'approved' && order.expiredAt) {
+            const daysLeft = getRemainingDays(order.expiredAt);
+            if (daysLeft > 0) {
+              extraInfo = `\n⏳ ကျန်ရက်များ: ${daysLeft} ရက်\n📅 ကုန်ဆုံးရက်: ${getMyanmarTime(new Date(order.expiredAt))}`;
+            } else {
+              extraInfo = `\n❌ ဒေတာ သက်တမ်းကုန်ဆုံးပြီး`;
+            }
+          }
           
           const detailMsg = `
 📋 **အော်ဒါအသေးစိတ်** #${order.id}
@@ -373,7 +458,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📞 ဖုန်း: ${order.phone}
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
 📅 ရက်စွဲ: ${getMyanmarTime(new Date(order.createdAt))}
-📊 အခြေအနေ: ${statusEmoji}
+📊 အခြေအနေ: ${statusEmoji} ${statusText}${extraInfo}
           `;
           
           const keyboard = {
@@ -419,10 +504,26 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           const buttons = [];
           
           for (const order of orders.slice(0, 15)) {
-            const statusEmoji = {
-              'pending_payment': '⏳', 'payment_received': '💰', 'approved': '✅', 'rejected': '❌'
-            }[order.status] || '📌';
-            msg += `${statusEmoji} *#${order.id}* | ${order.packageName}\n   📞 ${order.phone}\n   💰 ${order.price.toLocaleString()} KS\n\n`;
+            let statusEmoji = '📌';
+            if (order.status === 'pending_payment') statusEmoji = '⏳';
+            else if (order.status === 'payment_received') statusEmoji = '💰';
+            else if (order.status === 'approved') {
+              if (order.isActive === false) statusEmoji = '❌';
+              else statusEmoji = '✅';
+            }
+            else if (order.status === 'rejected') statusEmoji = '🗑️';
+            
+            msg += `${statusEmoji} *#${order.id}* | ${order.packageName}\n   📞 ${order.phone}\n   💰 ${order.price.toLocaleString()} KS`;
+            
+            if (order.status === 'approved' && order.expiredAt) {
+              const daysLeft = getRemainingDays(order.expiredAt);
+              if (daysLeft > 0) {
+                msg += `\n   ⏳ ကျန်: ${daysLeft} ရက်`;
+              } else {
+                msg += `\n   ❌ Expired`;
+              }
+            }
+            msg += `\n\n`;
             buttons.push([{ text: `${statusEmoji} အော်ဒါ #${order.id}`, callback_data: `detail_${order.id}` }]);
           }
           
@@ -449,14 +550,39 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
+      // Near Expire Orders (New)
+      if (data === 'near_expire') {
+        const nearExpireOrders = orders.filter(o => {
+          if (o.status !== 'approved' || !o.isActive) return false;
+          const daysLeft = getRemainingDays(o.expiredAt);
+          return daysLeft > 0 && daysLeft <= 7;
+        });
+        
+        if (nearExpireOrders.length === 0) {
+          await sendTelegramMessage(chatId, "📭 ၇ ရက်အတွင်း သက်တမ်းကုန်မည့် အော်ဒါမရှိပါ။");
+        } else {
+          let msg = "⚠️ **၇ ရက်အတွင်း သက်တမ်းကုန်မည့် အော်ဒါများ**\n━━━━━━━━━━━━━━━━━━\n";
+          for (const order of nearExpireOrders.slice(0, 10)) {
+            const daysLeft = getRemainingDays(order.expiredAt);
+            msg += `🔴 *#${order.id}* | ${order.packageName}\n   📞 ${order.phone}\n   ⏳ ကျန်: ${daysLeft} ရက်\n   📅 Expire: ${getMyanmarTime(new Date(order.expiredAt))}\n\n`;
+          }
+          const keyboard = {
+            inline_keyboard: [[{ text: "🔙 ပင်မစာမျက်နှာ", callback_data: "back_to_menu" }]]
+          };
+          await sendTelegramMessage(chatId, msg, keyboard);
+        }
+        return res.sendStatus(200);
+      }
+      
       // Help
       if (data === 'help') {
         const helpMsg = `
 🤖 *MYTEL ORDER BOT - အကူအညီ*
 
 *ခလုတ်များ အသုံးပြုနည်း:*
-• 📋 ဆိုင်းငံ့အော်ဒါများ - ငွေလွှဲပြီးသော အော်ဒါများ
-• 📜 အော်ဒါအားလုံး - အော်ဒါမှတ်တမ်းအားလုံး
+• 📋 ငွေလွှဲပြီးအော်ဒါများ - ငွေလွှဲပြီးသော အော်ဒါများ
+• 📜 အော်ဒါအားလုံး - အော်ဒါမှတ်တမ်းအားလုံး (ကျန်ရက်များပါ)
+• ⚠️ သက်တမ်းကုန်ခါနီး - ၇ ရက်အတွင်း Expire မည့်အော်ဒါများ
 • 💰 ငွေလွှဲအချက်အလက် - Customer အတွက် ငွေလွှဲအကောင့်
 • 🔄 စာရင်းအင်းအသစ် - လတ်တလောစာရင်းအင်းများ
         `;
@@ -470,7 +596,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       // Refresh Stats
       if (data === 'refresh_stats') {
         const stats = await getOrderStats();
-        await sendTelegramMessage(chatId, `🔄 *စာရင်းအင်းအသစ်*\n\n${stats}`);
+        await sendTelegramMessage(chatId, `🔄 *စာရင်းအင်းအသစ်*\n\n${stats.text}`);
         return res.sendStatus(200);
       }
       
@@ -482,15 +608,15 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 
 မင်္ဂလာပါ Admin! 👋
 
-${stats}
+${stats.text}
 
 🔽 *အောက်ပါခလုတ်များကို အသုံးပြုပါ:*
         `;
         const keyboard = {
           inline_keyboard: [
             [{ text: "📋 ငွေလွှဲပြီးအော်ဒါများ", callback_data: "view_pending" }, { text: "📜 အော်ဒါအားလုံး", callback_data: "view_all" }],
-            [{ text: "💰 ငွေလွှဲအချက်အလက်", callback_data: "payment_info" }, { text: "❓ အကူအညီ", callback_data: "help" }],
-            [{ text: "🔄 စာရင်းအင်းအသစ်", callback_data: "refresh_stats" }]
+            [{ text: "⚠️ သက်တမ်းကုန်ခါနီး", callback_data: "near_expire" }, { text: "💰 ငွေလွှဲအချက်အလက်", callback_data: "payment_info" }],
+            [{ text: "❓ အကူအညီ", callback_data: "help" }, { text: "🔄 စာရင်းအင်းအသစ်", callback_data: "refresh_stats" }]
           ]
         };
         await sendTelegramMessage(chatId, menuMessage, keyboard);
@@ -511,15 +637,15 @@ ${stats}
 
 မင်္ဂလာပါ Admin! 👋
 
-${stats}
+${stats.text}
 
 🔽 *အောက်ပါခလုတ်များကို အသုံးပြုပါ:*
       `;
       const keyboard = {
         inline_keyboard: [
           [{ text: "📋 ငွေလွှဲပြီးအော်ဒါများ", callback_data: "view_pending" }, { text: "📜 အော်ဒါအားလုံး", callback_data: "view_all" }],
-          [{ text: "💰 ငွေလွှဲအချက်အလက်", callback_data: "payment_info" }, { text: "❓ အကူအညီ", callback_data: "help" }],
-          [{ text: "🔄 စာရင်းအင်းအသစ်", callback_data: "refresh_stats" }]
+          [{ text: "⚠️ သက်တမ်းကုန်ခါနီး", callback_data: "near_expire" }, { text: "💰 ငွေလွှဲအချက်အလက်", callback_data: "payment_info" }],
+          [{ text: "❓ အကူအညီ", callback_data: "help" }, { text: "🔄 စာရင်းအင်းအသစ်", callback_data: "refresh_stats" }]
         ]
       };
       await sendTelegramMessage(chatId, menuMessage, keyboard);
@@ -541,15 +667,13 @@ app.get('/test-bot', async (req, res) => {
 
 မင်္ဂလာပါ Admin! 👋
 
-${stats}
-
-🔽 *အောက်ပါခလုတ်များကို အသုံးပြုပါ:*
+${stats.text}
   `;
   const keyboard = {
     inline_keyboard: [
       [{ text: "📋 ငွေလွှဲပြီးအော်ဒါများ", callback_data: "view_pending" }, { text: "📜 အော်ဒါအားလုံး", callback_data: "view_all" }],
-      [{ text: "💰 ငွေလွှဲအချက်အလက်", callback_data: "payment_info" }, { text: "❓ အကူအညီ", callback_data: "help" }],
-      [{ text: "🔄 စာရင်းအင်းအသစ်", callback_data: "refresh_stats" }]
+      [{ text: "⚠️ သက်တမ်းကုန်ခါနီး", callback_data: "near_expire" }, { text: "💰 ငွေလွှဲအချက်အလက်", callback_data: "payment_info" }],
+      [{ text: "❓ အကူအညီ", callback_data: "help" }, { text: "🔄 စာရင်းအင်းအသစ်", callback_data: "refresh_stats" }]
     ]
   };
   await sendTelegramMessage(ADMIN_CHAT_ID, menuMessage, keyboard);
