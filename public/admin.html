@@ -3,25 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MYTEL Admin Dashboard</title>
+  <title>ATH DIGITAL HUB | MYTEL Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    /* Same as previous admin.html styles */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
     body {
       font-family: 'Inter', sans-serif;
       background: #0f172a;
       color: #e2e8f0;
       transition: all 0.3s;
     }
-    
     body.light-mode {
       background: #f1f5f9;
       color: #0f172a;
     }
-    
     body.light-mode .sidebar,
     body.light-mode .stat-card,
     body.light-mode .orders-table,
@@ -32,8 +30,6 @@
       background: #ffffff;
       border-color: #e2e8f0;
     }
-    
-    /* Login Section */
     .login-container {
       min-height: 100vh;
       display: flex;
@@ -41,7 +37,6 @@
       align-items: center;
       background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
     }
-    
     .login-card {
       background: rgba(15,23,42,0.95);
       backdrop-filter: blur(20px);
@@ -51,7 +46,6 @@
       max-width: 400px;
       border: 1px solid rgba(250,204,21,0.3);
     }
-    
     .logo-icon {
       width: 70px; height: 70px;
       background: linear-gradient(135deg, #facc15, #eab308);
@@ -59,16 +53,17 @@
       display: flex; align-items: center; justify-content: center;
       margin: 0 auto 1rem;
     }
-    
-    .logo-icon i { font-size: 2rem; color: #0f172a; }
+    .logo-icon i { font-size: 2rem; color: #0f172a; animation: spin 4s linear infinite; }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
     .login-btn {
       width: 100%; padding: 14px;
       background: linear-gradient(95deg, #facc15, #eab308);
       border: none; border-radius: 14px;
       font-weight: 700; cursor: pointer;
     }
-    
-    /* Dashboard Sidebar */
     .sidebar {
       position: fixed;
       left: 0; top: 0;
@@ -76,20 +71,22 @@
       background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
       border-right: 1px solid #334155;
       padding: 1.5rem;
-      transition: all 0.3s;
       z-index: 100;
     }
-    
     .logo {
-      font-size: 1.3rem; font-weight: 800;
+      font-size: 1.2rem; font-weight: 800;
       background: linear-gradient(135deg, #FFD700, #FFA500);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
       margin-bottom: 2rem;
       text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
-    
+    .logo i { animation: spin 4s linear infinite; color: #facc15; background: none; }
     .nav-item {
       display: flex; align-items: center; gap: 12px;
       padding: 12px 16px; margin: 8px 0;
@@ -97,20 +94,14 @@
       color: #94a3b8;
       transition: all 0.3s;
     }
-    
     .nav-item:hover, .nav-item.active {
       background: #facc1520;
       color: #facc15;
     }
-    
-    /* Main Content */
     .main-content {
       margin-left: 260px;
       padding: 1.5rem;
-      transition: all 0.3s;
     }
-    
-    /* Top Bar */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -119,7 +110,6 @@
       flex-wrap: wrap;
       gap: 1rem;
     }
-    
     .theme-toggle {
       background: #1e293b;
       border: none;
@@ -128,46 +118,32 @@
       color: white;
       cursor: pointer;
     }
-    
-    /* Stats Grid */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 1rem;
       margin-bottom: 2rem;
     }
-    
     .stat-card {
       background: #1e293b;
       border-radius: 1rem;
       padding: 1rem;
       border: 1px solid #334155;
-      transition: all 0.3s;
     }
-    
-    .stat-card:hover { transform: translateY(-3px); border-color: #facc15; }
     .stat-card .value { font-size: 1.8rem; font-weight: 800; color: #facc15; }
     .stat-card .label { font-size: 0.7rem; color: #64748b; margin-top: 0.3rem; }
-    
-    /* Charts */
     .charts-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
-    
     .chart-card {
       background: #1e293b;
       border-radius: 1rem;
       padding: 1.5rem;
       border: 1px solid #334155;
     }
-    
-    .chart-card h3 { margin-bottom: 1rem; font-size: 1rem; }
-    canvas { max-height: 250px; }
-    
-    /* Filters */
     .filters-bar {
       background: #1e293b;
       border-radius: 1rem;
@@ -178,7 +154,6 @@
       flex-wrap: wrap;
       align-items: center;
     }
-    
     .filters-bar input, .filters-bar select {
       background: #0f172a;
       border: 1px solid #334155;
@@ -186,17 +161,8 @@
       border-radius: 8px;
       color: white;
     }
-    
-    .search-box {
-      flex: 1;
-      min-width: 200px;
-    }
-    
-    .search-box input {
-      width: 100%;
-    }
-    
-    /* Bulk Actions */
+    .search-box { flex: 1; min-width: 200px; }
+    .search-box input { width: 100%; }
     .bulk-actions {
       background: #1e293b;
       border-radius: 1rem;
@@ -207,19 +173,7 @@
       gap: 1rem;
       flex-wrap: wrap;
     }
-    
     .bulk-actions.show { display: flex; }
-    
-    .bulk-actions button {
-      background: #facc15;
-      color: #0f172a;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    
-    /* Expiring Soon Alert */
     .expiring-alert {
       background: rgba(239,68,68,0.2);
       border: 1px solid #ef4444;
@@ -231,42 +185,32 @@
       gap: 1rem;
       cursor: pointer;
     }
-    
-    .expiring-alert i { color: #ef4444; font-size: 1.2rem; }
-    
-    /* Orders Table */
     .orders-table {
       background: #1e293b;
       border-radius: 1rem;
       overflow-x: auto;
     }
-    
     table {
       width: 100%;
       border-collapse: collapse;
     }
-    
     th, td {
       padding: 12px 16px;
       text-align: left;
       border-bottom: 1px solid #334155;
     }
-    
     th { background: #0f172a; color: #facc15; }
-    
     .status-badge {
       display: inline-block;
       padding: 4px 12px;
       border-radius: 20px;
       font-size: 0.7rem;
     }
-    
     .status-pending { background: #f9731620; color: #f97316; }
     .status-paid { background: #3b82f620; color: #3b82f6; }
     .status-approved { background: #22c55e20; color: #22c55e; }
     .status-rejected { background: #ef444420; color: #ef4444; }
     .status-expired { background: #64748b20; color: #64748b; }
-    
     .action-btn {
       background: none; border: none;
       cursor: pointer; padding: 6px 12px;
@@ -274,17 +218,12 @@
       margin: 0 2px;
       font-size: 0.75rem;
     }
-    
     .action-approve { background: #22c55e20; color: #22c55e; }
     .action-approve:hover { background: #22c55e; color: white; }
     .action-reject { background: #ef444420; color: #ef4444; }
     .action-reject:hover { background: #ef4444; color: white; }
     .action-view { background: #3b82f620; color: #3b82f6; }
-    .action-view:hover { background: #3b82f6; color: white; }
-    
     .checkbox-col { width: 40px; }
-    
-    /* Modal */
     .modal {
       display: none;
       position: fixed;
@@ -295,7 +234,6 @@
       justify-content: center;
       align-items: center;
     }
-    
     .modal-content {
       background: #1e293b;
       border-radius: 20px;
@@ -304,14 +242,7 @@
       width: 90%;
       text-align: center;
     }
-    
-    .modal-content img { 
-      max-width: 100%; 
-      border-radius: 12px; 
-      margin: 1rem 0;
-    }
-    
-    /* Notification */
+    .modal-content img { max-width: 100%; border-radius: 12px; margin: 1rem 0; }
     .notification {
       position: fixed;
       top: 20px;
@@ -324,12 +255,10 @@
       display: none;
       animation: slideIn 0.3s ease;
     }
-    
     @keyframes slideIn {
       from { right: -300px; opacity: 0; }
       to { right: 20px; opacity: 1; }
     }
-    
     .logout-btn {
       position: fixed; bottom: 20px; left: 20px;
       background: #ef4444; border: none;
@@ -337,21 +266,30 @@
       color: white; cursor: pointer;
       z-index: 100;
     }
-    
+    .footer-brand {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      font-size: 0.7rem;
+      color: #475569;
+      text-align: right;
+      z-index: 100;
+    }
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .main-content { margin-left: 0; }
       .logout-btn { left: auto; right: 20px; bottom: 20px; }
+      .footer-brand { bottom: 80px; }
     }
   </style>
 </head>
 <body>
 
-<!-- Login Section -->
 <div id="loginSection" class="login-container">
   <div class="login-card">
-    <div class="logo-icon"><i class="fas fa-shield-alt"></i></div>
-    <h1 style="text-align:center; color:#facc15; margin-bottom:1.5rem;">Admin Access</h1>
+    <div class="logo-icon"><i class="fas fa-globe"></i></div>
+    <h1 style="text-align:center; color:#facc15; margin-bottom:0.5rem;">ATH DIGITAL HUB</h1>
+    <p style="text-align:center; color:#64748b; margin-bottom:1.5rem;">Admin Access</p>
     <div id="loginError" style="color:#f87171; text-align:center; margin-bottom:1rem; display:none;"></div>
     <div style="margin-bottom:1rem;">
       <input type="password" id="adminPassword" placeholder="Enter password" style="width:100%; padding:14px 16px; background:#1e293b; border:1px solid #334155; border-radius:14px; color:white;">
@@ -360,10 +298,9 @@
   </div>
 </div>
 
-<!-- Dashboard Section -->
 <div id="dashboardSection" style="display:none">
   <div class="sidebar">
-    <div class="logo">✨ MYTEL ADMIN</div>
+    <div class="logo"><i class="fas fa-globe"></i> ATH DIGITAL HUB</div>
     <div class="nav-item active" data-page="dashboard"><i class="fas fa-chart-line"></i> Dashboard</div>
     <div class="nav-item" data-page="orders"><i class="fas fa-box"></i> Orders</div>
     <div class="nav-item" data-page="expiring"><i class="fas fa-clock"></i> Expiring Soon</div>
@@ -376,22 +313,18 @@
       <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> Dark/Light Mode</button>
     </div>
     
-    <!-- Stats Grid -->
     <div class="stats-grid" id="statsGrid">Loading...</div>
     
-    <!-- Expiring Soon Alert -->
     <div id="expiringAlert" class="expiring-alert" style="display:none" onclick="showExpiringPage()">
       <i class="fas fa-exclamation-triangle"></i>
       <span id="expiringText">Orders expiring soon!</span>
     </div>
     
-    <!-- Charts -->
     <div class="charts-container" id="chartsContainer">
       <div class="chart-card"><h3>📊 Daily Orders (Last 7 Days)</h3><canvas id="dailyChart"></canvas></div>
       <div class="chart-card"><h3>💰 Revenue by Package</h3><canvas id="packageChart"></canvas></div>
     </div>
     
-    <!-- Filters -->
     <div class="filters-bar">
       <div class="search-box">
         <input type="text" id="searchPhone" placeholder="🔍 Search by phone number...">
@@ -410,7 +343,6 @@
       <button onclick="exportToCSV()" style="background:#22c55e; color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer;"><i class="fas fa-download"></i> Export CSV</button>
     </div>
     
-    <!-- Bulk Actions -->
     <div class="bulk-actions" id="bulkActions">
       <span id="selectedCount">0 selected</span>
       <button onclick="bulkApprove()"><i class="fas fa-check"></i> Approve Selected</button>
@@ -418,14 +350,16 @@
       <button onclick="clearSelection()">Cancel</button>
     </div>
     
-    <!-- Orders Table -->
     <div class="orders-table" id="ordersTable">Loading orders...</div>
   </div>
   
   <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  <div class="footer-brand">
+    <i class="fas fa-globe"></i> ATH DIGITAL HUB<br>
+    © Developed by AUNG THU HTWE
+  </div>
 </div>
 
-<!-- Screenshot Modal -->
 <div id="screenshotModal" class="modal">
   <div class="modal-content">
     <h3><i class="fas fa-image"></i> Payment Screenshot</h3>
@@ -440,10 +374,11 @@
   let selectedOrders = new Set();
   let dailyChart, packageChart;
   
-  // English Date Formatter
-  function formatEnglishDate(dateString) {
-    if (!dateString) return 'N/A';
+  // English Date Formatter for CSV
+  function formatEnglishDateForCSV(dateString) {
+    if (!dateString) return '';
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
     return date.toLocaleString('en-US', {
       year: 'numeric',
       month: '2-digit',
@@ -455,14 +390,27 @@
     });
   }
   
-  // Check login
+  function formatEnglishDate(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+  }
+  
   if (sessionStorage.getItem('adminLoggedIn') === 'true') {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('dashboardSection').style.display = 'block';
     loadAllData();
   }
   
-  // Login
   document.getElementById('loginBtn').onclick = function() {
     const password = document.getElementById('adminPassword').value;
     if (password === ADMIN_PASSWORD) {
@@ -478,11 +426,6 @@
     }
   };
   
-  document.getElementById('adminPassword').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') document.getElementById('loginBtn').click();
-  });
-  
-  // Load all data
   async function loadAllData() {
     await loadOrders();
     loadCharts();
@@ -490,7 +433,6 @@
     startNotificationCheck();
   }
   
-  // Load orders
   async function loadOrders() {
     try {
       const res = await fetch('/api/admin/orders?status=all', {
@@ -516,7 +458,6 @@
     `;
   }
   
-  // Apply filters
   function applyFilters() {
     const searchPhone = document.getElementById('searchPhone').value.toLowerCase();
     const startDate = document.getElementById('startDate').value;
@@ -524,22 +465,10 @@
     const status = document.getElementById('statusFilter').value;
     
     let filtered = [...allOrders];
-    
-    if (searchPhone) {
-      filtered = filtered.filter(o => o.phone.includes(searchPhone));
-    }
-    
-    if (status !== 'all') {
-      filtered = filtered.filter(o => o.status === status);
-    }
-    
-    if (startDate) {
-      filtered = filtered.filter(o => new Date(o.createdAt) >= new Date(startDate));
-    }
-    
-    if (endDate) {
-      filtered = filtered.filter(o => new Date(o.createdAt) <= new Date(endDate));
-    }
+    if (searchPhone) filtered = filtered.filter(o => o.phone.includes(searchPhone));
+    if (status !== 'all') filtered = filtered.filter(o => o.status === status);
+    if (startDate) filtered = filtered.filter(o => new Date(o.createdAt) >= new Date(startDate));
+    if (endDate) filtered = filtered.filter(o => new Date(o.createdAt) <= new Date(endDate));
     
     renderOrders(filtered);
   }
@@ -579,10 +508,8 @@
         <td>`;
       
       if (order.status === 'payment_received') {
-        html += `
-          <button class="action-btn action-approve" onclick="updateOrder(${order.id}, 'approved')"><i class="fas fa-check"></i> Approve</button>
-          <button class="action-btn action-reject" onclick="updateOrder(${order.id}, 'rejected')"><i class="fas fa-times"></i> Reject</button>
-        `;
+        html += `<button class="action-btn action-approve" onclick="updateOrder(${order.id}, 'approved')"><i class="fas fa-check"></i> Approve</button>
+                 <button class="action-btn action-reject" onclick="updateOrder(${order.id}, 'rejected')"><i class="fas fa-times"></i> Reject</button>`;
       } else {
         html += `<span style="color:#64748b;">-</span>`;
       }
@@ -590,8 +517,46 @@
       html += `</td></tr>`;
     });
     
-    html += `</tbody><tr>`;
+    html += `</tbody></table>`;
     document.getElementById('ordersTable').innerHTML = html;
+  }
+  
+  // Export to CSV with proper English format
+  function exportToCSV() {
+    const searchPhone = document.getElementById('searchPhone').value;
+    const status = document.getElementById('statusFilter').value;
+    
+    let filtered = [...allOrders];
+    if (searchPhone) filtered = filtered.filter(o => o.phone.includes(searchPhone));
+    if (status !== 'all') filtered = filtered.filter(o => o.status === status);
+    
+    // Headers in English
+    const headers = ['Order ID', 'Package', 'Phone', 'Price (KS)', 'Status', 'Order Date', 'Start Date', 'End Date'];
+    
+    // Format each row with English dates
+    const rows = filtered.map(o => [
+      o.id,
+      o.packageName,
+      o.phone,
+      o.price,
+      o.status === 'pending_payment' ? 'Pending' : o.status === 'payment_received' ? 'Paid' : o.status === 'approved' ? 'Active' : o.status === 'rejected' ? 'Rejected' : 'Expired',
+      formatEnglishDateForCSV(o.createdAt),
+      o.startDate ? formatEnglishDateForCSV(o.startDate) : '',
+      o.endDate ? formatEnglishDateForCSV(o.endDate) : ''
+    ]);
+    
+    // Create CSV content
+    const csvContent = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    
+    // Add BOM for UTF-8 to support Excel
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `orders_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showNotification('CSV exported successfully! Excel format ready.', 'success');
   }
   
   function toggleSelectAll() {
@@ -655,7 +620,6 @@
     } catch(err) { return false; }
   }
   
-  // Screenshot Viewer - Fetch screenshot from server
   async function viewScreenshot(orderId) {
     showNotification('Loading screenshot...', 'info');
     try {
@@ -678,32 +642,6 @@
     document.getElementById('screenshotModal').style.display = 'none';
   }
   
-  // Export to CSV
-  function exportToCSV() {
-    const searchPhone = document.getElementById('searchPhone').value;
-    const status = document.getElementById('statusFilter').value;
-    
-    let filtered = [...allOrders];
-    if (searchPhone) filtered = filtered.filter(o => o.phone.includes(searchPhone));
-    if (status !== 'all') filtered = filtered.filter(o => o.status === status);
-    
-    const headers = ['Order ID', 'Package', 'Phone', 'Price', 'Status', 'Date'];
-    const rows = filtered.map(o => [
-      o.id, o.packageName, o.phone, o.price, o.status, formatEnglishDate(o.createdAt)
-    ]);
-    
-    const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `orders_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showNotification('CSV exported successfully!');
-  }
-  
-  // Load Charts
   async function loadCharts() {
     const res = await fetch('/api/admin/orders?status=all', {
       headers: { 'x-admin-auth': ADMIN_PASSWORD }
@@ -712,7 +650,6 @@
     if (data.success) {
       const orders = data.orders;
       
-      // Daily orders (last 7 days)
       const last7Days = [];
       const dailyCounts = [];
       for (let i = 6; i >= 0; i--) {
@@ -732,7 +669,6 @@
         options: { responsive: true, maintainAspectRatio: true }
       });
       
-      // Package revenue
       const packageRevenue = {};
       orders.forEach(o => {
         if (o.status === 'approved') {
@@ -750,7 +686,6 @@
     }
   }
   
-  // Check expiring soon orders
   function checkExpiringSoon() {
     const expiringOrders = allOrders.filter(o => o.status === 'approved' && o.daysRemaining <= 5 && o.daysRemaining > 0);
     if (expiringOrders.length > 0) {
@@ -768,7 +703,6 @@
     showNotification(`Found ${expiringOrders.length} orders expiring soon`, 'info');
   }
   
-  // Notification system
   let lastOrderCount = 0;
   function startNotificationCheck() {
     setInterval(async () => {
@@ -793,13 +727,11 @@
     setTimeout(() => notif.remove(), 3000);
   }
   
-  // Theme toggle
   function toggleTheme() {
     document.body.classList.toggle('light-mode');
     showNotification('Theme changed!');
   }
   
-  // Navigation
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', () => {
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -824,7 +756,6 @@
     location.reload();
   }
   
-  // Make functions global
   window.updateOrder = updateOrder;
   window.viewScreenshot = viewScreenshot;
   window.closeModal = closeModal;
