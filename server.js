@@ -485,3 +485,20 @@ app.listen(PORT, async () => {
     console.log(`📡 Webhook: ${result.ok ? '✅' : '❌'}\n`);
   }
 });
+// Get screenshot URL for an order
+app.get('/api/admin/order-screenshot', (req, res) => {
+  const authToken = req.headers['x-admin-auth'];
+  if (authToken !== ADMIN_PASSWORD) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+  
+  const orderId = parseInt(req.query.orderId);
+  const order = orders.find(o => o.id === orderId);
+  
+  // Return placeholder - in real system, you'd store screenshot URLs
+  res.json({ 
+    success: true, 
+    screenshotUrl: order?.screenshotUrl || null,
+    message: order?.screenshotUrl ? 'Screenshot found' : 'No screenshot available'
+  });
+});
