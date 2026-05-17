@@ -26,7 +26,6 @@
       min-height: 100vh;
     }
     
-    /* 3D Canvas */
     #canvas-container {
       position: fixed;
       top: 0;
@@ -45,7 +44,7 @@
       padding: 1.5rem 1.2rem 3rem;
     }
     
-    /* Animated Logo */
+    /* ATH Animated Logo */
     .ath-logo {
       text-align: center;
       margin-bottom: 1rem;
@@ -82,14 +81,13 @@
     }
     
     @keyframes fadeInDown {
-      from {
-        opacity: 0;
-        transform: translateY(-30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(250,204,21,0.4); }
+      50% { box-shadow: 0 0 0 15px rgba(250,204,21,0); }
     }
     
     .hero { text-align: center; padding: 1rem 0; backdrop-filter: blur(8px); }
@@ -99,9 +97,9 @@
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      animation: glowPulse 2s ease-in-out infinite;
+      animation: textGlow 2s ease-in-out infinite;
     }
-    @keyframes glowPulse {
+    @keyframes textGlow {
       0%, 100% { text-shadow: 0 0 20px rgba(255,215,0,0.3); }
       50% { text-shadow: 0 0 40px rgba(255,215,0,0.6); }
     }
@@ -116,29 +114,142 @@
       margin-top: 1rem;
     }
     
-    .phone-card {
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(12px);
-      border-radius: 60px;
-      padding: 0.8rem 1.5rem;
-      max-width: 450px;
-      margin: 1.5rem auto;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      border: 1px solid rgba(250, 204, 21, 0.4);
+    /* Selection Alert */
+    .selection-alert {
+      background: rgba(250,204,21,0.2);
+      border: 1px solid #facc15;
+      border-radius: 12px;
+      padding: 0.8rem;
+      text-align: center;
+      margin: 1rem auto;
+      max-width: 500px;
+      display: none;
     }
-    .phone-card i { font-size: 1.3rem; color: #facc15; }
-    .phone-card input {
+    
+    /* Order Form Card */
+    .order-form-card {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(20px);
+      border-radius: 30px;
+      padding: 1.8rem;
+      margin: 2rem auto;
+      max-width: 550px;
+      border: 1px solid rgba(250, 204, 21, 0.3);
+      display: none;
+    }
+    
+    .order-form-card.show {
+      display: block;
+      animation: fadeInUp 0.5s ease;
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .selected-plan-info {
+      background: rgba(250,204,21,0.15);
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
+    
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      color: white;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    
+    .form-group input:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: #facc15;
+    }
+    
+    .file-upload-area {
+      border: 2px dashed #facc15;
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .file-upload-area:hover {
+      background: rgba(250,204,21,0.1);
+    }
+    
+    .preview-img {
+      max-width: 100%;
+      max-height: 150px;
+      margin-top: 10px;
+      border-radius: 10px;
+      display: none;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    
+    .btn-submit {
       flex: 1;
-      background: transparent;
+      background: linear-gradient(95deg, #22c55e, #16a34a);
       border: none;
-      padding: 0.9rem 0;
+      padding: 14px;
+      border-radius: 40px;
+      font-weight: 700;
       font-size: 1rem;
       color: white;
-      outline: none;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    .phone-card input::placeholder { color: #64748b; }
+    
+    .btn-submit:hover:not(:disabled) {
+      transform: scale(1.02);
+      box-shadow: 0 5px 18px rgba(34,197,94,0.4);
+    }
+    
+    .btn-cancel {
+      flex: 1;
+      background: linear-gradient(95deg, #ef4444, #dc2626);
+      border: none;
+      padding: 14px;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 1rem;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-cancel:hover {
+      transform: scale(1.02);
+      box-shadow: 0 5px 18px rgba(239,68,68,0.4);
+    }
+    
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
     
     .plans-grid {
       display: grid;
@@ -146,6 +257,7 @@
       gap: 1.5rem;
       margin: 2rem 0;
     }
+    
     .plan-card {
       background: rgba(10, 20, 35, 0.65);
       backdrop-filter: blur(12px);
@@ -155,11 +267,19 @@
       transition: all 0.35s ease;
       cursor: pointer;
     }
+    
     .plan-card:hover {
       transform: translateY(-6px);
       border-color: #facc15;
       box-shadow: 0 20px 35px -10px rgba(0,0,0,0.5), 0 0 15px rgba(250,204,21,0.2);
     }
+    
+    .plan-card.selected {
+      border-color: #facc15;
+      background: rgba(250,204,21,0.15);
+      box-shadow: 0 0 20px rgba(250,204,21,0.3);
+    }
+    
     .plan-title {
       font-size: 1.4rem;
       font-weight: 800;
@@ -191,7 +311,7 @@
       margin: 1rem 0 0.8rem;
     }
     .price small { font-size: 0.8rem; font-weight: 400; }
-    .buy-btn {
+    .select-plan-btn {
       background: linear-gradient(95deg, #facc15, #eab308);
       border: none;
       width: 100%;
@@ -203,9 +323,8 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    .buy-btn:hover {
+    .select-plan-btn:hover {
       transform: scale(1.02);
-      background: linear-gradient(95deg, #ffdb4d, #facc15);
       box-shadow: 0 5px 18px rgba(250,204,21,0.4);
     }
     
@@ -216,6 +335,7 @@
       padding: 2rem;
       margin: 3rem 0;
     }
+    
     .tracking-form {
       display: flex;
       gap: 1rem;
@@ -240,46 +360,6 @@
       cursor: pointer;
     }
     
-    .payment-section {
-      background: rgba(15,23,42,0.8);
-      backdrop-filter: blur(20px);
-      border-radius: 30px;
-      padding: 2rem;
-      margin-top: 2rem;
-      display: none;
-    }
-    .file-upload-area {
-      border: 2px dashed #facc15;
-      border-radius: 16px;
-      padding: 2rem;
-      text-align: center;
-      margin: 1rem 0;
-      cursor: pointer;
-    }
-    
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.95);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-    .modal-content {
-      background: #1e293b;
-      border-radius: 20px;
-      padding: 25px;
-      max-width: 400px;
-      width: 90%;
-      text-align: center;
-      border: 1px solid #facc15;
-    }
-    
-    /* Footer with Brand */
     .footer {
       text-align: center;
       margin-top: 4rem;
@@ -333,6 +413,7 @@
       z-index: 1100;
       display: none;
       font-size: 14px;
+      white-space: nowrap;
     }
     
     @media (max-width: 600px) {
@@ -342,6 +423,8 @@
       .ath-logo-icon { padding: 0.5rem 1.2rem; }
       .ath-logo-icon i { font-size: 1.2rem; }
       .ath-logo-icon span { font-size: 1rem; }
+      .toast { white-space: normal; text-align: center; max-width: 90%; }
+      .button-group { flex-direction: column; }
     }
   </style>
 </head>
@@ -365,13 +448,51 @@
     <div class="badge"><i class="fas fa-bolt"></i> 5G Ready · Trusted Service</div>
   </div>
 
-  <div class="phone-card">
-    <i class="fas fa-phone-alt"></i>
-    <input type="tel" id="phone" placeholder="📞 Enter phone number (09xxxxxxxxx)">
+  <!-- Selection Alert -->
+  <div id="selectionAlert" class="selection-alert">
+    <i class="fas fa-check-circle"></i> Please fill in your details below
   </div>
 
+  <!-- Order Form Card (shows after plan selection) -->
+  <div id="orderFormCard" class="order-form-card">
+    <div class="selected-plan-info" id="selectedPlanInfo">
+      <!-- Selected plan info will appear here -->
+    </div>
+    
+    <div class="form-group">
+      <label><i class="fas fa-phone-alt"></i> Phone Number</label>
+      <input type="tel" id="orderPhone" placeholder="09xxxxxxxxx">
+    </div>
+    
+    <div class="form-group">
+      <label><i class="fas fa-pencil-alt"></i> Note (Optional)</label>
+      <textarea id="orderNote" rows="2" placeholder="Any special requests or notes..."></textarea>
+    </div>
+    
+    <div class="form-group">
+      <label><i class="fas fa-image"></i> Payment Screenshot</label>
+      <div class="file-upload-area" onclick="document.getElementById('screenshotInput').click()">
+        <input type="file" id="screenshotInput" accept="image/*" style="display:none">
+        <i class="fas fa-cloud-upload-alt"></i> Click to upload KPay/WavePay screenshot
+        <img id="previewImg" class="preview-img">
+      </div>
+    </div>
+    
+    <div class="button-group">
+      <button class="btn-submit" id="submitOrderBtn">
+        <i class="fas fa-paper-plane"></i> Submit Order
+      </button>
+      <button class="btn-cancel" id="cancelOrderBtn">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+    </div>
+  </div>
+
+  <!-- Plans Grid -->
+  <h2 class="section-title" style="text-align:center; font-size:1.8rem; margin:2rem 0 1rem;">✨ Choose Your Plan</h2>
   <div class="plans-grid" id="plans-container"></div>
 
+  <!-- Tracking Section -->
   <div class="tracking-section">
     <h3 style="text-align:center; margin-bottom:1rem;"><i class="fas fa-search"></i> Track Your Order</h3>
     <div class="tracking-form">
@@ -381,20 +502,8 @@
     </div>
     <div id="trackResult" style="margin-top:1rem; display:none;"></div>
   </div>
-
-  <div id="paymentSection" class="payment-section">
-    <h3>💰 Complete Your Payment</h3>
-    <div id="orderInfo"></div>
-    <p>🏧 Pay to: <strong>KPay/WavePay 09789999368 (AUNG THU HTWE)</strong></p>
-    <div class="file-upload-area" onclick="document.getElementById('screenshotInput').click()">
-      <input type="file" id="screenshotInput" accept="image/*" style="display:none">
-      <i class="fas fa-cloud-upload-alt"></i> Click to upload payment screenshot
-      <img id="previewImg" style="max-width:100%; margin-top:10px; display:none">
-    </div>
-    <button id="submitPaymentBtn" class="buy-btn" style="background:#22c55e; color:white;">✅ Submit Payment</button>
-  </div>
   
-  <!-- Footer with Brand -->
+  <!-- Footer -->
   <div class="footer">
     <div class="brand-footer">
       <div class="ath-icon">
@@ -410,21 +519,9 @@
   </div>
 </div>
 
-<div id="orderModal" class="modal">
-  <div class="modal-content">
-    <h2>📋 Confirm Your Order</h2>
-    <div class="detail" id="modalPackage"></div>
-    <div class="detail" id="modalPrice"></div>
-    <div class="detail" id="modalPhone"></div>
-    <div class="modal-buttons" style="display:flex; gap:10px; margin-top:20px;">
-      <button onclick="closeModal()" style="flex:1; padding:10px; background:#334155; border:none; border-radius:8px; color:white;">Cancel</button>
-      <button id="confirmOrderBtn" style="flex:1; padding:10px; background:#facc15; border:none; border-radius:8px; font-weight:700;">Confirm</button>
-    </div>
-  </div>
-</div>
-
 <div id="toast" class="toast"></div>
 
+<!-- 3D Script -->
 <script type="module">
   import * as THREE from 'three';
 
@@ -441,7 +538,6 @@
   renderer.setClearColor(0x03050b, 1);
   container.appendChild(renderer.domElement);
   
-  // Lights
   const ambientLight = new THREE.AmbientLight(0x111122);
   scene.add(ambientLight);
   const dirLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -451,7 +547,6 @@
   goldLight.position.set(3, 1, 4);
   scene.add(goldLight);
   
-  // Main 3D Object - ATH Logo Style (Torus Knot)
   const geometry = new THREE.TorusKnotGeometry(1.2, 0.28, 200, 32, 3, 4);
   const material = new THREE.MeshStandardMaterial({
     color: 0xfacc15,
@@ -463,7 +558,6 @@
   const knot = new THREE.Mesh(geometry, material);
   scene.add(knot);
   
-  // Particles
   const particleCount = 1500;
   const particlesGeometry = new THREE.BufferGeometry();
   const positions = new Float32Array(particleCount * 3);
@@ -473,17 +567,10 @@
     positions[i*3+2] = (Math.random() - 0.5) * 80 - 40;
   }
   particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const particleMat = new THREE.PointsMaterial({
-    color: 0xfacc15,
-    size: 0.08,
-    transparent: true,
-    opacity: 0.4,
-    blending: THREE.AdditiveBlending
-  });
+  const particleMat = new THREE.PointsMaterial({ color: 0xfacc15, size: 0.08, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending });
   const stars = new THREE.Points(particlesGeometry, particleMat);
   scene.add(stars);
   
-  // Ring
   const ringGeo = new THREE.TorusGeometry(1.55, 0.03, 64, 500);
   const ringMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.8 });
   const ring = new THREE.Mesh(ringGeo, ringMat);
@@ -493,20 +580,15 @@
   function animate3D() {
     requestAnimationFrame(animate3D);
     time += 0.008;
-    
     knot.rotation.x += 0.005;
     knot.rotation.y += 0.008;
     knot.rotation.z += 0.003;
-    
     ring.rotation.x = Math.sin(time * 0.5) * 0.2;
     ring.rotation.y = time * 0.3;
-    
     stars.rotation.y += 0.0005;
-    
     camera.position.x += (0 - camera.position.x) * 0.03;
     camera.position.y += (1.5 - camera.position.y) * 0.03;
     camera.lookAt(0, 0, 0);
-    
     renderer.render(scene, camera);
   }
   animate3D();
@@ -518,8 +600,13 @@
   });
 </script>
 
+<!-- Order Logic Script -->
 <script>
-  // Order System
+  // Prevent multiple submissions
+  let isSubmitting = false;
+  let selectedPlan = null;
+  let selectedImageFile = null;
+  
   const plans = [
     { name: "VIP LEVEL - 1", icon: "🏆", features: ["22 GB (Data)", "8000 On-Net Mins", "5000 SMS"], price: 15000 },
     { name: "VIP LEVEL - 2", icon: "🏆", features: ["40 GB (Data)", "250 On-Net Mins", "25 Any Net Mins"], price: 20000 },
@@ -527,15 +614,14 @@
     { name: "VIP LEVEL - 4 (ULTRA)", icon: "💎", features: ["120 GB (High-Speed Data)"], price: 30000 }
   ];
   
-  let currentOrder = null;
-  let selectedImageFile = null;
-  
+  // Render plans
   function renderPlans() {
     const containerDiv = document.getElementById('plans-container');
     containerDiv.innerHTML = '';
     plans.forEach(plan => {
       const card = document.createElement('div');
       card.className = 'plan-card';
+      card.setAttribute('data-plan', plan.name);
       let featuresHtml = '';
       plan.features.forEach(f => {
         featuresHtml += `<li><i class="fas fa-bolt"></i> 🔹 ${f}</li>`;
@@ -544,125 +630,116 @@
         <div class="plan-title"><i class="fas fa-crown"></i> ${plan.icon} ${plan.name}</div>
         <ul class="feature-list">${featuresHtml}</ul>
         <div class="price">💰 ${plan.price.toLocaleString()} <small>KS</small></div>
-        <button class="buy-btn" data-plan="${plan.name}"><i class="fas fa-shopping-cart"></i> ORDER NOW</button>
+        <button class="select-plan-btn" data-plan="${plan.name}"><i class="fas fa-check-circle"></i> Select Plan</button>
       `;
       containerDiv.appendChild(card);
     });
     
-    document.querySelectorAll('.buy-btn').forEach(btn => {
+    // Add click handlers for select buttons
+    document.querySelectorAll('.select-plan-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const phone = document.getElementById('phone').value.trim();
-        if (!phone || phone.length < 9) {
-          showToast("⚠️ Please enter valid phone number!", "#f97316");
-          return;
-        }
         const planName = btn.getAttribute('data-plan');
-        showOrderModal(planName, phone);
+        selectPlan(planName);
       });
     });
   }
   
-  function showOrderModal(pkg, phone) {
-    const selectedPlan = plans.find(p => p.name === pkg);
+  // Select plan and show order form
+  function selectPlan(planName) {
+    selectedPlan = plans.find(p => p.name === planName);
     if (!selectedPlan) return;
     
-    document.getElementById('modalPackage').innerHTML = `📦 Package: ${pkg}`;
-    document.getElementById('modalPrice').innerHTML = `💰 Price: ${selectedPlan.price.toLocaleString()} KS`;
-    document.getElementById('modalPhone').innerHTML = `📞 Phone: ${phone}`;
+    // Highlight selected plan card
+    document.querySelectorAll('.plan-card').forEach(card => {
+      card.classList.remove('selected');
+    });
+    const selectedCard = Array.from(document.querySelectorAll('.plan-card')).find(
+      card => card.querySelector('.select-plan-btn')?.getAttribute('data-plan') === planName
+    );
+    if (selectedCard) selectedCard.classList.add('selected');
     
-    currentOrder = { packageName: pkg, price: selectedPlan.price, phone: phone };
-    document.getElementById('orderModal').style.display = 'flex';
+    // Show order form with selected plan info
+    document.getElementById('selectedPlanInfo').innerHTML = `
+      <i class="fas fa-gem" style="color:#facc15; font-size:1.2rem;"></i>
+      <strong style="color:#facc15;">${selectedPlan.icon} ${selectedPlan.name}</strong><br>
+      💰 Price: ${selectedPlan.price.toLocaleString()} KS
+    `;
+    
+    // Clear previous form data
+    document.getElementById('orderPhone').value = '';
+    document.getElementById('orderNote').value = '';
+    document.getElementById('previewImg').style.display = 'none';
+    document.getElementById('previewImg').src = '';
+    selectedImageFile = null;
+    document.getElementById('screenshotInput').value = '';
+    
+    // Show alert and form
+    document.getElementById('selectionAlert').style.display = 'block';
+    document.getElementById('orderFormCard').classList.add('show');
+    
+    // Scroll to form
+    document.getElementById('orderFormCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    showToast(`Selected: ${selectedPlan.name}`, "#facc15");
   }
   
-  function closeModal() {
-    document.getElementById('orderModal').style.display = 'none';
+  // Cancel order - reset form
+  function cancelOrder() {
+    selectedPlan = null;
+    selectedImageFile = null;
+    document.getElementById('orderFormCard').classList.remove('show');
+    document.getElementById('selectionAlert').style.display = 'none';
+    document.getElementById('previewImg').style.display = 'none';
+    document.getElementById('previewImg').src = '';
+    document.getElementById('screenshotInput').value = '';
+    document.getElementById('orderPhone').value = '';
+    document.getElementById('orderNote').value = '';
+    
+    // Remove highlight from plan cards
+    document.querySelectorAll('.plan-card').forEach(card => {
+      card.classList.remove('selected');
+    });
+    
+    showToast("Order cancelled", "#ef4444");
   }
   
-  async function confirmOrder() {
-    if (!currentOrder) return;
-    
-    const confirmBtn = document.getElementById('confirmOrderBtn');
-    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    confirmBtn.disabled = true;
-    
-    try {
-      const response = await fetch('/order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          packageName: currentOrder.packageName,
-          phone: currentOrder.phone
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        closeModal();
-        
-        document.getElementById('orderInfo').innerHTML = `
-          ✅ <strong>Order ID:</strong> ${data.orderId}<br>
-          📦 <strong>Package:</strong> ${currentOrder.packageName}<br>
-          📞 <strong>Phone:</strong> ${currentOrder.phone}<br>
-          💰 <strong>Amount:</strong> ${currentOrder.price.toLocaleString()} KS
-        `;
-        document.getElementById('paymentSection').style.display = 'block';
-        currentOrder.orderId = data.orderId;
-        
-        showToast(`✅ Order created! Please send payment screenshot.`, "#22c55e");
-        document.getElementById('phone').value = '';
-      } else {
-        showToast(`❌ ${data.message}`, "#ef4444");
-      }
-    } catch (err) {
-      showToast("❌ Network error. Please try again.", "#ef4444");
-    } finally {
-      confirmBtn.innerHTML = "Confirm Order";
-      confirmBtn.disabled = false;
+  // Submit order
+  async function submitOrder() {
+    // Prevent double submission
+    if (isSubmitting) {
+      showToast("Please wait, order is being processed...", "#f97316");
+      return;
     }
-  }
-  
-  const fileInput = document.getElementById('screenshotInput');
-  const previewImg = document.getElementById('previewImg');
-  
-  fileInput.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      selectedImageFile = file;
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        previewImg.src = event.target.result;
-        previewImg.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-    } else {
-      showToast("Please select an image file", "#f97316");
+    
+    // Validate
+    if (!selectedPlan) {
+      showToast("Please select a plan first!", "#f97316");
+      return;
     }
-  });
-  
-  async function submitPayment() {
-    if (!currentOrder || !currentOrder.orderId) {
-      showToast("Please create an order first", "#f97316");
+    
+    const phone = document.getElementById('orderPhone').value.trim();
+    if (!phone || phone.length < 9) {
+      showToast("Please enter a valid phone number (09xxxxxxxxx)", "#f97316");
       return;
     }
     
     if (!selectedImageFile) {
-      showToast("Please select a payment screenshot", "#f97316");
+      showToast("Please upload payment screenshot (KPay/WavePay)", "#f97316");
       return;
     }
     
-    const submitBtn = document.getElementById('submitPaymentBtn');
-    const originalText = submitBtn.innerText;
-    submitBtn.innerText = "Submitting...";
+    isSubmitting = true;
+    const submitBtn = document.getElementById('submitOrderBtn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
     submitBtn.disabled = true;
     
     const formData = new FormData();
-    formData.append('orderId', currentOrder.orderId);
-    formData.append('packageName', currentOrder.packageName);
-    formData.append('phone', currentOrder.phone);
+    formData.append('packageName', selectedPlan.name);
+    formData.append('phone', phone);
     formData.append('screenshot', selectedImageFile);
-    formData.append('note', document.getElementById('paymentNote')?.value || '');
+    formData.append('note', document.getElementById('orderNote').value || '');
     
     try {
       const response = await fetch('/submit-payment', {
@@ -673,25 +750,53 @@
       const result = await response.json();
       
       if (result.success) {
-        showToast("✅ Payment submitted! Admin will verify.", "#22c55e");
-        document.getElementById('paymentSection').style.display = 'none';
-        if (document.getElementById('paymentNote')) document.getElementById('paymentNote').value = '';
-        previewImg.style.display = 'none';
-        previewImg.src = '';
-        selectedImageFile = null;
-        fileInput.value = '';
-        currentOrder = null;
+        showToast("✅ Order submitted successfully! Admin will verify.", "#22c55e");
+        
+        // Reset form and go back to main page
+        cancelOrder();
+        
+        // Auto refresh tracking section - show order ID
+        const orderId = result.orderId || 'N/A';
+        document.getElementById('trackOrderId').value = orderId;
+        document.getElementById('trackPhone').value = phone;
+        
+        // Auto track after submission
+        setTimeout(() => {
+          trackOrder();
+        }, 500);
+        
       } else {
-        showToast(`❌ ${result.message}`, "#ef4444");
+        showToast(`❌ ${result.message || "Submission failed"}`, "#ef4444");
       }
-    } catch (err) {
-      showToast("❌ Failed to submit. Please try again.", "#ef4444");
+    } catch (error) {
+      console.error('Submit error:', error);
+      showToast("❌ Network error. Please try again.", "#ef4444");
     } finally {
-      submitBtn.innerText = originalText;
+      isSubmitting = false;
+      submitBtn.innerHTML = originalText;
       submitBtn.disabled = false;
     }
   }
   
+  // File upload preview
+  document.getElementById('screenshotInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      selectedImageFile = file;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const preview = document.getElementById('previewImg');
+        preview.src = event.target.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+      showToast("Screenshot loaded", "#22c55e");
+    } else {
+      showToast("Please select a valid image file", "#f97316");
+    }
+  });
+  
+  // Track order function
   async function trackOrder() {
     const orderId = document.getElementById('trackOrderId').value.trim();
     const phone = document.getElementById('trackPhone').value.trim();
@@ -774,15 +879,43 @@
     toast.style.display = 'block';
     setTimeout(() => {
       toast.style.display = 'none';
-    }, 4000);
+    }, 3000);
   }
   
-  document.getElementById('confirmOrderBtn').onclick = confirmOrder;
-  document.getElementById('submitPaymentBtn').onclick = submitPayment;
+  // Auto refresh tracking every 30 seconds (but don't auto-submit orders)
+  let autoRefreshInterval = null;
   
+  function startAutoRefresh() {
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    autoRefreshInterval = setInterval(() => {
+      const orderId = document.getElementById('trackOrderId').value;
+      const phone = document.getElementById('trackPhone').value;
+      if (orderId && phone) {
+        trackOrder();
+      }
+    }, 30000);
+  }
+  
+  // Initialize
   renderPlans();
+  startAutoRefresh();
+  
+  // Button handlers
+  document.getElementById('submitOrderBtn').onclick = submitOrder;
+  document.getElementById('cancelOrderBtn').onclick = cancelOrder;
+  
+  // Enter key support for phone input
+  document.getElementById('orderPhone').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      submitOrder();
+    }
+  });
+  
+  // Global functions for inline onclick
   window.trackOrder = trackOrder;
-  window.closeModal = closeModal;
+  window.cancelOrder = cancelOrder;
+  window.submitOrder = submitOrder;
+  window.selectPlan = selectPlan;
 </script>
 </body>
 </html>
