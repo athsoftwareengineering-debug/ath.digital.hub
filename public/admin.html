@@ -297,11 +297,12 @@
     .status-rejected { background: #ef444420; color: #ef4444; border: 1px solid #ef4444; }
     .status-expired { background: #64748b20; color: #64748b; border: 1px solid #64748b; }
     
-    /* Action Buttons - Clean & Uniform */
+    /* Action Buttons - Side by Side */
     .action-buttons {
       display: flex;
       gap: 8px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      align-items: center;
     }
     .action-btn {
       padding: 6px 14px;
@@ -314,6 +315,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      white-space: nowrap;
     }
     .action-approve { background: #22c55e20; color: #22c55e; border: 1px solid #22c55e; }
     .action-approve:hover { background: #22c55e; color: white; transform: scale(1.02); }
@@ -330,7 +332,7 @@
     .checkbox-col { width: 35px; text-align: center; }
     .checkbox-col input { transform: scale(1.1); cursor: pointer; }
     
-    /* Modal */
+    /* Screenshot Modal */
     .modal {
       display: none;
       position: fixed;
@@ -345,17 +347,39 @@
       background: #1e293b;
       border-radius: 24px;
       padding: 2rem;
-      max-width: 550px;
+      max-width: 600px;
       width: 90%;
       text-align: center;
     }
-    .modal-content img { max-width: 100%; border-radius: 16px; margin: 1rem 0; }
+    .modal-content h3 { margin-bottom: 1rem; color: #facc15; }
+    .modal-content img { 
+      max-width: 100%; 
+      max-height: 70vh;
+      border-radius: 16px; 
+      margin: 1rem 0;
+      border: 1px solid #334155;
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 1rem;
+    }
     .close-modal-btn {
       padding: 10px 20px;
       background: #334155;
       border: none;
       border-radius: 40px;
       color: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .download-modal-btn {
+      padding: 10px 20px;
+      background: #facc15;
+      border: none;
+      border-radius: 40px;
+      color: #0f172a;
       cursor: pointer;
       font-weight: 600;
     }
@@ -399,13 +423,30 @@
       z-index: 100;
     }
     
+    /* Screenshot column style */
+    .screenshot-preview {
+      width: 36px;
+      height: 36px;
+      background: #0f172a;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .screenshot-preview:hover {
+      background: #facc1520;
+      transform: scale(1.05);
+    }
+    .screenshot-preview i { font-size: 1rem; color: #3b82f6; }
+    
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .main-content { margin-left: 0; }
       .logout-btn { left: auto; right: 20px; bottom: 20px; }
       .footer-brand { bottom: 80px; }
-      .action-buttons { flex-direction: column; gap: 4px; }
-      .action-btn { justify-content: center; }
+      .action-buttons { flex-direction: row; flex-wrap: wrap; }
     }
   </style>
 </head>
@@ -488,12 +529,15 @@
   </div>
 </div>
 
-<!-- Screenshot Modal -->
+<!-- Screenshot Modal with Download -->
 <div id="screenshotModal" class="modal">
   <div class="modal-content">
     <h3><i class="fas fa-image"></i> Payment Screenshot</h3>
     <img id="screenshotImg" src="" alt="Screenshot">
-    <button class="close-modal-btn" onclick="closeModal()">Close</button>
+    <div class="modal-buttons">
+      <button class="download-modal-btn" id="downloadScreenshotBtn"><i class="fas fa-download"></i> Download</button>
+      <button class="close-modal-btn" onclick="closeModal()"><i class="fas fa-times"></i> Close</button>
+    </div>
   </div>
 </div>
 
@@ -502,6 +546,7 @@
   let allOrders = [];
   let selectedOrders = new Set();
   let dailyChart, packageChart;
+  let currentScreenshotUrl = null;
   
   // English Date Formatter
   function formatEnglishDate(dateString) {
@@ -601,7 +646,7 @@
       <th>Price</th>
       <th>Status</th>
       <th>Date</th>
-      <th>Screenshot</th>
+      <th>SS</th>
       <th>Action</th>
     </tr></thead><tbody>`;
     
@@ -622,10 +667,12 @@
         <td><strong>#${order.id}</strong></td>
         <td>${order.packageName}</td>
         <td>${order.phone}</td>
-        <td>${order.price.toLocaleString()} KS</td>
+        <td>${order.price.toLocaleString()} KS}</td>
         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
         <td style="font-size:0.8rem;">${formattedDate}</td>
-        <td><button class="action-btn action-view" onclick="viewScreenshot(${order.id})"><i class="fas fa-image"></i> View</button></td>
+        <td><div class="screenshot-preview" onclick="viewScreenshot(${order.id})" title="View Screenshot">
+          <i class="fas fa-image"></i>
+        </div></td>
         <td class="action-buttons">`;
       
       if (order.status === 'payment_received') {
@@ -704,6 +751,7 @@
     } catch(err) { return false; }
   }
   
+  // Screenshot Viewer - Store screenshot URL for download
   async function viewScreenshot(orderId) {
     showNotification('Loading screenshot...', 'info');
     try {
@@ -712,7 +760,8 @@
       });
       const data = await res.json();
       if (data.success && data.screenshotUrl) {
-        document.getElementById('screenshotImg').src = data.screenshotUrl;
+        currentScreenshotUrl = data.screenshotUrl;
+        document.getElementById('screenshotImg').src = currentScreenshotUrl;
         document.getElementById('screenshotModal').style.display = 'flex';
       } else {
         showNotification('No screenshot available for this order', 'error');
@@ -722,9 +771,25 @@
     }
   }
   
+  // Download screenshot
+  function downloadScreenshot() {
+    if (currentScreenshotUrl) {
+      const a = document.createElement('a');
+      a.href = currentScreenshotUrl;
+      a.download = `screenshot_${new Date().getTime()}.jpg`;
+      a.click();
+      showNotification('Downloading screenshot...', 'success');
+    } else {
+      showNotification('No screenshot to download', 'error');
+    }
+  }
+  
   function closeModal() {
     document.getElementById('screenshotModal').style.display = 'none';
+    currentScreenshotUrl = null;
   }
+  
+  document.getElementById('downloadScreenshotBtn').onclick = downloadScreenshot;
   
   function exportToCSV() {
     const searchPhone = document.getElementById('searchPhone').value;
