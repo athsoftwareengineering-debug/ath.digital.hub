@@ -44,7 +44,6 @@
       padding: 1.5rem 1.2rem 3rem;
     }
     
-    /* ATH Animated Logo */
     .ath-logo {
       text-align: center;
       margin-bottom: 1rem;
@@ -114,7 +113,6 @@
       margin-top: 1rem;
     }
     
-    /* Selection Alert */
     .selection-alert {
       background: rgba(250,204,21,0.2);
       border: 1px solid #facc15;
@@ -126,7 +124,6 @@
       display: none;
     }
     
-    /* Order Form Card */
     .order-form-card {
       background: rgba(15, 23, 42, 0.7);
       backdrop-filter: blur(20px);
@@ -433,7 +430,6 @@
 <div id="canvas-container"></div>
 
 <div class="content">
-  <!-- ATH Animated Logo -->
   <div class="ath-logo">
     <div class="ath-logo-icon">
       <i class="fas fa-globe"></i>
@@ -448,16 +444,12 @@
     <div class="badge"><i class="fas fa-bolt"></i> 5G Ready · Trusted Service</div>
   </div>
 
-  <!-- Selection Alert -->
   <div id="selectionAlert" class="selection-alert">
     <i class="fas fa-check-circle"></i> Please fill in your details below
   </div>
 
-  <!-- Order Form Card (shows after plan selection) -->
   <div id="orderFormCard" class="order-form-card">
-    <div class="selected-plan-info" id="selectedPlanInfo">
-      <!-- Selected plan info will appear here -->
-    </div>
+    <div class="selected-plan-info" id="selectedPlanInfo"></div>
     
     <div class="form-group">
       <label><i class="fas fa-phone-alt"></i> Phone Number</label>
@@ -488,11 +480,9 @@
     </div>
   </div>
 
-  <!-- Plans Grid -->
   <h2 class="section-title" style="text-align:center; font-size:1.8rem; margin:2rem 0 1rem;">✨ Choose Your Plan</h2>
   <div class="plans-grid" id="plans-container"></div>
 
-  <!-- Tracking Section -->
   <div class="tracking-section">
     <h3 style="text-align:center; margin-bottom:1rem;"><i class="fas fa-search"></i> Track Your Order</h3>
     <div class="tracking-form">
@@ -503,7 +493,6 @@
     <div id="trackResult" style="margin-top:1rem; display:none;"></div>
   </div>
   
-  <!-- Footer -->
   <div class="footer">
     <div class="brand-footer">
       <div class="ath-icon">
@@ -600,12 +589,14 @@
   });
 </script>
 
-<!-- Order Logic Script -->
+<!-- Order Logic Script - FIXED -->
 <script>
   // Prevent multiple submissions
   let isSubmitting = false;
   let selectedPlan = null;
   let selectedImageFile = null;
+  let createdOrderId = null;
+  let createdOrderPhone = null;
   
   const plans = [
     { name: "VIP LEVEL - 1", icon: "🏆", features: ["22 GB (Data)", "8000 On-Net Mins", "5000 SMS"], price: 15000 },
@@ -614,7 +605,6 @@
     { name: "VIP LEVEL - 4 (ULTRA)", icon: "💎", features: ["120 GB (High-Speed Data)"], price: 30000 }
   ];
   
-  // Render plans
   function renderPlans() {
     const containerDiv = document.getElementById('plans-container');
     containerDiv.innerHTML = '';
@@ -635,7 +625,6 @@
       containerDiv.appendChild(card);
     });
     
-    // Add click handlers for select buttons
     document.querySelectorAll('.select-plan-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -645,12 +634,10 @@
     });
   }
   
-  // Select plan and show order form
   function selectPlan(planName) {
     selectedPlan = plans.find(p => p.name === planName);
     if (!selectedPlan) return;
     
-    // Highlight selected plan card
     document.querySelectorAll('.plan-card').forEach(card => {
       card.classList.remove('selected');
     });
@@ -659,35 +646,33 @@
     );
     if (selectedCard) selectedCard.classList.add('selected');
     
-    // Show order form with selected plan info
     document.getElementById('selectedPlanInfo').innerHTML = `
       <i class="fas fa-gem" style="color:#facc15; font-size:1.2rem;"></i>
       <strong style="color:#facc15;">${selectedPlan.icon} ${selectedPlan.name}</strong><br>
       💰 Price: ${selectedPlan.price.toLocaleString()} KS
     `;
     
-    // Clear previous form data
     document.getElementById('orderPhone').value = '';
     document.getElementById('orderNote').value = '';
     document.getElementById('previewImg').style.display = 'none';
     document.getElementById('previewImg').src = '';
     selectedImageFile = null;
     document.getElementById('screenshotInput').value = '';
+    createdOrderId = null;
+    createdOrderPhone = null;
     
-    // Show alert and form
     document.getElementById('selectionAlert').style.display = 'block';
     document.getElementById('orderFormCard').classList.add('show');
-    
-    // Scroll to form
     document.getElementById('orderFormCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
     
     showToast(`Selected: ${selectedPlan.name}`, "#facc15");
   }
   
-  // Cancel order - reset form
   function cancelOrder() {
     selectedPlan = null;
     selectedImageFile = null;
+    createdOrderId = null;
+    createdOrderPhone = null;
     document.getElementById('orderFormCard').classList.remove('show');
     document.getElementById('selectionAlert').style.display = 'none';
     document.getElementById('previewImg').style.display = 'none';
@@ -696,7 +681,6 @@
     document.getElementById('orderPhone').value = '';
     document.getElementById('orderNote').value = '';
     
-    // Remove highlight from plan cards
     document.querySelectorAll('.plan-card').forEach(card => {
       card.classList.remove('selected');
     });
@@ -704,15 +688,99 @@
     showToast("Order cancelled", "#ef4444");
   }
   
-  // Submit order
+  // STEP 1: Create Order first
+  async function createOrder() {
+    if (!selectedPlan) {
+      showToast("Please select a plan first!", "#f97316");
+      return null;
+    }
+    
+    const phone = document.getElementById('orderPhone').value.trim();
+    if (!phone || phone.length < 9) {
+      showToast("Please enter a valid phone number (09xxxxxxxxx)", "#f97316");
+      return null;
+    }
+    
+    try {
+      showToast("Creating order...", "#3b82f6");
+      const response = await fetch('/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          packageName: selectedPlan.name,
+          phone: phone
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        createdOrderId = data.orderId;
+        createdOrderPhone = phone;
+        showToast(`Order #${createdOrderId} created! Now upload screenshot.`, "#22c55e");
+        return data.orderId;
+      } else {
+        showToast(`Failed to create order: ${data.message}`, "#ef4444");
+        return null;
+      }
+    } catch (error) {
+      console.error('Create order error:', error);
+      showToast("Network error. Please try again.", "#ef4444");
+      return null;
+    }
+  }
+  
+  // STEP 2: Submit payment with screenshot
+  async function submitPaymentWithScreenshot(orderId) {
+    if (!orderId) {
+      showToast("Order ID not found. Please try again.", "#ef4444");
+      return false;
+    }
+    
+    if (!selectedImageFile) {
+      showToast("Please upload payment screenshot", "#f97316");
+      return false;
+    }
+    
+    const phone = document.getElementById('orderPhone').value.trim();
+    const note = document.getElementById('orderNote').value || '';
+    
+    const formData = new FormData();
+    formData.append('orderId', orderId);
+    formData.append('packageName', selectedPlan.name);
+    formData.append('phone', phone);
+    formData.append('screenshot', selectedImageFile);
+    formData.append('note', note);
+    
+    try {
+      const response = await fetch('/submit-payment', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        showToast("✅ Payment submitted! Admin will verify.", "#22c55e");
+        return true;
+      } else {
+        showToast(`❌ ${result.message || "Submission failed"}`, "#ef4444");
+        return false;
+      }
+    } catch (error) {
+      console.error('Submit payment error:', error);
+      showToast("❌ Network error. Please try again.", "#ef4444");
+      return false;
+    }
+  }
+  
+  // Main submit function
   async function submitOrder() {
-    // Prevent double submission
     if (isSubmitting) {
       showToast("Please wait, order is being processed...", "#f97316");
       return;
     }
     
-    // Validate
     if (!selectedPlan) {
       showToast("Please select a plan first!", "#f97316");
       return;
@@ -732,45 +800,43 @@
     isSubmitting = true;
     const submitBtn = document.getElementById('submitOrderBtn');
     const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Order...';
     submitBtn.disabled = true;
     
-    const formData = new FormData();
-    formData.append('packageName', selectedPlan.name);
-    formData.append('phone', phone);
-    formData.append('screenshot', selectedImageFile);
-    formData.append('note', document.getElementById('orderNote').value || '');
-    
     try {
-      const response = await fetch('/submit-payment', {
-        method: 'POST',
-        body: formData
-      });
+      // Step 1: Create Order
+      const orderId = await createOrder();
+      if (!orderId) {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        isSubmitting = false;
+        return;
+      }
       
-      const result = await response.json();
+      // Step 2: Submit Payment with Screenshot
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting Screenshot...';
+      const success = await submitPaymentWithScreenshot(orderId);
       
-      if (result.success) {
-        showToast("✅ Order submitted successfully! Admin will verify.", "#22c55e");
+      if (success) {
+        // Reset form and show tracking
+        const finalPhone = document.getElementById('orderPhone').value.trim();
         
-        // Reset form and go back to main page
         cancelOrder();
         
-        // Auto refresh tracking section - show order ID
-        const orderId = result.orderId || 'N/A';
+        // Auto fill tracking
         document.getElementById('trackOrderId').value = orderId;
-        document.getElementById('trackPhone').value = phone;
+        document.getElementById('trackPhone').value = finalPhone;
         
         // Auto track after submission
         setTimeout(() => {
           trackOrder();
+          document.getElementById('tracking-section').scrollIntoView({ behavior: 'smooth' });
         }, 500);
-        
-      } else {
-        showToast(`❌ ${result.message || "Submission failed"}`, "#ef4444");
       }
+      
     } catch (error) {
       console.error('Submit error:', error);
-      showToast("❌ Network error. Please try again.", "#ef4444");
+      showToast("❌ Unexpected error. Please try again.", "#ef4444");
     } finally {
       isSubmitting = false;
       submitBtn.innerHTML = originalText;
@@ -778,7 +844,6 @@
     }
   }
   
-  // File upload preview
   document.getElementById('screenshotInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file && file.type.startsWith('image/')) {
@@ -796,7 +861,6 @@
     }
   });
   
-  // Track order function
   async function trackOrder() {
     const orderId = document.getElementById('trackOrderId').value.trim();
     const phone = document.getElementById('trackPhone').value.trim();
@@ -882,7 +946,6 @@
     }, 3000);
   }
   
-  // Auto refresh tracking every 30 seconds (but don't auto-submit orders)
   let autoRefreshInterval = null;
   
   function startAutoRefresh() {
@@ -896,22 +959,18 @@
     }, 30000);
   }
   
-  // Initialize
   renderPlans();
   startAutoRefresh();
   
-  // Button handlers
   document.getElementById('submitOrderBtn').onclick = submitOrder;
   document.getElementById('cancelOrderBtn').onclick = cancelOrder;
   
-  // Enter key support for phone input
   document.getElementById('orderPhone').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
       submitOrder();
     }
   });
   
-  // Global functions for inline onclick
   window.trackOrder = trackOrder;
   window.cancelOrder = cancelOrder;
   window.submitOrder = submitOrder;
