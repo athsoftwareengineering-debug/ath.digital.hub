@@ -64,24 +64,8 @@ try {
     db = getFirestore();
     useFirebase = true;
     console.log("✅ Firebase initialized");
-    
-    setTimeout(async () => {
-      await sendTelegramMessage(ADMIN_CHAT_ID, `
-✅ *Firebase ချိတ်ဆက်မှု အောင်မြင်ပါသည်*
-🔥 Database: Firebase (Cloud)
-💾 Data Persistence: ✅ Yes
-📅 အချိန်: ${getMyanmarTime()}
-      `);
-    }, 2000);
   } else {
     console.log("⚠️ Using in-memory storage");
-    setTimeout(async () => {
-      await sendTelegramMessage(ADMIN_CHAT_ID, `
-⚠️ *Firebase မချိတ်ဆက်ပါ*
-📁 Database: In-Memory
-💾 Server Restart ချိန်တွင် Data ပျက်နိုင်
-      `);
-    }, 2000);
   }
 } catch (error) {
   console.error("❌ Firebase init error:", error.message);
@@ -117,6 +101,11 @@ function getRemainingDays(expiredAt) {
   } catch (error) {
     return 0;
   }
+}
+
+function maskPhone(phone) {
+  if (!phone || phone.length < 9) return phone;
+  return phone.slice(0, 5) + '***' + phone.slice(-3);
 }
 
 // ========== DATABASE OPERATIONS ==========
@@ -216,16 +205,21 @@ async function updateOrderStatus(orderId, status, approvedAt = null, rejectReaso
   }
 }
 
-async function getAllOrders() {
+async function deleteOrder(orderId) {
   try {
     if (useFirebase && db) {
-      const snapshot = await db.collection('orders').orderBy('createdAt', 'desc').limit(100).get();
-      return snapshot.docs.map(doc => ({ id: parseInt(doc.id), ...doc.data() }));
+      await db.collection('orders').doc(orderId.toString()).delete();
+      return true;
     } else {
-      return ordersFallback;
+      const index = ordersFallback.findIndex(o => o.id == orderId);
+      if (index !== -1) {
+        ordersFallback.splice(index, 1);
+        return true;
+      }
+      return false;
     }
   } catch (error) {
-    return ordersFallback;
+    return false;
   }
 }
 
@@ -242,6 +236,19 @@ async function getOrdersByPhone(phone) {
     }
   } catch (error) {
     return ordersFallback.filter(o => o.phone === phone && o.status === 'approved');
+  }
+}
+
+async function getAllOrders() {
+  try {
+    if (useFirebase && db) {
+      const snapshot = await db.collection('orders').orderBy('createdAt', 'desc').limit(100).get();
+      return snapshot.docs.map(doc => ({ id: parseInt(doc.id), ...doc.data() }));
+    } else {
+      return ordersFallback;
+    }
+  } catch (error) {
+    return ordersFallback;
   }
 }
 
@@ -374,7 +381,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
 🆕 **အော်ဒါအသစ် + ငွေလွှဲပြေစာ** #${orderId}
 ━━━━━━━━━━━━━━━━━━━━
 📦 Package: ${order.packageName}
-📞 ဖုန်း: ${order.phone}
+📞 ဖုန်း: ${maskPhone(order.phone)}
 💰 ငွေပမာဏ: ${packageData.price.toLocaleString()} KS
 📝 မှတ်ချက်: ${note || "မရှိ"}
 📅 အချိန်: ${getMyanmarTime()}
@@ -415,16 +422,22 @@ app.get('/api/orders/:phone', async (req, res) => {
       const isExpired = daysLeft <= 0;
       
       let approvedAt = null;
-      let expiredAt = null;
-      
       if (order.approvedAt) {
         try {
-          approvedAt = getMyanmarTime(new Date(order.approvedAt));
+          const date = new Date(order.approvedAt);
+          if (!isNaN(date.getTime())) {
+            approvedAt = getMyanmarTime(date);
+          }
         } catch(e) { approvedAt = null; }
       }
+      
+      let expiredAt = null;
       if (order.expiredAt) {
         try {
-          expiredAt = getMyanmarTime(new Date(order.expiredAt));
+          const date = new Date(order.expiredAt);
+          if (!isNaN(date.getTime())) {
+            expiredAt = getMyanmarTime(date);
+          }
         } catch(e) { expiredAt = null; }
       }
       
@@ -432,6 +445,7 @@ app.get('/api/orders/:phone', async (req, res) => {
         id: order.id,
         packageName: order.packageName,
         price: order.price,
+        phone: maskPhone(order.phone),
         approvedAt: approvedAt,
         expiredAt: expiredAt,
         daysLeft: daysLeft,
@@ -441,7 +455,25 @@ app.get('/api/orders/:phone', async (req, res) => {
     
     res.json({ success: true, orders: result, count: result.length });
   } catch (error) {
+    console.error("API error:", error);
     res.json({ success: true, orders: [], count: 0 });
+  }
+});
+
+// Admin delete order endpoint
+app.delete('/api/admin/order/:id', async (req, res) => {
+  try {
+    const orderId = parseInt(req.params.id);
+    const adminKey = req.headers['admin-key'];
+    
+    if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'ATH_ADMIN_2024') {
+      return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+    
+    await deleteOrder(orderId);
+    res.json({ success: true, message: "Order deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
@@ -477,12 +509,13 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 ✅ **အတည်ပြုပြီး** - အော်ဒါ #${orderId}
 ━━━━━━━━━━━━━━━━━━━━
 📦 Package: ${order.packageName}
-📞 ဖုန်း: ${order.phone}
+📞 ဖုန်း: ${maskPhone(order.phone)}
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
 📅 စတင်ရက်: ${getMyanmarTime(approvedTime)}
 📅 ကုန်ဆုံးရက်: ${getMyanmarTime(expireDate)}
 ━━━━━━━━━━━━━━━━━━━━
-🎉 ဒေတာ သွင်းပေးပါမည်။
+🎉 ဒေတာ သွင်းပေးပါမည်။ ကျေးဇူးတင်ပါသည်။
+👤 အတည်ပြုသူ: 𝐀𝐃𝐌𝐈𝐍 𝐒𝐔𝐏𝐏𝐎𝐑𝐓 | 𝟐𝟒/𝟕
           `;
           
           await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
@@ -498,18 +531,22 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           
           if (GROUP_CHAT_ID) {
             await sendTelegramMessage(GROUP_CHAT_ID, `
-🚨 **ဒေတာသွင်းပြီးပါပြီ** 🚨
-✅ အော်ဒါ #${orderId}
-📞 ${order.phone}
-📦 ${order.packageName}
-💰 ${order.price.toLocaleString()} KS
+🚨 **ဒေတာသွင်းပြီးကြောင်း အကြောင်းကြားချက်** 🚨
+━━━━━━━━━━━━━━━━━━━━
+✅ အော်ဒါ #${orderId} အတွက် ဒေတာသွင်းပြီးပါပြီ။
+📞 ဖုန်းနံပါတ်: ${maskPhone(order.phone)}
+📦 Package: ${order.packageName}
+💰 ပမာဏ: ${order.price.toLocaleString()} KS
+⏰ သွင်းချိန်: ${getMyanmarTime(approvedTime)}
+━━━━━━━━━━━━━━━━━━━━
+👤 အတည်ပြုသူ: 𝐀𝐃𝐌𝐈𝐍 𝐒𝐔𝐏𝐏𝐎𝐑𝐓 | 𝟐𝟒/𝟕
             `);
           }
         }
         return res.sendStatus(200);
       }
       
-      // Reject Button
+      // Reject Button - ask for reason inline
       if (data.startsWith('reject_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = await getOrder(orderId);
@@ -522,7 +559,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               chat_id: chatId,
-              text: `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ။`,
+              text: `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ။\n\n📞 ${maskPhone(order.phone)}\n📦 ${order.packageName}\n💰 ${order.price.toLocaleString()} KS`,
               reply_markup: { force_reply: true, input_field_placeholder: "အကြောင်းရင်းရေးပါ..." }
             })
           });
@@ -546,7 +583,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📋 **အော်ဒါအသေးစိတ်** #${order.id}
 ━━━━━━━━━━━━━━━━━━━━
 📦 Package: ${order.packageName}
-📞 ဖုန်း: ${order.phone}
+📞 ဖုန်း: ${maskPhone(order.phone)}
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
 📊 အခြေအနေ: ${statusText}
           `;
@@ -576,7 +613,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           let msg = "📋 **ဆိုင်းငံ့ထားသော အော်ဒါများ**\n━━━━━━━━━━━━━━━━━━\n";
           const buttons = [];
           for (const order of pendingList.slice(0, 10)) {
-            msg += `💰 *#${order.id}* | ${order.packageName}\n   📞 ${order.phone}\n   💰 ${order.price.toLocaleString()} KS\n\n`;
+            msg += `💰 *#${order.id}* | ${order.packageName}\n   📞 ${maskPhone(order.phone)}\n   💰 ${order.price.toLocaleString()} KS\n\n`;
             buttons.push([{ text: `💰 အော်ဒါ #${order.id}`, callback_data: `detail_${order.id}` }]);
           }
           buttons.push([{ text: "🔙 ပင်မစာမျက်နှာ", callback_data: "back_to_menu" }]);
@@ -601,7 +638,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             else if (order.status === 'approved') emoji = '✅';
             else if (order.status === 'rejected') emoji = '❌';
             
-            msg += `${emoji} *#${order.id}* | ${order.packageName}\n   📞 ${order.phone}\n   💰 ${order.price.toLocaleString()} KS\n\n`;
+            msg += `${emoji} *#${order.id}* | ${order.packageName}\n   📞 ${maskPhone(order.phone)}\n   💰 ${order.price.toLocaleString()} KS\n\n`;
             buttons.push([{ text: `${emoji} အော်ဒါ #${order.id}`, callback_data: `detail_${order.id}` }]);
           }
           buttons.push([{ text: "🔙 ပင်မစာမျက်နှာ", callback_data: "back_to_menu" }]);
@@ -625,7 +662,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           let msg = "⚠️ **၇ ရက်အတွင်း သက်တမ်းကုန်မည့် အော်ဒါများ**\n━━━━━━━━━━━━━━━━━━\n";
           for (const order of nearExpire) {
             const days = getRemainingDays(order.expiredAt);
-            msg += `🔴 *#${order.id}* | ${order.packageName}\n   📞 ${order.phone}\n   ⏳ ကျန်: ${days} ရက်\n\n`;
+            msg += `🔴 *#${order.id}* | ${order.packageName}\n   📞 ${maskPhone(order.phone)}\n   ⏳ ကျန်: ${days} ရက်\n\n`;
           }
           await sendTelegramMessage(chatId, msg);
         }
@@ -698,24 +735,17 @@ ${stats.text}
       if (order && reason && !reason.startsWith('/')) {
         await updateOrderStatus(orderId, 'rejected', null, reason);
         
-        const rejectMsg = `
-❌ **ပယ်ဖျက်ပြီး** - အော်ဒါ #${orderId}
-━━━━━━━━━━━━━━━━━━━━
-📦 Package: ${order.packageName}
-📞 ဖုန်း: ${order.phone}
-💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
-📝 အကြောင်း: ${reason}
-        `;
-        
-        await sendTelegramMessage(ADMIN_CHAT_ID, rejectMsg);
-        
         if (GROUP_CHAT_ID) {
           await sendTelegramMessage(GROUP_CHAT_ID, `
-⚠️ **အော်ဒါပယ်ဖျက်ခြင်း**
-❌ အော်ဒါ #${orderId}
-📞 ${order.phone}
-📦 ${order.packageName}
-📝 အကြောင်း: ${reason}
+⚠️ **အော်ဒါပယ်ဖျက်ခြင်း** ⚠️
+━━━━━━━━━━━━━━━━━━━━
+❌ အော်ဒါ #${orderId} အား ပယ်ဖျက်လိုက်ပါသည်။
+📞 ဖုန်း: ${maskPhone(order.phone)}
+📦 Package: ${order.packageName}
+📝 အကြောင်းရင်း: ${reason}
+━━━━━━━━━━━━━━━━━━━━
+⚠️ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။
+👤 အတည်ပြုသူ: 𝐀𝐃𝐌𝐈𝐍 𝐒𝐔𝐏𝐏𝐎𝐑𝐓 | 𝟐𝟒/𝟕
           `);
         }
         
@@ -770,7 +800,8 @@ app.get('/test-bot', async (req, res) => {
 
 app.get('/orders-list', async (req, res) => {
   const orders = await getAllOrders();
-  res.json({ orders, count: orders.length });
+  const maskedOrders = orders.map(o => ({ ...o, phone: maskPhone(o.phone) }));
+  res.json({ orders: maskedOrders, count: maskedOrders.length });
 });
 
 app.get('/test-group', async (req, res) => {
