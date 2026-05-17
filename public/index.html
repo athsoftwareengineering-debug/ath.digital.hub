@@ -8,6 +8,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  
   <script type="importmap">
     {
       "imports": {
@@ -18,34 +22,13 @@
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
     body {
       font-family: 'Inter', sans-serif;
       background: radial-gradient(circle at 20% 30%, #0a0f1e, #03050b);
-      color: #e2e8f0;
+      color: white;
       overflow-x: hidden;
       min-height: 100vh;
     }
-    
-    /* ========== MYTEL OFFICIAL COLOR THEME ========== */
-    :root {
-      --primary: #facc15;
-      --primary-dark: #eab308;
-      --primary-light: #ffdb4d;
-      --success: #22c55e;
-      --danger: #ef4444;
-      --warning: #f97316;
-      --info: #3b82f6;
-      --bg-dark: #0f172a;
-      --bg-surface: #1e293b;
-      --border: #334155;
-      --text-primary: #f1f5f9;
-      --text-secondary: #94a3b8;
-    }
-    
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: var(--bg-dark); }
-    ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
     
     #canvas-container {
       position: fixed;
@@ -60,9 +43,9 @@
     .content {
       position: relative;
       z-index: 10;
-      max-width: 1400px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 1.5rem 2rem 3rem;
+      padding: 1.5rem 1.2rem 3rem;
     }
     
     /* ATH Logo */
@@ -72,11 +55,10 @@
       align-items: center;
       justify-content: center;
       gap: 12px;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      background: linear-gradient(135deg, #facc15, #eab308);
       padding: 0.8rem 2rem;
       border-radius: 60px;
       animation: glowPulse 2s ease-in-out infinite;
-      box-shadow: 0 10px 30px rgba(250,204,21,0.2);
     }
     .ath-logo-icon i { font-size: 1.8rem; color: #0f172a; animation: spin 4s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -97,11 +79,11 @@
       animation: textGlow 3s ease infinite;
     }
     @keyframes textGlow { 0%,100% { background-position: 0% 50%; text-shadow: 0 0 20px rgba(255,215,0,0.3); } 50% { background-position: 100% 50%; text-shadow: 0 0 40px rgba(255,215,0,0.6); } }
-    .tagline { color: var(--text-secondary); margin-top: 0.5rem; font-size: 1.1rem; }
+    .tagline { color: #94a3b8; margin-top: 0.5rem; font-size: 1.1rem; }
     .badge { display: inline-block; background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.5); border-radius: 40px; padding: 0.4rem 1.2rem; font-size: 0.8rem; margin-top: 1rem; }
     
     /* Selection Alert */
-    .selection-alert { background: rgba(250,204,21,0.15); border: 1px solid var(--primary); border-radius: 16px; padding: 1rem; text-align: center; margin: 1rem auto; max-width: 500px; display: none; backdrop-filter: blur(10px); }
+    .selection-alert { background: rgba(250,204,21,0.15); border: 1px solid #facc15; border-radius: 16px; padding: 1rem; text-align: center; margin: 1rem auto; max-width: 500px; display: none; backdrop-filter: blur(10px); }
     
     /* Order Form Card */
     .order-form-card {
@@ -120,11 +102,11 @@
     
     .selected-plan-info { background: rgba(250,204,21,0.1); border-radius: 20px; padding: 1rem; margin-bottom: 1.5rem; text-align: center; border: 1px solid rgba(250,204,21,0.2); }
     .form-group { margin-bottom: 1.2rem; }
-    .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 500; }
-    .form-group input, .form-group textarea { width: 100%; padding: 12px 16px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 14px; color: white; font-size: 0.95rem; font-family: inherit; transition: all 0.3s; }
-    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(250,204,21,0.1); }
+    .form-group label { display: block; margin-bottom: 0.5rem; color: #94a3b8; font-size: 0.85rem; font-weight: 500; }
+    .form-group input, .form-group textarea { width: 100%; padding: 12px 16px; background: #0f172a; border: 1px solid #334155; border-radius: 14px; color: white; font-size: 0.95rem; font-family: inherit; transition: all 0.3s; }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #facc15; box-shadow: 0 0 0 3px rgba(250,204,21,0.1); }
     
-    /* Payment Info Card - Smaller Size */
+    /* Payment Info Card */
     .payment-info-card {
       background: linear-gradient(135deg, #1e293b, #0f172a);
       border-radius: 16px;
@@ -132,90 +114,24 @@
       margin-bottom: 1.5rem;
       border: 1px solid rgba(250,204,21,0.3);
     }
-    .payment-info-title { text-align: center; margin-bottom: 0.8rem; font-size: 0.8rem; color: var(--primary); font-weight: 600; }
-    .payment-methods {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-      justify-content: center;
-    }
-    .payment-method {
-      flex: 1;
-      min-width: 150px;
-      background: var(--bg-dark);
-      border-radius: 14px;
-      padding: 0.8rem;
-      text-align: center;
-      border: 1px solid var(--border);
-      transition: all 0.3s;
-    }
-    .payment-method:hover { border-color: var(--primary); transform: translateY(-2px); }
-    .payment-method i { font-size: 1.3rem; margin-bottom: 0.3rem; color: var(--primary); }
+    .payment-info-title { text-align: center; margin-bottom: 0.8rem; font-size: 0.8rem; color: #facc15; font-weight: 600; }
+    .payment-methods { display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; }
+    .payment-method { flex: 1; min-width: 150px; background: #0f172a; border-radius: 14px; padding: 0.8rem; text-align: center; border: 1px solid #334155; transition: all 0.3s; }
+    .payment-method:hover { border-color: #facc15; transform: translateY(-2px); }
+    .payment-method i { font-size: 1.3rem; margin-bottom: 0.3rem; color: #facc15; }
     .payment-method .method-name { font-weight: 600; margin-bottom: 0.2rem; font-size: 0.8rem; }
-    .payment-number {
-      font-family: monospace;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--primary);
-      background: #0f172a;
-      padding: 0.2rem 0.6rem;
-      border-radius: 30px;
-      display: inline-block;
-      margin: 0.3rem 0;
-    }
-    .copy-btn {
-      background: var(--primary);
-      border: none;
-      padding: 4px 10px;
-      border-radius: 30px;
-      font-size: 0.65rem;
-      font-weight: 600;
-      color: #0f172a;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .copy-btn:hover { background: var(--primary-dark); transform: scale(1.02); }
+    .payment-number { font-family: monospace; font-size: 0.85rem; font-weight: 600; color: #facc15; background: #0f172a; padding: 0.2rem 0.6rem; border-radius: 30px; display: inline-block; margin: 0.3rem 0; }
+    .copy-btn { background: #facc15; border: none; padding: 4px 10px; border-radius: 30px; font-size: 0.65rem; font-weight: 600; color: #0f172a; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px; }
+    .copy-btn:hover { background: #eab308; transform: scale(1.02); }
     
-    .file-upload-area {
-      border: 2px dashed var(--primary);
-      border-radius: 16px;
-      padding: 1.2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
+    .file-upload-area { border: 2px dashed #facc15; border-radius: 16px; padding: 1.2rem; text-align: center; cursor: pointer; transition: all 0.3s; }
     .file-upload-area:hover { background: rgba(250,204,21,0.1); }
     .preview-img { max-width: 100%; max-height: 120px; margin-top: 10px; border-radius: 10px; display: none; }
     
     .button-group { display: flex; gap: 1rem; margin-top: 1.5rem; }
-    .btn-submit {
-      flex: 1;
-      background: linear-gradient(95deg, #22c55e, #16a34a);
-      border: none;
-      padding: 12px;
-      border-radius: 40px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: white;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
+    .btn-submit { flex: 1; background: linear-gradient(95deg, #22c55e, #16a34a); border: none; padding: 12px; border-radius: 40px; font-weight: 700; font-size: 0.9rem; color: white; cursor: pointer; transition: all 0.3s; }
     .btn-submit:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 5px 20px rgba(34,197,94,0.4); }
-    .btn-cancel {
-      flex: 1;
-      background: linear-gradient(95deg, #ef4444, #dc2626);
-      border: none;
-      padding: 12px;
-      border-radius: 40px;
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: white;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
+    .btn-cancel { flex: 1; background: linear-gradient(95deg, #ef4444, #dc2626); border: none; padding: 12px; border-radius: 40px; font-weight: 700; font-size: 0.9rem; color: white; cursor: pointer; transition: all 0.3s; }
     .btn-cancel:hover { transform: scale(1.02); box-shadow: 0 5px 20px rgba(239,68,68,0.4); }
     button:disabled { opacity: 0.6; cursor: not-allowed; }
     
@@ -231,18 +147,18 @@
     }
     .plan-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(250,204,21,0.1), transparent); transition: left 0.6s; }
     .plan-card:hover::before { left: 100%; }
-    .plan-card:hover { transform: translateY(-10px) scale(1.02); border-color: var(--primary); box-shadow: 0 25px 40px -12px rgba(0,0,0,0.6), 0 0 30px rgba(250,204,21,0.2); }
-    .plan-card.selected { border-color: var(--primary); background: rgba(250,204,21,0.12); box-shadow: 0 0 25px rgba(250,204,21,0.3); }
+    .plan-card:hover { transform: translateY(-10px) scale(1.02); border-color: #facc15; box-shadow: 0 25px 40px -12px rgba(0,0,0,0.6), 0 0 30px rgba(250,204,21,0.2); }
+    .plan-card.selected { border-color: #facc15; background: rgba(250,204,21,0.12); box-shadow: 0 0 25px rgba(250,204,21,0.3); }
     .plan-icon { font-size: 2.2rem; margin-bottom: 0.5rem; }
     .plan-title { font-size: 1.2rem; font-weight: 800; background: linear-gradient(120deg, #FFD700, #FFA500); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 0.8rem; }
     .feature-list { list-style: none; margin: 0.8rem 0; }
-    .feature-list li { padding: 0.4rem 0; font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
-    .feature-list li i { color: var(--primary); font-size: 0.7rem; width: 18px; }
-    .price { font-size: 1.6rem; font-weight: 800; color: var(--primary); margin: 0.8rem 0; }
+    .feature-list li { padding: 0.4rem 0; font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 8px; }
+    .feature-list li i { color: #facc15; font-size: 0.7rem; width: 18px; }
+    .price { font-size: 1.6rem; font-weight: 800; color: #facc15; margin: 0.8rem 0; }
     .price small { font-size: 0.7rem; font-weight: 400; }
     .select-plan-btn {
       width: 100%;
-      background: linear-gradient(95deg, var(--primary), var(--primary-dark));
+      background: linear-gradient(95deg, #facc15, #eab308);
       border: none;
       padding: 0.8rem;
       border-radius: 50px;
@@ -254,13 +170,19 @@
     }
     .select-plan-btn:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(250,204,21,0.4); }
     
-    /* Tracking Section */
-    .tracking-section { background: rgba(15,23,42,0.6); backdrop-filter: blur(20px); border-radius: 28px; padding: 1.8rem; margin: 2.5rem 0; }
+    /* Tracking Section - Real-time Sync */
+    .tracking-section {
+      background: rgba(15,23,42,0.6);
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 1.8rem;
+      margin: 2.5rem 0;
+    }
     .tracking-title { text-align: center; margin-bottom: 1.2rem; }
-    .auto-refresh-badge {
+    .sync-badge {
       display: inline-block;
-      background: rgba(250,204,21,0.2);
-      border: 1px solid var(--primary);
+      background: rgba(34,197,94,0.2);
+      border: 1px solid #22c55e;
       border-radius: 40px;
       padding: 0.2rem 0.7rem;
       font-size: 0.6rem;
@@ -268,113 +190,66 @@
       animation: pulse 2s infinite;
     }
     .tracking-form { display: flex; gap: 1rem; flex-wrap: wrap; max-width: 500px; margin: 0 auto; }
-    .tracking-form input { flex: 1; padding: 0.9rem; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 14px; color: white; font-size: 0.9rem; }
-    .tracking-form button { padding: 0.9rem 1.8rem; background: var(--primary); border: none; border-radius: 14px; font-weight: 700; cursor: pointer; transition: all 0.3s; color: #0f172a; }
-    .tracking-form button:hover { transform: scale(1.02); background: var(--primary-dark); }
+    .tracking-form input { flex: 1; padding: 0.9rem; background: #0f172a; border: 1px solid #334155; border-radius: 14px; color: white; font-size: 0.9rem; }
+    .tracking-form button { padding: 0.9rem 1.8rem; background: #facc15; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; transition: all 0.3s; color: #0f172a; }
+    .tracking-form button:hover { transform: scale(1.02); background: #eab308; }
     .track-result { margin-top: 1.2rem; display: none; }
-    .refresh-indicator { text-align: center; margin-top: 1rem; font-size: 0.7rem; color: var(--text-secondary); }
-    .refresh-indicator i { animation: spin 1s linear infinite; display: inline-block; }
+    .sync-indicator { text-align: center; margin-top: 0.8rem; font-size: 0.65rem; color: #22c55e; }
+    .sync-indicator i { animation: spin 1s linear infinite; display: inline-block; margin-right: 4px; }
     
-    /* Active Card - MYTEL Gold Theme */
+    /* Active Card */
     .order-card {
       background: rgba(15, 23, 42, 0.8);
       backdrop-filter: blur(10px);
       border-radius: 20px;
       padding: 1.2rem;
       margin-bottom: 1rem;
-      border: 1px solid var(--border);
+      border: 1px solid #334155;
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
     }
-    
     .order-card.active {
       background: rgba(0, 0, 0, 0.6);
-      border: 1px solid var(--primary);
-      box-shadow: 0 0 10px rgba(250,204,21,0.3), 0 0 20px rgba(250,204,21,0.2), inset 0 0 15px rgba(250,204,21,0.05);
+      border: 1px solid #facc15;
+      box-shadow: 0 0 10px rgba(250,204,21,0.3), 0 0 20px rgba(250,204,21,0.2);
       animation: neonPulse 2s ease-in-out infinite;
     }
-    
     @keyframes neonPulse {
-      0%, 100% { box-shadow: 0 0 5px rgba(250,204,21,0.3), 0 0 10px rgba(250,204,21,0.2); }
+      0%,100% { box-shadow: 0 0 5px rgba(250,204,21,0.3), 0 0 10px rgba(250,204,21,0.2); }
       50% { box-shadow: 0 0 20px rgba(250,204,21,0.5), 0 0 40px rgba(250,204,21,0.3); }
     }
-    
-    .order-card.active::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(to bottom, transparent 0%, rgba(250,204,21,0.08) 50%, transparent 100%);
-      animation: scan 4s linear infinite;
-      pointer-events: none;
-    }
-    
-    @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
-    
     .active-badge {
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: #0f172a;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
       padding: 4px 12px;
       border-radius: 40px;
       font-size: 0.65rem;
       font-weight: 700;
-      box-shadow: 0 2px 8px rgba(250,204,21,0.3);
       animation: badgePulse 1.5s ease-in-out infinite;
     }
-    
     @keyframes badgePulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); box-shadow: 0 4px 15px rgba(250,204,21,0.5); }
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.05); box-shadow: 0 4px 15px rgba(34,197,94,0.5); }
     }
-    
-    .active-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      background: rgba(250,204,21,0.15);
-      border-radius: 50%;
-      animation: iconRipple 2s ease-out infinite;
-    }
-    
-    @keyframes iconRipple {
-      0% { box-shadow: 0 0 0 0 rgba(250,204,21,0.4); }
-      70% { box-shadow: 0 0 0 10px rgba(250,204,21,0); }
-      100% { box-shadow: 0 0 0 0 rgba(250,204,21,0); }
-    }
-    
     .order-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 0.8rem; }
     .order-title { display: flex; align-items: center; gap: 8px; }
     .order-title h3 { font-size: 1rem; font-weight: 700; }
-    
     .countdown-progress { background: rgba(250,204,21,0.08); border-radius: 14px; padding: 0.8rem; margin-top: 0.8rem; border: 1px solid rgba(250,204,21,0.2); }
     .progress-bar-container { background: #1e293b; border-radius: 10px; height: 16px; overflow: hidden; margin: 0.4rem 0; }
-    .progress-bar-active { background: linear-gradient(90deg, var(--primary), var(--primary-dark)); border-radius: 10px; height: 100%; transition: width 0.5s ease; }
+    .progress-bar-active { background: linear-gradient(90deg, #facc15, #eab308); border-radius: 10px; height: 100%; transition: width 0.5s ease; }
     .days-remaining { display: flex; align-items: baseline; gap: 4px; }
-    .days-number { font-size: 1.5rem; font-weight: 800; color: var(--primary); text-shadow: 0 0 8px rgba(250,204,21,0.5); }
-    
-    .active-card-particles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; border-radius: 20px; }
-    .particle { position: absolute; width: 3px; height: 3px; background: var(--primary); border-radius: 50%; opacity: 0; animation: floatParticle 3s ease-in-out infinite; }
-    @keyframes floatParticle {
-      0% { opacity: 0; transform: translateY(0) translateX(0); }
-      20% { opacity: 0.5; }
-      80% { opacity: 0.5; }
-      100% { opacity: 0; transform: translateY(-30px) translateX(20px); }
-    }
+    .days-number { font-size: 1.5rem; font-weight: 800; color: #facc15; text-shadow: 0 0 8px rgba(250,204,21,0.5); }
     
     /* Footer */
-    .footer { text-align: center; margin-top: 3rem; padding: 1.5rem; border-top: 1px solid var(--border); }
+    .footer { text-align: center; margin-top: 3rem; padding: 1.5rem; border-top: 1px solid #334155; }
     .brand-footer { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
     .ath-icon { display: inline-flex; align-items: center; gap: 6px; font-size: 1rem; font-weight: 700; background: linear-gradient(135deg, #FFD700, #FFA500); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .ath-icon i { animation: spin 4s linear infinite; color: var(--primary); }
-    .copyright { font-size: 0.65rem; color: var(--text-secondary); line-height: 1.5; }
+    .ath-icon i { animation: spin 4s linear infinite; color: #facc15; }
+    .copyright { font-size: 0.65rem; color: #64748b; line-height: 1.5; }
     
     .toast {
       position: fixed;
@@ -446,7 +321,6 @@
       <textarea id="orderNote" rows="2" placeholder="Any special requests or notes..."></textarea>
     </div>
     
-    <!-- Payment Info Card - Smaller Size, MYTEL Gold Theme -->
     <div class="payment-info-card">
       <div class="payment-info-title"><i class="fas fa-credit-card"></i> Payment Methods</div>
       <div class="payment-methods">
@@ -463,7 +337,7 @@
           <button class="copy-btn" onclick="copyToClipboard('09789999368', 'WavePay')"><i class="fas fa-copy"></i> Copy</button>
         </div>
       </div>
-      <div style="text-align:center; margin-top:0.5rem; font-size:0.65rem; color:var(--text-secondary);">
+      <div style="text-align:center; margin-top:0.5rem; font-size:0.65rem; color:#64748b;">
         <i class="fas fa-user"></i> Account Name: AUNG THU HTWE
       </div>
     </div>
@@ -486,18 +360,19 @@
   <h2 class="section-title" style="text-align:center; font-size:1.8rem; margin:2rem 0 1rem;">✨ Choose Your Premium Plan</h2>
   <div class="plans-container" id="plans-container"></div>
 
+  <!-- Tracking Section with Real-time Sync -->
   <div class="tracking-section">
     <div class="tracking-title">
       <i class="fas fa-search"></i>
-      <h3>Track Your Orders <span class="auto-refresh-badge"><i class="fas fa-sync-alt"></i> Auto Refresh 30s</span></h3>
-      <p style="color:var(--text-secondary); font-size:0.75rem; margin-top:0.5rem;">Enter your phone number to check all your orders</p>
+      <h3>Track Your Orders <span class="sync-badge"><i class="fas fa-sync-alt"></i> Real-time Sync</span></h3>
+      <p style="color:#94a3b8; font-size:0.75rem; margin-top:0.5rem;">Enter your phone number to check all your orders (Auto updates when status changes)</p>
     </div>
     <div class="tracking-form">
       <input type="tel" id="trackPhone" placeholder="📞 Enter phone number (09xxxxxxxxx)">
       <button id="trackBtn" onclick="manualRefresh()"><i class="fas fa-chart-line"></i> Check Status</button>
     </div>
-    <div class="refresh-indicator" id="refreshIndicator">
-      <i class="fas fa-sync-alt"></i> Auto refreshing every 30 seconds
+    <div class="sync-indicator" id="syncIndicator">
+      <i class="fas fa-sync-alt"></i> Real-time sync active - orders update automatically
     </div>
     <div id="trackResult" class="track-result"></div>
   </div>
@@ -584,15 +459,30 @@
   });
 </script>
 
-<!-- Order Logic with Auto Refresh -->
+<!-- Firebase and Order Logic with Real-time Sync -->
 <script>
+  // ========== FIREBASE CONFIGURATION ==========
+  const firebaseConfig = {
+    apiKey: "AIzaSyCN7GMpY6dqGzVlMevMZPG76guq3DvQPd8",
+    authDomain: "mytelordersystem.firebaseapp.com",
+    projectId: "mytelordersystem",
+    storageBucket: "mytelordersystem.firebasestorage.app",
+    messagingSenderId: "366519284419",
+    appId: "1:366519284419:web:0044583e2ef8aa7260a876",
+    measurementId: "G-GEJ93W2RTY"
+  };
+  
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  console.log('🔥 Firebase Realtime Sync initialized');
+  
   let isSubmitting = false;
   let selectedPlan = null;
   let selectedImageFile = null;
   let createdOrderId = null;
-  let autoRefreshInterval = null;
   let currentTrackPhone = '';
-  let retryCount = 0;
+  let unsubscribeOrders = null;
   let refreshCount = 0;
   
   const plans = [
@@ -604,8 +494,8 @@
   
   function copyToClipboard(text, method) {
     navigator.clipboard.writeText(text).then(() => {
-      showToast(`${method} number copied: ${text}`, "success");
-    }).catch(() => showToast("Failed to copy", "error"));
+      showToast(`${method} number copied: ${text}`, "#22c55e");
+    }).catch(() => showToast("Failed to copy", "#ef4444"));
   }
   
   function renderPlans() {
@@ -646,8 +536,8 @@
     }
     
     document.getElementById('selectedPlanInfo').innerHTML = `
-      <i class="fas fa-gem" style="color:var(--primary);"></i>
-      <strong style="color:var(--primary);">${selectedPlan.icon} ${selectedPlan.name}</strong><br>
+      <i class="fas fa-gem" style="color:#facc15;"></i>
+      <strong style="color:#facc15;">${selectedPlan.icon} ${selectedPlan.name}</strong><br>
       💰 Price: ${selectedPlan.price.toLocaleString()} KS
     `;
     
@@ -661,7 +551,7 @@
     document.getElementById('selectionAlert').style.display = 'block';
     document.getElementById('orderFormCard').classList.add('show');
     document.getElementById('orderFormCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    showToast(`Selected: ${selectedPlan.name}`, "success");
+    showToast(`Selected: ${selectedPlan.name}`, "#facc15");
   }
   
   function cancelOrder() {
@@ -675,15 +565,15 @@
     document.getElementById('orderPhone').value = '';
     document.getElementById('orderNote').value = '';
     document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
-    showToast("Order cancelled", "error");
+    showToast("Order cancelled", "#ef4444");
   }
   
   async function createOrder() {
-    if (!selectedPlan) { showToast("Select a plan first!", "error"); return null; }
+    if (!selectedPlan) { showToast("Select a plan first!", "#f97316"); return null; }
     const phone = document.getElementById('orderPhone').value.trim();
-    if (!phone || phone.length < 9) { showToast("Valid phone number required", "error"); return null; }
+    if (!phone || phone.length < 9) { showToast("Valid phone number required", "#f97316"); return null; }
     try {
-      showToast("Creating order...", "info");
+      showToast("Creating order...", "#3b82f6");
       const res = await fetch('/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -692,15 +582,15 @@
       const data = await res.json();
       if (data.success) {
         createdOrderId = data.orderId;
-        showToast(`Order #${createdOrderId} created!`, "success");
+        showToast(`Order #${createdOrderId} created!`, "#22c55e");
         return data.orderId;
-      } else { showToast(`Failed: ${data.message}`, "error"); return null; }
-    } catch (error) { showToast("Network error", "error"); return null; }
+      } else { showToast(`Failed: ${data.message}`, "#ef4444"); return null; }
+    } catch (error) { showToast("Network error", "#ef4444"); return null; }
   }
   
   async function submitPayment(orderId) {
-    if (!orderId) { showToast("Order ID missing", "error"); return false; }
-    if (!selectedImageFile) { showToast("Upload screenshot", "error"); return false; }
+    if (!orderId) { showToast("Order ID missing", "#ef4444"); return false; }
+    if (!selectedImageFile) { showToast("Upload screenshot", "#f97316"); return false; }
     const phone = document.getElementById('orderPhone').value.trim();
     const note = document.getElementById('orderNote').value || '';
     const formData = new FormData();
@@ -712,17 +602,17 @@
     try {
       const res = await fetch('/submit-payment', { method: 'POST', body: formData });
       const result = await res.json();
-      if (result.success) { showToast("✅ Payment submitted!", "success"); return true; }
-      else { showToast(`❌ ${result.message}`, "error"); return false; }
-    } catch (error) { showToast("❌ Network error", "error"); return false; }
+      if (result.success) { showToast("✅ Payment submitted!", "#22c55e"); return true; }
+      else { showToast(`❌ ${result.message}`, "#ef4444"); return false; }
+    } catch (error) { showToast("❌ Network error", "#ef4444"); return false; }
   }
   
   async function submitOrder() {
-    if (isSubmitting) { showToast("Please wait...", "warning"); return; }
-    if (!selectedPlan) { showToast("Select a plan first!", "error"); return; }
+    if (isSubmitting) { showToast("Please wait...", "#f97316"); return; }
+    if (!selectedPlan) { showToast("Select a plan first!", "#f97316"); return; }
     const phone = document.getElementById('orderPhone').value.trim();
-    if (!phone || phone.length < 9) { showToast("Valid phone number required", "error"); return; }
-    if (!selectedImageFile) { showToast("Upload screenshot", "error"); return; }
+    if (!phone || phone.length < 9) { showToast("Valid phone number required", "#f97316"); return; }
+    if (!selectedImageFile) { showToast("Upload screenshot", "#f97316"); return; }
     
     isSubmitting = true;
     const btn = document.getElementById('submitOrderBtn');
@@ -740,7 +630,7 @@
           setTimeout(() => trackOrdersByPhone(), 500);
         }
       }
-    } catch (error) { showToast("Error", "error"); }
+    } catch (error) { showToast("Error", "#ef4444"); }
     finally { isSubmitting = false; btn.innerHTML = original; btn.disabled = false; }
   }
   
@@ -755,8 +645,8 @@
         preview.style.display = 'block';
       };
       reader.readAsDataURL(file);
-      showToast("Screenshot loaded", "success");
-    } else showToast("Select image file", "error");
+      showToast("Screenshot loaded", "#22c55e");
+    } else showToast("Select image file", "#f97316");
   });
   
   function formatDate(dateString) {
@@ -764,146 +654,154 @@
     return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
   }
   
+  // ========== REAL-TIME SYNC FUNCTION ==========
+  function startRealtimeSync(phone) {
+    // Stop previous listener if exists
+    if (unsubscribeOrders) {
+      unsubscribeOrders();
+      unsubscribeOrders = null;
+    }
+    
+    // Listen to Firestore for real-time updates
+    unsubscribeOrders = db.collection('orders')
+      .where('phone', '==', phone)
+      .orderBy('createdAt', 'desc')
+      .onSnapshot((snapshot) => {
+        const userOrders = [];
+        snapshot.forEach(doc => {
+          userOrders.push({ id: parseInt(doc.id), ...doc.data() });
+        });
+        
+        console.log(`🔄 Real-time update: ${userOrders.length} orders for ${phone}`);
+        renderSyncOrders(userOrders);
+        
+        // Update indicator
+        const indicator = document.getElementById('syncIndicator');
+        indicator.innerHTML = '<i class="fas fa-check-circle"></i> Synced just now - real-time updates active';
+        setTimeout(() => {
+          indicator.innerHTML = '<i class="fas fa-sync-alt"></i> Real-time sync active - orders update automatically';
+        }, 2000);
+      }, (error) => {
+        console.error('Firebase sync error:', error);
+      });
+  }
+  
+  function renderSyncOrders(orders) {
+    const resultDiv = document.getElementById('trackResult');
+    
+    if (!orders || orders.length === 0) {
+      resultDiv.innerHTML = `<div style="background:#0f172a; border-radius:20px; padding:1.5rem; text-align:center;">
+        <i class="fas fa-box-open" style="font-size:2.5rem; color:#64748b;"></i>
+        <p style="margin-top:0.8rem;">No orders found for this number.</p>
+      </div>`;
+      return;
+    }
+    
+    let html = `<div style="margin-bottom:0.8rem;"><h3><i class="fas fa-chart-line"></i> ${orders.length} order(s) found (Real-time)</h3></div>`;
+    
+    for (const order of orders) {
+      const isActive = order.status === 'approved';
+      const activeClass = isActive ? 'active' : '';
+      
+      let statusText = '', statusColor = '';
+      switch(order.status) {
+        case 'pending_payment': statusText = '⏳ Pending'; statusColor = '#f59e0b'; break;
+        case 'payment_received': statusText = '💰 Paid'; statusColor = '#3b82f6'; break;
+        case 'approved': statusText = '✅ Active'; statusColor = '#22c55e'; break;
+        case 'expired': statusText = '⏰ Expired'; statusColor = '#ef4444'; break;
+        case 'rejected': statusText = '❌ Rejected'; statusColor = '#ef4444'; break;
+        default: statusText = order.status; statusColor = '#94a3b8';
+      }
+      
+      const formattedDate = order.createdAt ? new Date(order.createdAt).toLocaleString('en-US', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: true
+      }) : 'N/A';
+      
+      let countdownHtml = '';
+      if (isActive && order.endDate) {
+        const remaining = Math.ceil((new Date(order.endDate) - new Date()) / (86400000));
+        const percent = Math.max(0, (remaining / 30) * 100);
+        const barColor = remaining <= 5 ? '#ef4444' : remaining <= 10 ? '#f59e0b' : '#22c55e';
+        
+        countdownHtml = `
+          <div class="countdown-progress">
+            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 0.4rem; font-size:0.7rem;">
+              <span><i class="fas fa-calendar-check"></i> ${formatDate(order.startDate)}</span>
+              <div class="days-remaining">
+                <span class="days-number">${remaining > 0 ? remaining : 0}</span>
+                <span>days left</span>
+              </div>
+              <span><i class="fas fa-calendar-times"></i> ${formatDate(order.endDate)}</span>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-active" style="width: ${percent}%;"></div>
+            </div>
+          </div>
+        `;
+      }
+      
+      html += `
+        <div class="order-card ${activeClass}">
+          <div class="order-header">
+            <div class="order-title">
+              ${isActive ? `<div class="active-icon"><i class="fas fa-check-circle" style="color: #facc15; font-size: 0.8rem;"></i></div>` : ''}
+              <h3><i class="fas fa-receipt"></i> Order #${order.id}</h3>
+            </div>
+            ${isActive ? 
+              `<div class="active-badge"><i class="fas fa-plug"></i> ACTIVE</div>` :
+              `<span style="background:${statusColor}20; border:1px solid ${statusColor}; padding:3px 10px; border-radius:20px; font-size:0.65rem;">${statusText}</span>`
+            }
+          </div>
+          
+          <div style="display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 0.5rem 0; font-size:0.8rem;">
+            <div><i class="fas fa-tag"></i> <strong>${order.packageName}</strong></div>
+            <div><i class="fas fa-phone"></i> ${order.phone}</div>
+            <div><i class="fas fa-money-bill"></i> ${order.price.toLocaleString()} KS</div>
+            <div><i class="fas fa-calendar"></i> ${formattedDate}</div>
+          </div>
+          ${countdownHtml}
+        </div>
+      `;
+    }
+    
+    resultDiv.innerHTML = html;
+    resultDiv.style.display = 'block';
+  }
+  
   async function trackOrdersByPhone() {
     const phone = document.getElementById('trackPhone').value.trim();
     const resultDiv = document.getElementById('trackResult');
-    if (!phone || phone.length < 9) { showToast("Enter valid phone number", "error"); return; }
+    
+    if (!phone || phone.length < 9) {
+      showToast("Enter valid phone number", "#f97316");
+      return;
+    }
     
     currentTrackPhone = phone;
     resultDiv.style.display = 'block';
-    resultDiv.innerHTML = '<div style="text-align:center; padding:1.5rem;"><i class="fas fa-spinner fa-spin"></i> Searching your orders...</div>';
+    resultDiv.innerHTML = '<div style="text-align:center; padding:1.5rem;"><i class="fas fa-spinner fa-spin"></i> Connecting to real-time sync...</div>';
     
-    try {
-      const res = await fetch('/api/admin/orders?status=all', {
-        headers: { 'x-admin-auth': 'mytel2024' }
-      });
-      const data = await res.json();
-      if (data.success) {
-        const userOrders = data.orders.filter(o => o.phone === phone);
-        if (userOrders.length === 0) {
-          resultDiv.innerHTML = `<div style="background:var(--bg-surface); border-radius:20px; padding:1.5rem; text-align:center;">
-            <i class="fas fa-box-open" style="font-size:2.5rem; color:var(--text-secondary);"></i>
-            <p style="margin-top:0.8rem;">No orders found for this number.</p>
-          </div>`;
-        } else {
-          userOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-          let html = `<div style="margin-bottom:0.8rem;"><h3><i class="fas fa-chart-line"></i> ${userOrders.length} order(s) found for ${phone}</h3></div>`;
-          
-          for (const order of userOrders) {
-            const isActive = order.status === 'approved';
-            const activeClass = isActive ? 'active' : '';
-            
-            let statusText = '', statusColor = '';
-            switch(order.status) {
-              case 'pending_payment': statusText = '⏳ Pending'; statusColor = '#f59e0b'; break;
-              case 'payment_received': statusText = '💰 Paid'; statusColor = '#3b82f6'; break;
-              case 'approved': statusText = '✅ Active'; statusColor = '#22c55e'; break;
-              case 'expired': statusText = '⏰ Expired'; statusColor = '#ef4444'; break;
-              case 'rejected': statusText = '❌ Rejected'; statusColor = '#ef4444'; break;
-              default: statusText = order.status; statusColor = 'var(--text-secondary)';
-            }
-            
-            const formattedDate = new Date(order.createdAt).toLocaleString('en-US', {
-              year: 'numeric', month: '2-digit', day: '2-digit',
-              hour: '2-digit', minute: '2-digit', hour12: true
-            });
-            
-            let countdownHtml = '';
-            if (isActive && order.endDate) {
-              const remaining = Math.ceil((new Date(order.endDate) - new Date()) / (86400000));
-              const percent = Math.max(0, (remaining / 30) * 100);
-              const barColor = remaining <= 5 ? '#ef4444' : remaining <= 10 ? '#f59e0b' : '#22c55e';
-              
-              countdownHtml = `
-                <div class="countdown-progress">
-                  <div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 0.4rem; font-size:0.7rem;">
-                    <span><i class="fas fa-calendar-check"></i> ${formatDate(order.startDate)}</span>
-                    <div class="days-remaining">
-                      <span class="days-number">${remaining > 0 ? remaining : 0}</span>
-                      <span>days left</span>
-                    </div>
-                    <span><i class="fas fa-calendar-times"></i> ${formatDate(order.endDate)}</span>
-                  </div>
-                  <div class="progress-bar-container">
-                    <div class="progress-bar-active" style="width: ${percent}%;"></div>
-                  </div>
-                </div>
-              `;
-            }
-            
-            html += `
-              <div class="order-card ${activeClass}">
-                ${isActive ? `
-                  <div class="active-card-particles">
-                    <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
-                    <div class="particle" style="left: 30%; animation-delay: 0.5s;"></div>
-                    <div class="particle" style="left: 60%; animation-delay: 1s;"></div>
-                    <div class="particle" style="left: 80%; animation-delay: 1.5s;"></div>
-                    <div class="particle" style="left: 90%; animation-delay: 2s;"></div>
-                  </div>
-                ` : ''}
-                
-                <div class="order-header">
-                  <div class="order-title">
-                    ${isActive ? `<div class="active-icon"><i class="fas fa-check-circle" style="color: var(--primary); font-size: 0.8rem;"></i></div>` : ''}
-                    <h3><i class="fas fa-receipt"></i> Order #${order.id}</h3>
-                  </div>
-                  ${isActive ? 
-                    `<div class="active-badge"><i class="fas fa-plug"></i> ACTIVE</div>` :
-                    `<span style="background:${statusColor}20; border:1px solid ${statusColor}; padding:3px 10px; border-radius:20px; font-size:0.65rem;">${statusText}</span>`
-                  }
-                </div>
-                
-                <div style="display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 0.5rem 0; font-size:0.8rem;">
-                  <div><i class="fas fa-tag"></i> <strong>${order.packageName}</strong></div>
-                  <div><i class="fas fa-phone"></i> ${order.phone}</div>
-                  <div><i class="fas fa-money-bill"></i> ${order.price.toLocaleString()} KS</div>
-                  <div><i class="fas fa-calendar"></i> ${formattedDate}</div>
-                </div>
-                ${countdownHtml}
-              </div>
-            `;
-          }
-          resultDiv.innerHTML = html;
-          retryCount = 0;
-        }
-      }
-    } catch (error) {
-      resultDiv.innerHTML = `<div style="background:#ef444420; border-radius:20px; padding:1.5rem; text-align:center;">❌ Error loading orders. Retrying...</div>`;
-      if (retryCount < 3) { retryCount++; setTimeout(() => trackOrdersByPhone(), 3000); }
-    }
+    // Start Firebase real-time listener
+    startRealtimeSync(phone);
+    
+    showToast(`🔔 Real-time tracking active for ${phone}`, "#22c55e");
   }
   
   function manualRefresh() {
-    if (currentTrackPhone) trackOrdersByPhone();
-    else {
+    if (currentTrackPhone) {
+      // Re-trigger the sync
+      startRealtimeSync(currentTrackPhone);
+    } else {
       const phone = document.getElementById('trackPhone').value.trim();
       if (phone) trackOrdersByPhone();
-      else showToast("Enter phone number first", "error");
+      else showToast("Enter phone number first", "#f97316");
     }
   }
   
-  function startAutoRefresh() {
-    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-    autoRefreshInterval = setInterval(() => {
-      if (currentTrackPhone) {
-        trackOrdersByPhone();
-        refreshCount++;
-        const indicator = document.getElementById('refreshIndicator');
-        indicator.innerHTML = `<i class="fas fa-sync-alt fa-spin"></i> Auto refreshed just now (${refreshCount} times)`;
-        setTimeout(() => {
-          indicator.innerHTML = `<i class="fas fa-sync-alt"></i> Auto refreshing every 30 seconds (${refreshCount} total)`;
-        }, 2000);
-      }
-    }, 30000);
-  }
-  
-  function showToast(msg, type = 'success') {
+  function showToast(msg, bgColor) {
     const toast = document.getElementById('toast');
-    if (type === 'error') toast.style.background = '#ef4444';
-    else if (type === 'warning') toast.style.background = '#f59e0b';
-    else if (type === 'info') toast.style.background = '#3b82f6';
-    else toast.style.background = '#22c55e';
+    toast.style.background = bgColor;
     toast.innerText = msg;
     toast.style.display = 'block';
     setTimeout(() => toast.style.display = 'none', 3000);
@@ -914,7 +812,6 @@
   });
   
   renderPlans();
-  startAutoRefresh();
   document.getElementById('submitOrderBtn').onclick = submitOrder;
   document.getElementById('cancelOrderBtn').onclick = cancelOrder;
   
