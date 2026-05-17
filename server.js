@@ -2,9 +2,8 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
-const cron = require('node-cron'); // npm install node-cron
+// ❌ node-cron မလိုတော့ဘူး
 
-// ========== အရင်ဆုံး app ကို ဖန်တီးပါ ==========
 const app = express();
 
 // ========== MIDDLEWARE ==========
@@ -69,6 +68,28 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
   }
 }
 
+async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
+  if (!BOT_TOKEN) return false;
+  try {
+    const formData = new FormData();
+    formData.append('chat_id', chatId);
+    formData.append('photo', new Blob([buffer], { type: 'image/jpeg' }), 'screenshot.jpg');
+    formData.append('caption', caption);
+    formData.append('parse_mode', 'Markdown');
+    if (keyboard) formData.append('reply_markup', JSON.stringify(keyboard));
+    
+    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+      method: 'POST',
+      body: formData
+    });
+    const result = await response.json();
+    return result.ok;
+  } catch (error) {
+    console.error("Telegram photo error:", error);
+    return false;
+  }
+}
+
 // ========== COUNTDOWN FUNCTIONS ==========
 function calculateRemainingDays(endDate) {
   const today = new Date();
@@ -79,6 +100,7 @@ function calculateRemainingDays(endDate) {
 }
 
 function updateAllOrdersRemainingDays() {
+  console.log('🔄 Running countdown check...');
   let updatedCount = 0;
   let expiredCount = 0;
   
@@ -115,7 +137,8 @@ function updateAllOrdersRemainingDays() {
           sendTelegramMessage(GROUP_CHAT_ID,
             `🔔 **သတိပေးချက်**\n\n` +
             `📞 ${order.phone}\n` +
-            `⏳ ဒေတာသက်တမ်း ကုန်ဆုံးရန် **${remaining} ရက်** သာကျန်ပါသည်။`
+            `⏳ ဒေတာသက်တမ်း ကုန်ဆုံးရန် **${remaining} ရက်** သာကျန်ပါသည်။\n` +
+            `💨 အခုပဲ ပြန်လည်မှာယူနိုင်ပါသည်။`
           );
         }
       }
@@ -127,7 +150,34 @@ function updateAllOrdersRemainingDays() {
   return { updatedCount, expiredCount };
 }
 
-// ========== API ENDPOINTS (app ကို သုံးပါ) ==========
+// ========== DAILY SCHEDULER (node-cron အစား) ==========
+function scheduleDailyTask() {
+  const now = new Date();
+  const next9AM = new Date();
+  next9AM.setHours(9, 0, 0, 0);
+  
+  if (now > next9AM) {
+    next9AM.setDate(next9AM.getDate() + 1);
+  }
+  
+  const msUntil9AM = next9AM - now;
+  console.log(`⏰ Next countdown check at: ${next9AM.toLocaleString()}`);
+  
+  setTimeout(() => {
+    updateAllOrdersRemainingDays();
+    scheduleDailyTask(); // Schedule next day
+  }, msUntil9AM);
+}
+
+// Start the daily scheduler
+scheduleDailyTask();
+
+// Run once on startup
+setTimeout(() => {
+  updateAllOrdersRemainingDays();
+}, 5000);
+
+// ========== API ENDPOINTS ==========
 
 // Order endpoint
 app.post('/order', async (req, res) => {
@@ -149,7 +199,6 @@ app.post('/order', async (req, res) => {
       status: "pending_payment",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      // Countdown fields
       startDate: null,
       endDate: null,
       daysRemaining: null,
@@ -158,7 +207,7 @@ app.post('/order', async (req, res) => {
     };
     orders.unshift(newOrder);
     
-    console.log(`📦 Order #${newOrder.id} created`);
+    console.log(`📦 Order #${newOrder.id} created for ${phone}`);
     
     res.json({ 
       success: true, 
@@ -208,7 +257,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     const keyboard = {
       inline_keyboard: [
         [
-          { text: "✅ အတည်ပြုမည် (စတင်မည်)", callback_data: `approve_${orderId}` },
+          { text: "✅ အတည်ပြုမည် (30 ရက် စတင်မည်)", callback_data: `approve_${orderId}` },
           { text: "❌ ပယ်ဖျက်မည်", callback_data: `reject_${orderId}` }
         ]
       ]
@@ -228,7 +277,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   }
 });
 
-// ✅ TRACK ORDER ENDPOINT (ဒါကို ထည့်ပါ)
+// Track order endpoint
 app.get('/api/track-order', (req, res) => {
   const { orderId, phone } = req.query;
   
@@ -268,40 +317,7 @@ app.get('/api/track-order', (req, res) => {
   });
 });
 
-// ✅ Admin Approve endpoint (Countdown စတင်မယ်)
-app.post('/api/admin/approve-order', (req, res) => {
-  const { orderId } = req.body;
-  const order = orders.find(o => o.id === parseInt(orderId));
-  
-  if (!order) {
-    return res.status(404).json({ success: false, message: "Order not found" });
-  }
-  
-  const startDate = new Date();
-  const endDate = new Date();
-  endDate.setDate(endDate.getDate() + 30);
-  
-  order.startDate = startDate.toISOString();
-  order.endDate = endDate.toISOString();
-  order.daysRemaining = 30;
-  order.status = 'approved';
-  order.updatedAt = new Date().toISOString();
-  order.lastAlertDay = null;
-  order.isExpired = false;
-  
-  sendTelegramMessage(ADMIN_CHAT_ID,
-    `✅ **အော်ဒါအတည်ပြုပြီး Countdown စတင်ပါပြီ**\n\n` +
-    `📞 ဖုန်း: ${order.phone}\n` +
-    `📦 Package: ${order.packageName}\n` +
-    `📅 စတင်ရက်: ${startDate.toLocaleDateString('my-MM')}\n` +
-    `📅 ကုန်ဆုံးရက်: ${endDate.toLocaleDateString('my-MM')}\n` +
-    `⏳ 30 ရက်တိတိ`
-  );
-  
-  res.json({ success: true, order });
-});
-
-// Active orders list (for admin)
+// Admin endpoints
 app.get('/api/admin/active-orders', (req, res) => {
   const activeOrders = orders
     .filter(o => o.status === 'approved' && !o.isExpired)
@@ -319,44 +335,9 @@ app.get('/api/admin/active-orders', (req, res) => {
   res.json({ success: true, orders: activeOrders, count: activeOrders.length });
 });
 
-// Get all orders
 app.get('/orders-list', (req, res) => {
   res.json({ orders: orders, count: orders.length });
 });
-
-// ========== CRON JOB (နေ့စဉ် ပြေးမယ်) ==========
-cron.schedule('0 9 * * *', () => {
-  console.log('🔄 Running daily countdown check...');
-  updateAllOrdersRemainingDays();
-});
-
-// Run once on startup
-setTimeout(() => {
-  updateAllOrdersRemainingDays();
-}, 5000);
-
-// ========== TELEGRAM PHOTO FUNCTION ==========
-async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
-  if (!BOT_TOKEN) return false;
-  try {
-    const formData = new FormData();
-    formData.append('chat_id', chatId);
-    formData.append('photo', new Blob([buffer], { type: 'image/jpeg' }), 'screenshot.jpg');
-    formData.append('caption', caption);
-    formData.append('parse_mode', 'Markdown');
-    if (keyboard) formData.append('reply_markup', JSON.stringify(keyboard));
-    
-    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-      method: 'POST',
-      body: formData
-    });
-    const result = await response.json();
-    return result.ok;
-  } catch (error) {
-    console.error("Telegram photo error:", error);
-    return false;
-  }
-}
 
 // ========== TELEGRAM WEBHOOK ==========
 app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
@@ -375,9 +356,8 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       
       if (data.startsWith('approve_')) {
         const orderId = parseInt(data.split('_')[1]);
-        
-        // Call approve endpoint
         const order = orders.find(o => o.id === orderId);
+        
         if (order) {
           const startDate = new Date();
           const endDate = new Date();
@@ -388,8 +368,14 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           order.daysRemaining = 30;
           order.status = 'approved';
           order.isExpired = false;
+          order.lastAlertDay = null;
           
-          await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး Countdown 30 ရက် စတင်ပါပြီ။`);
+          await sendTelegramMessage(chatId, 
+            `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး Countdown 30 ရက် စတင်ပါပြီ။\n\n` +
+            `📞 ${order.phone}\n` +
+            `📦 ${order.packageName}\n` +
+            `📅 ကုန်ဆုံးရက်: ${endDate.toLocaleDateString('my-MM')}`
+          );
           
           if (GROUP_CHAT_ID) {
             await sendTelegramMessage(GROUP_CHAT_ID,
@@ -419,27 +405,27 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
   }
 });
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // ========== SERVER START ==========
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅ Set' : '❌ Missing'}`);
   console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
+  console.log(`👥 GROUP_CHAT_ID: ${GROUP_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
   
-  // Set webhook
   if (BOT_TOKEN) {
     const webhookUrl = `https://ath-digital-hub.onrender.com/webhook/${BOT_TOKEN}`;
     try {
       const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${webhookUrl}`);
       const result = await response.json();
-      console.log("Webhook set:", result.ok ? "✅ Success" : "❌ Failed");
+      console.log("Webhook set:", result.ok ? "✅ Success" : "❌ Failed", result.description);
     } catch (error) {
       console.error("Webhook error:", error);
     }
   }
-});
-
-// Root endpoint
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
