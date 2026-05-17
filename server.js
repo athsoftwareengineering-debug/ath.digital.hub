@@ -26,37 +26,26 @@ const PACKAGES = {
   "VIP LEVEL - 4 (ULTRA)": { price: 30000, desc: "120GB High-Speed Data" }
 };
 
-// ========== TELEGRAM SEND FUNCTION (FIXED) ==========
+// ========== TELEGRAM SEND FUNCTION ==========
 async function sendTelegramMessage(chatId, text, keyboard = null) {
-  // Log for debugging
-  console.log(`📤 Attempting to send to chatId: ${chatId}`);
-  console.log(`📝 Message: ${text.substring(0, 100)}...`);
-  
-  // Check if token exists
   if (!BOT_TOKEN) {
-    console.error("❌ BOT_TOKEN is missing! Please set it in environment variables.");
+    console.error("❌ BOT_TOKEN missing");
     return false;
   }
   
   if (!chatId) {
-    console.error("❌ CHAT_ID is missing! Please set it in environment variables.");
+    console.error("❌ CHAT_ID missing");
     return false;
   }
   
   try {
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-    
     const body = {
       chat_id: chatId,
       text: text,
       parse_mode: 'Markdown'
     };
-    
-    if (keyboard) {
-      body.reply_markup = JSON.stringify(keyboard);
-    }
-    
-    console.log(`🌐 Sending request to Telegram API...`);
+    if (keyboard) body.reply_markup = JSON.stringify(keyboard);
     
     const response = await fetch(url, {
       method: 'POST',
@@ -65,102 +54,85 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
     });
     
     const result = await response.json();
-    
-    if (result.ok) {
-      console.log(`✅ Message sent successfully to ${chatId}`);
-      return true;
-    } else {
-      console.error(`❌ Telegram API Error: ${result.description}`);
-      return false;
-    }
+    console.log(`Telegram send: ${result.ok ? '✅' : '❌'}`, result.description || '');
+    return result.ok;
   } catch (error) {
-    console.error(`❌ Network Error: ${error.message}`);
+    console.error("Telegram error:", error);
     return false;
   }
 }
 
-// Send photo to Telegram
-async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
-  console.log(`📸 Sending photo to ${chatId}...`);
+// ========== TEST TELEGRAM ENDPOINT ==========
+app.get('/test-telegram', async (req, res) => {
+  console.log("🔧 Test endpoint called");
   
   if (!BOT_TOKEN) {
-    console.error("❌ BOT_TOKEN is missing!");
-    return false;
+    return res.json({
+      success: false,
+      error: "BOT_TOKEN not set",
+      botTokenSet: false,
+      adminChatIdSet: !!ADMIN_CHAT_ID
+    });
   }
   
+  if (!ADMIN_CHAT_ID) {
+    return res.json({
+      success: false,
+      error: "CHAT_ID not set",
+      botTokenSet: true,
+      adminChatIdSet: false
+    });
+  }
+  
+  const testMessage = `
+🤖 *MYTEL Bot Test*
+━━━━━━━━━━━━━━━━━━
+✅ Bot is working!
+📅 Time: ${new Date().toLocaleString()}
+👤 Admin ID: ${ADMIN_CHAT_ID}
+━━━━━━━━━━━━━━━━━━
+If you see this, setup is correct!
+  `;
+  
   try {
-    const formData = new FormData();
-    formData.append('chat_id', chatId);
-    formData.append('photo', new Blob([buffer], { type: 'image/jpeg' }), 'screenshot.jpg');
-    formData.append('caption', caption);
-    formData.append('parse_mode', 'Markdown');
-    
-    if (keyboard) {
-      formData.append('reply_markup', JSON.stringify(keyboard));
-    }
-    
-    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+    const response = await fetch(url, {
       method: 'POST',
-      body: formData
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: ADMIN_CHAT_ID,
+        text: testMessage,
+        parse_mode: 'Markdown'
+      })
     });
     
     const result = await response.json();
     
-    if (result.ok) {
-      console.log(`✅ Photo sent successfully to ${chatId}`);
-      return true;
-    } else {
-      console.error(`❌ Telegram Photo Error: ${result.description}`);
-      return false;
-    }
+    res.json({
+      success: result.ok,
+      message: result.ok ? "Test message sent to Telegram!" : result.description,
+      botTokenSet: true,
+      adminChatIdSet: true,
+      telegramResponse: result
+    });
+    
   } catch (error) {
-    console.error(`❌ Photo Send Error: ${error.message}`);
-    return false;
+    res.json({
+      success: false,
+      error: error.message,
+      botTokenSet: true,
+      adminChatIdSet: true
+    });
   }
-}
-
-// ========== TEST TELEGRAM CONNECTION ==========
-app.get('/test-telegram', async (req, res) => {
-  console.log("🔧 Testing Telegram connection...");
-  
-  const testMessage = `
-🤖 *MYTEL Bot Connection Test*
-━━━━━━━━━━━━━━━━━━━━
-✅ Bot is working properly!
-📅 Time: ${new Date().toLocaleString()}
-🔧 Status: Connected
-━━━━━━━━━━━━━━━━━━━━
-If you see this, the bot is configured correctly!
-  `;
-  
-  const adminResult = await sendTelegramMessage(ADMIN_CHAT_ID, testMessage);
-  
-  let groupResult = false;
-  if (GROUP_CHAT_ID) {
-    groupResult = await sendTelegramMessage(GROUP_CHAT_ID, testMessage);
-  }
-  
-  res.json({
-    success: adminResult,
-    botTokenSet: !!BOT_TOKEN,
-    adminChatIdSet: !!ADMIN_CHAT_ID,
-    groupChatIdSet: !!GROUP_CHAT_ID,
-    adminMessageSent: adminResult,
-    groupMessageSent: groupResult,
-    botToken: BOT_TOKEN ? `${BOT_TOKEN.substring(0, 10)}...` : null,
-    adminChatId: ADMIN_CHAT_ID,
-    groupChatId: GROUP_CHAT_ID
-  });
 });
 
 // ========== ORDER ENDPOINT ==========
 app.post('/order', async (req, res) => {
   try {
     const { packageName, phone } = req.body;
-    console.log(`📦 New order request: ${packageName} for ${phone}`);
     
     if (!packageName || !phone) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+      return res.status(400).json({ success: false, message: "Missing fields" });
     }
     
     const packageData = PACKAGES[packageName];
@@ -175,136 +147,39 @@ app.post('/order', async (req, res) => {
       price: packageData.price,
       status: "pending_payment",
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      startDate: null,
-      endDate: null,
-      daysRemaining: null,
-      isExpired: false,
-      lastAlertDay: null
+      updatedAt: new Date().toISOString()
     };
     orders.unshift(newOrder);
     
-    console.log(`✅ Order #${newOrder.id} created`);
-    
-    // 📤 Send notification to Admin via Telegram
+    // Send to admin
     const adminMessage = `
-🆕 *New Order Created* #${newOrder.id}
+🆕 *New Order* #${newOrder.id}
 ━━━━━━━━━━━━━━━━━━━━
 📦 Package: ${packageName}
 📞 Phone: ${phone}
 💰 Price: ${packageData.price.toLocaleString()} KS
 📅 Time: ${new Date().toLocaleString()}
-━━━━━━━━━━━━━━━━━━━━
-⏳ Status: Waiting for payment
     `;
     
-    const sent = await sendTelegramMessage(ADMIN_CHAT_ID, adminMessage);
-    
-    if (!sent) {
-      console.error("⚠️ Failed to send Telegram notification!");
-    }
+    await sendTelegramMessage(ADMIN_CHAT_ID, adminMessage);
     
     res.json({ 
       success: true, 
       orderId: newOrder.id, 
       packageName, 
       price: packageData.price, 
-      phone,
-      telegramNotified: sent
+      phone
     });
     
   } catch (error) {
     console.error("Order error:", error);
-    res.status(500).json({ success: false, message: "Server error: " + error.message });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-// ========== SUBMIT PAYMENT ENDPOINT ==========
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadDir = path.join(__dirname, 'temp_uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '.jpg');
-  }
-});
-const upload = multer({ storage: storage });
-
-app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
-  let tempFilePath = null;
-  
-  try {
-    const orderId = parseInt(req.body.orderId);
-    const screenshot = req.file;
-    
-    console.log(`💰 Payment submission for order #${orderId}`);
-    
-    if (!screenshot) {
-      return res.status(400).json({ success: false, message: "Screenshot required" });
-    }
-    
-    const order = orders.find(o => o.id === orderId);
-    if (!order) {
-      return res.status(404).json({ success: false, message: "Order not found" });
-    }
-    
-    order.status = 'payment_received';
-    order.updatedAt = new Date().toISOString();
-    
-    tempFilePath = screenshot.path;
-    const fileBuffer = fs.readFileSync(tempFilePath);
-    
-    const caption = `
-💰 *Payment Received* #${orderId}
-━━━━━━━━━━━━━━━━━━━━
-📦 Package: ${order.packageName}
-📞 Phone: ${order.phone}
-💰 Amount: ${order.price.toLocaleString()} KS
-📅 Time: ${new Date().toLocaleString()}
-━━━━━━━━━━━━━━━━━━━━
-✅ Please verify and approve
-    `;
-    
-    const keyboard = {
-      inline_keyboard: [
-        [
-          { text: "✅ Approve (Start 30 Days)", callback_data: `approve_${orderId}` },
-          { text: "❌ Reject", callback_data: `reject_${orderId}` }
-        ]
-      ]
-    };
-    
-    // Send to admin
-    const sent = await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
-    
-    if (!sent) {
-      console.error("⚠️ Failed to send photo to Telegram!");
-    }
-    
-    res.json({ success: true, message: "Payment submitted! Admin will verify." });
-    
-  } catch (error) {
-    console.error("Payment submit error:", error);
-    res.status(500).json({ success: false, message: "Server error: " + error.message });
-  } finally {
-    if (tempFilePath && fs.existsSync(tempFilePath)) {
-      fs.unlinkSync(tempFilePath);
-    }
-  }
-});
-
-// ========== TRACK ORDER ENDPOINT ==========
+// ========== TRACK ORDER ==========
 app.get('/api/track-order', (req, res) => {
   const { orderId, phone } = req.query;
-  
-  if (!orderId || !phone) {
-    return res.status(400).json({ success: false, message: "Order ID and Phone required" });
-  }
   
   const order = orders.find(o => o.id === parseInt(orderId) && o.phone === phone);
   
@@ -325,68 +200,7 @@ app.get('/api/track-order', (req, res) => {
   });
 });
 
-// ========== TELEGRAM WEBHOOK ==========
-app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
-  try {
-    console.log("📨 Webhook received:", JSON.stringify(req.body).substring(0, 200));
-    
-    const { callback_query } = req.body;
-    
-    if (callback_query && callback_query.data) {
-      const data = callback_query.data;
-      const chatId = callback_query.message.chat.id;
-      const messageId = callback_query.message.message_id;
-      
-      // Answer callback query
-      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ callback_query_id: callback_query.id })
-      });
-      
-      if (data.startsWith('approve_')) {
-        const orderId = parseInt(data.split('_')[1]);
-        const order = orders.find(o => o.id === orderId);
-        
-        if (order) {
-          const startDate = new Date();
-          const endDate = new Date();
-          endDate.setDate(endDate.getDate() + 30);
-          
-          order.startDate = startDate.toISOString();
-          order.endDate = endDate.toISOString();
-          order.daysRemaining = 30;
-          order.status = 'approved';
-          order.isExpired = false;
-          
-          await sendTelegramMessage(chatId, `✅ Order #${orderId} approved! 30 days countdown started.`);
-          
-          if (GROUP_CHAT_ID) {
-            await sendTelegramMessage(GROUP_CHAT_ID, 
-              `🚨 *DATA ACTIVATED* 🚨\n\n📞 ${order.phone}\n📦 ${order.packageName}\n⏳ 30 days valid`
-            );
-          }
-        }
-      }
-      
-      if (data.startsWith('reject_')) {
-        const orderId = parseInt(data.split('_')[1]);
-        const order = orders.find(o => o.id === orderId);
-        if (order) {
-          order.status = 'rejected';
-          await sendTelegramMessage(chatId, `❌ Order #${orderId} rejected.`);
-        }
-      }
-    }
-    
-    res.sendStatus(200);
-  } catch (error) {
-    console.error("Webhook error:", error);
-    res.sendStatus(200);
-  }
-});
-
-// ========== ROOT ENDPOINT ==========
+// ========== ROOT ==========
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -394,34 +208,13 @@ app.get('/', (req, res) => {
 // ========== SERVER START ==========
 const PORT = process.env.PORT || 10000;
 
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
   console.log(`\n🚀 Server running on port ${PORT}`);
-  console.log(`=================================`));
+  console.log(`=================================`);
   console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅ SET' : '❌ MISSING'}`);
   console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅ SET' : '❌ MISSING'}`);
-  console.log(`👥 GROUP_CHAT_ID: ${GROUP_CHAT_ID ? '✅ SET' : '⚠️ OPTIONAL'}`);
   console.log(`=================================\n`);
   
-  // Set webhook
-  if (BOT_TOKEN) {
-    const webhookUrl = `https://ath-digital-hub.onrender.com/webhook/${BOT_TOKEN}`;
-    console.log(`🔗 Setting webhook to: ${webhookUrl}`);
-    
-    try {
-      const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${webhookUrl}`);
-      const result = await response.json();
-      console.log(`📡 Webhook: ${result.ok ? '✅ SUCCESS' : '❌ FAILED'} - ${result.description || ''}`);
-    } catch (error) {
-      console.error(`❌ Webhook error: ${error.message}`);
-    }
-  }
-  
-  // Send test message on startup
-  setTimeout(async () => {
-    console.log("\n🔧 Sending startup test message...");
-    const testResult = await sendTelegramMessage(ADMIN_CHAT_ID, 
-      `🤖 *MYTEL Bot is Online!*\n\n✅ Server started at ${new Date().toLocaleString()}\n🔧 Ready to receive orders.`
-    );
-    console.log(`📨 Startup test: ${testResult ? '✅ SENT' : '❌ FAILED'}\n`);
-  }, 3000);
+  // Test endpoint URL
+  console.log(`🔧 Test Telegram: https://localhost:${PORT}/test-telegram\n`);
 });
