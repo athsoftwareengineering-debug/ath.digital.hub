@@ -51,17 +51,23 @@ const PACKAGES = {
   "VIP LEVEL - 4 (ULTRA)": { price: 30000, desc: "120GB High-Speed Data" }
 };
 
-// ========== HELPER FUNCTION for English Time ==========
-function getEnglishTime(date = new Date()) {
-  return date.toLocaleString('en-US', { 
-    year: 'numeric', 
-    month: '2-digit', 
-    day: '2-digit', 
-    hour: '2-digit', 
-    minute: '2-digit', 
-    second: '2-digit', 
-    hour12: true 
-  });
+// ========== HELPER FUNCTION for Myanmar Time (UTC+6:30) ==========
+function getMyanmarTime(date = new Date()) {
+  // Myanmar Timezone offset: UTC+6:30 (6.5 hours = 390 minutes)
+  const myanmarOffset = 6.5 * 60 * 60 * 1000; // 6.5 hours in milliseconds
+  const myanmarTime = new Date(date.getTime() + myanmarOffset);
+  
+  // Format to MM/DD/YYYY HH:MM:SS AM/PM
+  const year = myanmarTime.getUTCFullYear();
+  const month = String(myanmarTime.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(myanmarTime.getUTCDate()).padStart(2, '0');
+  let hours = myanmarTime.getUTCHours();
+  const minutes = String(myanmarTime.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(myanmarTime.getUTCSeconds()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12;
+  
+  return `${month}/${day}/${year} ${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
 }
 
 async function updateOrderStatus(orderId, status) {
@@ -208,7 +214,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
 📞 ဖုန်း: ${order.phone}
 💰 ငွေပမာဏ: ${packageData.price.toLocaleString()} KS
 📝 မှတ်ချက်: ${note || "မရှိ"}
-📅 အချိန်: ${getEnglishTime()}
+📅 အချိန်: ${getMyanmarTime()}
 ━━━━━━━━━━━━━━━━━━━━
 ⏳ **အတည်ပြုရန် အသင့်** - အောက်ပါခလုတ်များကို နှိပ်ပါ။
     `;
@@ -276,7 +282,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📦 Package: ${order.packageName}
 📞 ဖုန်း: ${order.phone}
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
-📅 အတည်ပြုချိန်: ${getEnglishTime()}
+📅 အတည်ပြုချိန်: ${getMyanmarTime()}
 ━━━━━━━━━━━━━━━━━━━━
 🎉 ဒေတာ သွင်းပေးပါမည်။ ကျေးဇူးတင်ပါသည်။
           `;
@@ -303,7 +309,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📞 ဖုန်းနံပါတ်: ${order.phone}
 📦 Package: ${order.packageName}
 💰 ပမာဏ: ${order.price.toLocaleString()} KS
-⏰ သွင်းချိန်: ${getEnglishTime()}
+⏰ သွင်းချိန်: ${getMyanmarTime()}
 ━━━━━━━━━━━━━━━━━━━━
 👤 အတည်ပြုသူ: Admin
             `;
@@ -366,7 +372,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📦 Package: ${order.packageName}
 📞 ဖုန်း: ${order.phone}
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
-📅 ရက်စွဲ: ${getEnglishTime(new Date(order.createdAt))}
+📅 ရက်စွဲ: ${getMyanmarTime(new Date(order.createdAt))}
 📊 အခြေအနေ: ${statusEmoji}
           `;
           
@@ -563,7 +569,7 @@ app.get('/test-group', async (req, res) => {
 🧪 *Group Connection Test*
 ━━━━━━━━━━━━━━━━━━━━
 ✅ Bot က Group ထဲကို message ပို့နိုင်ပါတယ်။
-📅 အချိန်: ${getEnglishTime()}
+📅 အချိန်: ${getMyanmarTime()}
     `;
     const result = await sendTelegramMessage(GROUP_CHAT_ID, testMessage);
     res.json({ success: result, groupId: GROUP_CHAT_ID });
