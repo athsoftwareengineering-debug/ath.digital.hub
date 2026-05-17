@@ -460,13 +460,12 @@ app.get('/api/orders/:phone', async (req, res) => {
   }
 });
 
-// Admin delete order endpoint
 app.delete('/api/admin/order/:id', async (req, res) => {
   try {
     const orderId = parseInt(req.params.id);
     const adminKey = req.headers['admin-key'];
     
-    if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'ATH_ADMIN_2024') {
+    if (adminKey !== 'ATH_ADMIN_2024') {
       return res.status(403).json({ success: false, message: "Unauthorized" });
     }
     
@@ -537,7 +536,8 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
 📞 ဖုန်းနံပါတ်: ${maskPhone(order.phone)}
 📦 Package: ${order.packageName}
 💰 ပမာဏ: ${order.price.toLocaleString()} KS
-⏰ သွင်းချိန်: ${getMyanmarTime(approvedTime)}
+📅 စတင်ရက်: ${getMyanmarTime(approvedTime)}
+📅 ကုန်ဆုံးရက်: ${getMyanmarTime(expireDate)}
 ━━━━━━━━━━━━━━━━━━━━
 👤 အတည်ပြုသူ: 𝐀𝐃𝐌𝐈𝐍 𝐒𝐔𝐏𝐏𝐎𝐑𝐓 | 𝟐𝟒/𝟕
             `);
@@ -546,7 +546,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         return res.sendStatus(200);
       }
       
-      // Reject Button - ask for reason inline
+      // Reject Button - Ask for reason
       if (data.startsWith('reject_')) {
         const orderId = parseInt(data.split('_')[1]);
         const order = await getOrder(orderId);
@@ -559,11 +559,70 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               chat_id: chatId,
-              text: `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ။\n\n📞 ${maskPhone(order.phone)}\n📦 ${order.packageName}\n💰 ${order.price.toLocaleString()} KS`,
+              text: `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ရေးပါ။\n\n📞 ${order.phone}\n📦 ${order.packageName}\n💰 ${order.price.toLocaleString()} KS`,
               reply_markup: { force_reply: true, input_field_placeholder: "အကြောင်းရင်းရေးပါ..." }
             })
           });
         }
+        return res.sendStatus(200);
+      }
+      
+      // Handle reject reason text
+      if (message && pendingRejectReasons[message.chat.id]) {
+        const chatId = message.chat.id;
+        const { orderId } = pendingRejectReasons[chatId];
+        const reason = message.text;
+        const order = await getOrder(orderId);
+        
+        if (order && reason && !reason.startsWith('/')) {
+          await updateOrderStatus(orderId, 'rejected', null, reason);
+          
+          // Update original message
+          const rejectCaption = `
+❌ **ပယ်ဖျက်ပြီး** - အော်ဒါ #${orderId}
+━━━━━━━━━━━━━━━━━━━━
+📦 Package: ${order.packageName}
+📞 ဖုန်း: ${maskPhone(order.phone)}
+💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
+📝 **ပယ်ဖျက်ရသည့်အကြောင်း:** ${reason}
+━━━━━━━━━━━━━━━━━━━━
+⚠️ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။
+👤 အတည်ပြုသူ: 𝐀𝐃𝐌𝐈𝐍 𝐒𝐔𝐏𝐏𝐎𝐑𝐓 | 𝟐𝟒/𝟕
+          `;
+          
+          try {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageCaption`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: chatId,
+                message_id: messageId,
+                caption: rejectCaption,
+                parse_mode: 'Markdown'
+              })
+            });
+          } catch(e) {}
+          
+          await sendTelegramMessage(ADMIN_CHAT_ID, `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ပြီး။\n📝 အကြောင်း: ${reason}`);
+          
+          if (GROUP_CHAT_ID) {
+            await sendTelegramMessage(GROUP_CHAT_ID, `
+⚠️ **အော်ဒါပယ်ဖျက်ခြင်း** ⚠️
+━━━━━━━━━━━━━━━━━━━━
+❌ အော်ဒါ #${orderId} အား ပယ်ဖျက်လိုက်ပါသည်။
+📞 ဖုန်း: ${maskPhone(order.phone)}
+📦 Package: ${order.packageName}
+📝 **အကြောင်းရင်း:** ${reason}
+━━━━━━━━━━━━━━━━━━━━
+⚠️ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။
+👤 အတည်ပြုသူ: 𝐀𝐃𝐌𝐈𝐍 𝐒𝐔𝐏𝐏𝐎𝐑𝐓 | 𝟐𝟒/𝟕
+            `);
+          }
+          
+          await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အား "${reason}" ဖြင့် ပယ်ဖျက်ပြီးပါပြီ။`);
+        }
+        
+        delete pendingRejectReasons[chatId];
         return res.sendStatus(200);
       }
       
@@ -579,13 +638,22 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           else if (order.status === 'approved') statusText = '✅ အတည်ပြုပြီး';
           else if (order.status === 'rejected') statusText = '❌ ပယ်ဖျက်ပြီး';
           
+          let extraInfo = '';
+          if (order.status === 'approved' && order.expiredAt) {
+            const daysLeft = getRemainingDays(order.expiredAt);
+            extraInfo = `\n⏳ ကျန်ရက်: ${daysLeft} ရက်`;
+          }
+          if (order.status === 'rejected' && order.rejectReason) {
+            extraInfo = `\n📝 အကြောင်း: ${order.rejectReason}`;
+          }
+          
           const detailMsg = `
 📋 **အော်ဒါအသေးစိတ်** #${order.id}
 ━━━━━━━━━━━━━━━━━━━━
 📦 Package: ${order.packageName}
 📞 ဖုန်း: ${maskPhone(order.phone)}
 💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
-📊 အခြေအနေ: ${statusText}
+📊 အခြေအနေ: ${statusText}${extraInfo}
           `;
           
           const keyboard = {
@@ -638,7 +706,12 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             else if (order.status === 'approved') emoji = '✅';
             else if (order.status === 'rejected') emoji = '❌';
             
-            msg += `${emoji} *#${order.id}* | ${order.packageName}\n   📞 ${maskPhone(order.phone)}\n   💰 ${order.price.toLocaleString()} KS\n\n`;
+            msg += `${emoji} *#${order.id}* | ${order.packageName}\n   📞 ${maskPhone(order.phone)}\n   💰 ${order.price.toLocaleString()} KS`;
+            if (order.status === 'approved' && order.expiredAt) {
+              const daysLeft = getRemainingDays(order.expiredAt);
+              msg += `\n   ⏳ ကျန်: ${daysLeft} ရက်`;
+            }
+            msg += `\n\n`;
             buttons.push([{ text: `${emoji} အော်ဒါ #${order.id}`, callback_data: `detail_${order.id}` }]);
           }
           buttons.push([{ text: "🔙 ပင်မစာမျက်နှာ", callback_data: "back_to_menu" }]);
@@ -722,37 +795,6 @@ ${stats.text}
         return res.sendStatus(200);
       }
       
-      return res.sendStatus(200);
-    }
-    
-    // Handle text messages (reject reasons)
-    if (message && pendingRejectReasons[message.chat.id]) {
-      const chatId = message.chat.id;
-      const { orderId } = pendingRejectReasons[chatId];
-      const reason = message.text;
-      const order = await getOrder(orderId);
-      
-      if (order && reason && !reason.startsWith('/')) {
-        await updateOrderStatus(orderId, 'rejected', null, reason);
-        
-        if (GROUP_CHAT_ID) {
-          await sendTelegramMessage(GROUP_CHAT_ID, `
-⚠️ **အော်ဒါပယ်ဖျက်ခြင်း** ⚠️
-━━━━━━━━━━━━━━━━━━━━
-❌ အော်ဒါ #${orderId} အား ပယ်ဖျက်လိုက်ပါသည်။
-📞 ဖုန်း: ${maskPhone(order.phone)}
-📦 Package: ${order.packageName}
-📝 အကြောင်းရင်း: ${reason}
-━━━━━━━━━━━━━━━━━━━━
-⚠️ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။
-👤 အတည်ပြုသူ: 𝐀𝐃𝐌𝐈𝐍 𝐒𝐔𝐏𝐏𝐎𝐑𝐓 | 𝟐𝟒/𝟕
-          `);
-        }
-        
-        await sendTelegramMessage(chatId, `✅ အော်ဒါ #${orderId} အား "${reason}" ဖြင့် ပယ်ဖျက်ပြီးပါပြီ။`);
-      }
-      
-      delete pendingRejectReasons[chatId];
       return res.sendStatus(200);
     }
     
