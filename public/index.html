@@ -307,18 +307,55 @@
             transition: all 0.3s ease;
         }
         .copy-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(227, 30, 36, 0.5); }
+        
+        /* File Upload - Gallery Access */
         .file-upload {
             border: 2px dashed rgba(255, 215, 0, 0.5);
             border-radius: 18px;
-            padding: 16px;
+            padding: 20px 16px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.03);
         }
-        .file-upload:hover { border-color: #FFD700; background: rgba(227, 30, 36, 0.1); transform: scale(1.01); }
-        .screenshot-preview { margin-top: 12px; text-align: center; }
-        .screenshot-preview img { max-width: 100%; max-height: 160px; border-radius: 14px; border: 2px solid #FFD700; animation: zoomIn 0.3s ease; }
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .file-upload:hover {
+            border-color: #FFD700;
+            background: rgba(227, 30, 36, 0.15);
+            transform: scale(1.01);
+        }
+        .file-upload span {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .file-upload p {
+            font-size: 0.8rem;
+        }
+        .file-upload .small-text {
+            font-size: 0.6rem;
+            opacity: 0.6;
+            margin-top: 5px;
+        }
+        .file-upload input {
+            display: none;
+        }
+        
+        .screenshot-preview {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .screenshot-preview img {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 16px;
+            border: 2px solid #FFD700;
+            animation: zoomIn 0.3s ease;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
 
         /* Modal */
         .modal {
@@ -355,6 +392,7 @@
         .footer .brand { font-size: 0.85rem; font-weight: bold; background: linear-gradient(135deg, #FFD700, #E31E24); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .heart { color: #E31E24; animation: heartbeat 1.5s infinite; display: inline-block; }
         @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        
         .toast {
             position: fixed;
             bottom: 30px;
@@ -372,7 +410,14 @@
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
         hr { border-color: rgba(255, 215, 0, 0.2); margin: 12px 0; }
-        @media (max-width: 480px) { .packages { gap: 12px; } .package-name { font-size: 0.85rem; } .package-price { font-size: 1rem; } }
+        
+        @media (max-width: 480px) { 
+            .packages { gap: 12px; } 
+            .package-name { font-size: 0.85rem; } 
+            .package-price { font-size: 1rem; }
+            .file-upload { padding: 15px 12px; }
+            .file-upload span { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body>
@@ -422,10 +467,11 @@
                     <button class="copy-btn" onclick="copyNumber()">📋 ကူးယူမည်</button>
                 </div>
 
+                <!-- Gallery Upload Section -->
                 <div class="file-upload" id="fileUploadArea">
                     <span>📸</span>
                     <p>ငွေလွှဲပြေစာပုံ တင်ရန်</p>
-                    <p style="font-size: 0.6rem; opacity: 0.7;">JPG or PNG</p>
+                    <p class="small-text">Gallery ထဲက ပုံရွေးရန် နှိပ်ပါ</p>
                     <input type="file" id="screenshot" accept="image/*" capture="environment">
                 </div>
                 <div class="screenshot-preview" id="preview"></div>
@@ -532,12 +578,26 @@
             }
         });
 
+        // Gallery File Upload Handler
         const fileInput = document.getElementById('screenshot');
         const fileUploadArea = document.getElementById('fileUploadArea');
+        
         fileUploadArea.addEventListener('click', () => fileInput.click());
+        
         fileInput.addEventListener('change', (e) => {
             if (e.target.files && e.target.files[0]) {
-                selectedFile = e.target.files[0];
+                const file = e.target.files[0];
+                // Check file type
+                if (!file.type.match('image.*')) {
+                    showToast('⚠️ ပုံဖိုင်ကိုသာ ရွေးပါ');
+                    return;
+                }
+                // Check file size (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast('⚠️ ပုံအရွယ်အစား 10MB အောက်သာတင်ပါ');
+                    return;
+                }
+                selectedFile = file;
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     document.getElementById('preview').innerHTML = `<img src="${event.target.result}" alt="Preview">`;
@@ -601,7 +661,8 @@
                     showToast('❌ အော်ဒါမအောင်မြင်ပါ');
                 }
             } catch (error) {
-                showToast('❌ Server error');
+                console.error(error);
+                showToast('❌ Server error, ထပ်စမ်းပါ');
             }
         }
 
