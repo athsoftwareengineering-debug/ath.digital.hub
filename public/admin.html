@@ -345,7 +345,7 @@
       font-size: 0.8rem;
     }
     
-    /* ========== CARD STYLE TABLE (သပ်ရပ်လှပ) ========== */
+    /* ========== CARD STYLE TABLE ========== */
     .orders-container {
       display: flex;
       flex-direction: column;
@@ -383,7 +383,7 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
     
-    /* Order Card Inner Grid */
+    /* Order Card Inner Grid - NEW ORDER: View နဲ့ Date နေရာလဲပြီး */
     .order-grid {
       display: flex;
       flex-wrap: wrap;
@@ -391,39 +391,20 @@
       gap: 1rem;
     }
     
-    .order-checkbox-cell {
-      width: 30px;
-      text-align: center;
-    }
-    .order-checkbox-cell input {
-      transform: scale(1.1);
-      cursor: pointer;
-    }
+    .order-checkbox-cell { width: 30px; text-align: center; }
+    .order-checkbox-cell input { transform: scale(1.1); cursor: pointer; }
     
-    .order-id {
-      min-width: 70px;
-      font-weight: 700;
-      color: var(--primary);
-      font-size: 0.9rem;
-    }
-    
-    .order-package {
-      min-width: 130px;
-      font-weight: 600;
-    }
+    .order-id { min-width: 70px; font-weight: 700; color: var(--primary); font-size: 0.9rem; }
+    .order-package { min-width: 130px; font-weight: 600; }
     
     .order-phone {
-      min-width: 140px;
+      min-width: 160px;
       display: flex;
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
     }
-    .phone-number {
-      font-family: monospace;
-      font-size: 0.85rem;
-      font-weight: 500;
-    }
+    .phone-number { font-family: monospace; font-size: 0.85rem; font-weight: 500; }
     .copy-phone-btn {
       background: rgba(250,204,21,0.15);
       border: 1px solid var(--primary);
@@ -437,21 +418,11 @@
       align-items: center;
       gap: 4px;
     }
-    .copy-phone-btn:hover {
-      background: var(--primary);
-      color: #0f172a;
-      transform: scale(1.02);
-    }
+    .copy-phone-btn:hover { background: var(--primary); color: #0f172a; transform: scale(1.02); }
     
-    .order-price {
-      min-width: 100px;
-      font-weight: 600;
-      color: var(--primary);
-    }
+    .order-price { min-width: 100px; font-weight: 600; color: var(--primary); }
+    .order-status { min-width: 100px; }
     
-    .order-status {
-      min-width: 100px;
-    }
     .status-badge {
       display: inline-block;
       padding: 5px 12px;
@@ -467,35 +438,34 @@
     .status-rejected { background: #ef444420; color: #ef4444; border: 1px solid #ef4444; }
     .status-expired { background: #64748b20; color: #64748b; border: 1px solid #64748b; }
     
-    .order-date {
-      min-width: 140px;
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-    }
-    
+    /* Screenshot (View) - ဘယ်ဘက်ကို ရွှေ့ထား */
     .order-screenshot {
-      min-width: 60px;
+      min-width: 70px;
     }
     .action-view {
       background: rgba(59,130,246,0.15);
       border: 1px solid #3b82f6;
       color: #3b82f6;
-      padding: 5px 10px;
+      padding: 5px 12px;
       border-radius: 30px;
-      font-size: 0.65rem;
+      font-size: 0.7rem;
       cursor: pointer;
       transition: all 0.2s;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
     }
-    .action-view:hover {
-      background: #3b82f6;
-      color: white;
+    .action-view:hover { background: #3b82f6; color: white; }
+    
+    /* Date - ညာဘက်ကို ရွှေ့ထား */
+    .order-date {
+      min-width: 160px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
     }
     
     .order-actions {
-      min-width: 140px;
+      min-width: 160px;
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
@@ -503,7 +473,7 @@
     .action-btn {
       padding: 5px 12px;
       border-radius: 30px;
-      font-size: 0.65rem;
+      font-size: 0.7rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
@@ -517,38 +487,45 @@
     .action-reject { background: #ef444420; color: #ef4444; border: 1px solid #ef4444; }
     .action-reject:hover { background: #ef4444; color: white; }
     
+    /* Header Columns - နေရာလဲပြီး */
+    .header-col-checkbox { width: 40px; }
+    .header-col-id { width: 70px; }
+    .header-col-package { width: 130px; }
+    .header-col-phone { width: 170px; }
+    .header-col-price { width: 100px; }
+    .header-col-status { width: 110px; }
+    .header-col-screenshot { width: 80px; }
+    .header-col-date { width: 160px; }
+    .header-col-action { width: 160px; }
+    
     /* Responsive - Mobile Card Layout */
     @media (max-width: 768px) {
-      .orders-header {
-        display: none;
-      }
+      .orders-header { display: none; }
       
       .order-grid {
         flex-direction: column;
         align-items: stretch;
       }
       
-      .order-card-row {
-        padding: 1rem;
-      }
+      .order-card-row { padding: 1rem; }
       
       .order-id, .order-package, .order-phone, .order-price, 
-      .order-status, .order-date, .order-screenshot, .order-actions {
+      .order-status, .order-screenshot, .order-date, .order-actions {
         width: 100%;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.4rem 0;
+        padding: 0.5rem 0;
         border-bottom: 1px dashed var(--border);
       }
       
       .order-id:before, .order-package:before, .order-phone:before, 
-      .order-price:before, .order-status:before, .order-date:before, 
-      .order-screenshot:before, .order-actions:before {
+      .order-price:before, .order-status:before, .order-screenshot:before, 
+      .order-date:before, .order-actions:before {
         content: attr(data-label);
         font-weight: 600;
         color: var(--primary);
-        font-size: 0.7rem;
+        font-size: 0.75rem;
       }
       
       .order-id:before { content: "Order ID:"; }
@@ -556,12 +533,18 @@
       .order-phone:before { content: "Phone:"; }
       .order-price:before { content: "Price:"; }
       .order-status:before { content: "Status:"; }
-      .order-date:before { content: "Date:"; }
       .order-screenshot:before { content: "Screenshot:"; }
+      .order-date:before { content: "Date:"; }
       .order-actions:before { content: "Actions:"; }
       
       .order-id { border-bottom: none; }
       .order-package { border-bottom: none; }
+    }
+    
+    @media (max-width: 480px) {
+      .order-phone { flex-direction: column; align-items: flex-start; }
+      .order-actions { flex-direction: column; align-items: stretch; }
+      .action-btn { justify-content: center; }
     }
     
     /* Modal */
@@ -739,18 +722,18 @@
         <button onclick="clearSelection()" style="background:#64748b20; color:#64748b; border:1px solid #64748b;">Cancel</button>
       </div>
       
-      <!-- Card Style Orders Container -->
+      <!-- Card Style Orders Container - View နဲ့ Date နေရာလဲပြီး -->
       <div class="orders-container" id="ordersContainer">
         <div class="orders-header">
-          <div style="width:40px;"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></div>
-          <div style="width:70px;">ID</div>
-          <div style="width:130px;">Package</div>
-          <div style="width:160px;">Phone</div>
-          <div style="width:100px;">Price</div>
-          <div style="width:110px;">Status</div>
-          <div style="width:150px;">Date</div>
-          <div style="width:70px;">SS</div>
-          <div style="width:150px;">Action</div>
+          <div class="header-col-checkbox"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></div>
+          <div class="header-col-id">ID</div>
+          <div class="header-col-package">Package</div>
+          <div class="header-col-phone">Phone</div>
+          <div class="header-col-price">Price</div>
+          <div class="header-col-status">Status</div>
+          <div class="header-col-screenshot">Screenshot</div>
+          <div class="header-col-date">Date</div>
+          <div class="header-col-action">Action</div>
         </div>
         <div id="ordersList">Loading orders...</div>
       </div>
@@ -959,11 +942,13 @@
             <div class="order-status" data-label="Status">
               <span class="status-badge ${statusClass}">${statusText}</span>
             </div>
-            <div class="order-date" data-label="Date">
-              ${formattedDate}
-            </div>
+            <!-- Screenshot (View) - ဘယ်ဘက်ကို ရွှေ့ထား -->
             <div class="order-screenshot" data-label="Screenshot">
               <button class="action-view" onclick="viewScreenshot(${order.id})"><i class="fas fa-image"></i> View</button>
+            </div>
+            <!-- Date - ညာဘက်ကို ရွှေ့ထား -->
+            <div class="order-date" data-label="Date">
+              ${formattedDate}
             </div>
             <div class="order-actions" data-label="Actions">
               ${order.status === 'payment_received' ? `
