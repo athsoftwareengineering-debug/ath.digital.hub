@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MYTEL Admin Dashboard | Premium</title>
+  <title>MYTEL Admin Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -26,7 +26,9 @@
     body.light-mode .stat-card,
     body.light-mode .orders-table,
     body.light-mode .login-card,
-    body.light-mode .modal-content {
+    body.light-mode .modal-content,
+    body.light-mode .filters-bar,
+    body.light-mode .bulk-actions {
       background: #ffffff;
       border-color: #e2e8f0;
     }
@@ -267,13 +269,18 @@
     
     .action-btn {
       background: none; border: none;
-      cursor: pointer; padding: 4px 8px;
+      cursor: pointer; padding: 6px 12px;
       border-radius: 6px;
+      margin: 0 2px;
+      font-size: 0.75rem;
     }
     
-    .action-approve { color: #22c55e; }
-    .action-reject { color: #ef4444; }
-    .action-view { color: #3b82f6; }
+    .action-approve { background: #22c55e20; color: #22c55e; }
+    .action-approve:hover { background: #22c55e; color: white; }
+    .action-reject { background: #ef444420; color: #ef4444; }
+    .action-reject:hover { background: #ef4444; color: white; }
+    .action-view { background: #3b82f620; color: #3b82f6; }
+    .action-view:hover { background: #3b82f6; color: white; }
     
     .checkbox-col { width: 40px; }
     
@@ -283,7 +290,7 @@
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.95);
       z-index: 1000;
       justify-content: center;
       align-items: center;
@@ -295,11 +302,14 @@
       padding: 2rem;
       max-width: 500px;
       width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
+      text-align: center;
     }
     
-    .modal-content img { max-width: 100%; border-radius: 12px; }
+    .modal-content img { 
+      max-width: 100%; 
+      border-radius: 12px; 
+      margin: 1rem 0;
+    }
     
     /* Notification */
     .notification {
@@ -343,9 +353,8 @@
     <div class="logo-icon"><i class="fas fa-shield-alt"></i></div>
     <h1 style="text-align:center; color:#facc15; margin-bottom:1.5rem;">Admin Access</h1>
     <div id="loginError" style="color:#f87171; text-align:center; margin-bottom:1rem; display:none;"></div>
-    <div class="input-field" style="margin-bottom:1rem;">
-      <i class="fas fa-lock" style="position:absolute; left:16px; top:50%; transform:translateY(-50%);"></i>
-      <input type="password" id="adminPassword" placeholder="Enter password" style="width:100%; padding:14px 16px 14px 45px; background:#1e293b; border:1px solid #334155; border-radius:14px; color:white;">
+    <div style="margin-bottom:1rem;">
+      <input type="password" id="adminPassword" placeholder="Enter password" style="width:100%; padding:14px 16px; background:#1e293b; border:1px solid #334155; border-radius:14px; color:white;">
     </div>
     <button class="login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Access Dashboard</button>
   </div>
@@ -364,7 +373,7 @@
   <div class="main-content">
     <div class="top-bar">
       <h1><i class="fas fa-chart-line"></i> <span id="pageTitle">Dashboard</span></h1>
-      <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> Dark/Light</button>
+      <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> Dark/Light Mode</button>
     </div>
     
     <!-- Stats Grid -->
@@ -373,7 +382,7 @@
     <!-- Expiring Soon Alert -->
     <div id="expiringAlert" class="expiring-alert" style="display:none" onclick="showExpiringPage()">
       <i class="fas fa-exclamation-triangle"></i>
-      <span id="expiringText">သက်တမ်းကုန်ခါနီး အော်ဒါများ ရှိပါသည်။</span>
+      <span id="expiringText">Orders expiring soon!</span>
     </div>
     
     <!-- Charts -->
@@ -397,8 +406,8 @@
         <option value="rejected">Rejected</option>
         <option value="expired">Expired</option>
       </select>
-      <button onclick="applyFilters()" style="background:#facc15; color:#0f172a; border:none; padding:8px 16px; border-radius:8px;">Apply</button>
-      <button onclick="exportToCSV()" style="background:#22c55e; color:white; border:none; padding:8px 16px; border-radius:8px;"><i class="fas fa-download"></i> Export</button>
+      <button onclick="applyFilters()" style="background:#facc15; color:#0f172a; border:none; padding:8px 16px; border-radius:8px; cursor:pointer;">Apply</button>
+      <button onclick="exportToCSV()" style="background:#22c55e; color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer;"><i class="fas fa-download"></i> Export CSV</button>
     </div>
     
     <!-- Bulk Actions -->
@@ -419,9 +428,9 @@
 <!-- Screenshot Modal -->
 <div id="screenshotModal" class="modal">
   <div class="modal-content">
-    <h3>📸 Payment Screenshot</h3>
-    <img id="screenshotImg" src="">
-    <button onclick="closeModal()" style="margin-top:1rem; padding:10px; background:#334155; border:none; border-radius:8px; color:white; width:100%;">Close</button>
+    <h3><i class="fas fa-image"></i> Payment Screenshot</h3>
+    <img id="screenshotImg" src="" alt="Screenshot">
+    <button onclick="closeModal()" style="margin-top:1rem; padding:10px; background:#334155; border:none; border-radius:8px; color:white; width:100%; cursor:pointer;">Close</button>
   </div>
 </div>
 
@@ -430,6 +439,21 @@
   let allOrders = [];
   let selectedOrders = new Set();
   let dailyChart, packageChart;
+  
+  // English Date Formatter
+  function formatEnglishDate(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+  }
   
   // Check login
   if (sessionStorage.getItem('adminLoggedIn') === 'true') {
@@ -466,7 +490,7 @@
     startNotificationCheck();
   }
   
-  // Load orders with filters
+  // Load orders
   async function loadOrders() {
     try {
       const res = await fetch('/api/admin/orders?status=all', {
@@ -492,7 +516,7 @@
     `;
   }
   
-  // Apply filters (search, date range, status)
+  // Apply filters
   function applyFilters() {
     const searchPhone = document.getElementById('searchPhone').value.toLowerCase();
     const startDate = document.getElementById('startDate').value;
@@ -528,7 +552,7 @@
     
     let html = `<table><thead><tr>
       <th class="checkbox-col"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-      <th>ID</th><th>Package</th><th>Phone</th><th>Price</th><th>Status</th><th>Date</th><th>Screenshot</th><th>Action</th>
+      <th>ID</th><th>Package</th><th>Phone</th><th>Price</th><th>Status</th><th>Date (MM/DD/YYYY)</th><th>Screenshot</th><th>Action</th>
     </tr></thead><tbody>`;
     
     orders.forEach(order => {
@@ -541,6 +565,8 @@
         case 'expired': statusClass = 'status-expired'; statusText = '⏰ Expired'; break;
       }
       
+      const formattedDate = formatEnglishDate(order.createdAt);
+      
       html += `<tr>
         <td><input type="checkbox" class="order-checkbox" value="${order.id}" onchange="updateSelectedCount()"></td>
         <td><strong>#${order.id}</strong></td>
@@ -548,17 +574,23 @@
         <td>${order.phone}</td>
         <td>${order.price.toLocaleString()} KS</td>
         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-        <td>${order.createdAtMyanmar || order.createdAt}</td>
-        <td><button class="action-btn action-view" onclick="viewScreenshot(${order.id})"><i class="fas fa-image"></i></button></td>
-        <td>${order.status === 'payment_received' ? 
-          `<button class="action-btn action-approve" onclick="updateOrder(${order.id}, 'approved')">✅</button>
-           <button class="action-btn action-reject" onclick="updateOrder(${order.id}, 'rejected')">❌</button>` : 
-          `<span style="color:#64748b;">-</span>`}
-        </td>
-      </tr>`;
+        <td>${formattedDate}</td>
+        <td><button class="action-btn action-view" onclick="viewScreenshot(${order.id})"><i class="fas fa-image"></i> View</button></td>
+        <td>`;
+      
+      if (order.status === 'payment_received') {
+        html += `
+          <button class="action-btn action-approve" onclick="updateOrder(${order.id}, 'approved')"><i class="fas fa-check"></i> Approve</button>
+          <button class="action-btn action-reject" onclick="updateOrder(${order.id}, 'rejected')"><i class="fas fa-times"></i> Reject</button>
+        `;
+      } else {
+        html += `<span style="color:#64748b;">-</span>`;
+      }
+      
+      html += `</td></tr>`;
     });
     
-    html += `</tbody></table>`;
+    html += `</tbody><tr>`;
     document.getElementById('ordersTable').innerHTML = html;
   }
   
@@ -623,13 +655,22 @@
     } catch(err) { return false; }
   }
   
-  function viewScreenshot(orderId) {
-    const order = allOrders.find(o => o.id === orderId);
-    if (order && order.screenshotUrl) {
-      document.getElementById('screenshotImg').src = order.screenshotUrl;
-      document.getElementById('screenshotModal').style.display = 'flex';
-    } else {
-      showNotification('No screenshot available for this order', 'error');
+  // Screenshot Viewer - Fetch screenshot from server
+  async function viewScreenshot(orderId) {
+    showNotification('Loading screenshot...', 'info');
+    try {
+      const res = await fetch(`/api/admin/order-screenshot?orderId=${orderId}`, {
+        headers: { 'x-admin-auth': ADMIN_PASSWORD }
+      });
+      const data = await res.json();
+      if (data.success && data.screenshotUrl) {
+        document.getElementById('screenshotImg').src = data.screenshotUrl;
+        document.getElementById('screenshotModal').style.display = 'flex';
+      } else {
+        showNotification('No screenshot available for this order', 'error');
+      }
+    } catch(err) {
+      showNotification('Failed to load screenshot', 'error');
     }
   }
   
@@ -646,10 +687,9 @@
     if (searchPhone) filtered = filtered.filter(o => o.phone.includes(searchPhone));
     if (status !== 'all') filtered = filtered.filter(o => o.status === status);
     
-    const headers = ['Order ID', 'Package', 'Phone', 'Price', 'Status', 'Date', 'Start Date', 'End Date'];
+    const headers = ['Order ID', 'Package', 'Phone', 'Price', 'Status', 'Date'];
     const rows = filtered.map(o => [
-      o.id, o.packageName, o.phone, o.price, o.status, o.createdAtMyanmar,
-      o.startDateMyanmar || '', o.endDateMyanmar || ''
+      o.id, o.packageName, o.phone, o.price, o.status, formatEnglishDate(o.createdAt)
     ]);
     
     const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
@@ -688,8 +728,8 @@
       const ctx1 = document.getElementById('dailyChart').getContext('2d');
       dailyChart = new Chart(ctx1, {
         type: 'line',
-        data: { labels: last7Days, datasets: [{ label: 'Orders', data: dailyCounts, borderColor: '#facc15', fill: true }] },
-        options: { responsive: true }
+        data: { labels: last7Days, datasets: [{ label: 'Orders', data: dailyCounts, borderColor: '#facc15', backgroundColor: '#facc1520', fill: true, tension: 0.4 }] },
+        options: { responsive: true, maintainAspectRatio: true }
       });
       
       // Package revenue
@@ -704,8 +744,8 @@
       const ctx2 = document.getElementById('packageChart').getContext('2d');
       packageChart = new Chart(ctx2, {
         type: 'bar',
-        data: { labels: Object.keys(packageRevenue), datasets: [{ label: 'Revenue (KS)', data: Object.values(packageRevenue), backgroundColor: '#facc15' }] },
-        options: { responsive: true }
+        data: { labels: Object.keys(packageRevenue), datasets: [{ label: 'Revenue (KS)', data: Object.values(packageRevenue), backgroundColor: '#facc15', borderRadius: 8 }] },
+        options: { responsive: true, maintainAspectRatio: true }
       });
     }
   }
@@ -715,7 +755,7 @@
     const expiringOrders = allOrders.filter(o => o.status === 'approved' && o.daysRemaining <= 5 && o.daysRemaining > 0);
     if (expiringOrders.length > 0) {
       document.getElementById('expiringAlert').style.display = 'flex';
-      document.getElementById('expiringText').innerHTML = `⚠️ ${expiringOrders.length} orders expiring within ${Math.min(...expiringOrders.map(o => o.daysRemaining))} days!`;
+      document.getElementById('expiringText').innerHTML = `⚠️ ${expiringOrders.length} order(s) expiring within ${Math.min(...expiringOrders.map(o => o.daysRemaining))} days!`;
     } else {
       document.getElementById('expiringAlert').style.display = 'none';
     }
@@ -746,8 +786,8 @@
   function showNotification(msg, type = 'success') {
     const notif = document.createElement('div');
     notif.className = 'notification';
-    notif.style.background = type === 'error' ? '#ef4444' : '#22c55e';
-    notif.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i> ${msg}`;
+    notif.style.background = type === 'error' ? '#ef4444' : type === 'info' ? '#3b82f6' : '#22c55e';
+    notif.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'info' ? 'info-circle' : 'check-circle'}"></i> ${msg}`;
     document.body.appendChild(notif);
     notif.style.display = 'block';
     setTimeout(() => notif.remove(), 3000);
@@ -784,6 +824,7 @@
     location.reload();
   }
   
+  // Make functions global
   window.updateOrder = updateOrder;
   window.viewScreenshot = viewScreenshot;
   window.closeModal = closeModal;
