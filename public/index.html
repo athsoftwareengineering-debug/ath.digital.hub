@@ -1,590 +1,121 @@
-<!DOCTYPE html>
-<html lang="my">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>MYTEL VIP - ATH DIGITAL HUB</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Poppins', system-ui, sans-serif;
-            background: radial-gradient(circle at 20% 30%, #0a0a2a, #1a0a2a, #0a0a1a);
-            min-height: 100vh;
-            padding: 20px;
-            color: #fff;
-            overflow-x: hidden;
-        }
-        
-        /* Running Background */
-        .running-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            overflow: hidden;
-            pointer-events: none;
-        }
-        
-        .running-text {
-            position: absolute;
-            white-space: nowrap;
-            font-size: 80px;
-            font-weight: 800;
-            color: rgba(227, 30, 36, 0.08);
-            text-transform: uppercase;
-            letter-spacing: 10px;
-            animation: runText 20s linear infinite;
-        }
-        
-        .running-text:nth-child(1) { top: 10%; animation-duration: 25s; font-size: 60px; }
-        .running-text:nth-child(2) { top: 30%; animation-duration: 20s; font-size: 100px; }
-        .running-text:nth-child(3) { top: 50%; animation-duration: 30s; font-size: 45px; }
-        .running-text:nth-child(4) { top: 70%; animation-duration: 22s; font-size: 120px; }
-        .running-text:nth-child(5) { top: 85%; animation-duration: 28s; font-size: 55px; }
-        .running-text:nth-child(6) { top: 15%; animation-duration: 35s; font-size: 70px; }
-        .running-text:nth-child(7) { top: 60%; animation-duration: 18s; font-size: 90px; }
-        
-        @keyframes runText {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-        
-        .network-status {
-            position: fixed; top: 0; left: 0; right: 0;
-            padding: 8px; text-align: center; font-size: 0.7rem;
-            font-weight: bold; z-index: 1001;
-        }
-        .network-status.online { background: #00c853; }
-        .network-status.offline { background: #dc3545; }
-        
-        .container {
-            max-width: 600px;
-            margin: 0 auto; padding: 50px 0 20px;
-            position: relative; z-index: 1;
-        }
-        
-        /* 3D Rotating Logo */
-        .logo-container { text-align: center; margin-bottom: 30px; perspective: 1000px; }
-        .logo-3d {
-            width: 120px; height: 120px; margin: 0 auto 15px;
-            position: relative; transform-style: preserve-3d;
-            animation: rotate3d 6s infinite linear;
-        }
-        @keyframes rotate3d {
-            0% { transform: rotateY(0deg); }
-            100% { transform: rotateY(360deg); }
-        }
-        .logo-front, .logo-back {
-            position: absolute; width: 100%; height: 100%; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            backface-visibility: hidden; box-shadow: 0 0 30px rgba(227,30,36,0.6);
-        }
-        .logo-front {
-            background: linear-gradient(135deg, #E31E24, #8B0000);
-            transform: rotateY(0deg); border: 3px solid #FFD700;
-        }
-        .logo-back {
-            background: linear-gradient(135deg, #FFD700, #E31E24);
-            transform: rotateY(180deg); border: 3px solid #fff;
-        }
-        .logo-front span, .logo-back span { font-size: 2.5rem; font-weight: bold; }
-        .logo-front span { color: #FFD700; }
-        .logo-back span { color: #E31E24; }
-        
-        .official-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, #E31E24, #8B0000);
-            padding: 5px 15px; border-radius: 40px; font-size: 0.7rem;
-            border: 1px solid #FFD700;
-        }
-        .header h1 {
-            font-size: 1.5rem;
-            background: linear-gradient(135deg, #FFD700, #E31E24);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .subtitle { font-size: 0.7rem; opacity: 0.8; }
-        
-        .firebase-status {
-            display: inline-block; padding: 5px 12px; border-radius: 20px;
-            font-size: 0.7rem; background: rgba(0,0,0,0.3);
-        }
-        
-        /* Phone Input */
-        .phone-input-card {
-            background: rgba(255,255,255,0.08); backdrop-filter: blur(12px);
-            border-radius: 24px; padding: 20px; margin-bottom: 20px;
-            border: 1px solid rgba(255,215,0,0.3);
-        }
-        .phone-input-group { display: flex; gap: 10px; }
-        .phone-input-group input {
-            flex: 1; padding: 14px 18px; border-radius: 50px;
-            border: 1px solid rgba(255,215,0,0.3);
-            background: rgba(255,255,255,0.1); color: #fff; font-size: 0.9rem;
-        }
-        .phone-input-group button {
-            padding: 14px 24px; border-radius: 50px;
-            background: linear-gradient(135deg, #FFD700, #E31E24);
-            border: none; color: #1a1a2e; font-weight: bold; cursor: pointer;
-        }
-        .btn-secondary {
-            background: rgba(255,215,0,0.2); color: #FFD700;
-            border: 1px solid rgba(255,215,0,0.5); padding: 12px;
-            border-radius: 40px; font-weight: bold; cursor: pointer;
-            width: 100%; text-align: center;
-        }
-        
-        /* Package Grid */
-        .packages { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 30px; }
-        .package-card {
-            background: rgba(255,255,255,0.08); backdrop-filter: blur(12px);
-            border-radius: 20px; padding: 18px 12px; text-align: center;
-            border: 1px solid rgba(255,215,0,0.3); cursor: pointer; transition: all 0.3s ease;
-        }
-        .package-card:hover { transform: translateY(-5px); border-color: #FFD700; }
-        .package-card.selected { border: 2px solid #FFD700; background: rgba(227,30,36,0.2); }
-        .package-name { color: #FFD700; font-weight: bold; margin-bottom: 5px; }
-        .package-desc { font-size: 0.65rem; opacity: 0.8; margin: 5px 0; }
-        .package-price { font-size: 1.2rem; font-weight: bold; }
-        
-        /* Status Card */
-        .status-card {
-            background: rgba(255,255,255,0.08); backdrop-filter: blur(12px);
-            border-radius: 24px; padding: 20px; margin-bottom: 20px;
-            border: 1px solid rgba(255,215,0,0.3); transition: all 0.3s ease;
-        }
-        .status-card:hover { transform: translateY(-3px); border-color: #FFD700; }
-        .status-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .status-header h3 { color: #FFD700; font-size: 1rem; }
-        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
-        .status-active { background: #00c853; }
-        .status-expired { background: #dc3545; }
-        .status-info { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
-        .status-item { background: rgba(0,0,0,0.3); border-radius: 16px; padding: 10px; text-align: center; }
-        .status-item span:first-child { font-size: 0.7rem; opacity: 0.7; display: block; }
-        .status-item span:last-child { font-size: 0.85rem; font-weight: bold; display: block; margin-top: 5px; }
-        .countdown { text-align: center; padding: 12px; background: rgba(227,30,36,0.2); border-radius: 16px; }
-        .countdown-number { font-size: 1.5rem; font-weight: bold; color: #FFD700; }
-        .renew-btn {
-            background: linear-gradient(135deg, #FFD700, #E31E24); border: none;
-            padding: 10px; border-radius: 40px; color: #1a1a2e;
-            font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px;
-        }
-        
-        /* Admin Controls */
-        .admin-controls { display: none; margin-top: 10px; }
-        .admin-controls.show { display: block; }
-        .admin-btn {
-            background: #ff9800; border: none; padding: 8px 15px;
-            border-radius: 20px; color: #fff; cursor: pointer; font-size: 0.7rem;
-            width: 100%;
-        }
-        .admin-btn.danger { background: #dc3545; }
-        
-        /* Form */
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-size: 0.85rem; }
-        .form-group input, .form-group textarea {
-            width: 100%; padding: 12px; border-radius: 20px;
-            border: 1px solid rgba(255,215,0,0.3);
-            background: rgba(255,255,255,0.1); color: #fff;
-        }
-        .btn-group { display: flex; gap: 12px; margin-top: 20px; }
-        .btn { flex: 1; padding: 12px; border-radius: 40px; font-weight: bold; cursor: pointer; border: none; text-align: center; }
-        .btn-success { background: linear-gradient(135deg, #FFD700, #E31E24); color: #1a1a2e; }
-        .btn-danger { background: rgba(220,53,69,0.9); color: #fff; }
-        
-        .payment-section { background: rgba(255,255,255,0.06); border-radius: 24px; padding: 20px; margin-top: 20px; }
-        .payment-info { background: rgba(0,0,0,0.4); border-radius: 18px; padding: 14px; text-align: center; }
-        .copy-btn {
-            background: linear-gradient(135deg, #FFD700, #E31E24); border: none;
-            padding: 6px 18px; border-radius: 50px; cursor: pointer; margin-top: 6px;
-        }
-        .file-upload {
-            border: 2px dashed rgba(255,215,0,0.5); border-radius: 18px;
-            padding: 20px; text-align: center; cursor: pointer;
-        }
-        .file-upload input { display: none; }
-        .screenshot-preview { margin-top: 15px; text-align: center; }
-        .screenshot-preview img { max-width: 100%; max-height: 160px; border-radius: 14px; border: 2px solid #FFD700; }
-        
-        .modal {
-            display: none; position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%; background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(8px); z-index: 1000;
-            justify-content: center; align-items: center;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: linear-gradient(135deg, #1a0a2a, #0a0a2a);
-            border-radius: 28px; padding: 25px; max-width: 320px; width: 90%;
-            text-align: center; border: 2px solid #FFD700;
-        }
-        .summary-item { margin: 12px 0; padding: 10px; background: rgba(227,30,36,0.15); border-radius: 14px; }
-        
-        .footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid rgba(255,215,0,0.2); font-size: 0.7rem; }
-        .heart { color: #E31E24; animation: heartbeat 1.5s infinite; display: inline-block; }
-        @keyframes heartbeat { 0%,100% { transform: scale(1); } 50% { transform: scale(1.2); } }
-        
-        .toast {
-            position: fixed; bottom: 30px; left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(0,0,0,0.95); color: #FFD700;
-            padding: 10px 20px; border-radius: 50px; font-size: 0.8rem;
-            z-index: 1100; transition: transform 0.3s ease;
-            border: 1px solid #FFD700;
-        }
-        .toast.show { transform: translateX(-50%) translateY(0); }
-        
-        hr { border-color: rgba(255,215,0,0.2); margin: 12px 0; }
-        @media (max-width: 480px) { .packages { gap: 12px; } .status-info { grid-template-columns: 1fr; } }
-    </style>
-</head>
-<body>
-    <!-- Running Background -->
-    <div class="running-bg">
-        <div class="running-text">MYTEL • MYTEL • MYTEL • MYTEL • MYTEL •</div>
-        <div class="running-text">MYTEL OFFICIAL • MYTEL OFFICIAL • MYTEL OFFICIAL •</div>
-        <div class="running-text">MYTEL DATA • MYTEL DATA • MYTEL DATA •</div>
-        <div class="running-text">MYTEL VIP • MYTEL VIP • MYTEL VIP •</div>
-        <div class="running-text">OFFICIAL SELLER • OFFICIAL SELLER •</div>
-        <div class="running-text">MYTEL • MYTEL • MYTEL • MYTEL • MYTEL •</div>
-        <div class="running-text">DATA • DATA • DATA • DATA • DATA •</div>
-    </div>
+<!-- Order Tracking Section - Website မှာ ထည့်ရန် -->
+<div class="track-order-section" style="margin-top: 3rem; padding: 1.5rem; background: rgba(15,23,42,0.6); border-radius: 20px;">
+  <h3 style="color: #facc15; margin-bottom: 1rem;">
+    <i class="fas fa-search"></i> အော်ဒါအခြေအနေ စစ်ဆေးရန်
+  </h3>
+  <p style="color: #94a3b8; margin-bottom: 1rem;">သင့်အော်ဒါရဲ့ ကျန်ရက်များကို စစ်ဆေးနိုင်ပါသည်။</p>
+  
+  <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+    <input type="text" id="trackOrderId" placeholder="အော်ဒါနံပါတ် (ဥပမာ - 1001)" 
+           style="flex:1; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: white;">
+    <input type="tel" id="trackPhone" placeholder="ဖုန်းနံပါတ် (09xxxxxxxxx)" 
+           style="flex:1; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: white;">
+    <button onclick="trackOrder()" style="padding: 12px 24px; background: #facc15; border: none; border-radius: 10px; font-weight: 600;">
+      <i class="fas fa-search"></i> စစ်ဆေးမည်
+    </button>
+  </div>
+  
+  <div id="trackResult" style="margin-top: 1.5rem; display: none;">
+    <!-- Result will show here -->
+  </div>
+</div>
 
-    <div id="networkStatus" class="network-status online">🟢 Online Mode</div>
-
-    <div class="container">
-        <div class="logo-container">
-            <div class="logo-3d"><div class="logo-front"><span>ATH</span></div><div class="logo-back"><span>ATH</span></div></div>
-            <div class="official-badge">✨ OFFICIAL SELLER ✨</div>
-            <div class="header"><h1>MYTEL VIP</h1><div class="subtitle">POWERED BY ATH DIGITAL HUB</div></div>
+<script>
+async function trackOrder() {
+  const orderId = document.getElementById('trackOrderId').value;
+  const phone = document.getElementById('trackPhone').value;
+  
+  if (!orderId || !phone) {
+    alert("အော်ဒါနံပါတ်နှင့် ဖုန်းနံပါတ် နှစ်ခုလုံးထည့်ပါ။");
+    return;
+  }
+  
+  const resultDiv = document.getElementById('trackResult');
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = '<div style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> စစ်ဆေးနေပါသည်...</div>';
+  
+  try {
+    const res = await fetch(`/api/track-order?orderId=${orderId}&phone=${phone}`);
+    const data = await res.json();
+    
+    if (!data.success) {
+      resultDiv.innerHTML = `
+        <div style="background: #ef444420; border: 1px solid #ef4444; border-radius: 12px; padding: 1rem; text-align: center;">
+          <i class="fas fa-exclamation-circle" style="color: #ef4444; font-size: 2rem;"></i>
+          <p style="margin-top: 0.5rem;">${data.message}</p>
         </div>
-
-        <div style="text-align: center; margin-bottom: 15px;">
-            <div id="firebaseStatus" class="firebase-status">🔄 စစ်ဆေးနေပါသည်...</div>
+      `;
+      return;
+    }
+    
+    const order = data.order;
+    const countdown = order.countdown;
+    
+    let statusHtml = '';
+    let countdownHtml = '';
+    
+    // Status badge
+    const statusMap = {
+      'pending_payment': { text: '⏳ ဆိုင်းငံ့ (ငွေလွှဲရန်)', color: '#f97316' },
+      'payment_received': { text: '💰 ငွေလွှဲပြီး (စစ်ဆေးနေပါသည်)', color: '#3b82f6' },
+      'approved': { text: '✅ ဒေတာသွင်းပြီး (အသုံးပြုနိုင်ပါပြီ)', color: '#22c55e' },
+      'expired': { text: '⏰ သက်တမ်းကုန်ဆုံးပါပြီ', color: '#ef4444' },
+      'rejected': { text: '❌ ပယ်ဖျက်ပြီး', color: '#ef4444' }
+    };
+    const statusInfo = statusMap[order.status] || { text: order.status, color: '#94a3b8' };
+    
+    statusHtml = `<span style="display: inline-block; padding: 4px 12px; background: ${statusInfo.color}20; border: 1px solid ${statusInfo.color}; border-radius: 20px; font-size: 0.8rem;">${statusInfo.text}</span>`;
+    
+    // Countdown display
+    if (countdown) {
+      const remaining = countdown.daysRemaining;
+      let progressPercent = (remaining / 30) * 100;
+      let barColor = '#22c55e';
+      if (remaining <= 5) barColor = '#ef4444';
+      else if (remaining <= 10) barColor = '#f97316';
+      
+      countdownHtml = `
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #334155;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+            <span><i class="fas fa-calendar-check"></i> စတင်ရက်: ${new Date(countdown.startDate).toLocaleDateString('my-MM')}</span>
+            <span><i class="fas fa-calendar-times"></i> ကုန်ဆုံးရက်: ${new Date(countdown.endDate).toLocaleDateString('my-MM')}</span>
+          </div>
+          <div style="background: #0f172a; border-radius: 10px; height: 20px; overflow: hidden;">
+            <div style="width: ${progressPercent}%; background: ${barColor}; height: 100%; transition: width 0.5s;"></div>
+          </div>
+          <div style="text-align: center; margin-top: 0.5rem;">
+            <span style="font-size: 1.5rem; font-weight: bold; color: ${barColor};">${remaining > 0 ? remaining : 0}</span>
+            <span> ရက် ကျန်ပါသေးသည်</span>
+            ${remaining <= 5 && remaining > 0 ? '<p style="color: #ef4444; margin-top: 0.5rem;"><i class="fas fa-bell"></i> သက်တမ်းကုန်ခါနီးပါပြီ။ ပြန်လည်မှာယူနိုင်ပါသည်။</p>' : ''}
+            ${remaining <= 0 ? '<p style="color: #ef4444; margin-top: 0.5rem;"><i class="fas fa-hourglass-end"></i> ဒေတာသက်တမ်း ကုန်ဆုံးသွားပါပြီ။ အသစ်မှာယူနိုင်ပါသည်။</p>' : ''}
+          </div>
         </div>
-
-        <div class="phone-input-card">
-            <div class="phone-input-group">
-                <input type="tel" id="checkPhone" placeholder="ဖုန်းနံပါတ်ထည့်ပါ (09xxxxxxxxx)">
-                <button id="checkStatusBtn">🔍 စစ်ဆေးမည်</button>
-            </div>
-            <div style="margin-top: 12px;"><button class="btn-secondary" id="refreshPageBtn" style="width:100%;">🔄 Page ပြန်စမည်</button></div>
+      `;
+    } else if (order.status === 'approved' && !countdown) {
+      countdownHtml = '<div style="margin-top: 1rem; padding: 1rem; background: #facc1520; border-radius: 10px; text-align: center;">⏳ ဒေတာ Countdown စတင်ရန် စောင့်ဆိုင်းနေပါသည်...</div>';
+    }
+    
+    resultDiv.innerHTML = `
+      <div style="background: #0f172a; border-radius: 16px; padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+          <h4><i class="fas fa-box"></i> အော်ဒါ #${order.id}</h4>
+          ${statusHtml}
         </div>
-
-        <div id="statusContainer"></div>
-
-        <div class="packages" id="packagesContainer"></div>
-
-        <div id="orderForm" style="display: none;">
-            <div class="form-group"><label>📞 ဖုန်းနံပါတ်</label><input type="tel" id="phone" placeholder="09xxxxxxxxx"></div>
-            <div class="form-group"><label>📝 မှတ်ချက် (Optional)</label><textarea id="note" rows="2" placeholder="အပိုမှတ်ချက်ရှိပါက..."></textarea></div>
-            <div class="payment-section">
-                <h4>💰 ငွေလွှဲရမည့်နေရာ</h4>
-                <div class="payment-info">
-                    <p>🏧 <strong>KPay / WavePay</strong></p>
-                    <p style="font-size:1.2rem; font-weight:bold;">09789999368</p>
-                    <p>👤 <strong>AUNG THU HTWE</strong></p>
-                    <button class="copy-btn" onclick="copyNumber()">📋 ကူးယူမည်</button>
-                </div>
-                <div class="file-upload" id="fileUploadArea">
-                    <span>📸</span><p>ငွေလွှဲပြေစာပုံ တင်ရန်</p>
-                    <input type="file" id="screenshot" accept="image/*">
-                </div>
-                <div class="screenshot-preview" id="preview"></div>
-                <hr>
-                <div class="btn-group">
-                    <button class="btn btn-success" id="submitBtn">✅ အော်ဒါတင်မည်</button>
-                    <button class="btn btn-danger" id="cancelOrderBtn">🗑️ ပယ်ဖျက်မည်</button>
-                </div>
-            </div>
+        <div style="margin-top: 1rem;">
+          <p><i class="fas fa-tag"></i> Package: <strong>${order.packageName}</strong></p>
+          <p><i class="fas fa-phone"></i> ဖုန်းနံပါတ်: ${order.phone}</p>
+          <p><i class="fas fa-calendar"></i> မှာယူသည့်ရက်: ${new Date(order.createdAt).toLocaleDateString('my-MM')}</p>
         </div>
-
-        <div style="text-align: center; margin-top: 20px; display: none;" id="changePackageBtnContainer">
-            <button class="btn-secondary" id="changePackageBtn" style="width: auto; padding: 10px 20px;">🔄 Package ပြောင်းမည်</button>
-        </div>
-
-        <div class="footer">
-            <div class="brand">ATH DIGITAL HUB</div>
-            <p>© Developed by <strong>Aung Thu Htwe</strong></p>
-            <p>All Rights Reserved. <span class="heart">❤️</span></p>
-        </div>
-    </div>
-
-    <div class="modal" id="summaryModal">
-        <div class="modal-content">
-            <h3>📋 အော်ဒါအကျဉ်းချုပ်</h3>
-            <div class="summary-item"><strong>📦 Package</strong><br><span id="summaryPackage">-</span></div>
-            <div class="summary-item"><strong>📞 ဖုန်းနံပါတ်</strong><br><span id="summaryPhone">-</span></div>
-            <div class="summary-item"><strong>💰 ကျသင့်ငွေ</strong><br><span id="summaryPrice">- KS</span></div>
-            <div style="display: flex; gap: 12px; margin-top: 20px;">
-                <button class="btn btn-secondary" onclick="closeModal()">🔙 ပြန်မယ်</button>
-                <button class="btn btn-success" id="confirmOrderBtn">✅ အတည်ပြုမယ်</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="toast" id="toast"></div>
-
-    <script>
-        const PACKAGES = {
-            "VIP LEVEL - 1": { price: 15000, desc: "22GB / 8000 Mins / 5000 SMS" },
-            "VIP LEVEL - 2": { price: 20000, desc: "40GB / 250 Mins / 25 Any Net" },
-            "VIP LEVEL - 3": { price: 25000, desc: "40GB / 1400 Mins / 8000 SMS" },
-            "VIP LEVEL - 4 (ULTRA)": { price: 30000, desc: "120GB High-Speed Data" }
-        };
-
-        let selectedPackage = null;
-        let selectedFile = null;
-        let lastCheckedPhone = '';
-        let currentOrders = [];
-        let online = true;
-
-        // Check Firebase Status
-        async function checkFirebaseStatus() {
-            try {
-                const res = await fetch('/firebase-status');
-                const data = await res.json();
-                const el = document.getElementById('firebaseStatus');
-                if (data.firebaseConnected) {
-                    el.innerHTML = '🔥 Firebase Connected ✅ | Cloud Database';
-                    el.style.background = 'rgba(0,200,83,0.2)';
-                    el.style.border = '1px solid #00c853';
-                    el.style.color = '#00c853';
-                } else {
-                    el.innerHTML = '⚠️ Local Mode | Data may reset on restart';
-                    el.style.background = 'rgba(255,152,0,0.2)';
-                    el.style.border = '1px solid #ff9800';
-                    el.style.color = '#ff9800';
-                }
-            } catch(e) {}
-        }
-
-        // Admin Delete Order
-        async function adminDeleteOrder(orderId, phone) {
-            if (!confirm(`အော်ဒါ #${orderId} (${phone}) ကို ဖျက်မှာသေချာလား?`)) return;
-            try {
-                const res = await fetch(`/api/admin/order/${orderId}`, {
-                    method: 'DELETE',
-                    headers: { 'admin-key': 'ATH_ADMIN_2024' }
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showToast(`✅ အော်ဒါ #${orderId} ဖျက်ပြီးပါပြီ`);
-                    if (lastCheckedPhone) checkOrderStatus();
-                } else {
-                    showToast('❌ ဖျက်ရန် မအောင်မြင်ပါ');
-                }
-            } catch(e) { showToast('❌ Error'); }
-        }
-
-        // Check Order Status
-        async function checkOrderStatus() {
-            const phone = document.getElementById('checkPhone').value.trim();
-            if (!phone || phone.length < 9) { showToast('⚠️ ဖုန်းနံပါတ် မှန်ကန်စွာထည့်ပါ'); return; }
-            lastCheckedPhone = phone;
-            showToast('⏳ စစ်ဆေးနေပါသည်...');
-            try {
-                const res = await fetch(`/api/orders/${phone}`);
-                const data = await res.json();
-                if (data.success && data.orders.length > 0) displayStatus(data.orders);
-                else document.getElementById('statusContainer').innerHTML = `<div class="status-card"><p>📭 အတည်ပြုပြီးသော အော်ဒါမရှိသေးပါ။</p></div>`;
-            } catch(e) { showToast('❌ Error'); }
-        }
-
-        function displayStatus(orders) {
-            currentOrders = orders;
-            let html = '';
-            for (const order of orders) {
-                const statusClass = order.isActive ? 'status-active' : 'status-expired';
-                const statusText = order.isActive ? '✅ Active' : '❌ Expired';
-                
-                let startDate = '⏳ စောင့်ဆိုင်းနေဆဲ';
-                if (order.approvedAt && order.approvedAt !== 'null' && !order.approvedAt.includes('NaN')) {
-                    startDate = order.approvedAt;
-                }
-                
-                let expiryDate = '⏳ စောင့်ဆိုင်းနေဆဲ';
-                if (order.expiredAt && order.expiredAt !== 'null' && !order.expiredAt.includes('NaN')) {
-                    expiryDate = order.expiredAt;
-                }
-                
-                html += `
-                    <div class="status-card" id="order-${order.id}">
-                        <div class="status-header"><h3>📦 ${order.packageName}</h3><div class="status-badge ${statusClass}">${statusText}</div></div>
-                        <div style="font-size:0.7rem; opacity:0.7;">🆔 အော်ဒါနံပါတ်: ${order.id}</div>
-                        <div class="status-info">
-                            <div class="status-item"><span>📞 ဖုန်းနံပါတ်</span><span>${order.phone}</span></div>
-                            <div class="status-item"><span>📅 စတင်ရက်</span><span>${startDate}</span></div>
-                            <div class="status-item"><span>⏰ ကုန်ဆုံးရက်</span><span>${expiryDate}</span></div>
-                        </div>
-                        ${order.isActive && order.daysLeft > 0 ? `<div class="countdown"><span>⏳ ကျန်ရက်များ</span><br><span class="countdown-number">${order.daysLeft}</span><span> ရက်</span></div>` : ''}
-                        ${!order.isActive ? `<button class="renew-btn" onclick="scrollToPackages()">🔄 အသစ်ဝယ်ယူရန်</button>` : ''}
-                        <div class="admin-controls" id="admin-controls-${order.id}">
-                            <button class="admin-btn danger" onclick="adminDeleteOrder(${order.id}, '${order.phone}')">🗑️ ဖျက်မည်</button>
-                        </div>
-                    </div>
-                `;
-            }
-            document.getElementById('statusContainer').innerHTML = html;
-            
-            // Double click to show admin controls
-            document.querySelectorAll('.status-card').forEach(card => {
-                card.addEventListener('dblclick', (e) => {
-                    const id = card.id.replace('order-', '');
-                    const controls = document.getElementById(`admin-controls-${id}`);
-                    if (controls) controls.classList.toggle('show');
-                });
-            });
-        }
-
-        function scrollToPackages() { document.querySelector('.packages').scrollIntoView({ behavior: 'smooth' }); }
-
-        function renderPackages() {
-            const container = document.getElementById('packagesContainer');
-            container.innerHTML = '';
-            for (const [name, data] of Object.entries(PACKAGES)) {
-                const card = document.createElement('div');
-                card.className = 'package-card';
-                if (selectedPackage === name) card.classList.add('selected');
-                card.innerHTML = `<div class="package-name">${name}</div><div class="package-desc">${data.desc}</div><div class="package-price">${data.price.toLocaleString()} <small>MMK</small></div>`;
-                card.onclick = () => selectPackage(name);
-                container.appendChild(card);
-            }
-        }
-
-        function selectPackage(name) {
-            selectedPackage = name;
-            renderPackages();
-            document.getElementById('orderForm').style.display = 'block';
-            document.getElementById('changePackageBtnContainer').style.display = 'block';
-            showToast(`✅ ${name} ရွေးပြီးပါပြီ`);
-        }
-
-        document.getElementById('changePackageBtn')?.addEventListener('click', () => {
-            selectedPackage = null; selectedFile = null;
-            renderPackages();
-            document.getElementById('orderForm').style.display = 'none';
-            document.getElementById('changePackageBtnContainer').style.display = 'none';
-            document.getElementById('phone').value = '';
-            document.getElementById('note').value = '';
-            document.getElementById('preview').innerHTML = '';
-            document.getElementById('screenshot').value = '';
-            showToast('🔄 Package အသစ်ရွေးနိုင်ပါပြီ');
-        });
-
-        document.getElementById('cancelOrderBtn')?.addEventListener('click', () => {
-            if (confirm('အော်ဒါကို ပယ်ဖျက်မှာလား？')) {
-                selectedPackage = null; selectedFile = null;
-                renderPackages();
-                document.getElementById('orderForm').style.display = 'none';
-                document.getElementById('changePackageBtnContainer').style.display = 'none';
-                document.getElementById('phone').value = '';
-                document.getElementById('note').value = '';
-                document.getElementById('preview').innerHTML = '';
-                document.getElementById('screenshot').value = '';
-                showToast('🗑️ အော်ဒါကို ပယ်ဖျက်လိုက်ပါပြီ');
-            }
-        });
-
-        const fileInput = document.getElementById('screenshot');
-        const fileUploadArea = document.getElementById('fileUploadArea');
-        fileUploadArea.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files && e.target.files[0]) {
-                const file = e.target.files[0];
-                if (!file.type.match('image.*')) { showToast('⚠️ ပုံဖိုင်ကိုသာ ရွေးပါ'); return; }
-                selectedFile = file;
-                const reader = new FileReader();
-                reader.onload = (event) => { document.getElementById('preview').innerHTML = `<img src="${event.target.result}" alt="Preview">`; };
-                reader.readAsDataURL(selectedFile);
-                showToast('📸 ပုံတင်ပြီးပါပြီ');
-            }
-        });
-
-        function fileToBase64(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.readAsDataURL(file);
-            });
-        }
-
-        document.getElementById('submitBtn')?.addEventListener('click', () => {
-            const phone = document.getElementById('phone').value.trim();
-            if (!selectedPackage) { showToast('⚠️ Package တစ်ခုရွေးပါ'); return; }
-            if (!phone || phone.length < 9) { showToast('⚠️ ဖုန်းနံပါတ်မှန်ကန်စွာထည့်ပါ'); return; }
-            if (!selectedFile) { showToast('⚠️ ငွေလွှဲပြေစာပုံ တင်ပါ'); return; }
-            document.getElementById('summaryPackage').innerText = selectedPackage;
-            document.getElementById('summaryPhone').innerText = phone;
-            document.getElementById('summaryPrice').innerText = PACKAGES[selectedPackage].price.toLocaleString() + ' KS';
-            document.getElementById('summaryModal').classList.add('active');
-        });
-
-        document.getElementById('confirmOrderBtn')?.addEventListener('click', async () => {
-            closeModal();
-            const phone = document.getElementById('phone').value.trim();
-            const note = document.getElementById('note').value;
-            const imgBase64 = await fileToBase64(selectedFile);
-            showToast('⏳ Processing...');
-            
-            try {
-                const orderRes = await fetch('/order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ packageName: selectedPackage, phone })
-                });
-                const orderData = await orderRes.json();
-                if (!orderData.success) throw new Error();
-                
-                const formData = new FormData();
-                formData.append('orderId', orderData.orderId);
-                formData.append('packageName', selectedPackage);
-                formData.append('phone', phone);
-                formData.append('note', note);
-                const file = await fetch(imgBase64).then(r => r.blob());
-                formData.append('screenshot', file, 'screenshot.jpg');
-                
-                const payRes = await fetch('/submit-payment', { method: 'POST', body: formData });
-                const payData = await payRes.json();
-                
-                if (payData.success) {
-                    showToast('✅ Order submitted!');
-                    selectedPackage = null; selectedFile = null;
-                    renderPackages();
-                    document.getElementById('orderForm').style.display = 'none';
-                    document.getElementById('changePackageBtnContainer').style.display = 'none';
-                    document.getElementById('phone').value = '';
-                    document.getElementById('note').value = '';
-                    document.getElementById('preview').innerHTML = '';
-                    document.getElementById('screenshot').value = '';
-                } else {
-                    throw new Error();
-                }
-            } catch(e) {
-                showToast('❌ Failed to submit');
-            }
-        });
-
-        document.getElementById('checkStatusBtn')?.addEventListener('click', checkOrderStatus);
-        document.getElementById('refreshPageBtn')?.addEventListener('click', () => { showToast('🔄 Page reloading...'); setTimeout(() => location.reload(), 500); });
-        
-        function closeModal() { document.getElementById('summaryModal').classList.remove('active'); }
-        function copyNumber() { navigator.clipboard.writeText('09789999368'); showToast('📋 ကူးယူပြီးပါပြီ'); }
-        function showToast(msg) { const toast = document.getElementById('toast'); toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
-        
-        document.getElementById('summaryModal')?.addEventListener('click', (e) => { if (e.target === document.getElementById('summaryModal')) closeModal(); });
-        
-        // Auto refresh every 30 seconds
-        setInterval(() => { if (lastCheckedPhone) checkOrderStatus(); }, 30000);
-        
-        checkFirebaseStatus();
-        renderPackages();
-    </script>
-</body>
-</html>
+        ${countdownHtml}
+      </div>
+    `;
+    
+  } catch (error) {
+    resultDiv.innerHTML = `
+      <div style="background: #ef444420; border-radius: 12px; padding: 1rem; text-align: center;">
+        <p>❌ ဆာဗာအမှား။ နောက်မှပြန်စမ်းပါ။</p>
+      </div>
+    `;
+  }
+}
+</script>
