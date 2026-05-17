@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
-// ❌ node-cron မလိုတော့ဘူး
 
 const app = express();
 
@@ -11,26 +10,10 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ========== FILE UPLOAD ==========
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadDir = path.join(__dirname, 'temp_uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '.jpg');
-  }
-});
-const upload = multer({ storage: storage });
-
-// ========== TELEGRAM BOT CONFIG ==========
+// ========== TELEGRAM CONFIG ==========
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.CHAT_ID;
-const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID || "-1003783137346";
+const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID;
 
 // ========== DATA STORAGE ==========
 let orders = [];
@@ -43,149 +26,143 @@ const PACKAGES = {
   "VIP LEVEL - 4 (ULTRA)": { price: 30000, desc: "120GB High-Speed Data" }
 };
 
-// ========== HELPER FUNCTIONS ==========
+// ========== TELEGRAM SEND FUNCTION (FIXED) ==========
 async function sendTelegramMessage(chatId, text, keyboard = null) {
-  if (!BOT_TOKEN || !chatId) return false;
+  // Log for debugging
+  console.log(`📤 Attempting to send to chatId: ${chatId}`);
+  console.log(`📝 Message: ${text.substring(0, 100)}...`);
+  
+  // Check if token exists
+  if (!BOT_TOKEN) {
+    console.error("❌ BOT_TOKEN is missing! Please set it in environment variables.");
+    return false;
+  }
+  
+  if (!chatId) {
+    console.error("❌ CHAT_ID is missing! Please set it in environment variables.");
+    return false;
+  }
+  
   try {
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+    
     const body = {
       chat_id: chatId,
       text: text,
       parse_mode: 'Markdown'
     };
-    if (keyboard) body.reply_markup = JSON.stringify(keyboard);
+    
+    if (keyboard) {
+      body.reply_markup = JSON.stringify(keyboard);
+    }
+    
+    console.log(`🌐 Sending request to Telegram API...`);
     
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
+    
     const result = await response.json();
-    return result.ok;
+    
+    if (result.ok) {
+      console.log(`✅ Message sent successfully to ${chatId}`);
+      return true;
+    } else {
+      console.error(`❌ Telegram API Error: ${result.description}`);
+      return false;
+    }
   } catch (error) {
-    console.error("Telegram send error:", error);
+    console.error(`❌ Network Error: ${error.message}`);
     return false;
   }
 }
 
+// Send photo to Telegram
 async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
-  if (!BOT_TOKEN) return false;
+  console.log(`📸 Sending photo to ${chatId}...`);
+  
+  if (!BOT_TOKEN) {
+    console.error("❌ BOT_TOKEN is missing!");
+    return false;
+  }
+  
   try {
     const formData = new FormData();
     formData.append('chat_id', chatId);
     formData.append('photo', new Blob([buffer], { type: 'image/jpeg' }), 'screenshot.jpg');
     formData.append('caption', caption);
     formData.append('parse_mode', 'Markdown');
-    if (keyboard) formData.append('reply_markup', JSON.stringify(keyboard));
+    
+    if (keyboard) {
+      formData.append('reply_markup', JSON.stringify(keyboard));
+    }
     
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
       body: formData
     });
+    
     const result = await response.json();
-    return result.ok;
+    
+    if (result.ok) {
+      console.log(`✅ Photo sent successfully to ${chatId}`);
+      return true;
+    } else {
+      console.error(`❌ Telegram Photo Error: ${result.description}`);
+      return false;
+    }
   } catch (error) {
-    console.error("Telegram photo error:", error);
+    console.error(`❌ Photo Send Error: ${error.message}`);
     return false;
   }
 }
 
-// ========== COUNTDOWN FUNCTIONS ==========
-function calculateRemainingDays(endDate) {
-  const today = new Date();
-  const end = new Date(endDate);
-  const diffTime = end - today;
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
-}
-
-function updateAllOrdersRemainingDays() {
-  console.log('🔄 Running countdown check...');
-  let updatedCount = 0;
-  let expiredCount = 0;
+// ========== TEST TELEGRAM CONNECTION ==========
+app.get('/test-telegram', async (req, res) => {
+  console.log("🔧 Testing Telegram connection...");
   
-  orders.forEach(order => {
-    if (order.status === 'approved' && order.endDate) {
-      const remaining = calculateRemainingDays(order.endDate);
-      order.daysRemaining = remaining;
-      
-      if (remaining <= 0 && !order.isExpired) {
-        order.isExpired = true;
-        order.status = 'expired';
-        expiredCount++;
-        
-        sendTelegramMessage(ADMIN_CHAT_ID, 
-          `⏰ **သက်တမ်းကုန်ဆုံးကြောင်း အကြောင်းကြားချက်**\n\n` +
-          `📞 ဖုန်း: ${order.phone}\n` +
-          `📦 Package: ${order.packageName}\n` +
-          `📅 ကုန်ဆုံးရက်: ${new Date(order.endDate).toLocaleDateString('my-MM')}`
-        );
-      }
-      
-      const alertDays = [5, 3, 1];
-      if (alertDays.includes(remaining) && order.lastAlertDay !== remaining && remaining > 0) {
-        order.lastAlertDay = remaining;
-        
-        sendTelegramMessage(ADMIN_CHAT_ID,
-          `⚠️ **ဒေတာသက်တမ်းကုန်ခါနီး အကြောင်းကြားချက်**\n\n` +
-          `📞 ဖုန်း: ${order.phone}\n` +
-          `📦 Package: ${order.packageName}\n` +
-          `⏳ ကျန်ရက်: ${remaining} ရက်`
-        );
-        
-        if (GROUP_CHAT_ID) {
-          sendTelegramMessage(GROUP_CHAT_ID,
-            `🔔 **သတိပေးချက်**\n\n` +
-            `📞 ${order.phone}\n` +
-            `⏳ ဒေတာသက်တမ်း ကုန်ဆုံးရန် **${remaining} ရက်** သာကျန်ပါသည်။\n` +
-            `💨 အခုပဲ ပြန်လည်မှာယူနိုင်ပါသည်။`
-          );
-        }
-      }
-      updatedCount++;
-    }
-  });
+  const testMessage = `
+🤖 *MYTEL Bot Connection Test*
+━━━━━━━━━━━━━━━━━━━━
+✅ Bot is working properly!
+📅 Time: ${new Date().toLocaleString()}
+🔧 Status: Connected
+━━━━━━━━━━━━━━━━━━━━
+If you see this, the bot is configured correctly!
+  `;
   
-  console.log(`✅ Updated ${updatedCount} orders | ⏰ Expired: ${expiredCount}`);
-  return { updatedCount, expiredCount };
-}
-
-// ========== DAILY SCHEDULER (node-cron အစား) ==========
-function scheduleDailyTask() {
-  const now = new Date();
-  const next9AM = new Date();
-  next9AM.setHours(9, 0, 0, 0);
+  const adminResult = await sendTelegramMessage(ADMIN_CHAT_ID, testMessage);
   
-  if (now > next9AM) {
-    next9AM.setDate(next9AM.getDate() + 1);
+  let groupResult = false;
+  if (GROUP_CHAT_ID) {
+    groupResult = await sendTelegramMessage(GROUP_CHAT_ID, testMessage);
   }
   
-  const msUntil9AM = next9AM - now;
-  console.log(`⏰ Next countdown check at: ${next9AM.toLocaleString()}`);
-  
-  setTimeout(() => {
-    updateAllOrdersRemainingDays();
-    scheduleDailyTask(); // Schedule next day
-  }, msUntil9AM);
-}
+  res.json({
+    success: adminResult,
+    botTokenSet: !!BOT_TOKEN,
+    adminChatIdSet: !!ADMIN_CHAT_ID,
+    groupChatIdSet: !!GROUP_CHAT_ID,
+    adminMessageSent: adminResult,
+    groupMessageSent: groupResult,
+    botToken: BOT_TOKEN ? `${BOT_TOKEN.substring(0, 10)}...` : null,
+    adminChatId: ADMIN_CHAT_ID,
+    groupChatId: GROUP_CHAT_ID
+  });
+});
 
-// Start the daily scheduler
-scheduleDailyTask();
-
-// Run once on startup
-setTimeout(() => {
-  updateAllOrdersRemainingDays();
-}, 5000);
-
-// ========== API ENDPOINTS ==========
-
-// Order endpoint
+// ========== ORDER ENDPOINT ==========
 app.post('/order', async (req, res) => {
   try {
     const { packageName, phone } = req.body;
+    console.log(`📦 New order request: ${packageName} for ${phone}`);
+    
     if (!packageName || !phone) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
+    
     const packageData = PACKAGES[packageName];
     if (!packageData) {
       return res.status(400).json({ success: false, message: "Invalid package" });
@@ -207,28 +184,65 @@ app.post('/order', async (req, res) => {
     };
     orders.unshift(newOrder);
     
-    console.log(`📦 Order #${newOrder.id} created for ${phone}`);
+    console.log(`✅ Order #${newOrder.id} created`);
+    
+    // 📤 Send notification to Admin via Telegram
+    const adminMessage = `
+🆕 *New Order Created* #${newOrder.id}
+━━━━━━━━━━━━━━━━━━━━
+📦 Package: ${packageName}
+📞 Phone: ${phone}
+💰 Price: ${packageData.price.toLocaleString()} KS
+📅 Time: ${new Date().toLocaleString()}
+━━━━━━━━━━━━━━━━━━━━
+⏳ Status: Waiting for payment
+    `;
+    
+    const sent = await sendTelegramMessage(ADMIN_CHAT_ID, adminMessage);
+    
+    if (!sent) {
+      console.error("⚠️ Failed to send Telegram notification!");
+    }
     
     res.json({ 
       success: true, 
       orderId: newOrder.id, 
       packageName, 
       price: packageData.price, 
-      phone
+      phone,
+      telegramNotified: sent
     });
+    
   } catch (error) {
     console.error("Order error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error: " + error.message });
   }
 });
 
-// Submit payment endpoint
+// ========== SUBMIT PAYMENT ENDPOINT ==========
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, 'temp_uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '.jpg');
+  }
+});
+const upload = multer({ storage: storage });
+
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
   
   try {
     const orderId = parseInt(req.body.orderId);
     const screenshot = req.file;
+    
+    console.log(`💰 Payment submission for order #${orderId}`);
     
     if (!screenshot) {
       return res.status(400).json({ success: false, message: "Screenshot required" });
@@ -246,30 +260,37 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     const fileBuffer = fs.readFileSync(tempFilePath);
     
     const caption = `
-🆕 **ငွေလွှဲပြေစာရရှိပါပြီ** #${orderId}
+💰 *Payment Received* #${orderId}
 ━━━━━━━━━━━━━━━━━━━━
 📦 Package: ${order.packageName}
-📞 ဖုန်း: ${order.phone}
-💰 ငွေပမာဏ: ${order.price.toLocaleString()} KS
-📅 အချိန်: ${new Date().toLocaleString('my-MM')}
+📞 Phone: ${order.phone}
+💰 Amount: ${order.price.toLocaleString()} KS
+📅 Time: ${new Date().toLocaleString()}
+━━━━━━━━━━━━━━━━━━━━
+✅ Please verify and approve
     `;
     
     const keyboard = {
       inline_keyboard: [
         [
-          { text: "✅ အတည်ပြုမည် (30 ရက် စတင်မည်)", callback_data: `approve_${orderId}` },
-          { text: "❌ ပယ်ဖျက်မည်", callback_data: `reject_${orderId}` }
+          { text: "✅ Approve (Start 30 Days)", callback_data: `approve_${orderId}` },
+          { text: "❌ Reject", callback_data: `reject_${orderId}` }
         ]
       ]
     };
     
-    await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
+    // Send to admin
+    const sent = await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
+    
+    if (!sent) {
+      console.error("⚠️ Failed to send photo to Telegram!");
+    }
     
     res.json({ success: true, message: "Payment submitted! Admin will verify." });
     
   } catch (error) {
     console.error("Payment submit error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error: " + error.message });
   } finally {
     if (tempFilePath && fs.existsSync(tempFilePath)) {
       fs.unlinkSync(tempFilePath);
@@ -277,7 +298,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   }
 });
 
-// Track order endpoint
+// ========== TRACK ORDER ENDPOINT ==========
 app.get('/api/track-order', (req, res) => {
   const { orderId, phone } = req.query;
   
@@ -288,19 +309,7 @@ app.get('/api/track-order', (req, res) => {
   const order = orders.find(o => o.id === parseInt(orderId) && o.phone === phone);
   
   if (!order) {
-    return res.json({ success: false, message: "အော်ဒါမတွေ့ပါ။ ကျေးဇူးပြု၍ ပြန်စစ်ဆေးပါ။" });
-  }
-  
-  let countdownInfo = null;
-  if (order.startDate && order.endDate) {
-    const remaining = calculateRemainingDays(order.endDate);
-    countdownInfo = {
-      startDate: order.startDate,
-      endDate: order.endDate,
-      daysRemaining: remaining > 0 ? remaining : 0,
-      isExpired: remaining <= 0,
-      statusMessage: remaining <= 0 ? "သက်တမ်းကုန်ဆုံးပါပြီ" : `ကျန်ရက် ${remaining} ရက်`
-    };
+    return res.json({ success: false, message: "Order not found" });
   }
   
   res.json({
@@ -311,43 +320,24 @@ app.get('/api/track-order', (req, res) => {
       phone: order.phone,
       price: order.price,
       status: order.status,
-      createdAt: order.createdAt,
-      countdown: countdownInfo
+      createdAt: order.createdAt
     }
   });
-});
-
-// Admin endpoints
-app.get('/api/admin/active-orders', (req, res) => {
-  const activeOrders = orders
-    .filter(o => o.status === 'approved' && !o.isExpired)
-    .map(o => ({
-      id: o.id,
-      phone: o.phone,
-      packageName: o.packageName,
-      startDate: o.startDate,
-      endDate: o.endDate,
-      daysRemaining: calculateRemainingDays(o.endDate),
-      price: o.price
-    }))
-    .sort((a, b) => a.daysRemaining - b.daysRemaining);
-  
-  res.json({ success: true, orders: activeOrders, count: activeOrders.length });
-});
-
-app.get('/orders-list', (req, res) => {
-  res.json({ orders: orders, count: orders.length });
 });
 
 // ========== TELEGRAM WEBHOOK ==========
 app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
   try {
+    console.log("📨 Webhook received:", JSON.stringify(req.body).substring(0, 200));
+    
     const { callback_query } = req.body;
     
     if (callback_query && callback_query.data) {
       const data = callback_query.data;
       const chatId = callback_query.message.chat.id;
+      const messageId = callback_query.message.message_id;
       
+      // Answer callback query
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -368,21 +358,12 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           order.daysRemaining = 30;
           order.status = 'approved';
           order.isExpired = false;
-          order.lastAlertDay = null;
           
-          await sendTelegramMessage(chatId, 
-            `✅ အော်ဒါ #${orderId} အတည်ပြုပြီး Countdown 30 ရက် စတင်ပါပြီ။\n\n` +
-            `📞 ${order.phone}\n` +
-            `📦 ${order.packageName}\n` +
-            `📅 ကုန်ဆုံးရက်: ${endDate.toLocaleDateString('my-MM')}`
-          );
+          await sendTelegramMessage(chatId, `✅ Order #${orderId} approved! 30 days countdown started.`);
           
           if (GROUP_CHAT_ID) {
-            await sendTelegramMessage(GROUP_CHAT_ID,
-              `🚨 **ဒေတာသွင်းပြီးပါပြီ** 🚨\n\n` +
-              `📞 ${order.phone}\n` +
-              `📦 ${order.packageName}\n` +
-              `⏳ 30 ရက်တိတိ အသုံးပြုနိုင်ပါပြီ။`
+            await sendTelegramMessage(GROUP_CHAT_ID, 
+              `🚨 *DATA ACTIVATED* 🚨\n\n📞 ${order.phone}\n📦 ${order.packageName}\n⏳ 30 days valid`
             );
           }
         }
@@ -393,7 +374,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         const order = orders.find(o => o.id === orderId);
         if (order) {
           order.status = 'rejected';
-          await sendTelegramMessage(chatId, `❌ အော်ဒါ #${orderId} ပယ်ဖျက်ပြီး။`);
+          await sendTelegramMessage(chatId, `❌ Order #${orderId} rejected.`);
         }
       }
     }
@@ -405,27 +386,42 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
   }
 });
 
-// Root endpoint
+// ========== ROOT ENDPOINT ==========
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ========== SERVER START ==========
 const PORT = process.env.PORT || 10000;
+
 app.listen(PORT, async () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅ Set' : '❌ Missing'}`);
-  console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
-  console.log(`👥 GROUP_CHAT_ID: ${GROUP_CHAT_ID ? '✅ Set' : '❌ Missing'}`);
+  console.log(`\n🚀 Server running on port ${PORT}`);
+  console.log(`=================================`));
+  console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅ SET' : '❌ MISSING'}`);
+  console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅ SET' : '❌ MISSING'}`);
+  console.log(`👥 GROUP_CHAT_ID: ${GROUP_CHAT_ID ? '✅ SET' : '⚠️ OPTIONAL'}`);
+  console.log(`=================================\n`);
   
+  // Set webhook
   if (BOT_TOKEN) {
     const webhookUrl = `https://ath-digital-hub.onrender.com/webhook/${BOT_TOKEN}`;
+    console.log(`🔗 Setting webhook to: ${webhookUrl}`);
+    
     try {
       const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${webhookUrl}`);
       const result = await response.json();
-      console.log("Webhook set:", result.ok ? "✅ Success" : "❌ Failed", result.description);
+      console.log(`📡 Webhook: ${result.ok ? '✅ SUCCESS' : '❌ FAILED'} - ${result.description || ''}`);
     } catch (error) {
-      console.error("Webhook error:", error);
+      console.error(`❌ Webhook error: ${error.message}`);
     }
   }
+  
+  // Send test message on startup
+  setTimeout(async () => {
+    console.log("\n🔧 Sending startup test message...");
+    const testResult = await sendTelegramMessage(ADMIN_CHAT_ID, 
+      `🤖 *MYTEL Bot is Online!*\n\n✅ Server started at ${new Date().toLocaleString()}\n🔧 Ready to receive orders.`
+    );
+    console.log(`📨 Startup test: ${testResult ? '✅ SENT' : '❌ FAILED'}\n`);
+  }, 3000);
 });
