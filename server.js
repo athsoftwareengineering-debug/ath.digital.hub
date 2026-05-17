@@ -12,7 +12,7 @@ process.env.TZ = 'Asia/Yangon';
 function getMyanmarTime12hr() {
   const now = new Date();
   return {
-    full: now.toLocaleString('my-MM', { 
+    full: now.toLocaleString('en-US', { 
       timeZone: 'Asia/Yangon',
       hour12: true,
       year: 'numeric',
@@ -22,16 +22,16 @@ function getMyanmarTime12hr() {
       minute: '2-digit',
       second: '2-digit'
     }),
-    date: now.toLocaleDateString('my-MM', { timeZone: 'Asia/Yangon', year: 'numeric', month: '2-digit', day: '2-digit' }),
-    time: now.toLocaleTimeString('my-MM', { timeZone: 'Asia/Yangon', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+    date: now.toLocaleDateString('en-US', { timeZone: 'Asia/Yangon', year: 'numeric', month: '2-digit', day: '2-digit' }),
+    time: now.toLocaleTimeString('en-US', { timeZone: 'Asia/Yangon', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
     iso: now.toISOString(),
     timestamp: now.getTime()
   };
 }
 
-function formatMyanmarDate12hr(date) {
+function formatEnglishDate(date) {
   if (!date) return 'N/A';
-  return new Date(date).toLocaleString('my-MM', { 
+  return new Date(date).toLocaleString('en-US', { 
     timeZone: 'Asia/Yangon',
     hour12: true,
     year: 'numeric',
@@ -47,6 +47,7 @@ function formatMyanmarDate12hr(date) {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/temp_uploads', express.static(path.join(__dirname, 'temp_uploads')));
 
 // ========== ENVIRONMENT VARIABLES ==========
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -148,7 +149,7 @@ function updateAllOrdersRemainingDays() {
         order.isExpired = true;
         order.status = 'expired';
         sendTelegramMessage(ADMIN_CHAT_ID, 
-          `⏰ *EXPIRED* Order #${order.id}\n📞 ${order.phone}\n📅 ကုန်ဆုံးရက်: ${formatMyanmarDate12hr(order.endDate)}`
+          `⏰ *EXPIRED* Order #${order.id}\n📞 ${order.phone}\n📅 ကုန်ဆုံးရက်: ${formatEnglishDate(order.endDate)}`
         );
       }
       
@@ -156,7 +157,7 @@ function updateAllOrdersRemainingDays() {
       if (alertDays.includes(remaining) && order.lastAlertDay !== remaining && remaining > 0) {
         order.lastAlertDay = remaining;
         sendTelegramMessage(ADMIN_CHAT_ID,
-          `⚠️ *REMINDER* Order #${order.id}\n📞 ${order.phone}\n⏳ ${remaining} ရက်သာကျန်ပါတော့သည်။\n📅 ကုန်ဆုံးရက်: ${formatMyanmarDate12hr(order.endDate)}`
+          `⚠️ *REMINDER* Order #${order.id}\n📞 ${order.phone}\n⏳ ${remaining} ရက်သာကျန်ပါတော့သည်။\n📅 ကုန်ဆုံးရက်: ${formatEnglishDate(order.endDate)}`
         );
         
         if (GROUP_CHAT_ID) {
@@ -177,7 +178,7 @@ function scheduleDailyTask() {
   if (now > next9AM) next9AM.setDate(next9AM.getDate() + 1);
   
   const msUntil9AM = next9AM - now;
-  console.log(`⏰ Next countdown check at: ${next9AM.toLocaleString('my-MM', { timeZone: 'Asia/Yangon', hour12: true })}`);
+  console.log(`⏰ Next countdown check at: ${next9AM.toLocaleString('en-US', { timeZone: 'Asia/Yangon', hour12: true })}`);
   
   setTimeout(() => {
     updateAllOrdersRemainingDays();
@@ -214,7 +215,8 @@ app.post('/order', async (req, res) => {
       createdAtMyanmar: myanmarTime.full,
       updatedAt: myanmarTime.iso,
       startDate: null, endDate: null,
-      daysRemaining: null, isExpired: false, lastAlertDay: null
+      daysRemaining: null, isExpired: false, lastAlertDay: null,
+      screenshotPath: null  // ✅ Screenshot path သိမ်းရန်
     };
     orders.unshift(newOrder);
     
@@ -234,21 +236,34 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// Submit Payment
+// ✅ Submit Payment with Screenshot (FIXED - ဒီနေရာမှာ screenshotPath သိမ်းမယ်)
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
   try {
     const orderId = parseInt(req.body.orderId);
+    const packageName = req.body.packageName;
+    const phone = req.body.phone;
+    const note = req.body.note || '';
     const screenshot = req.file;
     const myanmarTime = getMyanmarTime12hr();
     
-    if (!screenshot) return res.status(400).json({ success: false, message: "Screenshot required" });
+    console.log(`💰 Payment submission for order #${orderId}`);
+    
+    if (!screenshot) {
+      return res.status(400).json({ success: false, message: "Screenshot required" });
+    }
     
     const order = orders.find(o => o.id === orderId);
-    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
     
     order.status = 'payment_received';
     order.updatedAt = myanmarTime.iso;
+    
+    // ✅✅✅ အရေးကြီး: Screenshot Path ကို သိမ်းဆည်းခြင်း ✅✅✅
+    order.screenshotPath = `/temp_uploads/${screenshot.filename}`;
+    console.log(`📸 Screenshot saved at: ${order.screenshotPath}`);
     
     tempFilePath = screenshot.path;
     const fileBuffer = fs.readFileSync(tempFilePath);
@@ -259,6 +274,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
 📦 Package: ${order.packageName}
 📞 Phone: ${order.phone}
 💰 Amount: ${order.price.toLocaleString()} KS
+📝 Note: ${note}
 🕐 အချိန်: ${myanmarTime.full}
     `;
     const keyboard = {
@@ -269,11 +285,37 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     };
     
     await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
-    res.json({ success: true, message: "Payment submitted!" });
+    
+    res.json({ success: true, message: "Payment submitted! Admin will verify.", orderId: order.id });
   } catch (error) {
+    console.error("Payment submit error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   } finally {
-    if (tempFilePath && fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+    if (tempFilePath && fs.existsSync(tempFilePath)) {
+      // Don't delete immediately if we need to serve it
+      // fs.unlinkSync(tempFilePath);
+      console.log(`📸 Screenshot kept at: ${tempFilePath}`);
+    }
+  }
+});
+
+// ✅ Get Screenshot URL for Admin Dashboard (ဒါက ပုံပြန်ပြရန်)
+app.get('/api/admin/order-screenshot', (req, res) => {
+  const authToken = req.headers['x-admin-auth'];
+  if (authToken !== ADMIN_PASSWORD) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+  
+  const orderId = parseInt(req.query.orderId);
+  const order = orders.find(o => o.id === orderId);
+  
+  if (order && order.screenshotPath) {
+    // Return full URL for the screenshot
+    const fullUrl = `https://ath-digital-hub.onrender.com${order.screenshotPath}`;
+    console.log(`📸 Serving screenshot for order #${orderId}: ${fullUrl}`);
+    res.json({ success: true, screenshotUrl: fullUrl });
+  } else {
+    res.json({ success: false, message: "No screenshot available for this order" });
   }
 });
 
@@ -287,8 +329,8 @@ app.get('/api/track-order', (req, res) => {
   if (order.startDate && order.endDate) {
     const remaining = calculateRemainingDays(order.endDate);
     countdownInfo = {
-      startDate: formatMyanmarDate12hr(order.startDate),
-      endDate: formatMyanmarDate12hr(order.endDate),
+      startDate: order.startDate,
+      endDate: order.endDate,
       daysRemaining: remaining > 0 ? remaining : 0,
       isExpired: remaining <= 0
     };
@@ -302,7 +344,7 @@ app.get('/api/track-order', (req, res) => {
       phone: order.phone,
       price: order.price,
       status: order.status,
-      createdAt: formatMyanmarDate12hr(order.createdAt),
+      createdAt: order.createdAt,
       countdown: countdownInfo
     }
   });
@@ -334,9 +376,9 @@ app.get('/api/admin/orders', (req, res) => {
   
   const formattedOrders = paginated.map(o => ({
     ...o,
-    createdAtMyanmar: formatMyanmarDate12hr(o.createdAt),
-    startDateMyanmar: o.startDate ? formatMyanmarDate12hr(o.startDate) : null,
-    endDateMyanmar: o.endDate ? formatMyanmarDate12hr(o.endDate) : null
+    createdAtMyanmar: formatEnglishDate(o.createdAt),
+    startDateMyanmar: o.startDate ? formatEnglishDate(o.startDate) : null,
+    endDateMyanmar: o.endDate ? formatEnglishDate(o.endDate) : null
   }));
   
   res.json({ success: true, orders: formattedOrders, total: filtered.length, stats });
@@ -367,7 +409,7 @@ app.post('/api/admin/update-order', async (req, res) => {
     order.updatedAt = myanmarTime.iso;
     
     await sendTelegramMessage(ADMIN_CHAT_ID, 
-      `✅ Order #${orderId} approved! 30 days started.\n📞 ${order.phone}\n📅 စတင်ရက်: ${formatMyanmarDate12hr(startDate)}\n📅 ကုန်ဆုံးရက်: ${formatMyanmarDate12hr(endDate)}`
+      `✅ Order #${orderId} approved! 30 days started.\n📞 ${order.phone}\n📅 စတင်ရက်: ${formatEnglishDate(startDate)}\n📅 ကုန်ဆုံးရက်: ${formatEnglishDate(endDate)}`
     );
     
     if (GROUP_CHAT_ID) {
@@ -378,8 +420,8 @@ app.post('/api/admin/update-order', async (req, res) => {
 📞 ဖုန်းနံပါတ်: ${order.phone}
 📦 Package: ${order.packageName}
 💰 ပမာဏ: ${order.price.toLocaleString()} KS
-📅 စတင်ရက်: ${formatMyanmarDate12hr(startDate)}
-⏰ ကုန်ဆုံးရက်: ${formatMyanmarDate12hr(endDate)}
+📅 စတင်ရက်: ${formatEnglishDate(startDate)}
+⏰ ကုန်ဆုံးရက်: ${formatEnglishDate(endDate)}
 ━━━━━━━━━━━━━━━━━━━━
 👤 အတည်ပြုသူ: 𝐀𝐃𝐌𝐈𝐍 𝐒𝐔𝐏𝐏𝐎𝐑𝐓 | 𝟐𝟒/𝟕
       `;
@@ -423,12 +465,12 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           order.status = 'approved';
           
           await sendTelegramMessage(chatId, 
-            `✅ Order #${orderId} approved! 30 days started.\n📅 စတင်ရက်: ${formatMyanmarDate12hr(startDate)}\n📅 ကုန်ဆုံးရက်: ${formatMyanmarDate12hr(endDate)}`
+            `✅ Order #${orderId} approved! 30 days started.\n📅 စတင်ရက်: ${formatEnglishDate(startDate)}\n📅 ကုန်ဆုံးရက်: ${formatEnglishDate(endDate)}`
           );
           
           if (GROUP_CHAT_ID) {
             await sendTelegramMessage(GROUP_CHAT_ID, 
-              `🚨 *MYTEL DATA ACTIVATED* 🚨\n━━━━━━━━━━━━━━━━━━━━\n✅ အော်ဒါ #${order.id} အတွက် ဒေတာသွင်းပြီးပါပြီ။\n📞 ${order.phone}\n📦 ${order.packageName}\n💰 ${order.price.toLocaleString()} KS\n📅 စတင်ရက်: ${formatMyanmarDate12hr(startDate)}\n⏰ ကုန်ဆုံးရက်: ${formatMyanmarDate12hr(endDate)}\n━━━━━━━━━━━━━━━━━━━━\n👤 𝐀𝐃𝐌𝐈𝐍 𝐒𝐔𝐏𝐏𝐎𝐑𝐓 | 𝟐𝟒/𝟕`
+              `🚨 *MYTEL DATA ACTIVATED* 🚨\n━━━━━━━━━━━━━━━━━━━━\n✅ အော်ဒါ #${order.id} အတွက် ဒေတာသွင်းပြီးပါပြီ။\n📞 ${order.phone}\n📦 ${order.packageName}\n💰 ${order.price.toLocaleString()} KS\n📅 စတင်ရက်: ${formatEnglishDate(startDate)}\n⏰ ကုန်ဆုံးရက်: ${formatEnglishDate(endDate)}\n━━━━━━━━━━━━━━━━━━━━\n👤 𝐀𝐃𝐌𝐈𝐍 𝐒𝐔𝐏𝐏𝐎𝐑𝐓 | 𝟐𝟒/𝟕`
             );
           }
         }
@@ -484,21 +526,4 @@ app.listen(PORT, async () => {
     const result = await response.json();
     console.log(`📡 Webhook: ${result.ok ? '✅' : '❌'}\n`);
   }
-});
-// Get screenshot URL for an order
-app.get('/api/admin/order-screenshot', (req, res) => {
-  const authToken = req.headers['x-admin-auth'];
-  if (authToken !== ADMIN_PASSWORD) {
-    return res.status(401).json({ success: false, message: "Unauthorized" });
-  }
-  
-  const orderId = parseInt(req.query.orderId);
-  const order = orders.find(o => o.id === orderId);
-  
-  // Return placeholder - in real system, you'd store screenshot URLs
-  res.json({ 
-    success: true, 
-    screenshotUrl: order?.screenshotUrl || null,
-    message: order?.screenshotUrl ? 'Screenshot found' : 'No screenshot available'
-  });
 });
