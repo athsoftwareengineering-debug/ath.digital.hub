@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MYTEL Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0;
+      width: 260px; height: 100%;
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+      border-right: 1px solid #334155;
+      padding: 1.5rem;
+    }
+    .logo {
+      font-size: 1.5rem; font-weight: 800;
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; margin: 8px 0;
+      border-radius: 12px; cursor: pointer;
+      color: #94a3b8;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: #facc1520;
+      color: #facc15;
+    }
+    .main-content {
+      margin-left: 260px;
+      padding: 1.5rem;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: #1e293b;
+      border-radius: 1rem;
+      padding: 1rem;
+      border: 1px solid #334155;
+    }
+    .stat-card .value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #facc15;
+    }
+    .filters {
+      display: flex; gap: 1rem;
+      margin-bottom: 1rem; flex-wrap: wrap;
+    }
+    .filters select, .filters input {
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 8px 16px;
+      border-radius: 8px;
+      color: white;
+    }
+    .orders-table {
+      background: #1e293b;
+      border-radius: 1rem;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    th { background: #0f172a; color: #facc15; }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+    }
+    .status-pending { background: #f9731620; color: #f97316; }
+    .status-paid { background: #3b82f620; color: #3b82f6; }
+    .status-approved { background: #22c55e20; color: #22c55e; }
+    .status-rejected { background: #ef444420; color: #ef4444; }
+    .status-expired { background: #64748b20; color: #64748b; }
+    .action-btn {
+      background: none; border: none;
+      cursor: pointer; padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .action-approve { color: #22c55e; }
+    .action-reject { color: #ef4444; }
+    .logout-btn {
+      position: fixed; top: 20px; right: 20px;
+      background: #ef4444; border: none;
+      padding: 10px 20px; border-radius: 12px;
+      color: white; cursor: pointer; font-weight: 600;
+      z-index: 1000;
+    }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-content { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">✨ MYTEL ADMIN</div>
+  <div class="nav-item active" data-page="dashboard"><i class="fas fa-chart-line"></i> Dashboard</div>
+</div>
+<div class="main-content">
+  <div id="dashboardPage">
+    <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="filters">
+      <select id="statusFilter" onchange="loadOrders()">
+        <option value="all">All Orders</option>
+        <option value="pending_payment">Pending</option>
+        <option value="payment_received">Paid</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+        <option value="expired">Expired</option>
+      </select>
+    </div>
+    <div class="orders-table" id="ordersTable"></div>
+  </div>
+</div>
+<button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+
+<script>
+  const ADMIN_PASSWORD = "mytel2024";
+  if (!sessionStorage.getItem('adminLoggedIn')) window.location.href = '/admin-login';
+  
+  const originalFetch = window.fetch;
+  window.fetch = function(url, options = {}) {
+    options.headers = options.headers || {};
+    options.headers['x-admin-auth'] = ADMIN_PASSWORD;
+    return originalFetch(url, options);
+  };
+  
+  let currentPage = 1;
+  let currentFilter = 'all';
+  
+  async function loadOrders() {
+    currentFilter = document.getElementById('statusFilter').value;
+    const res = await fetch(`/api/admin/orders?status=${currentFilter}&page=${currentPage}&limit=20`);
+    const data = await res.json();
+    if (data.success) {
+      renderStats(data.stats);
+      renderOrders(data.orders);
+    }
+  }
+  
+  function renderStats(stats) {
+    document.getElementById('statsGrid').innerHTML = `
+      <div class="stat-card"><div class="value">${stats.total}</div><div>Total</div></div>
+      <div class="stat-card"><div class="value">${stats.pending}</div><div>Pending</div></div>
+      <div class="stat-card"><div class="value">${stats.paid}</div><div>Paid</div></div>
+      <div class="stat-card"><div class="value">${stats.approved}</div><div>Active</div></div>
+      <div class="stat-card"><div class="value">${stats.expired}</div><div>Expired</div></div>
+      <div class="stat-card"><div class="value">${(stats.revenue/1000).toFixed(0)}K</div><div>Revenue</div></div>
+    `;
+  }
+  
+  function getStatusClass(status) {
+    const map = { pending_payment:'status-pending', payment_received:'status-paid', approved:'status-approved', rejected:'status-rejected', expired:'status-expired' };
+    return map[status] || 'status-pending';
+  }
+  
+  function getStatusText(status) {
+    const map = { pending_payment:'⏳ Pending', payment_received:'💰 Paid', approved:'✅ Active', rejected:'❌ Rejected', expired:'⏰ Expired' };
+    return map[status] || status;
+  }
+  
+  function renderOrders(orders) {
+    if (!orders.length) {
+      document.getElementById('ordersTable').innerHTML = '<div style="padding:2rem;text-align:center">No orders</div>';
+      return;
+    }
+    let html = `<table><thead><tr><th>ID</th><th>Package</th><th>Phone</th><th>Price</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>`;
+    orders.forEach(order => {
+      html += `<tr>
+        <td>#${order.id}</td>
+        <td>${order.packageName}</td>
+        <td>${order.phone}</td>
+        <td>${order.price.toLocaleString()} KS</td>
+        <td><span class="status-badge ${getStatusClass(order.status)}">${getStatusText(order.status)}</span></td>
+        <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+        <td>${order.status === 'payment_received' ? `<button class="action-btn action-approve" onclick="updateOrder(${order.id}, 'approved')"><i class="fas fa-check"></i></button><button class="action-btn action-reject" onclick="updateOrder(${order.id}, 'rejected')"><i class="fas fa-times"></i></button>` : ''}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    document.getElementById('ordersTable').innerHTML = html;
+  }
+  
+  async function updateOrder(orderId, status) {
+    if (!confirm(`Order #${orderId} ကို ${status === 'approved' ? 'အတည်ပြု (30 ရက်)' : 'ပယ်ဖျက်'}မလား?`)) return;
+    const res = await fetch('/api/admin/update-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId, status })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`✅ Order #${orderId} ${status === 'approved' ? 'approved! 30 days started.' : 'rejected.'}`);
+      loadOrders();
+    }
+  }
+  
+  function logout() {
+    sessionStorage.removeItem('adminLoggedIn');
+    window.location.href = '/admin-login';
+  }
+  
+  loadOrders();
+  setInterval(loadOrders, 30000);
+</script>
+</body>
+</html>
