@@ -3,52 +3,292 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>ATH DIGITAL HUB | MYTEL DATA</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>ATH DIGITAL HUB | MYTEL DATA SERVICE</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
+      }
+    }
+  </script>
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at 20% 30%, #0a0f1e, #03050b); color: white; overflow-x: hidden; }
-    .content { position: relative; z-index: 10; max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
-    .ath-logo { text-align: center; margin-bottom: 1rem; }
-    .ath-logo-icon { display: inline-flex; background: linear-gradient(135deg, #facc15, #eab308); padding: 0.8rem 2rem; border-radius: 60px; color: #0f172a; font-weight: bold; gap: 8px; }
-    .hero h1 { font-size: 2.5rem; background: linear-gradient(135deg, #FFD700, #FFA500); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .tagline { color: #94a3b8; margin-top: 0.5rem; }
-    .plans-container { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; margin: 2rem 0; }
-    .plan-card { background: rgba(10,20,35,0.65); backdrop-filter: blur(12px); border-radius: 28px; padding: 1.5rem; width: 280px; cursor: pointer; border: 1px solid rgba(250,204,21,0.3); transition: all 0.3s; }
-    .plan-card:hover { transform: translateY(-8px); border-color: #facc15; }
-    .plan-card.selected { border-color: #facc15; background: rgba(250,204,21,0.15); }
-    .plan-icon { font-size: 2.5rem; text-align: center; }
-    .plan-title { font-size: 1.3rem; font-weight: bold; text-align: center; margin: 0.5rem 0; }
-    .feature-list { list-style: none; margin: 1rem 0; }
-    .feature-list li { padding: 4px 0; font-size: 0.85rem; color: #cbd5e1; }
-    .price { font-size: 1.5rem; font-weight: bold; text-align: center; color: #facc15; margin: 1rem 0; }
-    .select-plan-btn { width: 100%; padding: 10px; background: #facc15; border: none; border-radius: 40px; font-weight: bold; cursor: pointer; color: #0f172a; }
-    .order-form-card { background: rgba(15,23,42,0.85); backdrop-filter: blur(20px); border-radius: 32px; padding: 1.8rem; max-width: 500px; margin: 1rem auto; display: none; }
-    .order-form-card.show { display: block; }
-    .form-group { margin-bottom: 1rem; }
-    .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
-    .form-group input, .form-group textarea { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 14px; color: white; font-size: 1rem; }
-    .form-group textarea { resize: vertical; min-height: 60px; }
-    .payment-info-card { background: #1e293b; border-radius: 16px; padding: 1rem; margin: 1rem 0; }
-    .copy-btn { background: #334155; border: none; padding: 4px 12px; border-radius: 20px; margin-left: 8px; cursor: pointer; color: #facc15; }
-    .file-upload-area { background: #0f172a; border: 2px dashed #facc15; border-radius: 16px; padding: 1rem; text-align: center; cursor: pointer; transition: all 0.3s; }
-    .file-upload-area:hover { background: #1e293b; }
-    .btn-submit { background: #22c55e; color: white; padding: 12px; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; flex: 1; }
-    .btn-cancel { background: #ef4444; color: white; padding: 12px; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; flex: 1; }
-    .tracking-section { background: rgba(15,23,42,0.6); border-radius: 28px; padding: 1.5rem; margin: 2rem 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 20% 30%, #0a0f1e, #03050b);
+      color: white;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1.2rem 3rem;
+    }
+    
+    /* ATH Logo */
+    .ath-logo { text-align: center; margin-bottom: 1rem; animation: fadeInDown 0.8s ease; }
+    .ath-logo-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: linear-gradient(135deg, #facc15, #eab308);
+      padding: 0.8rem 2rem;
+      border-radius: 60px;
+      animation: glowPulse 2s ease-in-out infinite;
+    }
+    .ath-logo-icon i { font-size: 1.8rem; color: #0f172a; animation: spin 4s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .ath-logo-icon span { font-size: 1.3rem; font-weight: 800; color: #0f172a; letter-spacing: 2px; }
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes glowPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(250,204,21,0.4); } 50% { box-shadow: 0 0 0 20px rgba(250,204,21,0); } }
+    
+    /* Hero Section */
+    .hero { text-align: center; padding: 2rem 0; backdrop-filter: blur(8px); }
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #FFD700, #FFA500, #FF6B6B);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: textGlow 3s ease infinite;
+    }
+    @keyframes textGlow { 0%,100% { background-position: 0% 50%; text-shadow: 0 0 20px rgba(255,215,0,0.3); } 50% { background-position: 100% 50%; text-shadow: 0 0 40px rgba(255,215,0,0.6); } }
+    .tagline { color: #94a3b8; margin-top: 0.5rem; font-size: 1.1rem; }
+    .badge { display: inline-block; background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.5); border-radius: 40px; padding: 0.4rem 1.2rem; font-size: 0.8rem; margin-top: 1rem; }
+    
+    /* Selection Alert */
+    .selection-alert { background: rgba(250,204,21,0.15); border: 1px solid #facc15; border-radius: 16px; padding: 1rem; text-align: center; margin: 1rem auto; max-width: 500px; display: none; backdrop-filter: blur(10px); }
+    
+    /* Order Form Card */
+    .order-form-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(20px);
+      border-radius: 32px;
+      padding: 2rem;
+      margin: 2rem auto;
+      max-width: 600px;
+      border: 1px solid rgba(250,204,21,0.3);
+      display: none;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    .order-form-card.show { display: block; animation: fadeInUp 0.5s ease; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .selected-plan-info { background: rgba(250,204,21,0.1); border-radius: 20px; padding: 1rem; margin-bottom: 1.5rem; text-align: center; border: 1px solid rgba(250,204,21,0.2); }
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; color: #94a3b8; font-size: 0.85rem; font-weight: 500; }
+    .form-group input, .form-group textarea { width: 100%; padding: 12px 16px; background: #0f172a; border: 1px solid #334155; border-radius: 14px; color: white; font-size: 0.95rem; font-family: inherit; transition: all 0.3s; }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #facc15; box-shadow: 0 0 0 3px rgba(250,204,21,0.1); }
+    
+    /* Payment Info Card */
+    .payment-info-card {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(250,204,21,0.3);
+    }
+    .payment-info-title { text-align: center; margin-bottom: 0.8rem; font-size: 0.8rem; color: #facc15; font-weight: 600; }
+    .payment-methods { display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; }
+    .payment-method { flex: 1; min-width: 150px; background: #0f172a; border-radius: 14px; padding: 0.8rem; text-align: center; border: 1px solid #334155; transition: all 0.3s; }
+    .payment-method:hover { border-color: #facc15; transform: translateY(-2px); }
+    .payment-method i { font-size: 1.3rem; margin-bottom: 0.3rem; color: #facc15; }
+    .payment-method .method-name { font-weight: 600; margin-bottom: 0.2rem; font-size: 0.8rem; }
+    .payment-number { font-family: monospace; font-size: 0.85rem; font-weight: 600; color: #facc15; background: #0f172a; padding: 0.2rem 0.6rem; border-radius: 30px; display: inline-block; margin: 0.3rem 0; }
+    .copy-btn { background: #facc15; border: none; padding: 4px 10px; border-radius: 30px; font-size: 0.65rem; font-weight: 600; color: #0f172a; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px; }
+    .copy-btn:hover { background: #eab308; transform: scale(1.02); }
+    
+    .file-upload-area { border: 2px dashed #facc15; border-radius: 16px; padding: 1.2rem; text-align: center; cursor: pointer; transition: all 0.3s; }
+    .file-upload-area:hover { background: rgba(250,204,21,0.1); }
+    .preview-img { max-width: 100%; max-height: 120px; margin-top: 10px; border-radius: 10px; display: none; }
+    
+    .button-group { display: flex; gap: 1rem; margin-top: 1.5rem; }
+    .btn-submit { flex: 1; background: linear-gradient(95deg, #22c55e, #16a34a); border: none; padding: 12px; border-radius: 40px; font-weight: 700; font-size: 0.9rem; color: white; cursor: pointer; transition: all 0.3s; }
+    .btn-submit:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 5px 20px rgba(34,197,94,0.4); }
+    .btn-cancel { flex: 1; background: linear-gradient(95deg, #ef4444, #dc2626); border: none; padding: 12px; border-radius: 40px; font-weight: 700; font-size: 0.9rem; color: white; cursor: pointer; transition: all 0.3s; }
+    .btn-cancel:hover { transform: scale(1.02); box-shadow: 0 5px 20px rgba(239,68,68,0.4); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    
+    /* Plans Grid */
+    .plans-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.8rem; margin: 2.5rem 0; }
+    .plan-card {
+      flex: 1; min-width: 260px; max-width: 320px;
+      background: rgba(10, 20, 35, 0.65); backdrop-filter: blur(12px);
+      border-radius: 28px; padding: 1.5rem;
+      border: 1px solid rgba(250,204,21,0.25);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer; position: relative; overflow: hidden;
+    }
+    .plan-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(250,204,21,0.1), transparent); transition: left 0.6s; }
+    .plan-card:hover::before { left: 100%; }
+    .plan-card:hover { transform: translateY(-10px) scale(1.02); border-color: #facc15; box-shadow: 0 25px 40px -12px rgba(0,0,0,0.6), 0 0 30px rgba(250,204,21,0.2); }
+    .plan-card.selected { border-color: #facc15; background: rgba(250,204,21,0.12); box-shadow: 0 0 25px rgba(250,204,21,0.3); }
+    .plan-icon { font-size: 2.2rem; margin-bottom: 0.5rem; }
+    .plan-title { font-size: 1.2rem; font-weight: 800; background: linear-gradient(120deg, #FFD700, #FFA500); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 0.8rem; }
+    .feature-list { list-style: none; margin: 0.8rem 0; }
+    .feature-list li { padding: 0.4rem 0; font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 8px; }
+    .feature-list li i { color: #facc15; font-size: 0.7rem; width: 18px; }
+    .price { font-size: 1.6rem; font-weight: 800; color: #facc15; margin: 0.8rem 0; }
+    .price small { font-size: 0.7rem; font-weight: 400; }
+    .select-plan-btn {
+      width: 100%;
+      background: linear-gradient(95deg, #facc15, #eab308);
+      border: none;
+      padding: 0.8rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #0f172a;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .select-plan-btn:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(250,204,21,0.4); }
+    
+    /* Tracking Section - Real-time Sync */
+    .tracking-section {
+      background: rgba(15,23,42,0.6);
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 1.8rem;
+      margin: 2.5rem 0;
+    }
+    .tracking-title { text-align: center; margin-bottom: 1.2rem; }
+    .sync-badge {
+      display: inline-block;
+      background: rgba(34,197,94,0.2);
+      border: 1px solid #22c55e;
+      border-radius: 40px;
+      padding: 0.2rem 0.7rem;
+      font-size: 0.6rem;
+      margin-left: 0.5rem;
+      animation: pulse 2s infinite;
+    }
     .tracking-form { display: flex; gap: 1rem; flex-wrap: wrap; max-width: 500px; margin: 0 auto; }
-    .tracking-form input { flex: 1; padding: 0.8rem; background: #0f172a; border: 1px solid #334155; border-radius: 14px; color: white; font-size: 1rem; }
-    .tracking-form button { padding: 0.8rem 1.5rem; background: #facc15; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; color: #0f172a; }
-    .order-card { background: rgba(15,23,42,0.8); border-radius: 20px; padding: 1rem; margin-top: 1rem; border-left: 4px solid #facc15; }
-    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 10px 20px; border-radius: 50px; z-index: 1100; display: none; font-size: 0.9rem; white-space: nowrap; }
-    .footer { text-align: center; margin-top: 2rem; padding: 1rem; border-top: 1px solid #334155; color: #64748b; }
-    .button-group { display: flex; gap: 1rem; margin-top: 1rem; }
-    .selected-plan-info { background: #facc1520; padding: 0.8rem; border-radius: 16px; text-align: center; margin-bottom: 1rem; color: #facc15; }
-    @media (max-width: 768px) { .hero h1 { font-size: 1.8rem; } .plan-card { width: 100%; } .toast { white-space: normal; text-align: center; max-width: 90%; } }
+    .tracking-form input { flex: 1; padding: 0.9rem; background: #0f172a; border: 1px solid #334155; border-radius: 14px; color: white; font-size: 0.9rem; }
+    .tracking-form button { padding: 0.9rem 1.8rem; background: #facc15; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; transition: all 0.3s; color: #0f172a; }
+    .tracking-form button:hover { transform: scale(1.02); background: #eab308; }
+    .track-result { margin-top: 1.2rem; display: none; }
+    .sync-indicator { text-align: center; margin-top: 0.8rem; font-size: 0.65rem; color: #22c55e; }
+    .sync-indicator i { animation: spin 1s linear infinite; display: inline-block; margin-right: 4px; }
+    
+    /* Active Card */
+    .order-card {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      border: 1px solid #334155;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .order-card.active {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid #facc15;
+      box-shadow: 0 0 10px rgba(250,204,21,0.3), 0 0 20px rgba(250,204,21,0.2);
+      animation: neonPulse 2s ease-in-out infinite;
+    }
+    @keyframes neonPulse {
+      0%,100% { box-shadow: 0 0 5px rgba(250,204,21,0.3), 0 0 10px rgba(250,204,21,0.2); }
+      50% { box-shadow: 0 0 20px rgba(250,204,21,0.5), 0 0 40px rgba(250,204,21,0.3); }
+    }
+    .active-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 40px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      animation: badgePulse 1.5s ease-in-out infinite;
+    }
+    @keyframes badgePulse {
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.05); box-shadow: 0 4px 15px rgba(34,197,94,0.5); }
+    }
+    .order-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 0.8rem; }
+    .order-title { display: flex; align-items: center; gap: 8px; }
+    .order-title h3 { font-size: 1rem; font-weight: 700; }
+    .countdown-progress { background: rgba(250,204,21,0.08); border-radius: 14px; padding: 0.8rem; margin-top: 0.8rem; border: 1px solid rgba(250,204,21,0.2); }
+    .progress-bar-container { background: #1e293b; border-radius: 10px; height: 16px; overflow: hidden; margin: 0.4rem 0; }
+    .progress-bar-active { background: linear-gradient(90deg, #facc15, #eab308); border-radius: 10px; height: 100%; transition: width 0.5s ease; }
+    .days-remaining { display: flex; align-items: baseline; gap: 4px; }
+    .days-number { font-size: 1.5rem; font-weight: 800; color: #facc15; text-shadow: 0 0 8px rgba(250,204,21,0.5); }
+    
+    /* Footer */
+    .footer { text-align: center; margin-top: 3rem; padding: 1.5rem; border-top: 1px solid #334155; }
+    .brand-footer { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .ath-icon { display: inline-flex; align-items: center; gap: 6px; font-size: 1rem; font-weight: 700; background: linear-gradient(135deg, #FFD700, #FFA500); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .ath-icon i { animation: spin 4s linear infinite; color: #facc15; }
+    .copyright { font-size: 0.65rem; color: #64748b; line-height: 1.5; }
+    
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      border-radius: 50px;
+      z-index: 1100;
+      display: none;
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    }
+    
+    @media (max-width: 1024px) { .content { padding: 1.5rem; } .hero h1 { font-size: 2.5rem; } .plan-card { min-width: 240px; } }
+    @media (max-width: 768px) {
+      .content { padding: 1rem; }
+      .hero h1 { font-size: 1.8rem; }
+      .ath-logo-icon { padding: 0.5rem 1.2rem; }
+      .ath-logo-icon i { font-size: 1.2rem; }
+      .ath-logo-icon span { font-size: 1rem; }
+      .plans-container { gap: 1rem; }
+      .plan-card { min-width: 100%; max-width: 100%; }
+      .tracking-form { flex-direction: column; }
+      .tracking-form button { width: 100%; }
+      .payment-methods { flex-direction: column; }
+      .button-group { flex-direction: column; }
+      .toast { white-space: normal; text-align: center; max-width: 90%; }
+      .payment-method { min-width: 100%; }
+    }
+    @media (max-width: 480px) { .hero h1 { font-size: 1.4rem; } .order-form-card { padding: 1.2rem; } }
   </style>
 </head>
 <body>
+
+<div id="canvas-container"></div>
+
 <div class="content">
   <div class="ath-logo">
     <div class="ath-logo-icon">
@@ -57,104 +297,219 @@
       <i class="fas fa-bolt"></i>
     </div>
   </div>
-  
+
   <div class="hero">
     <h1>✨ MYTEL DATA SERVICE ✨</h1>
     <div class="tagline">High-Speed Data · VIP Plans · 24/7 Support</div>
+    <div class="badge"><i class="fas fa-bolt"></i> 5G Ready · Trusted Service</div>
   </div>
 
-  <div id="selectionAlert" class="selection-alert" style="display:none; background:#facc1520; padding:1rem; border-radius:16px; text-align:center; margin-bottom:1rem;">
-    ✅ Plan selected! Please fill in your details below
+  <div id="selectionAlert" class="selection-alert">
+    <i class="fas fa-check-circle"></i> Please fill in your details below
   </div>
-  
+
   <div id="orderFormCard" class="order-form-card">
-    <div id="selectedPlanInfo" class="selected-plan-info"></div>
+    <div class="selected-plan-info" id="selectedPlanInfo"></div>
+    
     <div class="form-group">
-      <label>📞 Phone Number (MyTel)</label>
+      <label><i class="fas fa-phone-alt"></i> Phone Number</label>
       <input type="tel" id="orderPhone" placeholder="09xxxxxxxxx">
     </div>
+    
     <div class="form-group">
-      <label>📝 Note (Optional)</label>
-      <textarea id="orderNote" placeholder="Payment reference or message..."></textarea>
+      <label><i class="fas fa-pencil-alt"></i> Note (Optional)</label>
+      <textarea id="orderNote" rows="2" placeholder="Any special requests or notes..."></textarea>
     </div>
+    
     <div class="payment-info-card">
-      <h4 style="color:#facc15; margin-bottom:10px;">💸 Payment Methods</h4>
-      <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-        <div><i class="fas fa-university"></i> <strong>KPay:</strong> 09789999368 <button class="copy-btn" onclick="copyToClipboard('09789999368')">Copy</button></div>
-        <div><i class="fas fa-mobile-alt"></i> <strong>WavePay:</strong> 09789999368 <button class="copy-btn" onclick="copyToClipboard('09789999368')">Copy</button></div>
+      <div class="payment-info-title"><i class="fas fa-credit-card"></i> Payment Methods</div>
+      <div class="payment-methods">
+        <div class="payment-method">
+          <i class="fas fa-university"></i>
+          <div class="method-name">KPay</div>
+          <div class="payment-number">09789999368</div>
+          <button class="copy-btn" onclick="copyToClipboard('09789999368', 'KPay')"><i class="fas fa-copy"></i> Copy</button>
+        </div>
+        <div class="payment-method">
+          <i class="fas fa-mobile-alt"></i>
+          <div class="method-name">WavePay</div>
+          <div class="payment-number">09789999368</div>
+          <button class="copy-btn" onclick="copyToClipboard('09789999368', 'WavePay')"><i class="fas fa-copy"></i> Copy</button>
+        </div>
       </div>
-      <p style="font-size:12px; margin-top:10px; color:#94a3b8;">⚠️ Please send exact amount and take screenshot</p>
+      <div style="text-align:center; margin-top:0.5rem; font-size:0.65rem; color:#64748b;">
+        <i class="fas fa-user"></i> Account Name: AUNG THU HTWE
+      </div>
     </div>
+    
     <div class="form-group">
-      <label>📸 Payment Screenshot</label>
+      <label><i class="fas fa-image"></i> Payment Screenshot</label>
       <div class="file-upload-area" onclick="document.getElementById('screenshotInput').click()">
-        <i class="fas fa-cloud-upload-alt"></i> Click to upload screenshot
+        <input type="file" id="screenshotInput" accept="image/*" style="display:none">
+        <i class="fas fa-cloud-upload-alt"></i> Click to upload KPay/WavePay screenshot
+        <img id="previewImg" class="preview-img">
       </div>
-      <input type="file" id="screenshotInput" accept="image/*" style="display:none">
-      <img id="previewImg" style="max-width:100%; margin-top:10px; border-radius:12px; display:none;">
     </div>
+    
     <div class="button-group">
-      <button class="btn-submit" id="submitOrderBtn">✅ Submit Order</button>
-      <button class="btn-cancel" id="cancelOrderBtn">❌ Cancel</button>
+      <button class="btn-submit" id="submitOrderBtn"><i class="fas fa-paper-plane"></i> Submit Order</button>
+      <button class="btn-cancel" id="cancelOrderBtn"><i class="fas fa-times"></i> Cancel</button>
     </div>
   </div>
 
-  <h2 style="text-align:center;">✨ Choose Your Premium Plan</h2>
+  <h2 class="section-title" style="text-align:center; font-size:1.8rem; margin:2rem 0 1rem;">✨ Choose Your Premium Plan</h2>
   <div class="plans-container" id="plans-container"></div>
 
+  <!-- Tracking Section with Real-time Sync -->
   <div class="tracking-section">
-    <h3 style="margin-bottom:1rem;"><i class="fas fa-search"></i> Track Your Orders</h3>
+    <div class="tracking-title">
+      <i class="fas fa-search"></i>
+      <h3>Track Your Orders <span class="sync-badge"><i class="fas fa-sync-alt"></i> Real-time Sync</span></h3>
+      <p style="color:#94a3b8; font-size:0.75rem; margin-top:0.5rem;">Enter your phone number to check all your orders (Auto updates when status changes)</p>
+    </div>
     <div class="tracking-form">
-      <input type="tel" id="trackPhone" placeholder="Enter your phone number (09xxxxxxxxx)">
-      <button id="trackBtn">Check Status</button>
+      <input type="tel" id="trackPhone" placeholder="📞 Enter phone number (09xxxxxxxxx)">
+      <button id="trackBtn" onclick="manualRefresh()"><i class="fas fa-chart-line"></i> Check Status</button>
+    </div>
+    <div class="sync-indicator" id="syncIndicator">
+      <i class="fas fa-sync-alt"></i> Real-time sync active - orders update automatically
     </div>
     <div id="trackResult" class="track-result"></div>
   </div>
   
-  <div class="footer">© 2024 ATH DIGITAL HUB | Powered by AUNG THU HTWE</div>
+  <div class="footer">
+    <div class="brand-footer">
+      <div class="ath-icon"><i class="fas fa-globe"></i><span>ATH DIGITAL HUB</span><i class="fas fa-bolt"></i></div>
+      <div class="copyright"><i class="fas fa-copyright"></i> Developed by AUNG THU HTWE<br>All Rights Reserved</div>
+    </div>
+  </div>
 </div>
+
 <div id="toast" class="toast"></div>
 
+<!-- 3D Script -->
+<script type="module">
+  import * as THREE from 'three';
+
+  const container = document.getElementById('canvas-container');
+  const scene = new THREE.Scene();
+  scene.background = null;
+  scene.fog = new THREE.FogExp2(0x03050b, 0.002);
+  
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.set(0, 2, 14);
+  
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x03050b, 1);
+  container.appendChild(renderer.domElement);
+  
+  const ambientLight = new THREE.AmbientLight(0x111122);
+  scene.add(ambientLight);
+  const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+  mainLight.position.set(5, 10, 7);
+  scene.add(mainLight);
+  const goldLight = new THREE.PointLight(0xfacc15, 0.6);
+  goldLight.position.set(4, 3, 5);
+  scene.add(goldLight);
+  
+  const geometry = new THREE.TorusKnotGeometry(1.3, 0.32, 220, 64, 3, 4);
+  const material = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xeab308, emissiveIntensity: 0.4, metalness: 0.85, roughness: 0.2 });
+  const knot = new THREE.Mesh(geometry, material);
+  scene.add(knot);
+  
+  const ringGeo = new THREE.TorusGeometry(1.8, 0.05, 128, 500);
+  const ringMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xfacc15, emissiveIntensity: 0.9 });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  scene.add(ring);
+  
+  const particleCount = 2500;
+  const particlesGeometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(particleCount * 3);
+  for (let i = 0; i < particleCount; i++) {
+    positions[i*3] = (Math.random() - 0.5) * 200;
+    positions[i*3+1] = (Math.random() - 0.5) * 100;
+    positions[i*3+2] = (Math.random() - 0.5) * 80 - 30;
+  }
+  particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const particleMat = new THREE.PointsMaterial({ color: 0xfacc15, size: 0.09, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending });
+  const stars = new THREE.Points(particlesGeometry, particleMat);
+  scene.add(stars);
+  
+  let time = 0;
+  function animate3D() {
+    requestAnimationFrame(animate3D);
+    time += 0.006;
+    knot.rotation.x += 0.003;
+    knot.rotation.y += 0.005;
+    ring.rotation.x = Math.sin(time * 0.5) * 0.2;
+    ring.rotation.y = time * 0.3;
+    stars.rotation.y += 0.0003;
+    camera.position.x += (0 - camera.position.x) * 0.02;
+    camera.position.y += (1.2 - camera.position.y) * 0.02;
+    camera.lookAt(0, 0, 0);
+    renderer.render(scene, camera);
+  }
+  animate3D();
+  
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+</script>
+
+<!-- Firebase and Order Logic with Real-time Sync -->
 <script>
-  // Plans Data
+  // ========== FIREBASE CONFIGURATION ==========
+  const firebaseConfig = {
+    apiKey: "AIzaSyCN7GMpY6dqGzVlMevMZPG76guq3DvQPd8",
+    authDomain: "mytelordersystem.firebaseapp.com",
+    projectId: "mytelordersystem",
+    storageBucket: "mytelordersystem.firebasestorage.app",
+    messagingSenderId: "366519284419",
+    appId: "1:366519284419:web:0044583e2ef8aa7260a876",
+    measurementId: "G-GEJ93W2RTY"
+  };
+  
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  console.log('🔥 Firebase Realtime Sync initialized');
+  
+  let isSubmitting = false;
+  let selectedPlan = null;
+  let selectedImageFile = null;
+  let createdOrderId = null;
+  let currentTrackPhone = '';
+  let unsubscribeOrders = null;
+  let refreshCount = 0;
+  
   const plans = [
     { name: "VIP LEVEL - 1", icon: "🏆", features: ["22 GB Data", "8000 On-Net Mins", "5000 SMS"], price: 15000 },
     { name: "VIP LEVEL - 2", icon: "🏆", features: ["40 GB Data", "250 On-Net Mins", "25 Any Net Mins"], price: 20000 },
     { name: "VIP LEVEL - 3", icon: "🏆", features: ["40 GB Data", "1400 On-Net Mins", "8000 SMS"], price: 25000 },
-    { name: "VIP LEVEL - 4", icon: "💎", features: ["120 GB High-Speed Data", "Priority Support", "24/7 VIP Service"], price: 30000 }
+    { name: "VIP LEVEL - 4", icon: "💎", features: ["120 GB High-Speed Data", "Priority Support"], price: 30000 }
   ];
   
-  let selectedPlan = null;
-  let selectedImageFile = null;
-
-  function showToast(msg, bg = "#22c55e") {
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.style.background = bg;
-    toast.style.display = 'block';
-    setTimeout(() => {
-      toast.style.display = 'none';
-    }, 3000);
+  function copyToClipboard(text, method) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast(`${method} number copied: ${text}`, "#22c55e");
+    }).catch(() => showToast("Failed to copy", "#ef4444"));
   }
   
-  function copyToClipboard(text) {
-    navigator.clipboard.writeText(text);
-    showToast("Copied: " + text);
-  }
-
   function renderPlans() {
     const container = document.getElementById('plans-container');
     container.innerHTML = '';
-    
     plans.forEach(plan => {
       const card = document.createElement('div');
       card.className = 'plan-card';
       card.innerHTML = `
         <div class="plan-icon">${plan.icon}</div>
         <div class="plan-title">${plan.name}</div>
-        <ul class="feature-list">${plan.features.map(f => `<li>✔️ ${f}</li>`).join('')}</ul>
-        <div class="price">${plan.price.toLocaleString()} KS</div>
-        <button class="select-plan-btn" data-plan="${plan.name}">Select Plan</button>
+        <ul class="feature-list">${plan.features.map(f => `<li><i class="fas fa-check-circle"></i> ${f}</li>`).join('')}</ul>
+        <div class="price">${plan.price.toLocaleString()} <small>KS</small></div>
+        <button class="select-plan-btn" data-plan="${plan.name}"><i class="fas fa-shopping-cart"></i> Select Plan</button>
       `;
       container.appendChild(card);
     });
@@ -162,205 +517,307 @@
     document.querySelectorAll('.select-plan-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        selectPlan(btn.dataset.plan, btn);
+        selectPlan(btn.getAttribute('data-plan'));
       });
     });
   }
-
-  function selectPlan(planName, btnElement) {
+  
+  function selectPlan(planName) {
     selectedPlan = plans.find(p => p.name === planName);
+    if (!selectedPlan) return;
     
-    // Update UI
     document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
-    if (btnElement) {
-      btnElement.closest('.plan-card').classList.add('selected');
+    const cards = document.querySelectorAll('.plan-card');
+    for (let card of cards) {
+      if (card.querySelector('.select-plan-btn')?.getAttribute('data-plan') === planName) {
+        card.classList.add('selected');
+        break;
+      }
     }
     
-    document.getElementById('selectedPlanInfo').innerHTML = 
-      `<strong>${selectedPlan.icon} ${selectedPlan.name}</strong> - ${selectedPlan.price.toLocaleString()} KS`;
-    document.getElementById('orderFormCard').classList.add('show');
-    document.getElementById('selectionAlert').style.display = 'block';
-    document.getElementById('orderFormCard').scrollIntoView({ behavior: 'smooth' });
-  }
-
-  function cancelOrder() {
-    selectedPlan = null;
-    selectedImageFile = null;
-    document.getElementById('orderFormCard').classList.remove('show');
-    document.getElementById('selectionAlert').style.display = 'none';
+    document.getElementById('selectedPlanInfo').innerHTML = `
+      <i class="fas fa-gem" style="color:#facc15;"></i>
+      <strong style="color:#facc15;">${selectedPlan.icon} ${selectedPlan.name}</strong><br>
+      💰 Price: ${selectedPlan.price.toLocaleString()} KS
+    `;
+    
     document.getElementById('orderPhone').value = '';
     document.getElementById('orderNote').value = '';
     document.getElementById('previewImg').style.display = 'none';
-    document.getElementById('previewImg').src = '';
+    selectedImageFile = null;
     document.getElementById('screenshotInput').value = '';
+    createdOrderId = null;
+    
+    document.getElementById('selectionAlert').style.display = 'block';
+    document.getElementById('orderFormCard').classList.add('show');
+    document.getElementById('orderFormCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    showToast(`Selected: ${selectedPlan.name}`, "#facc15");
+  }
+  
+  function cancelOrder() {
+    selectedPlan = null;
+    selectedImageFile = null;
+    createdOrderId = null;
+    document.getElementById('orderFormCard').classList.remove('show');
+    document.getElementById('selectionAlert').style.display = 'none';
+    document.getElementById('previewImg').style.display = 'none';
+    document.getElementById('screenshotInput').value = '';
+    document.getElementById('orderPhone').value = '';
+    document.getElementById('orderNote').value = '';
+    document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
     showToast("Order cancelled", "#ef4444");
   }
-
+  
   async function createOrder() {
+    if (!selectedPlan) { showToast("Select a plan first!", "#f97316"); return null; }
     const phone = document.getElementById('orderPhone').value.trim();
-    if (!/^09\d{9}$/.test(phone)) {
-      throw new Error("Invalid Myanmar phone number (09xxxxxxxxx)");
-    }
-    
-    const res = await fetch('/api/order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ packageName: selectedPlan.name, phone })
-    });
-    
-    const data = await res.json();
-    if (!data.success) throw new Error(data.message);
-    return data.orderId;
+    if (!phone || phone.length < 9) { showToast("Valid phone number required", "#f97316"); return null; }
+    try {
+      showToast("Creating order...", "#3b82f6");
+      const res = await fetch('/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ packageName: selectedPlan.name, phone })
+      });
+      const data = await res.json();
+      if (data.success) {
+        createdOrderId = data.orderId;
+        showToast(`Order #${createdOrderId} created!`, "#22c55e");
+        return data.orderId;
+      } else { showToast(`Failed: ${data.message}`, "#ef4444"); return null; }
+    } catch (error) { showToast("Network error", "#ef4444"); return null; }
   }
-
-  async function submitPayment(orderId, phone, note) {
+  
+  async function submitPayment(orderId) {
+    if (!orderId) { showToast("Order ID missing", "#ef4444"); return false; }
+    if (!selectedImageFile) { showToast("Upload screenshot", "#f97316"); return false; }
+    const phone = document.getElementById('orderPhone').value.trim();
+    const note = document.getElementById('orderNote').value || '';
     const formData = new FormData();
     formData.append('orderId', orderId);
     formData.append('packageName', selectedPlan.name);
     formData.append('phone', phone);
-    formData.append('note', note);
     formData.append('screenshot', selectedImageFile);
-    
-    const res = await fetch('/api/submit-payment', { method: 'POST', body: formData });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.message);
-    return true;
+    formData.append('note', note);
+    try {
+      const res = await fetch('/submit-payment', { method: 'POST', body: formData });
+      const result = await res.json();
+      if (result.success) { showToast("✅ Payment submitted!", "#22c55e"); return true; }
+      else { showToast(`❌ ${result.message}`, "#ef4444"); return false; }
+    } catch (error) { showToast("❌ Network error", "#ef4444"); return false; }
   }
-
+  
   async function submitOrder() {
-    if (!selectedPlan) {
-      showToast("Please select a plan first", "#f97316");
-      return;
-    }
-    
+    if (isSubmitting) { showToast("Please wait...", "#f97316"); return; }
+    if (!selectedPlan) { showToast("Select a plan first!", "#f97316"); return; }
     const phone = document.getElementById('orderPhone').value.trim();
-    if (!/^09\d{9}$/.test(phone)) {
-      showToast("Valid Myanmar phone number required (09xxxxxxxxx)", "#f97316");
-      return;
-    }
+    if (!phone || phone.length < 9) { showToast("Valid phone number required", "#f97316"); return; }
+    if (!selectedImageFile) { showToast("Upload screenshot", "#f97316"); return; }
     
-    if (!selectedImageFile) {
-      showToast("Please upload payment screenshot", "#f97316");
-      return;
-    }
-    
-    const note = document.getElementById('orderNote').value;
-    
+    isSubmitting = true;
+    const btn = document.getElementById('submitOrderBtn');
+    const original = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    btn.disabled = true;
     try {
-      showToast("Creating order...", "#3b82f6");
       const orderId = await createOrder();
-      
-      showToast("Submitting payment...", "#3b82f6");
-      await submitPayment(orderId, phone, note);
-      
-      showToast(`✅ Order #${orderId} submitted successfully!`, "#22c55e");
-      cancelOrder();
-      document.getElementById('trackPhone').value = phone;
-      await trackOrders();
-      
-    } catch (err) {
-      showToast(err.message, "#ef4444");
-    }
-  }
-
-  async function trackOrders() {
-    const phone = document.getElementById('trackPhone').value.trim();
-    if (!/^09\d{9}$/.test(phone)) {
-      showToast("Enter valid phone number", "#f97316");
-      return;
-    }
-    
-    const resultDiv = document.getElementById('trackResult');
-    resultDiv.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
-    
-    try {
-      const res = await fetch(`/api/track-order?phone=${encodeURIComponent(phone)}`);
-      const data = await res.json();
-      
-      if (data.success) {
-        if (data.orders.length === 0) {
-          resultDiv.innerHTML = '<div style="padding:20px; text-align:center;">📭 No orders found for this number.</div>';
-        } else {
-          let html = `<h3 style="margin-bottom:1rem;">📋 ${data.orders.length} order(s) found</h3>`;
-          
-          for (const o of data.orders) {
-            let statusText = o.status;
-            let statusColor = "#94a3b8";
-            
-            switch (o.status) {
-              case 'approved': statusText = '✅ Active'; statusColor = "#22c55e"; break;
-              case 'payment_received': statusText = '💰 Paid - Pending Approval'; statusColor = "#facc15"; break;
-              case 'pending_payment': statusText = '⏳ Pending Payment'; statusColor = "#f97316"; break;
-              case 'rejected': statusText = '❌ Rejected'; statusColor = "#ef4444"; break;
-              case 'expired': statusText = '⏰ Expired'; statusColor = "#64748b"; break;
-            }
-            
-            let countdownHtml = '';
-            if (o.status === 'approved' && o.endDate) {
-              const remaining = Math.ceil((new Date(o.endDate) - new Date()) / 86400000);
-              const percent = Math.max(0, Math.min(100, (remaining / 30) * 100));
-              countdownHtml = `
-                <div style="margin-top:8px;">
-                  <div style="background:#334155; border-radius:10px; height:10px;">
-                    <div style="width:${percent}%; background:#facc15; height:10px; border-radius:10px;"></div>
-                  </div>
-                  <div style="font-size:12px; margin-top:4px;">⏰ ${remaining} days remaining</div>
-                </div>
-              `;
-            }
-            
-            html += `
-              <div class="order-card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <strong>🎫 Order #${o.id}</strong>
-                  <span style="color:${statusColor};">${statusText}</span>
-                </div>
-                <div style="margin-top:8px;">📦 ${o.packageName}</div>
-                <div>📞 ${o.phone}</div>
-                <div>💰 ${o.price.toLocaleString()} KS</div>
-                <div>📅 ${new Date(o.createdAt).toLocaleDateString()}</div>
-                ${countdownHtml}
-              </div>
-            `;
-          }
-          
-          resultDiv.innerHTML = html;
+      if (orderId) {
+        const success = await submitPayment(orderId);
+        if (success) {
+          const finalPhone = document.getElementById('orderPhone').value.trim();
+          cancelOrder();
+          document.getElementById('trackPhone').value = finalPhone;
+          setTimeout(() => trackOrdersByPhone(), 500);
         }
-      } else {
-        resultDiv.innerHTML = `<div style="padding:20px; text-align:center;">❌ ${data.message}</div>`;
       }
-      
-    } catch (err) {
-      resultDiv.innerHTML = '<div style="padding:20px; text-align:center;">❌ Network error. Please try again.</div>';
-    }
+    } catch (error) { showToast("Error", "#ef4444"); }
+    finally { isSubmitting = false; btn.innerHTML = original; btn.disabled = false; }
   }
-
-  // Event Listeners
+  
   document.getElementById('screenshotInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file && file.type.startsWith('image/')) {
       selectedImageFile = file;
       const reader = new FileReader();
-      reader.onload = ev => {
-        document.getElementById('previewImg').src = ev.target.result;
-        document.getElementById('previewImg').style.display = 'block';
+      reader.onload = function(ev) {
+        const preview = document.getElementById('previewImg');
+        preview.src = ev.target.result;
+        preview.style.display = 'block';
       };
       reader.readAsDataURL(file);
-    } else {
-      showToast("Please select a valid image file", "#f97316");
-    }
-  });
-
-  document.getElementById('submitOrderBtn').onclick = submitOrder;
-  document.getElementById('cancelOrderBtn').onclick = cancelOrder;
-  document.getElementById('trackBtn').onclick = trackOrders;
-  document.getElementById('trackPhone').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') trackOrders();
+      showToast("Screenshot loaded", "#22c55e");
+    } else showToast("Select image file", "#f97316");
   });
   
-  // Initialize
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+  }
+  
+  // ========== REAL-TIME SYNC FUNCTION ==========
+  function startRealtimeSync(phone) {
+    // Stop previous listener if exists
+    if (unsubscribeOrders) {
+      unsubscribeOrders();
+      unsubscribeOrders = null;
+    }
+    
+    // Listen to Firestore for real-time updates
+    unsubscribeOrders = db.collection('orders')
+      .where('phone', '==', phone)
+      .orderBy('createdAt', 'desc')
+      .onSnapshot((snapshot) => {
+        const userOrders = [];
+        snapshot.forEach(doc => {
+          userOrders.push({ id: parseInt(doc.id), ...doc.data() });
+        });
+        
+        console.log(`🔄 Real-time update: ${userOrders.length} orders for ${phone}`);
+        renderSyncOrders(userOrders);
+        
+        // Update indicator
+        const indicator = document.getElementById('syncIndicator');
+        indicator.innerHTML = '<i class="fas fa-check-circle"></i> Synced just now - real-time updates active';
+        setTimeout(() => {
+          indicator.innerHTML = '<i class="fas fa-sync-alt"></i> Real-time sync active - orders update automatically';
+        }, 2000);
+      }, (error) => {
+        console.error('Firebase sync error:', error);
+      });
+  }
+  
+  function renderSyncOrders(orders) {
+    const resultDiv = document.getElementById('trackResult');
+    
+    if (!orders || orders.length === 0) {
+      resultDiv.innerHTML = `<div style="background:#0f172a; border-radius:20px; padding:1.5rem; text-align:center;">
+        <i class="fas fa-box-open" style="font-size:2.5rem; color:#64748b;"></i>
+        <p style="margin-top:0.8rem;">No orders found for this number.</p>
+      </div>`;
+      return;
+    }
+    
+    let html = `<div style="margin-bottom:0.8rem;"><h3><i class="fas fa-chart-line"></i> ${orders.length} order(s) found (Real-time)</h3></div>`;
+    
+    for (const order of orders) {
+      const isActive = order.status === 'approved';
+      const activeClass = isActive ? 'active' : '';
+      
+      let statusText = '', statusColor = '';
+      switch(order.status) {
+        case 'pending_payment': statusText = '⏳ Pending'; statusColor = '#f59e0b'; break;
+        case 'payment_received': statusText = '💰 Paid'; statusColor = '#3b82f6'; break;
+        case 'approved': statusText = '✅ Active'; statusColor = '#22c55e'; break;
+        case 'expired': statusText = '⏰ Expired'; statusColor = '#ef4444'; break;
+        case 'rejected': statusText = '❌ Rejected'; statusColor = '#ef4444'; break;
+        default: statusText = order.status; statusColor = '#94a3b8';
+      }
+      
+      const formattedDate = order.createdAt ? new Date(order.createdAt).toLocaleString('en-US', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: true
+      }) : 'N/A';
+      
+      let countdownHtml = '';
+      if (isActive && order.endDate) {
+        const remaining = Math.ceil((new Date(order.endDate) - new Date()) / (86400000));
+        const percent = Math.max(0, (remaining / 30) * 100);
+        const barColor = remaining <= 5 ? '#ef4444' : remaining <= 10 ? '#f59e0b' : '#22c55e';
+        
+        countdownHtml = `
+          <div class="countdown-progress">
+            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 0.4rem; font-size:0.7rem;">
+              <span><i class="fas fa-calendar-check"></i> ${formatDate(order.startDate)}</span>
+              <div class="days-remaining">
+                <span class="days-number">${remaining > 0 ? remaining : 0}</span>
+                <span>days left</span>
+              </div>
+              <span><i class="fas fa-calendar-times"></i> ${formatDate(order.endDate)}</span>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-active" style="width: ${percent}%;"></div>
+            </div>
+          </div>
+        `;
+      }
+      
+      html += `
+        <div class="order-card ${activeClass}">
+          <div class="order-header">
+            <div class="order-title">
+              ${isActive ? `<div class="active-icon"><i class="fas fa-check-circle" style="color: #facc15; font-size: 0.8rem;"></i></div>` : ''}
+              <h3><i class="fas fa-receipt"></i> Order #${order.id}</h3>
+            </div>
+            ${isActive ? 
+              `<div class="active-badge"><i class="fas fa-plug"></i> ACTIVE</div>` :
+              `<span style="background:${statusColor}20; border:1px solid ${statusColor}; padding:3px 10px; border-radius:20px; font-size:0.65rem;">${statusText}</span>`
+            }
+          </div>
+          
+          <div style="display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 0.5rem 0; font-size:0.8rem;">
+            <div><i class="fas fa-tag"></i> <strong>${order.packageName}</strong></div>
+            <div><i class="fas fa-phone"></i> ${order.phone}</div>
+            <div><i class="fas fa-money-bill"></i> ${order.price.toLocaleString()} KS</div>
+            <div><i class="fas fa-calendar"></i> ${formattedDate}</div>
+          </div>
+          ${countdownHtml}
+        </div>
+      `;
+    }
+    
+    resultDiv.innerHTML = html;
+    resultDiv.style.display = 'block';
+  }
+  
+  async function trackOrdersByPhone() {
+    const phone = document.getElementById('trackPhone').value.trim();
+    const resultDiv = document.getElementById('trackResult');
+    
+    if (!phone || phone.length < 9) {
+      showToast("Enter valid phone number", "#f97316");
+      return;
+    }
+    
+    currentTrackPhone = phone;
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<div style="text-align:center; padding:1.5rem;"><i class="fas fa-spinner fa-spin"></i> Connecting to real-time sync...</div>';
+    
+    // Start Firebase real-time listener
+    startRealtimeSync(phone);
+    
+    showToast(`🔔 Real-time tracking active for ${phone}`, "#22c55e");
+  }
+  
+  function manualRefresh() {
+    if (currentTrackPhone) {
+      // Re-trigger the sync
+      startRealtimeSync(currentTrackPhone);
+    } else {
+      const phone = document.getElementById('trackPhone').value.trim();
+      if (phone) trackOrdersByPhone();
+      else showToast("Enter phone number first", "#f97316");
+    }
+  }
+  
+  function showToast(msg, bgColor) {
+    const toast = document.getElementById('toast');
+    toast.style.background = bgColor;
+    toast.innerText = msg;
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 3000);
+  }
+  
+  document.getElementById('trackPhone').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') manualRefresh();
+  });
+  
   renderPlans();
+  document.getElementById('submitOrderBtn').onclick = submitOrder;
+  document.getElementById('cancelOrderBtn').onclick = cancelOrder;
+  
   window.copyToClipboard = copyToClipboard;
+  window.manualRefresh = manualRefresh;
+  window.trackOrdersByPhone = trackOrdersByPhone;
 </script>
 </body>
 </html>
