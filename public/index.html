@@ -164,7 +164,6 @@
     }
     .select-plan-btn:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(250,204,21,0.4); }
     
-    /* Tracking Section */
     .tracking-section {
       background: rgba(15,23,42,0.6);
       backdrop-filter: blur(20px);
@@ -191,7 +190,6 @@
     .refresh-indicator { text-align: center; margin-top: 0.8rem; font-size: 0.65rem; color: #22c55e; }
     .refresh-indicator i { animation: spin 1s linear infinite; display: inline-block; margin-right: 4px; }
     
-    /* Order Card */
     .order-card {
       background: rgba(15, 23, 42, 0.8);
       backdrop-filter: blur(10px);
@@ -353,7 +351,6 @@
   <h2 class="section-title" style="text-align:center; font-size:1.8rem; margin:2rem 0 1rem;">✨ Choose Your Premium Plan</h2>
   <div class="plans-container" id="plans-container"></div>
 
-  <!-- Tracking Section -->
   <div class="tracking-section">
     <div class="tracking-title">
       <i class="fas fa-search"></i>
@@ -380,7 +377,6 @@
 
 <div id="toast" class="toast"></div>
 
-<!-- 3D Script -->
 <script type="module">
   import * as THREE from 'three';
 
@@ -416,7 +412,7 @@
   const ring = new THREE.Mesh(ringGeo, ringMat);
   scene.add(ring);
   
-  const particleCount = 2500;
+  const particleCount = 1500;
   const particlesGeometry = new THREE.BufferGeometry();
   const positions = new Float32Array(particleCount * 3);
   for (let i = 0; i < particleCount; i++) {
@@ -627,11 +623,11 @@
   });
   
   function formatDate(dateString) {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
   }
   
-  // ========== FETCH ORDERS BY PHONE FROM SERVER ==========
   async function fetchOrdersByPhone() {
     const phone = document.getElementById('trackPhone').value.trim();
     const resultDiv = document.getElementById('trackResult');
@@ -686,7 +682,6 @@
           if (isActive && order.endDate) {
             const remaining = Math.ceil((new Date(order.endDate) - new Date()) / (86400000));
             const percent = Math.max(0, (remaining / 30) * 100);
-            const barColor = remaining <= 5 ? '#ef4444' : remaining <= 10 ? '#f59e0b' : '#22c55e';
             
             countdownHtml = `
               <div class="countdown-progress">
