@@ -6,13 +6,9 @@
   <title>ATH DIGITAL HUB | MYTEL DATA</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script type="importmap">
-    { "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }
-  </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at 20% 30%, #0a0f1e, #03050b); color: white; overflow-x: hidden; }
-    #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
     .content { position: relative; z-index: 10; max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
     .ath-logo { text-align: center; margin-bottom: 1rem; }
     .ath-logo-icon { display: inline-flex; background: linear-gradient(135deg, #facc15, #eab308); padding: 0.8rem 2rem; border-radius: 60px; color: #0f172a; font-weight: bold; gap: 8px; }
@@ -32,36 +28,55 @@
     .order-form-card.show { display: block; }
     .form-group { margin-bottom: 1rem; }
     .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
-    .form-group input, .form-group textarea { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 14px; color: white; }
+    .form-group input, .form-group textarea { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 14px; color: white; font-size: 1rem; }
     .form-group textarea { resize: vertical; min-height: 60px; }
     .payment-info-card { background: #1e293b; border-radius: 16px; padding: 1rem; margin: 1rem 0; }
     .copy-btn { background: #334155; border: none; padding: 4px 12px; border-radius: 20px; margin-left: 8px; cursor: pointer; color: #facc15; }
-    .file-upload-area { background: #0f172a; border: 2px dashed #facc15; border-radius: 16px; padding: 1rem; text-align: center; cursor: pointer; }
+    .file-upload-area { background: #0f172a; border: 2px dashed #facc15; border-radius: 16px; padding: 1rem; text-align: center; cursor: pointer; transition: all 0.3s; }
+    .file-upload-area:hover { background: #1e293b; }
     .btn-submit { background: #22c55e; color: white; padding: 12px; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; flex: 1; }
     .btn-cancel { background: #ef4444; color: white; padding: 12px; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; flex: 1; }
     .tracking-section { background: rgba(15,23,42,0.6); border-radius: 28px; padding: 1.5rem; margin: 2rem 0; }
     .tracking-form { display: flex; gap: 1rem; flex-wrap: wrap; max-width: 500px; margin: 0 auto; }
-    .tracking-form input { flex: 1; padding: 0.8rem; background: #0f172a; border: 1px solid #334155; border-radius: 14px; color: white; }
+    .tracking-form input { flex: 1; padding: 0.8rem; background: #0f172a; border: 1px solid #334155; border-radius: 14px; color: white; font-size: 1rem; }
     .tracking-form button { padding: 0.8rem 1.5rem; background: #facc15; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; color: #0f172a; }
     .order-card { background: rgba(15,23,42,0.8); border-radius: 20px; padding: 1rem; margin-top: 1rem; border-left: 4px solid #facc15; }
-    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #22c55e; padding: 10px 20px; border-radius: 50px; z-index: 1100; display: none; font-size: 0.9rem; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 10px 20px; border-radius: 50px; z-index: 1100; display: none; font-size: 0.9rem; white-space: nowrap; }
     .footer { text-align: center; margin-top: 2rem; padding: 1rem; border-top: 1px solid #334155; color: #64748b; }
     .button-group { display: flex; gap: 1rem; margin-top: 1rem; }
     .selected-plan-info { background: #facc1520; padding: 0.8rem; border-radius: 16px; text-align: center; margin-bottom: 1rem; color: #facc15; }
-    @media (max-width: 768px) { .hero h1 { font-size: 1.8rem; } .plan-card { width: 100%; } }
+    @media (max-width: 768px) { .hero h1 { font-size: 1.8rem; } .plan-card { width: 100%; } .toast { white-space: normal; text-align: center; max-width: 90%; } }
   </style>
 </head>
 <body>
-<div id="canvas-container"></div>
 <div class="content">
-  <div class="ath-logo"><div class="ath-logo-icon"><i class="fas fa-globe"></i><span>ATH DIGITAL HUB</span><i class="fas fa-bolt"></i></div></div>
-  <div class="hero"><h1>✨ MYTEL DATA SERVICE ✨</h1><div class="tagline">High-Speed Data · VIP Plans · 24/7 Support</div></div>
+  <div class="ath-logo">
+    <div class="ath-logo-icon">
+      <i class="fas fa-globe"></i>
+      <span>ATH DIGITAL HUB</span>
+      <i class="fas fa-bolt"></i>
+    </div>
+  </div>
+  
+  <div class="hero">
+    <h1>✨ MYTEL DATA SERVICE ✨</h1>
+    <div class="tagline">High-Speed Data · VIP Plans · 24/7 Support</div>
+  </div>
 
-  <div id="selectionAlert" class="selection-alert" style="display:none; background:#facc1520; padding:1rem; border-radius:16px; text-align:center; margin-bottom:1rem;">✅ Plan selected! Please fill in your details below</div>
+  <div id="selectionAlert" class="selection-alert" style="display:none; background:#facc1520; padding:1rem; border-radius:16px; text-align:center; margin-bottom:1rem;">
+    ✅ Plan selected! Please fill in your details below
+  </div>
+  
   <div id="orderFormCard" class="order-form-card">
     <div id="selectedPlanInfo" class="selected-plan-info"></div>
-    <div class="form-group"><label>📞 Phone Number (MyTel)</label><input type="tel" id="orderPhone" placeholder="09xxxxxxxxx"></div>
-    <div class="form-group"><label>📝 Note (Optional)</label><textarea id="orderNote" placeholder="Payment reference or message..."></textarea></div>
+    <div class="form-group">
+      <label>📞 Phone Number (MyTel)</label>
+      <input type="tel" id="orderPhone" placeholder="09xxxxxxxxx">
+    </div>
+    <div class="form-group">
+      <label>📝 Note (Optional)</label>
+      <textarea id="orderNote" placeholder="Payment reference or message..."></textarea>
+    </div>
     <div class="payment-info-card">
       <h4 style="color:#facc15; margin-bottom:10px;">💸 Payment Methods</h4>
       <div style="display:flex; gap:1rem; flex-wrap:wrap;">
@@ -70,8 +85,18 @@
       </div>
       <p style="font-size:12px; margin-top:10px; color:#94a3b8;">⚠️ Please send exact amount and take screenshot</p>
     </div>
-    <div class="form-group"><label>📸 Payment Screenshot</label><div class="file-upload-area" onclick="document.getElementById('screenshotInput').click()"><i class="fas fa-cloud-upload-alt"></i> Click to upload screenshot</div><input type="file" id="screenshotInput" accept="image/*" style="display:none"><img id="previewImg" style="max-width:100%; margin-top:10px; border-radius:12px; display:none;"></div>
-    <div class="button-group"><button class="btn-submit" id="submitOrderBtn">✅ Submit Order</button><button class="btn-cancel" id="cancelOrderBtn">❌ Cancel</button></div>
+    <div class="form-group">
+      <label>📸 Payment Screenshot</label>
+      <div class="file-upload-area" onclick="document.getElementById('screenshotInput').click()">
+        <i class="fas fa-cloud-upload-alt"></i> Click to upload screenshot
+      </div>
+      <input type="file" id="screenshotInput" accept="image/*" style="display:none">
+      <img id="previewImg" style="max-width:100%; margin-top:10px; border-radius:12px; display:none;">
+    </div>
+    <div class="button-group">
+      <button class="btn-submit" id="submitOrderBtn">✅ Submit Order</button>
+      <button class="btn-cancel" id="cancelOrderBtn">❌ Cancel</button>
+    </div>
   </div>
 
   <h2 style="text-align:center;">✨ Choose Your Premium Plan</h2>
@@ -79,69 +104,64 @@
 
   <div class="tracking-section">
     <h3 style="margin-bottom:1rem;"><i class="fas fa-search"></i> Track Your Orders</h3>
-    <div class="tracking-form"><input type="tel" id="trackPhone" placeholder="Enter your phone number (09xxxxxxxxx)"><button id="trackBtn">Check Status</button></div>
+    <div class="tracking-form">
+      <input type="tel" id="trackPhone" placeholder="Enter your phone number (09xxxxxxxxx)">
+      <button id="trackBtn">Check Status</button>
+    </div>
     <div id="trackResult" class="track-result"></div>
   </div>
+  
   <div class="footer">© 2024 ATH DIGITAL HUB | Powered by AUNG THU HTWE</div>
 </div>
 <div id="toast" class="toast"></div>
 
-<script type="module">
-  import * as THREE from 'three';
-  // 3D Background
-  const container = document.getElementById('canvas-container');
-  const scene = new THREE.Scene(); scene.background = null; scene.fog = new THREE.FogExp2(0x03050b, 0.002);
-  const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000); camera.position.set(0,2,14);
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setClearColor(0x03050b,1); container.appendChild(renderer.domElement);
-  const geometry = new THREE.TorusKnotGeometry(1.3,0.32,220,64,3,4); const material = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xeab308, emissiveIntensity:0.4 }); const knot = new THREE.Mesh(geometry,material); scene.add(knot);
-  const ringGeo = new THREE.TorusGeometry(1.8,0.05,128,500); const ringMat = new THREE.MeshStandardMaterial({ color:0xfacc15, emissive:0xfacc15 }); const ring = new THREE.Mesh(ringGeo,ringMat); scene.add(ring);
-  const starsGeometry = new THREE.BufferGeometry(); const starsCount = 1500; const starsPos = new Float32Array(starsCount*3); for(let i=0;i<starsCount;i++){ starsPos[i*3]=(Math.random()-0.5)*200; starsPos[i*3+1]=(Math.random()-0.5)*100; starsPos[i*3+2]=(Math.random()-0.5)*80-30; } starsGeometry.setAttribute('position',new THREE.BufferAttribute(starsPos,3)); const starsMat = new THREE.PointsMaterial({ color:0xfacc15, size:0.09, transparent:true, blending:THREE.AdditiveBlending }); const stars = new THREE.Points(starsGeometry,starsMat); scene.add(stars);
-  const ambientLight = new THREE.AmbientLight(0x111122); scene.add(ambientLight);
-  const mainLight = new THREE.DirectionalLight(0xffffff,1); mainLight.position.set(5,10,7); scene.add(mainLight);
-  let time = 0; function animate(){ requestAnimationFrame(animate); time+=0.006; knot.rotation.x+=0.003; knot.rotation.y+=0.005; ring.rotation.x=Math.sin(time*0.5)*0.2; ring.rotation.y=time*0.3; stars.rotation.y+=0.0003; camera.lookAt(0,0,0); renderer.render(scene,camera); } animate();
-  window.addEventListener('resize',()=>{ camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth,window.innerHeight); });
-</script>
-
 <script>
-  // Customer Frontend Logic
+  // Plans Data
   const plans = [
     { name: "VIP LEVEL - 1", icon: "🏆", features: ["22 GB Data", "8000 On-Net Mins", "5000 SMS"], price: 15000 },
     { name: "VIP LEVEL - 2", icon: "🏆", features: ["40 GB Data", "250 On-Net Mins", "25 Any Net Mins"], price: 20000 },
     { name: "VIP LEVEL - 3", icon: "🏆", features: ["40 GB Data", "1400 On-Net Mins", "8000 SMS"], price: 25000 },
     { name: "VIP LEVEL - 4", icon: "💎", features: ["120 GB High-Speed Data", "Priority Support", "24/7 VIP Service"], price: 30000 }
   ];
+  
   let selectedPlan = null;
   let selectedImageFile = null;
 
   function showToast(msg, bg = "#22c55e") {
     const toast = document.getElementById('toast');
-    toast.textContent = msg; toast.style.background = bg; toast.style.display = 'block';
-    setTimeout(() => toast.style.display = 'none', 3000);
+    toast.textContent = msg;
+    toast.style.background = bg;
+    toast.style.display = 'block';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 3000);
   }
   
-  function copyToClipboard(text) { 
-    navigator.clipboard.writeText(text); 
-    showToast("Copied: " + text); 
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text);
+    showToast("Copied: " + text);
   }
 
   function renderPlans() {
     const container = document.getElementById('plans-container');
     container.innerHTML = '';
+    
     plans.forEach(plan => {
       const card = document.createElement('div');
       card.className = 'plan-card';
       card.innerHTML = `
         <div class="plan-icon">${plan.icon}</div>
         <div class="plan-title">${plan.name}</div>
-        <ul class="feature-list">${plan.features.map(f=>`<li>✔️ ${f}</li>`).join('')}</ul>
+        <ul class="feature-list">${plan.features.map(f => `<li>✔️ ${f}</li>`).join('')}</ul>
         <div class="price">${plan.price.toLocaleString()} KS</div>
         <button class="select-plan-btn" data-plan="${plan.name}">Select Plan</button>
       `;
       container.appendChild(card);
     });
+    
     document.querySelectorAll('.select-plan-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => { 
-        e.stopPropagation(); 
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         selectPlan(btn.dataset.plan, btn);
       });
     });
@@ -149,18 +169,23 @@
 
   function selectPlan(planName, btnElement) {
     selectedPlan = plans.find(p => p.name === planName);
+    
+    // Update UI
     document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
     if (btnElement) {
       btnElement.closest('.plan-card').classList.add('selected');
     }
-    document.getElementById('selectedPlanInfo').innerHTML = `<strong>${selectedPlan.icon} ${selectedPlan.name}</strong> - ${selectedPlan.price.toLocaleString()} KS`;
+    
+    document.getElementById('selectedPlanInfo').innerHTML = 
+      `<strong>${selectedPlan.icon} ${selectedPlan.name}</strong> - ${selectedPlan.price.toLocaleString()} KS`;
     document.getElementById('orderFormCard').classList.add('show');
     document.getElementById('selectionAlert').style.display = 'block';
     document.getElementById('orderFormCard').scrollIntoView({ behavior: 'smooth' });
   }
 
   function cancelOrder() {
-    selectedPlan = null; selectedImageFile = null;
+    selectedPlan = null;
+    selectedImageFile = null;
     document.getElementById('orderFormCard').classList.remove('show');
     document.getElementById('selectionAlert').style.display = 'none';
     document.getElementById('orderPhone').value = '';
@@ -173,11 +198,16 @@
 
   async function createOrder() {
     const phone = document.getElementById('orderPhone').value.trim();
-    if (!/^09\d{9}$/.test(phone)) throw new Error("Invalid Myanmar phone number (09xxxxxxxxx)");
+    if (!/^09\d{9}$/.test(phone)) {
+      throw new Error("Invalid Myanmar phone number (09xxxxxxxxx)");
+    }
+    
     const res = await fetch('/api/order', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ packageName: selectedPlan.name, phone })
     });
+    
     const data = await res.json();
     if (!data.success) throw new Error(data.message);
     return data.orderId;
@@ -190,6 +220,7 @@
     formData.append('phone', phone);
     formData.append('note', note);
     formData.append('screenshot', selectedImageFile);
+    
     const res = await fetch('/api/submit-payment', { method: 'POST', body: formData });
     const data = await res.json();
     if (!data.success) throw new Error(data.message);
@@ -197,73 +228,122 @@
   }
 
   async function submitOrder() {
-    if (!selectedPlan) return showToast("Please select a plan first", "#f97316");
+    if (!selectedPlan) {
+      showToast("Please select a plan first", "#f97316");
+      return;
+    }
+    
     const phone = document.getElementById('orderPhone').value.trim();
-    if (!/^09\d{9}$/.test(phone)) return showToast("Valid Myanmar phone number required (09xxxxxxxxx)", "#f97316");
-    if (!selectedImageFile) return showToast("Please upload payment screenshot", "#f97316");
+    if (!/^09\d{9}$/.test(phone)) {
+      showToast("Valid Myanmar phone number required (09xxxxxxxxx)", "#f97316");
+      return;
+    }
+    
+    if (!selectedImageFile) {
+      showToast("Please upload payment screenshot", "#f97316");
+      return;
+    }
+    
     const note = document.getElementById('orderNote').value;
+    
     try {
       showToast("Creating order...", "#3b82f6");
       const orderId = await createOrder();
+      
       showToast("Submitting payment...", "#3b82f6");
       await submitPayment(orderId, phone, note);
+      
       showToast(`✅ Order #${orderId} submitted successfully!`, "#22c55e");
       cancelOrder();
       document.getElementById('trackPhone').value = phone;
       await trackOrders();
-    } catch (err) { 
-      showToast(err.message, "#ef4444"); 
+      
+    } catch (err) {
+      showToast(err.message, "#ef4444");
     }
   }
 
   async function trackOrders() {
     const phone = document.getElementById('trackPhone').value.trim();
-    if (!/^09\d{9}$/.test(phone)) return showToast("Enter valid phone number", "#f97316");
+    if (!/^09\d{9}$/.test(phone)) {
+      showToast("Enter valid phone number", "#f97316");
+      return;
+    }
+    
     const resultDiv = document.getElementById('trackResult');
     resultDiv.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+    
     try {
       const res = await fetch(`/api/track-order?phone=${encodeURIComponent(phone)}`);
       const data = await res.json();
+      
       if (data.success) {
         if (data.orders.length === 0) {
           resultDiv.innerHTML = '<div style="padding:20px; text-align:center;">📭 No orders found for this number.</div>';
         } else {
           let html = `<h3 style="margin-bottom:1rem;">📋 ${data.orders.length} order(s) found</h3>`;
+          
           for (const o of data.orders) {
             let statusText = o.status;
             let statusColor = "#94a3b8";
-            if (o.status === 'approved') { statusText = '✅ Active'; statusColor = "#22c55e"; }
-            else if (o.status === 'payment_received') { statusText = '💰 Paid - Pending Approval'; statusColor = "#facc15"; }
-            else if (o.status === 'pending_payment') { statusText = '⏳ Pending Payment'; statusColor = "#f97316"; }
-            else if (o.status === 'rejected') { statusText = '❌ Rejected'; statusColor = "#ef4444"; }
-            else if (o.status === 'expired') { statusText = '⏰ Expired'; statusColor = "#64748b"; }
+            
+            switch (o.status) {
+              case 'approved': statusText = '✅ Active'; statusColor = "#22c55e"; break;
+              case 'payment_received': statusText = '💰 Paid - Pending Approval'; statusColor = "#facc15"; break;
+              case 'pending_payment': statusText = '⏳ Pending Payment'; statusColor = "#f97316"; break;
+              case 'rejected': statusText = '❌ Rejected'; statusColor = "#ef4444"; break;
+              case 'expired': statusText = '⏰ Expired'; statusColor = "#64748b"; break;
+            }
             
             let countdownHtml = '';
             if (o.status === 'approved' && o.endDate) {
               const remaining = Math.ceil((new Date(o.endDate) - new Date()) / 86400000);
               const percent = Math.max(0, Math.min(100, (remaining / 30) * 100));
-              countdownHtml = `<div style="margin-top:8px;"><div style="background:#334155; border-radius:10px; height:10px;"><div style="width:${percent}%; background:#facc15; height:10px; border-radius:10px;"></div></div><div style="font-size:12px; margin-top:4px;">⏰ ${remaining} days remaining</div></div>`;
+              countdownHtml = `
+                <div style="margin-top:8px;">
+                  <div style="background:#334155; border-radius:10px; height:10px;">
+                    <div style="width:${percent}%; background:#facc15; height:10px; border-radius:10px;"></div>
+                  </div>
+                  <div style="font-size:12px; margin-top:4px;">⏰ ${remaining} days remaining</div>
+                </div>
+              `;
             }
-            html += `<div class="order-card"><div style="display:flex; justify-content:space-between; align-items:center;"><strong>🎫 Order #${o.id}</strong> <span style="color:${statusColor};">${statusText}</span></div><div style="margin-top:8px;">📦 ${o.packageName}</div><div>📞 ${o.phone}</div><div>💰 ${o.price.toLocaleString()} KS</div><div>📅 ${new Date(o.createdAt).toLocaleDateString()}</div>${countdownHtml}</div>`;
+            
+            html += `
+              <div class="order-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <strong>🎫 Order #${o.id}</strong>
+                  <span style="color:${statusColor};">${statusText}</span>
+                </div>
+                <div style="margin-top:8px;">📦 ${o.packageName}</div>
+                <div>📞 ${o.phone}</div>
+                <div>💰 ${o.price.toLocaleString()} KS</div>
+                <div>📅 ${new Date(o.createdAt).toLocaleDateString()}</div>
+                ${countdownHtml}
+              </div>
+            `;
           }
+          
           resultDiv.innerHTML = html;
         }
-      } else { 
-        resultDiv.innerHTML = `<div style="padding:20px; text-align:center;">❌ ${data.message}</div>`; 
+      } else {
+        resultDiv.innerHTML = `<div style="padding:20px; text-align:center;">❌ ${data.message}</div>`;
       }
-    } catch (err) { 
-      resultDiv.innerHTML = '<div style="padding:20px; text-align:center;">❌ Network error. Please try again.</div>'; 
+      
+    } catch (err) {
+      resultDiv.innerHTML = '<div style="padding:20px; text-align:center;">❌ Network error. Please try again.</div>';
     }
   }
 
+  // Event Listeners
   document.getElementById('screenshotInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file && file.type.startsWith('image/')) {
       selectedImageFile = file;
       const reader = new FileReader();
-      reader.onload = ev => { 
-        document.getElementById('previewImg').src = ev.target.result; 
-        document.getElementById('previewImg').style.display = 'block'; 
+      reader.onload = ev => {
+        document.getElementById('previewImg').src = ev.target.result;
+        document.getElementById('previewImg').style.display = 'block';
       };
       reader.readAsDataURL(file);
     } else {
@@ -274,8 +354,11 @@
   document.getElementById('submitOrderBtn').onclick = submitOrder;
   document.getElementById('cancelOrderBtn').onclick = cancelOrder;
   document.getElementById('trackBtn').onclick = trackOrders;
-  document.getElementById('trackPhone').addEventListener('keypress', (e) => { if (e.key === 'Enter') trackOrders(); });
+  document.getElementById('trackPhone').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') trackOrders();
+  });
   
+  // Initialize
   renderPlans();
   window.copyToClipboard = copyToClipboard;
 </script>
