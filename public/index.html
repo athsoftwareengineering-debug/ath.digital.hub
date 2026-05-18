@@ -461,7 +461,7 @@
 
 <!-- Firebase and Order Logic with Real-time Sync -->
 <script>
-  // ========== FIREBASE CONFIGURATION ==========
+  // ========== FIREBASE CONFIGURATION (တစ်ခါပဲ) ==========
   const firebaseConfig = {
     apiKey: "AIzaSyCN7GMpY6dqGzVlMevMZPG76guq3DvQPd8",
     authDomain: "mytelordersystem.firebaseapp.com",
@@ -472,7 +472,7 @@
     measurementId: "G-GEJ93W2RTY"
   };
   
-  // Initialize Firebase
+  // Initialize Firebase (တစ်ခါပဲ)
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   console.log('🔥 Firebase Realtime Sync initialized');
@@ -656,13 +656,11 @@
   
   // ========== REAL-TIME SYNC FUNCTION ==========
   function startRealtimeSync(phone) {
-    // Stop previous listener if exists
     if (unsubscribeOrders) {
       unsubscribeOrders();
       unsubscribeOrders = null;
     }
     
-    // Listen to Firestore for real-time updates
     unsubscribeOrders = db.collection('orders')
       .where('phone', '==', phone)
       .orderBy('createdAt', 'desc')
@@ -675,7 +673,6 @@
         console.log(`🔄 Real-time update: ${userOrders.length} orders for ${phone}`);
         renderSyncOrders(userOrders);
         
-        // Update indicator
         const indicator = document.getElementById('syncIndicator');
         indicator.innerHTML = '<i class="fas fa-check-circle"></i> Synced just now - real-time updates active';
         setTimeout(() => {
@@ -782,7 +779,6 @@
     resultDiv.style.display = 'block';
     resultDiv.innerHTML = '<div style="text-align:center; padding:1.5rem;"><i class="fas fa-spinner fa-spin"></i> Connecting to real-time sync...</div>';
     
-    // Start Firebase real-time listener
     startRealtimeSync(phone);
     
     showToast(`🔔 Real-time tracking active for ${phone}`, "#22c55e");
@@ -790,7 +786,6 @@
   
   function manualRefresh() {
     if (currentTrackPhone) {
-      // Re-trigger the sync
       startRealtimeSync(currentTrackPhone);
     } else {
       const phone = document.getElementById('trackPhone').value.trim();
