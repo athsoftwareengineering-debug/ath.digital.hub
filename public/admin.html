@@ -10,6 +10,11 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; }
+    .login-container { min-height: 100vh; display: flex; justify-content: center; align-items: center; background: linear-gradient(135deg, #0f172a, #1e1b4b); }
+    .login-card { background: #1e293b; padding: 2rem; border-radius: 28px; width: 350px; text-align: center; }
+    .login-card h2 { color: #facc15; margin-bottom: 1rem; }
+    .login-card input { width: 100%; padding: 12px; margin: 1rem 0; background: #0f172a; border: 1px solid #334155; border-radius: 14px; color: white; }
+    .login-card button { background: #facc15; color: #0f172a; padding: 12px; width: 100%; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; }
     .app-wrapper { display: flex; min-height: 100vh; }
     .sidebar { width: 260px; background: #0f172a; border-right: 1px solid #334155; padding: 1rem; position: fixed; height: 100%; overflow-y: auto; }
     .main-content { margin-left: 260px; padding: 1.5rem; width: 100%; }
@@ -42,15 +47,22 @@
     .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; }
     .chart-card { background: #1e293b; border-radius: 20px; padding: 1rem; border: 1px solid #334155; }
     .chart-card canvas { max-height: 300px; width: 100%; }
-    .user-info { display: flex; align-items: center; gap: 12px; background: #1e293b; padding: 6px 15px; border-radius: 40px; }
-    .user-info img { width: 32px; height: 32px; border-radius: 50%; }
     @media (max-width: 768px) { .sidebar { transform: translateX(-100%); position: fixed; z-index: 1000; } .main-content { margin-left: 0; } .charts-row { grid-template-columns: 1fr; } }
     .mobile-menu-btn { display: none; background: #facc15; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
     @media (max-width: 768px) { .mobile-menu-btn { display: inline-block; } }
   </style>
 </head>
 <body>
-<div id="dashboardSection" style="display:block">
+<div id="loginSection" class="login-container">
+  <div class="login-card">
+    <h2><i class="fas fa-lock"></i> Admin Login</h2>
+    <p style="color:#94a3b8; margin-bottom:1rem;">ကျေးဇူးပြု၍ စကားဝှက်ထည့်ပါ</p>
+    <input type="password" id="adminPassword" placeholder="Enter password">
+    <button id="loginBtn">Login</button>
+    <div id="loginError" style="color:#ef4444; margin-top:0.5rem;"></div>
+  </div>
+</div>
+<div id="dashboardSection" style="display:none">
   <div class="app-wrapper">
     <div class="sidebar" id="sidebar">
       <div class="logo"><i class="fas fa-globe"></i> ATH DIGITAL HUB</div>
@@ -62,11 +74,7 @@
     <div class="main-content">
       <div class="top-bar">
         <div><button class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i> Menu</button> <h1 style="display:inline-block; margin-left:10px;"><span id="pageTitle">Dashboard</span></h1></div>
-        <div class="user-info" id="userInfo">
-          <i class="fas fa-user-circle"></i>
-          <span id="userName">Admin</span>
-          <button onclick="logout()" style="background:#ef4444; border:none; padding:5px 12px; border-radius:20px; color:white; cursor:pointer; margin-left:10px;"><i class="fas fa-sign-out-alt"></i></button>
-        </div>
+        <button onclick="logout()" style="background:#ef4444; border:none; padding:8px 16px; border-radius:40px; color:white; cursor:pointer;"><i class="fas fa-sign-out-alt"></i> Logout</button>
       </div>
       <div class="stats-grid" id="statsGrid">Loading...</div>
       
@@ -110,23 +118,37 @@
   let dailyChart = null;
   let packageChart = null;
 
-  // Get token from URL or sessionStorage
-  const urlParams = new URLSearchParams(window.location.search);
-  const tokenFromUrl = urlParams.get('token');
-  
-  if (tokenFromUrl) {
-    sessionStorage.setItem('adminToken', tokenFromUrl);
-    // Remove token from URL without reloading
-    window.history.replaceState({}, document.title, '/admin');
-    token = tokenFromUrl;
-    loadAllData();
-    startAutoRefresh();
-  } else if (sessionStorage.getItem('adminToken')) {
+  // Check if token exists in sessionStorage
+  if (sessionStorage.getItem('adminToken')) {
     token = sessionStorage.getItem('adminToken');
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('dashboardSection').style.display = 'block';
     loadAllData();
     startAutoRefresh();
-  } else {
-    window.location.href = '/admin';
+  }
+
+  async function login() {
+    const password = document.getElementById('adminPassword').value;
+    try {
+      const res = await fetch('/api/admin/login', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ password }) 
+      });
+      const data = await res.json();
+      if (data.success) {
+        token = data.token;
+        sessionStorage.setItem('adminToken', token);
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('dashboardSection').style.display = 'block';
+        await loadAllData();
+        startAutoRefresh();
+      } else { 
+        document.getElementById('loginError').innerText = data.message; 
+      }
+    } catch (err) { 
+      document.getElementById('loginError').innerText = 'Network error'; 
+    }
   }
 
   function authHeaders() { return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }; }
@@ -305,7 +327,7 @@
 
   function startAutoRefresh() { if (autoRefreshInterval) clearInterval(autoRefreshInterval); autoRefreshInterval = setInterval(() => { if (token) loadAllData(); }, 60000); }
   
-  function logout() { sessionStorage.removeItem('adminToken'); window.location.href = '/auth/google/logout'; }
+  function logout() { sessionStorage.removeItem('adminToken'); location.reload(); }
   
   function toggleMobileMenu() {
     const sidebar = document.getElementById('sidebar');
@@ -327,6 +349,7 @@
     });
   });
 
+  document.getElementById('loginBtn').onclick = login;
   document.getElementById('applyFilters').onclick = applyFilters;
   document.getElementById('exportCSV').onclick = exportCSV;
   document.getElementById('bulkApprove').onclick = () => bulkUpdate('approved');
