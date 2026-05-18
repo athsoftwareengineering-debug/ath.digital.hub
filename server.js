@@ -43,7 +43,6 @@ console.log(`🔑 Admin Password: ${ADMIN_PASSWORD}`);
 console.log(`🕐 Time: ${getMyanmarTime12hr().full}`);
 console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅' : '❌'}`);
 console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅' : '❌'}`);
-console.log(`👥 GROUP_CHAT_ID: ${GROUP_CHAT_ID ? '✅' : '⚠️'}`);
 console.log(`🌐 BASE_URL: ${BASE_URL}`);
 console.log(`======================================\n`);
 
@@ -52,7 +51,11 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/temp_uploads', express.static(path.join(__dirname, 'temp_uploads')));
+
+// Create temp_uploads directory
+const uploadDir = path.join(__dirname, 'temp_uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+app.use('/temp_uploads', express.static(uploadDir));
 
 // ========== PACKAGES ==========
 const PACKAGES = {
@@ -65,8 +68,6 @@ const PACKAGES = {
 // ========== FILE UPLOAD ==========
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadDir = path.join(__dirname, 'temp_uploads');
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
@@ -117,29 +118,16 @@ async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   }
 }
 
-// ========== COUNTDOWN FUNCTIONS ==========
-function calculateRemainingDays(endDate) {
-  if (!endDate) return null;
-  const today = new Date();
-  const end = new Date(endDate);
-  const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-  return diffDays;
-}
-
+// ========== DAILY TASKS ==========
 async function updateAllOrdersRemainingDays() {
   console.log('🔄 Daily countdown check...');
-  const orders = database.getAllOrders();
+  database.updateExpiredOrders();
   
+  const orders = database.getAllOrders();
   for (const order of orders) {
     if (order.status === 'approved' && order.endDate) {
-      const remaining = calculateRemainingDays(order.endDate);
+      const remaining = Math.ceil((new Date(order.endDate) - new Date()) / (1000 * 60 * 60 * 24));
       database.db.prepare(`UPDATE orders SET daysRemaining = ? WHERE id = ?`).run(remaining, order.id);
-      
-      if (remaining <= 0 && !order.isExpired) {
-        database.updateOrderStatus(order.id, 'expired');
-        database.db.prepare(`UPDATE orders SET isExpired = 1 WHERE id = ?`).run(order.id);
-        await sendTelegramMessage(ADMIN_CHAT_ID, `⏰ EXPIRED: Order #${order.id}\n📞 ${order.phone}`);
-      }
       
       const alertDays = [5, 3, 1];
       if (alertDays.includes(remaining) && order.lastAlertDay !== remaining && remaining > 0) {
@@ -163,17 +151,12 @@ function scheduleDailyTask() {
 scheduleDailyTask();
 setTimeout(() => updateAllOrdersRemainingDays(), 5000);
 
-// ========== ADMIN AUTH ==========
+// ========== ADMIN AUTH MIDDLEWARE ==========
 function isAuthenticated(req, res, next) {
   const authToken = req.headers['x-admin-auth'];
   if (authToken === ADMIN_PASSWORD) return next();
   res.status(401).json({ success: false, message: "Unauthorized" });
 }
-
-app.use('/api/admin/*', (req, res, next) => {
-  if (req.path === '/api/admin/login') return next();
-  isAuthenticated(req, res, next);
-});
 
 // ========== API ENDPOINTS ==========
 
@@ -187,7 +170,60 @@ app.post('/api/admin/login', (req, res) => {
   }
 });
 
-// Create Order
+// Get all orders (Admin)
+app.get('/api/admin/orders', isAuthenticated, (req, res) => {
+  try {
+    const orders = database.getAllOrders();
+    const stats = database.getStats();
+    console.log(`📊 Admin API called: ${orders.length} orders found`);
+    res.json({ success: true, orders: orders, stats: stats });
+  } catch (error) {
+    console.error('Admin orders error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Get order screenshot (Admin)
+app.get('/api/admin/order-screenshot', isAuthenticated, (req, res) => {
+  const orderId = parseInt(req.query.orderId);
+  const order = database.getOrderById(orderId);
+  if (order && order.screenshotPath) {
+    res.json({ success: true, screenshotUrl: `${BASE_URL}${order.screenshotPath}` });
+  } else {
+    res.json({ success: false, message: "No screenshot available" });
+  }
+});
+
+// Update order status (Admin)
+app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
+  const { orderId, status } = req.body;
+  const order = database.getOrderById(parseInt(orderId));
+  
+  if (!order) {
+    return res.status(404).json({ success: false, message: "Order not found" });
+  }
+  
+  if (status === 'approved' && !order.startDate) {
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + 30);
+    const startDateStr = startDate.toISOString();
+    const endDateStr = endDate.toISOString();
+    
+    database.updateOrderStatus(parseInt(orderId), 'approved', startDateStr, endDateStr, 30);
+    
+    await sendTelegramMessage(ADMIN_CHAT_ID, `✅ Order #${orderId} approved! 30 days started.`);
+    if (GROUP_CHAT_ID) {
+      await sendTelegramMessage(GROUP_CHAT_ID, `🚨 DATA ACTIVATED 🚨\n📞 ${order.phone}\n📦 ${order.packageName}\n⏳ 30 days valid`);
+    }
+  } else {
+    database.updateOrderStatus(parseInt(orderId), status);
+  }
+  
+  res.json({ success: true });
+});
+
+// Create Order (Customer)
 app.post('/order', async (req, res) => {
   try {
     const { packageName, phone, note } = req.body;
@@ -226,7 +262,7 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// Submit Payment
+// Submit Payment (Customer)
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
   try {
@@ -275,7 +311,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   }
 });
 
-// Track by Phone
+// Track by Phone (Customer)
 app.get('/api/track-by-phone', (req, res) => {
   const { phone } = req.query;
   if (!phone || !/^(09|\+959)[0-9]{7,9}$/.test(phone)) {
@@ -283,120 +319,6 @@ app.get('/api/track-by-phone', (req, res) => {
   }
   const userOrders = database.getOrdersByPhone(phone);
   res.json({ success: true, orders: userOrders, count: userOrders.length });
-});
-
-// Admin Orders API
-app.get('/api/admin/orders', (req, res) => {
-  const authToken = req.headers['x-admin-auth'];
-  if (authToken !== ADMIN_PASSWORD) {
-    return res.status(401).json({ success: false, message: "Unauthorized" });
-  }
-  
-  const orders = database.getAllOrders();
-  const stats = database.getStats();
-  
-  console.log(`📊 Admin API called: ${orders.length} orders found`);
-  
-  res.json({ success: true, orders: orders, stats: stats });
-});
-
-// Get Screenshot
-app.get('/api/admin/order-screenshot', (req, res) => {
-  const authToken = req.headers['x-admin-auth'];
-  if (authToken !== ADMIN_PASSWORD) {
-    return res.status(401).json({ success: false, message: "Unauthorized" });
-  }
-  const orderId = parseInt(req.query.orderId);
-  const order = database.getOrderById(orderId);
-  if (order && order.screenshotPath) {
-    res.json({ success: true, screenshotUrl: `${BASE_URL}${order.screenshotPath}` });
-  } else {
-    res.json({ success: false, message: "No screenshot available" });
-  }
-});
-
-// Update Order Status
-app.post('/api/admin/update-order', async (req, res) => {
-  const authToken = req.headers['x-admin-auth'];
-  if (authToken !== ADMIN_PASSWORD) {
-    return res.status(401).json({ success: false, message: "Unauthorized" });
-  }
-  
-  const { orderId, status } = req.body;
-  const order = database.getOrderById(parseInt(orderId));
-  
-  if (!order) {
-    return res.status(404).json({ success: false, message: "Order not found" });
-  }
-  
-  const mt = getMyanmarTime12hr();
-  
-  if (status === 'approved' && !order.startDate) {
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + 30);
-    const startDateStr = startDate.toISOString();
-    const endDateStr = endDate.toISOString();
-    
-    database.updateOrderStatus(orderId, 'approved', startDateStr, endDateStr, 30);
-    
-    await sendTelegramMessage(ADMIN_CHAT_ID, `✅ Order #${orderId} approved! 30 days started.`);
-    if (GROUP_CHAT_ID) {
-      await sendTelegramMessage(GROUP_CHAT_ID, `🚨 DATA ACTIVATED 🚨\n📞 ${order.phone}\n📦 ${order.packageName}\n⏳ 30 days valid`);
-    }
-  } else {
-    database.updateOrderStatus(orderId, status);
-  }
-  
-  res.json({ success: true });
-});
-
-// ========== TELEGRAM WEBHOOK ==========
-app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
-  try {
-    console.log('📨 Webhook received');
-    const { callback_query } = req.body;
-    
-    if (callback_query && callback_query.data) {
-      const data = callback_query.data;
-      const chatId = callback_query.message.chat.id;
-      
-      // Answer callback query
-      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ callback_query_id: callback_query.id })
-      });
-      
-      if (data.startsWith('approve_')) {
-        const orderId = parseInt(data.split('_')[1]);
-        const order = database.getOrderById(orderId);
-        
-        if (order && !order.startDate) {
-          const startDate = new Date();
-          const endDate = new Date();
-          endDate.setDate(endDate.getDate() + 30);
-          
-          database.updateOrderStatus(orderId, 'approved', startDate.toISOString(), endDate.toISOString(), 30);
-          
-          await sendTelegramMessage(chatId, `✅ Order #${orderId} approved! 30 days started.`);
-          if (GROUP_CHAT_ID) {
-            await sendTelegramMessage(GROUP_CHAT_ID, `🚨 DATA ACTIVATED 🚨\n📞 ${order.phone}\n📦 ${order.packageName}`);
-          }
-        }
-      }
-      
-      if (data.startsWith('reject_')) {
-        const orderId = parseInt(data.split('_')[1]);
-        database.updateOrderStatus(orderId, 'rejected');
-        await sendTelegramMessage(chatId, `❌ Order #${orderId} rejected.`);
-      }
-    }
-    res.sendStatus(200);
-  } catch (error) {
-    console.error('Webhook error:', error);
-    res.sendStatus(200);
-  }
 });
 
 // Test group endpoint
