@@ -13,23 +13,16 @@ const helmet = require('helmet');
 const cors = require('cors');
 const { fetch } = require('undici');
 const FormData = require('form-data');
-const session = require('express-session');
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const app = express();
 
 // ========== ENVIRONMENT VARIABLES ==========
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = process.env.JWT_SECRET || 'ath_super_secret_change_me_in_production';
-const SESSION_SECRET = process.env.SESSION_SECRET || 'session_secret_key';
-const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2a$10$N9qo8uLOickgx2ZMRZoMy.MrqjU9I9sVqZ3Gq8ZqZqZqZqZqZqZq';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '104194@ath';  // သင့်စကားဝှက်
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
 const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID;
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const AUTHORIZED_ADMINS = process.env.AUTHORIZED_ADMINS ? process.env.AUTHORIZED_ADMINS.split(',') : [];
 
 // ========== SECURITY MIDDLEWARE ==========
 app.use(helmet({
@@ -40,21 +33,6 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session middleware for Google Login
-app.use(session({
-  secret: SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: { 
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
-
-// Passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
-
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -62,35 +40,6 @@ const limiter = rateLimit({
   message: { success: false, message: 'Too many requests, please try again later.' }
 });
 app.use('/api/', limiter);
-
-// ========== PASSPORT GOOGLE STRATEGY ==========
-passport.use(new GoogleStrategy({
-    clientID: GOOGLE_CLIENT_ID,
-    clientSecret: GOOGLE_CLIENT_SECRET,
-    callbackURL: '/auth/google/callback'
-  },
-  async (accessToken, refreshToken, profile, done) => {
-    const email = profile.emails[0].value;
-    const isAuthorized = AUTHORIZED_ADMINS.includes(email);
-    
-    if (isAuthorized) {
-      const token = jwt.sign({ 
-        email: email,
-        name: profile.displayName,
-        picture: profile.photos?.[0]?.value,
-        role: 'admin',
-        provider: 'google'
-      }, JWT_SECRET, { expiresIn: '8h' });
-      
-      return done(null, { token, profile, email });
-    } else {
-      return done(null, false, { message: 'Unauthorized email: ' + email });
-    }
-  }
-));
-
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((obj, done) => done(null, obj));
 
 // ========== FIREBASE ADMIN SDK (Firestore) ==========
 let serviceAccount;
@@ -239,7 +188,7 @@ async function updateOrder(orderId, updateData) {
   return order;
 }
 
-// ========== SCREENSHOT UPLOAD TO FIREBASE STORAGE ==========
+// ========== SCREENSHOT UPLOAD ==========
 const upload = multer({ storage: multer.memoryStorage() });
 async function uploadScreenshotToStorage(fileBuffer, orderId) {
   const timestamp = Date.now();
@@ -250,42 +199,19 @@ async function uploadScreenshotToStorage(fileBuffer, orderId) {
   return downloadUrl;
 }
 
-// ========== GOOGLE LOGIN ROUTES ==========
-app.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-);
-
-app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/admin-login-failed' }),
-  (req, res) => {
-    const token = req.user.token;
-    res.redirect(`/admin?token=${token}`);
-  }
-);
-
-app.get('/auth/google/logout', (req, res) => {
-  req.logout(() => {});
-  req.session.destroy();
-  res.redirect('/admin');
-});
-
 // ========== API ENDPOINTS ==========
 
-// Admin Login with Password (Backup)
+// Admin Login (Password Only)
 app.post('/api/admin/login', async (req, res) => {
   const { password } = req.body;
-  const isValid = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
-  if (isValid) {
-    const token = jwt.sign({ role: 'admin', method: 'password' }, JWT_SECRET, { expiresIn: '8h' });
+  
+  // စကားဝှက်ကို တိုက်ရိုက်စစ်ဆေးပါ
+  if (password === ADMIN_PASSWORD) {
+    const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '8h' });
     res.json({ success: true, token });
   } else {
-    res.status(401).json({ success: false, message: 'Invalid password' });
+    res.status(401).json({ success: false, message: 'စကားဝှက်မှားနေပါသည်' });
   }
-});
-
-// Verify Google Token
-app.post('/api/admin/verify-google-token', authenticateToken, (req, res) => {
-  res.json({ success: true, user: req.user });
 });
 
 // Create Order (Customer)
@@ -498,106 +424,8 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
   }
 });
 
-// ========== SERVE PAGES ==========
-app.get('/admin-login-failed', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head><title>Login Failed</title></head>
-    <body style="display:flex; justify-content:center; align-items:center; height:100vh; background:#0f172a; font-family:Arial;">
-      <div style="background:#1e293b; padding:2rem; border-radius:20px; text-align:center;">
-        <h1 style="color:#ef4444;">❌ Login Failed</h1>
-        <p style="color:#94a3b8;">Your Google account is not authorized to access the admin panel.</p>
-        <a href="/admin" style="display:inline-block; background:#facc15; color:#0f172a; padding:10px 20px; border-radius:10px; text-decoration:none; margin-top:1rem;">Try Again</a>
-      </div>
-    </body>
-    </html>
-  `);
-});
-
-app.get('/admin', (req, res) => {
-  const token = req.query.token;
-  if (token) {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-  } else {
-    res.send(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>ATH DIGITAL HUB | Admin Login</title>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0f172a, #1e1b4b); min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-          .login-container { background: #1e293b; padding: 2rem; border-radius: 28px; width: 380px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-          .logo { font-size: 1.5rem; font-weight: 800; color: #facc15; margin-bottom: 1.5rem; }
-          .google-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; background: #4285f4; color: white; padding: 12px; border: none; border-radius: 40px; font-size: 1rem; font-weight: 600; cursor: pointer; text-decoration: none; margin: 1rem 0; }
-          .google-btn i { font-size: 1.2rem; }
-          .divider { display: flex; align-items: center; text-align: center; color: #64748b; margin: 1rem 0; }
-          .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #334155; }
-          .divider span { margin: 0 10px; font-size: 0.8rem; }
-          .password-login { margin-top: 1rem; }
-          .password-login input { width: 100%; padding: 12px; margin: 0.5rem 0; background: #0f172a; border: 1px solid #334155; border-radius: 14px; color: white; }
-          .password-login button { width: 100%; padding: 12px; background: #facc15; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; color: #0f172a; }
-          .error { color: #ef4444; margin-top: 0.5rem; font-size: 0.8rem; }
-          h2 { color: #facc15; margin-bottom: 0.5rem; }
-          p { color: #94a3b8; font-size: 0.8rem; }
-        </style>
-      </head>
-      <body>
-        <div class="login-container">
-          <div class="logo"><i class="fas fa-globe"></i> ATH DIGITAL HUB</div>
-          <h2><i class="fas fa-shield-alt"></i> Admin Access</h2>
-          <p>Secure admin panel with Google authentication</p>
-          
-          <a href="/auth/google" class="google-btn">
-            <i class="fab fa-google"></i> Sign in with Google
-          </a>
-          
-          <div class="divider"><span>OR</span></div>
-          
-          <div class="password-login">
-            <p>Backup Login (Password)</p>
-            <input type="password" id="adminPassword" placeholder="Enter admin password">
-            <button id="loginBtn">Login with Password</button>
-            <div id="loginError" class="error"></div>
-          </div>
-        </div>
-
-        <script>
-          async function passwordLogin() {
-            const password = document.getElementById('adminPassword').value;
-            try {
-              const res = await fetch('/api/admin/login', { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ password }) 
-              });
-              const data = await res.json();
-              if (data.success) {
-                sessionStorage.setItem('adminToken', data.token);
-                window.location.href = '/admin';
-              } else {
-                document.getElementById('loginError').innerText = data.message;
-              }
-            } catch (err) { 
-              document.getElementById('loginError').innerText = 'Network error'; 
-            }
-          }
-          document.getElementById('loginBtn').onclick = passwordLogin;
-          document.getElementById('adminPassword').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') passwordLogin();
-          });
-        </script>
-      </body>
-      </html>
-    `);
-  }
-});
-
+// Serve pages
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 // Start server
@@ -605,8 +433,9 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📱 Customer URL: http://localhost:${PORT}/`);
   console.log(`🔐 Admin URL: http://localhost:${PORT}/admin`);
+  console.log(`🔑 Admin Password: ${ADMIN_PASSWORD}`);
   if (BOT_TOKEN) {
-    const webhookUrl = `https://ath-digital-hub.onrender.com/webhook/${BOT_TOKEN}`;
+    const webhookUrl = `https://yourdomain.com/webhook/${BOT_TOKEN}`;
     fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${webhookUrl}`).catch(console.error);
   }
 });
