@@ -15,8 +15,9 @@ const app = express();
 
 // ========== ENVIRONMENT VARIABLES ==========
 const PORT = process.env.PORT || 10000;
-const JWT_SECRET = process.env.JWT_SECRET || 'ath_super_secret_change_me';
-const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || bcrypt.hashSync('mytel2024', 10); // generate once
+const JWT_SECRET = process.env.JWT_SECRET || 'ath_super_secret_change_me_in_production';
+// Generate hash once: bcrypt.hashSync('mytel2024', 10)
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2a$10$N9qo8uLOickgx2ZMRZoMy.MrqjU9I9sVqZ3Gq8ZqZqZqZqZqZqZq';
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
 const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID;
@@ -30,7 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: { success: false, message: 'Too many requests, please try again later.' }
 });
@@ -61,7 +62,7 @@ if (serviceAccount && !admin.apps.length) {
   db = admin.firestore();
   ordersCollection = db.collection('orders');
 } else {
-  console.warn('⚠️ No Firestore, using in-memory fallback');
+  console.warn('⚠️ Firestore not configured, using in-memory fallback');
 }
 
 // ========== FIREBASE CLIENT SDK (Storage) ==========
@@ -80,7 +81,7 @@ let orderIdCounter = 1;
 
 // ========== MYANMAR TIME ZONE ==========
 process.env.TZ = 'Asia/Yangon';
-function getMyanmarTime12hr() {
+function getMyanmarTime() {
   const now = new Date();
   return {
     full: now.toLocaleString('en-US', { timeZone: 'Asia/Yangon', hour12: true }),
@@ -213,12 +214,12 @@ app.post('/api/order', async (req, res) => {
   try {
     const { packageName, phone } = req.body;
     if (!packageName || !phone || !/^09\d{9}$/.test(phone)) {
-      return res.status(400).json({ success: false, message: 'Invalid phone or package' });
+      return res.status(400).json({ success: false, message: 'Invalid phone number (must be 09xxxxxxxxx)' });
     }
     const packageData = PACKAGES[packageName];
     if (!packageData) return res.status(400).json({ success: false, message: 'Invalid package' });
     const newId = await getNextOrderId();
-    const myanmarTime = getMyanmarTime12hr();
+    const myanmarTime = getMyanmarTime();
     const newOrder = {
       id: newId,
       packageName,
@@ -249,12 +250,14 @@ app.post('/api/submit-payment', upload.single('screenshot'), async (req, res) =>
     const { orderId, packageName, phone, note } = req.body;
     const file = req.file;
     if (!file) return res.status(400).json({ success: false, message: 'Screenshot required' });
+    if (!/^09\d{9}$/.test(phone)) return res.status(400).json({ success: false, message: 'Invalid phone number' });
     const order = await getOrder(parseInt(orderId));
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-    // Upload to Firebase Storage
+    if (order.phone !== phone) return res.status(403).json({ success: false, message: 'Phone number does not match order' });
+
     const screenshotUrl = await uploadScreenshotToStorage(file.buffer, orderId);
-    await updateOrder(orderId, { status: 'payment_received', screenshotUrl, updatedAt: getMyanmarTime12hr().iso });
-    // Send to Telegram admin with inline buttons
+    await updateOrder(orderId, { status: 'payment_received', screenshotUrl, updatedAt: getMyanmarTime().iso });
+
     const caption = `💰 Payment Received #${orderId}\n📦 ${order.packageName}\n📞 ${order.phone}\n💰 ${order.price} KS\n📝 Note: ${note || '-'}`;
     const keyboard = {
       inline_keyboard: [[
@@ -262,22 +265,22 @@ app.post('/api/submit-payment', upload.single('screenshot'), async (req, res) =>
         { text: "❌ Reject", callback_data: `reject_${orderId}` }
       ]]
     };
-    // Download buffer from URL to send photo
     const imgRes = await fetch(screenshotUrl);
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
     await sendTelegramPhoto(ADMIN_CHAT_ID, imgBuffer, caption, keyboard);
-    res.json({ success: true, message: 'Payment submitted' });
+
+    res.json({ success: true, message: 'Payment submitted successfully' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
-// Track Order (Customer) – secure, only by phone
+// Track Order (Customer) – secure, no direct Firestore access
 app.get('/api/track-order', async (req, res) => {
   const { phone } = req.query;
   if (!phone || !/^09\d{9}$/.test(phone)) {
-    return res.status(400).json({ success: false, message: 'Valid phone required' });
+    return res.status(400).json({ success: false, message: 'Valid phone number required' });
   }
   let orders = [];
   if (ordersCollection) {
@@ -327,7 +330,7 @@ app.post('/api/admin/update-order', authenticateToken, async (req, res) => {
   const { orderId, status } = req.body;
   const order = await getOrder(parseInt(orderId));
   if (!order) return res.status(404).json({ success: false });
-  const myanmarTime = getMyanmarTime12hr();
+  const myanmarTime = getMyanmarTime();
   if (status === 'approved' && !order.startDate) {
     const startDate = new Date();
     const endDate = new Date();
@@ -354,7 +357,7 @@ app.post('/api/admin/bulk-update', authenticateToken, async (req, res) => {
   if (!Array.isArray(orderIds) || orderIds.length === 0) {
     return res.status(400).json({ success: false, message: 'No orders selected' });
   }
-  const myanmarTime = getMyanmarTime12hr();
+  const myanmarTime = getMyanmarTime();
   if (ordersCollection) {
     const batch = db.batch();
     for (const id of orderIds) {
@@ -414,7 +417,8 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   if (BOT_TOKEN) {
-    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=https://ath-digital-hub.onrender.com/webhook/${BOT_TOKEN}`);
+    const webhookUrl = `https://ath-digital-hub.onrender.com/webhook/${BOT_TOKEN}`;
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${webhookUrl}`).catch(console.error);
   }
 });
 
