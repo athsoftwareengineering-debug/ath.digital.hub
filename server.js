@@ -12,13 +12,10 @@ let db = null;
 let ordersCollection = null;
 
 try {
-  // Try to load from environment variable (Render.com)
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     console.log('✅ Firebase service account loaded from environment');
-  } 
-  // Local development fallback
-  else {
+  } else {
     const localPath = path.join(__dirname, 'firebase-service-account.json');
     if (fs.existsSync(localPath)) {
       serviceAccount = require(localPath);
@@ -29,7 +26,6 @@ try {
   console.error('❌ Firebase service account error:', error.message);
 }
 
-// Initialize Firebase if service account exists
 if (serviceAccount && !admin.apps.length) {
   try {
     admin.initializeApp({
@@ -650,7 +646,7 @@ app.post('/api/admin/update-order', async (req, res) => {
       `✅ Order #${orderId} approved! 30 days countdown started.\n📞 ${order.phone}\n📅 Expires: ${endDate.toLocaleDateString()}`
     );
     
-    // 🚨🚨🚨 SEND TO GROUP - DATA ACTIVATED ALERT 🚨🚨🚨
+    // 🚨 SEND TO GROUP
     if (GROUP_CHAT_ID) {
       const groupAlert = `
 🚨 *MYTEL DATA ACTIVATED* 🚨
@@ -666,8 +662,6 @@ app.post('/api/admin/update-order', async (req, res) => {
       `;
       const sent = await sendTelegramMessage(GROUP_CHAT_ID, groupAlert);
       console.log(`📢 Group notification sent for order #${order.id}: ${sent}`);
-    } else {
-      console.log(`⚠️ GROUP_CHAT_ID not set, skipping group notification`);
     }
   } else if (status === 'rejected') {
     await updateOrder(parseInt(orderId), { 
@@ -676,7 +670,6 @@ app.post('/api/admin/update-order', async (req, res) => {
     });
     await sendTelegramMessage(ADMIN_CHAT_ID, `❌ Order #${orderId} rejected.`);
     
-    // Send rejection to group
     if (GROUP_CHAT_ID) {
       const rejectAlert = `
 ⚠️ *အော်ဒါပယ်ဖျက်ခြင်း* ⚠️
@@ -773,7 +766,6 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
             `✅ Order #${orderId} approved! 30 days countdown started.\n\n📞 ${order.phone}\n📦 ${order.packageName}\n📅 Expires: ${endDate.toLocaleDateString()}`
           );
           
-          // Send to GROUP
           if (GROUP_CHAT_ID) {
             const groupAlert = `
 🚨 *MYTEL DATA ACTIVATED* 🚨
@@ -864,7 +856,6 @@ app.listen(PORT, async () => {
     }
   }
   
-  // Send startup message to admin
   setTimeout(async () => {
     if (ADMIN_CHAT_ID && BOT_TOKEN) {
       await sendTelegramMessage(ADMIN_CHAT_ID, 
@@ -874,5 +865,4 @@ app.listen(PORT, async () => {
   }, 3000);
 });
 
-// Export for Vercel (if needed)
 module.exports = app;
