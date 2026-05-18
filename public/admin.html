@@ -887,7 +887,6 @@
   // Settings Functions
   function openSettings() {
     document.getElementById('settingsModal').style.display = 'flex';
-    // Reset forms
     document.getElementById('currentPassword').value = '';
     document.getElementById('newPassword').value = '';
     document.getElementById('confirmPassword').value = '';
@@ -904,7 +903,6 @@
     document.getElementById('settingsModal').style.display = 'none';
   }
   
-  // Tab switching
   document.querySelectorAll('.settings-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
@@ -917,14 +915,12 @@
       } else {
         document.getElementById('forgotPasswordPanel').classList.add('active');
       }
-      // Reset messages
       document.getElementById('changePwdMessage').style.display = 'none';
       document.getElementById('forgotMessage').style.display = 'none';
       document.getElementById('verifySection').style.display = 'none';
     });
   });
   
-  // Change Password Function
   function changePassword() {
     const currentPwd = document.getElementById('currentPassword').value;
     const newPwd = document.getElementById('newPassword').value;
@@ -959,14 +955,11 @@
       return;
     }
     
-    // Update password (in localStorage for demo)
     localStorage.setItem('adminPassword', newPwd);
-    // In real system, you'd send to server
     msgDiv.className = 'settings-message success';
     msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Password changed successfully!';
     msgDiv.style.display = 'block';
     
-    // Clear fields
     document.getElementById('currentPassword').value = '';
     document.getElementById('newPassword').value = '';
     document.getElementById('confirmPassword').value = '';
@@ -974,7 +967,6 @@
     showNotification('✅ Password changed successfully!', 'success');
   }
   
-  // Send Verification Code (Simulated - In real system, send via email)
   function sendVerificationCode() {
     const email = document.getElementById('resetEmail').value.trim();
     const msgDiv = document.getElementById('forgotMessage');
@@ -993,24 +985,20 @@
       return;
     }
     
-    // Generate 6-digit verification code
     generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
     pendingResetEmail = email;
     
-    // Simulate sending email (In real system, you'd use a backend API)
     console.log(`Verification code for ${email}: ${generatedCode}`);
     
     msgDiv.className = 'settings-message info';
     msgDiv.innerHTML = `<i class="fas fa-envelope"></i> Verification code sent to ${email}<br><small>Demo Code: <strong>${generatedCode}</strong></small>`;
     msgDiv.style.display = 'block';
     
-    // Show verification section
     document.getElementById('verifySection').style.display = 'block';
     
     showNotification(`📧 Verification code sent to ${email}`, 'info');
   }
   
-  // Reset Password with Code
   function resetPasswordWithCode() {
     const code = document.getElementById('verificationCode').value;
     const newPwd = document.getElementById('resetNewPassword').value;
@@ -1052,14 +1040,12 @@
       return;
     }
     
-    // Update password
     localStorage.setItem('adminPassword', newPwd);
     
     msgDiv.className = 'settings-message success';
     msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Password reset successfully! Please login with new password.';
     msgDiv.style.display = 'block';
     
-    // Reset form
     document.getElementById('resetEmail').value = '';
     document.getElementById('verificationCode').value = '';
     document.getElementById('resetNewPassword').value = '';
@@ -1069,7 +1055,6 @@
     
     showNotification('✅ Password reset successfully!', 'success');
     
-    // Optional: Logout after 2 seconds
     setTimeout(() => {
       if (confirm('Password changed! Do you want to login again?')) {
         logout();
@@ -1129,7 +1114,6 @@
     });
   }
   
-  // Check if logged in
   const savedPwd = localStorage.getItem('adminPassword');
   const currentAdminPwd = savedPwd || ADMIN_PASSWORD;
   
