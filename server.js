@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
@@ -10,20 +11,23 @@ const { getStorage, ref, uploadBytes, getDownloadURL } = require('firebase/stora
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const cors = require('cors');
+const { fetch } = require('undici');
+const FormData = require('form-data');
 
 const app = express();
 
 // ========== ENVIRONMENT VARIABLES ==========
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = process.env.JWT_SECRET || 'ath_super_secret_change_me_in_production';
-// Generate hash once: bcrypt.hashSync('mytel2024', 10)
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2a$10$N9qo8uLOickgx2ZMRZoMy.MrqjU9I9sVqZ3Gq8ZqZqZqZqZqZqZq';
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
 const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID;
 
 // ========== SECURITY MIDDLEWARE ==========
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false,
+}));
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -135,7 +139,7 @@ const PACKAGES = {
   "VIP LEVEL - 1": { price: 15000, desc: "22GB / 8000 Mins / 5000 SMS" },
   "VIP LEVEL - 2": { price: 20000, desc: "40GB / 250 Mins / 25 Any Net" },
   "VIP LEVEL - 3": { price: 25000, desc: "40GB / 1400 Mins / 8000 SMS" },
-  "VIP LEVEL - 4 (ULTRA)": { price: 30000, desc: "120GB High-Speed Data" }
+  "VIP LEVEL - 4": { price: 30000, desc: "120GB High-Speed Data" }
 };
 
 // ========== DATABASE HELPERS ==========
@@ -276,7 +280,7 @@ app.post('/api/submit-payment', upload.single('screenshot'), async (req, res) =>
   }
 });
 
-// Track Order (Customer) – secure, no direct Firestore access
+// Track Order (Customer)
 app.get('/api/track-order', async (req, res) => {
   const { phone } = req.query;
   if (!phone || !/^09\d{9}$/.test(phone)) {
@@ -393,7 +397,10 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       });
       if (data.startsWith('approve_')) {
         const orderId = parseInt(data.split('_')[1]);
-        await updateOrder(orderId, { status: 'approved', startDate: new Date().toISOString(), endDate: new Date(Date.now() + 30*86400000).toISOString(), daysRemaining: 30 });
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 30);
+        await updateOrder(orderId, { status: 'approved', startDate: startDate.toISOString(), endDate: endDate.toISOString(), daysRemaining: 30 });
         await sendTelegramMessage(chatId, `✅ Order #${orderId} approved.`);
         if (GROUP_CHAT_ID) {
           const order = await getOrder(orderId);
@@ -406,7 +413,10 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       }
     }
     res.sendStatus(200);
-  } catch (err) { res.sendStatus(200); }
+  } catch (err) { 
+    console.error(err);
+    res.sendStatus(200); 
+  }
 });
 
 // Serve static pages
