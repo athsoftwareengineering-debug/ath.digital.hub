@@ -19,7 +19,7 @@ const app = express();
 // ========== ENVIRONMENT VARIABLES ==========
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = process.env.JWT_SECRET || 'ath_super_secret_change_me_in_production';
-const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2a$10$N9qo8uLOickgx2ZMRZoMy.MrqjU9I9sVqZ3Gq8ZqZqZqZqZqZqZq';
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '104194@ath';
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
 const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID;
