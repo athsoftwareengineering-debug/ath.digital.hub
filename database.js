@@ -1,4 +1,4 @@
-const Database = require('better-sqlite3');
+const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 
@@ -6,67 +6,97 @@ const fs = require('fs');
 const dataDir = path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-const db = new Database(path.join(dataDir, 'orders.db'));
+const db = new sqlite3.Database(path.join(dataDir, 'orders.db'));
 
-// Create tables
-db.exec(`
-  CREATE TABLE IF NOT EXISTS orders (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    packageName TEXT NOT NULL,
-    phone TEXT NOT NULL,
-    price INTEGER NOT NULL,
-    status TEXT DEFAULT 'pending_payment',
-    createdAt TEXT NOT NULL,
-    createdAtMyanmar TEXT,
-    updatedAt TEXT,
-    startDate TEXT,
-    endDate TEXT,
-    daysRemaining INTEGER,
-    isExpired INTEGER DEFAULT 0,
-    lastAlertDay INTEGER,
-    screenshotPath TEXT,
-    note TEXT
-  );
-  
-  CREATE TABLE IF NOT EXISTS settings (
-    key TEXT PRIMARY KEY,
-    value TEXT
-  );
-`);
+// Create tables (using serialize for async operations)
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS orders (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      packageName TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      price INTEGER NOT NULL,
+      status TEXT DEFAULT 'pending_payment',
+      createdAt TEXT NOT NULL,
+      createdAtMyanmar TEXT,
+      updatedAt TEXT,
+      startDate TEXT,
+      endDate TEXT,
+      daysRemaining INTEGER,
+      isExpired INTEGER DEFAULT 0,
+      lastAlertDay INTEGER,
+      screenshotPath TEXT,
+      note TEXT
+    )
+  `);
 
-// Initialize order counter
-db.prepare(`INSERT OR IGNORE INTO settings (key, value) VALUES ('lastOrderId', '0')`).run();
+  db.run(`
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT
+    )
+  `);
 
-function getNextOrderId() {
-  const row = db.prepare("SELECT value FROM settings WHERE key = 'lastOrderId'").get();
+  // Initialize order counter
+  db.run(`INSERT OR IGNORE INTO settings (key, value) VALUES ('lastOrderId', '0')`);
+});
+
+// Promisify for async/await
+function getAsync(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.get(sql, params, (err, result) => {
+      if (err) reject(err);
+      else resolve(result);
+    });
+  });
+}
+
+function runAsync(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.run(sql, params, function(err) {
+      if (err) reject(err);
+      else resolve({ lastID: this.lastID, changes: this.changes });
+    });
+  });
+}
+
+function allAsync(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.all(sql, params, (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
+
+async function getNextOrderId() {
+  const row = await getAsync("SELECT value FROM settings WHERE key = 'lastOrderId'");
   const nextId = (parseInt(row?.value) || 0) + 1;
-  db.prepare("UPDATE settings SET value = ? WHERE key = 'lastOrderId'").run(nextId.toString());
+  await runAsync("UPDATE settings SET value = ? WHERE key = 'lastOrderId'", [nextId.toString()]);
   return nextId;
 }
 
-function getAllOrders() {
-  return db.prepare("SELECT * FROM orders ORDER BY createdAt DESC").all();
+async function getAllOrders() {
+  return await allAsync("SELECT * FROM orders ORDER BY createdAt DESC");
 }
 
-function getOrdersByPhone(phone) {
-  return db.prepare("SELECT * FROM orders WHERE phone = ? ORDER BY createdAt DESC").all(phone);
+async function getOrdersByPhone(phone) {
+  return await allAsync("SELECT * FROM orders WHERE phone = ? ORDER BY createdAt DESC", [phone]);
 }
 
-function getOrderById(id) {
-  return db.prepare("SELECT * FROM orders WHERE id = ?").get(id);
+async function getOrderById(id) {
+  return await getAsync("SELECT * FROM orders WHERE id = ?", [id]);
 }
 
-function createOrder(order) {
-  const stmt = db.prepare(`
+async function createOrder(order) {
+  return await runAsync(`
     INSERT INTO orders (id, packageName, phone, price, status, createdAt, createdAtMyanmar, updatedAt, note)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-  return stmt.run(order.id, order.packageName, order.phone, order.price, 
-                   order.status, order.createdAt, order.createdAtMyanmar, 
-                   order.updatedAt, order.note);
+  `, [order.id, order.packageName, order.phone, order.price, order.status, 
+       order.createdAt, order.createdAtMyanmar, order.updatedAt, order.note]);
 }
 
-function updateOrderStatus(id, status, startDate = null, endDate = null, daysRemaining = null) {
+async function updateOrderStatus(id, status, startDate = null, endDate = null, daysRemaining = null) {
   let query = `UPDATE orders SET status = ?, updatedAt = ?`;
   const params = [status, new Date().toISOString()];
   
@@ -78,46 +108,44 @@ function updateOrderStatus(id, status, startDate = null, endDate = null, daysRem
   query += ` WHERE id = ?`;
   params.push(id);
   
-  return db.prepare(query).run(...params);
+  return await runAsync(query, params);
 }
 
-function updateOrderScreenshot(id, screenshotPath) {
-  return db.prepare(`UPDATE orders SET screenshotPath = ? WHERE id = ?`).run(screenshotPath, id);
+async function updateOrderScreenshot(id, screenshotPath) {
+  return await runAsync(`UPDATE orders SET screenshotPath = ? WHERE id = ?`, [screenshotPath, id]);
 }
 
-function updateOrderAlertDay(id, alertDay) {
-  return db.prepare(`UPDATE orders SET lastAlertDay = ? WHERE id = ?`).run(alertDay, id);
+async function updateOrderAlertDay(id, alertDay) {
+  return await runAsync(`UPDATE orders SET lastAlertDay = ? WHERE id = ?`, [alertDay, id]);
 }
 
-function updateOrderNote(id, note) {
-  return db.prepare(`UPDATE orders SET note = ?, updatedAt = ? WHERE id = ?`)
-    .run(note, new Date().toISOString(), id);
+async function updateOrderNote(id, note) {
+  return await runAsync(`UPDATE orders SET note = ?, updatedAt = ? WHERE id = ?`, [note, new Date().toISOString(), id]);
 }
 
-function updateExpiredOrders() {
+async function updateExpiredOrders() {
   const today = new Date().toISOString();
-  const stmt = db.prepare(`
+  return await runAsync(`
     UPDATE orders 
     SET status = 'expired', isExpired = 1 
     WHERE status = 'approved' AND endDate < ? AND isExpired = 0
-  `);
-  return stmt.run(today);
+  `, [today]);
 }
 
-function searchOrders(keyword) {
-  return db.prepare(`
+async function searchOrders(keyword) {
+  return await allAsync(`
     SELECT * FROM orders 
     WHERE phone LIKE ? OR packageName LIKE ? OR note LIKE ?
     ORDER BY createdAt DESC
-  `).all(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
+  `, [`%${keyword}%`, `%${keyword}%`, `%${keyword}%`]);
 }
 
-function deleteOrder(id) {
-  return db.prepare(`DELETE FROM orders WHERE id = ?`).run(id);
+async function deleteOrder(id) {
+  return await runAsync(`DELETE FROM orders WHERE id = ?`, [id]);
 }
 
-function getStats() {
-  const stats = db.prepare(`
+async function getStats() {
+  const stats = await getAsync(`
     SELECT 
       COUNT(*) as total,
       SUM(CASE WHEN status = 'pending_payment' THEN 1 ELSE 0 END) as pending,
@@ -127,27 +155,27 @@ function getStats() {
       SUM(CASE WHEN status = 'expired' THEN 1 ELSE 0 END) as expired,
       SUM(CASE WHEN status = 'approved' THEN price ELSE 0 END) as revenue
     FROM orders
-  `).get();
+  `);
   
   return {
-    total: stats.total || 0,
-    pending: stats.pending || 0,
-    paid: stats.paid || 0,
-    approved: stats.approved || 0,
-    rejected: stats.rejected || 0,
-    expired: stats.expired || 0,
-    revenue: stats.revenue || 0
+    total: stats?.total || 0,
+    pending: stats?.pending || 0,
+    paid: stats?.paid || 0,
+    approved: stats?.approved || 0,
+    rejected: stats?.rejected || 0,
+    expired: stats?.expired || 0,
+    revenue: stats?.revenue || 0
   };
 }
 
 function startExpiryChecker(intervalMinutes = 60) {
   let isRunning = false;
   
-  const check = () => {
+  const check = async () => {
     if (isRunning) return;
     isRunning = true;
     try {
-      const result = updateExpiredOrders();
+      const result = await updateExpiredOrders();
       if (result.changes > 0) {
         console.log(`✅ [${new Date().toLocaleString()}] Expired ${result.changes} orders`);
       }
