@@ -4,7 +4,6 @@ const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
 const cors = require('cors');
-const fetch = require('node-fetch');
 
 const database = require('./database');
 
@@ -43,6 +42,7 @@ console.log(`🔑 Admin Password: ${ADMIN_PASSWORD}`);
 console.log(`🕐 Time: ${getMyanmarTime12hr().full}`);
 console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅' : '❌'}`);
 console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅' : '❌'}`);
+console.log(`👥 GROUP_CHAT_ID: ${GROUP_CHAT_ID ? '✅' : '❌'}`);
 console.log(`🌐 BASE_URL: ${BASE_URL}`);
 console.log(`======================================\n`);
 
@@ -76,7 +76,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// ========== TELEGRAM FUNCTIONS ==========
+// ========== TELEGRAM FUNCTIONS (using native fetch - Node 18+) ==========
 async function sendTelegramMessage(chatId, text, keyboard = null) {
   if (!BOT_TOKEN || !chatId) return false;
   try {
@@ -97,20 +97,23 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
 }
 
 async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
-  if (!BOT_TOKEN) return false;
+  if (!BOT_TOKEN || !chatId) return false;
   try {
-    const { FormData, Blob } = await import('formdata-node');
+    // Use native fetch with FormData (Node 18+)
     const formData = new FormData();
+    const blob = new Blob([buffer], { type: 'image/jpeg' });
     formData.append('chat_id', chatId);
-    formData.append('photo', new Blob([buffer], { type: 'image/jpeg' }), 'screenshot.jpg');
+    formData.append('photo', blob, 'screenshot.jpg');
     formData.append('caption', caption);
     formData.append('parse_mode', 'Markdown');
     if (keyboard) formData.append('reply_markup', JSON.stringify(keyboard));
+    
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
       body: formData
     });
     const result = await response.json();
+    if (!result.ok) console.error('Telegram photo error:', result.description);
     return result.ok;
   } catch (error) { 
     console.error('Telegram photo error:', error);
@@ -121,12 +124,18 @@ async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
 // ========== DAILY TASKS ==========
 async function updateAllOrdersRemainingDays() {
   console.log('🔄 Daily countdown check...');
-  database.updateExpiredOrders();
+  
+  // Update expired orders using database module
+  const expiredResult = database.updateExpiredOrders();
+  if (expiredResult.changes > 0) {
+    console.log(`✅ Expired ${expiredResult.changes} orders`);
+  }
   
   const orders = database.getAllOrders();
   for (const order of orders) {
     if (order.status === 'approved' && order.endDate) {
       const remaining = Math.ceil((new Date(order.endDate) - new Date()) / (1000 * 60 * 60 * 24));
+      // Update daysRemaining directly
       database.db.prepare(`UPDATE orders SET daysRemaining = ? WHERE id = ?`).run(remaining, order.id);
       
       const alertDays = [5, 3, 1];
@@ -143,12 +152,15 @@ function scheduleDailyTask() {
   const next9AM = new Date();
   next9AM.setHours(9, 0, 0, 0);
   if (now > next9AM) next9AM.setDate(next9AM.getDate() + 1);
+  const delay = next9AM - now;
+  console.log(`⏰ Next daily task at: ${next9AM.toLocaleString()}`);
   setTimeout(() => {
     updateAllOrdersRemainingDays();
     scheduleDailyTask();
-  }, next9AM - now);
+  }, delay);
 }
 scheduleDailyTask();
+// Run once on startup after 5 seconds
 setTimeout(() => updateAllOrdersRemainingDays(), 5000);
 
 // ========== ADMIN AUTH MIDDLEWARE ==========
@@ -157,6 +169,56 @@ function isAuthenticated(req, res, next) {
   if (authToken === ADMIN_PASSWORD) return next();
   res.status(401).json({ success: false, message: "Unauthorized" });
 }
+
+// ========== TELEGRAM WEBHOOK ==========
+// Callback query handler for inline buttons
+app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
+  try {
+    const update = req.body;
+    
+    if (update.callback_query) {
+      const callbackData = update.callback_query.data;
+      const message = update.callback_query.message;
+      const chatId = message.chat.id;
+      
+      if (callbackData.startsWith('approve_')) {
+        const orderId = parseInt(callbackData.split('_')[1]);
+        const order = database.getOrderById(orderId);
+        
+        if (order && order.status === 'payment_received') {
+          const startDate = new Date();
+          const endDate = new Date();
+          endDate.setDate(endDate.getDate() + 30);
+          
+          database.updateOrderStatus(orderId, 'approved', startDate.toISOString(), endDate.toISOString(), 30);
+          
+          await sendTelegramMessage(chatId, `✅ Order #${orderId} approved! 30 days started.`);
+          if (GROUP_CHAT_ID) {
+            await sendTelegramMessage(GROUP_CHAT_ID, `🚨 DATA ACTIVATED 🚨\n📞 ${order.phone}\n📦 ${order.packageName}\n⏳ 30 days valid`);
+          }
+        } else {
+          await sendTelegramMessage(chatId, `⚠️ Order #${orderId} cannot be approved (status: ${order?.status})`);
+        }
+      } else if (callbackData.startsWith('reject_')) {
+        const orderId = parseInt(callbackData.split('_')[1]);
+        database.updateOrderStatus(orderId, 'rejected');
+        await sendTelegramMessage(chatId, `❌ Order #${orderId} rejected.`);
+      }
+      
+      // Answer callback query
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ callback_query_id: update.callback_query.id })
+      });
+    }
+    
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.sendStatus(200);
+  }
+});
 
 // ========== API ENDPOINTS ==========
 
@@ -188,7 +250,11 @@ app.get('/api/admin/order-screenshot', isAuthenticated, (req, res) => {
   const orderId = parseInt(req.query.orderId);
   const order = database.getOrderById(orderId);
   if (order && order.screenshotPath) {
-    res.json({ success: true, screenshotUrl: `${BASE_URL}${order.screenshotPath}` });
+    // Ensure screenshotPath starts with /temp_uploads/
+    const screenshotUrl = order.screenshotPath.startsWith('/') 
+      ? `${BASE_URL}${order.screenshotPath}`
+      : `${BASE_URL}/${order.screenshotPath}`;
+    res.json({ success: true, screenshotUrl: screenshotUrl });
   } else {
     res.json({ success: false, message: "No screenshot available" });
   }
@@ -207,10 +273,8 @@ app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
     const startDate = new Date();
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + 30);
-    const startDateStr = startDate.toISOString();
-    const endDateStr = endDate.toISOString();
     
-    database.updateOrderStatus(parseInt(orderId), 'approved', startDateStr, endDateStr, 30);
+    database.updateOrderStatus(parseInt(orderId), 'approved', startDate.toISOString(), endDate.toISOString(), 30);
     
     await sendTelegramMessage(ADMIN_CHAT_ID, `✅ Order #${orderId} approved! 30 days started.`);
     if (GROUP_CHAT_ID) {
@@ -220,6 +284,13 @@ app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
     database.updateOrderStatus(parseInt(orderId), status);
   }
   
+  res.json({ success: true });
+});
+
+// Update order note (Admin)
+app.post('/api/admin/update-note', isAuthenticated, (req, res) => {
+  const { orderId, note } = req.body;
+  database.updateOrderNote(parseInt(orderId), note);
   res.json({ success: true });
 });
 
@@ -254,7 +325,7 @@ app.post('/order', async (req, res) => {
     
     database.createOrder(newOrder);
     
-    await sendTelegramMessage(ADMIN_CHAT_ID, `🆕 New Order #${newOrder.id}\n📦 ${packageName}\n📞 ${phone}\n💰 ${packageData.price.toLocaleString()} KS`);
+    await sendTelegramMessage(ADMIN_CHAT_ID, `🆕 New Order #${newOrder.id}\n📦 ${packageName}\n📞 ${phone}\n💰 ${packageData.price.toLocaleString()} KS\n✏️ Note: ${note || 'None'}`);
     res.json({ success: true, orderId: newOrder.id });
   } catch (error) {
     console.error('Create order error:', error);
@@ -288,7 +359,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     database.updateOrderScreenshot(orderId, screenshotPath);
     database.updateOrderStatus(orderId, 'payment_received');
     if (note) {
-      database.db.prepare(`UPDATE orders SET note = ?, updatedAt = ? WHERE id = ?`).run(note, mt.iso, orderId);
+      database.updateOrderNote(orderId, note);
     }
     
     const caption = `💰 Payment Received #${orderId}\n📦 ${order.packageName}\n📞 ${order.phone}\n💰 ${order.price.toLocaleString()} KS`;
@@ -306,7 +377,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   } finally {
     if (tempFilePath && fs.existsSync(tempFilePath)) {
-      fs.unlinkSync(tempFilePath);
+      try { fs.unlinkSync(tempFilePath); } catch(e) {}
     }
   }
 });
@@ -330,6 +401,16 @@ app.get('/test-group', async (req, res) => {
   res.json({ success: result, groupId: GROUP_CHAT_ID });
 });
 
+// Search orders (Admin)
+app.get('/api/admin/search', isAuthenticated, (req, res) => {
+  const { q } = req.query;
+  if (!q) {
+    return res.json({ success: true, orders: database.getAllOrders() });
+  }
+  const results = database.searchOrders(q);
+  res.json({ success: true, orders: results });
+});
+
 // ========== SERVE PAGES ==========
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
@@ -350,13 +431,18 @@ app.listen(PORT, async () => {
   
   if (BOT_TOKEN) {
     try {
-      const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${BASE_URL}/webhook/${BOT_TOKEN}`);
+      const webhookUrl = `${BASE_URL}/webhook/${BOT_TOKEN}`;
+      const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${webhookUrl}`);
       const result = await response.json();
-      console.log(`📡 Webhook: ${result.ok ? '✅' : '❌'} ${result.description || ''}\n`);
+      console.log(`📡 Webhook URL: ${webhookUrl}`);
+      console.log(`📡 Webhook set: ${result.ok ? '✅' : '❌'} ${result.description || ''}\n`);
     } catch (err) {
       console.log(`📡 Webhook set failed: ${err.message}\n`);
     }
   }
+  
+  // Start expiry checker from database module
+  database.startExpiryChecker(60);
 });
 
 module.exports = app;
