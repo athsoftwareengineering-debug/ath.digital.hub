@@ -35,9 +35,7 @@ db.exec(`
 `);
 
 // Initialize order counter
-const initCounter = db.prepare(`
-  INSERT OR IGNORE INTO settings (key, value) VALUES ('lastOrderId', '0')
-`).run();
+db.prepare(`INSERT OR IGNORE INTO settings (key, value) VALUES ('lastOrderId', '0')`).run();
 
 function getNextOrderId() {
   const row = db.prepare("SELECT value FROM settings WHERE key = 'lastOrderId'").get();
@@ -91,6 +89,11 @@ function updateOrderAlertDay(id, alertDay) {
   return db.prepare(`UPDATE orders SET lastAlertDay = ? WHERE id = ?`).run(alertDay, id);
 }
 
+function updateOrderNote(id, note) {
+  return db.prepare(`UPDATE orders SET note = ?, updatedAt = ? WHERE id = ?`)
+    .run(note, new Date().toISOString(), id);
+}
+
 function updateExpiredOrders() {
   const today = new Date().toISOString();
   const stmt = db.prepare(`
@@ -99,6 +102,18 @@ function updateExpiredOrders() {
     WHERE status = 'approved' AND endDate < ? AND isExpired = 0
   `);
   return stmt.run(today);
+}
+
+function searchOrders(keyword) {
+  return db.prepare(`
+    SELECT * FROM orders 
+    WHERE phone LIKE ? OR packageName LIKE ? OR note LIKE ?
+    ORDER BY createdAt DESC
+  `).all(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
+}
+
+function deleteOrder(id) {
+  return db.prepare(`DELETE FROM orders WHERE id = ?`).run(id);
 }
 
 function getStats() {
@@ -125,6 +140,34 @@ function getStats() {
   };
 }
 
+function startExpiryChecker(intervalMinutes = 60) {
+  let isRunning = false;
+  
+  const check = () => {
+    if (isRunning) return;
+    isRunning = true;
+    try {
+      const result = updateExpiredOrders();
+      if (result.changes > 0) {
+        console.log(`✅ [${new Date().toLocaleString()}] Expired ${result.changes} orders`);
+      }
+    } catch (error) {
+      console.error('❌ Expiry checker error:', error.message);
+    } finally {
+      isRunning = false;
+    }
+  };
+  
+  // Run immediately on start
+  check();
+  
+  // Then run on interval
+  const interval = setInterval(check, intervalMinutes * 60 * 1000);
+  
+  // Return function to stop checker
+  return () => clearInterval(interval);
+}
+
 module.exports = {
   db,
   getNextOrderId,
@@ -135,6 +178,10 @@ module.exports = {
   updateOrderStatus,
   updateOrderScreenshot,
   updateOrderAlertDay,
+  updateOrderNote,
   updateExpiredOrders,
-  getStats
+  searchOrders,
+  deleteOrder,
+  getStats,
+  startExpiryChecker
 };
