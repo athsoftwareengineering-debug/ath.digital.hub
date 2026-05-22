@@ -2,8 +2,8 @@
 <html lang="my">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>MYTEL DATA SERVICE | 3D Premium</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>MYTEL DATA SERVICE | ATH DIGITAL HUB</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -83,7 +83,7 @@
     .selection-alert { background: rgba(250,204,21,0.15); border: 1px solid #facc15; border-radius: 16px; padding: 1rem; text-align: center; margin: 1rem auto; max-width: 500px; display: none; backdrop-filter: blur(10px); }
     
     .order-form-card {
-      background: rgba(15, 23, 42, 0.75);
+      background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(20px);
       border-radius: 32px;
       padding: 2rem;
@@ -182,6 +182,7 @@
       margin-left: 0.5rem;
       animation: pulse 2s infinite;
     }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
     .tracking-form { display: flex; gap: 1rem; flex-wrap: wrap; max-width: 500px; margin: 0 auto; }
     .tracking-form input { flex: 1; padding: 0.9rem; background: #0f172a; border: 1px solid #334155; border-radius: 14px; color: white; font-size: 0.9rem; }
     .tracking-form button { padding: 0.9rem 1.8rem; background: #facc15; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; transition: all 0.3s; color: #0f172a; }
@@ -247,14 +248,16 @@
       bottom: 30px;
       left: 50%;
       transform: translateX(-50%);
-      padding: 10px 20px;
+      padding: 12px 24px;
       border-radius: 50px;
       z-index: 1100;
       display: none;
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       font-weight: 500;
       white-space: nowrap;
       box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      background: #1e293b;
+      color: white;
     }
     
     @media (max-width: 1024px) { .content { padding: 1.5rem; } .hero h1 { font-size: 2.5rem; } .plan-card { min-width: 240px; } }
@@ -303,8 +306,9 @@
     <div class="selected-plan-info" id="selectedPlanInfo"></div>
     
     <div class="form-group">
-      <label><i class="fas fa-phone-alt"></i> Phone Number</label>
-      <input type="tel" id="orderPhone" placeholder="09xxxxxxxxx">
+      <label><i class="fas fa-phone-alt"></i> Phone Number <span style="color:#ef4444;">*</span></label>
+      <input type="tel" id="orderPhone" placeholder="09xxxxxxxxx or +959xxxxxxxx">
+      <small style="color:#64748b; font-size:0.65rem;">Example: 09789999368</small>
     </div>
     
     <div class="form-group">
@@ -334,7 +338,7 @@
     </div>
     
     <div class="form-group">
-      <label><i class="fas fa-image"></i> Payment Screenshot</label>
+      <label><i class="fas fa-image"></i> Payment Screenshot <span style="color:#ef4444;">*</span></label>
       <div class="file-upload-area" onclick="document.getElementById('screenshotInput').click()">
         <input type="file" id="screenshotInput" accept="image/*" style="display:none">
         <i class="fas fa-cloud-upload-alt"></i> Click to upload KPay/WavePay screenshot
@@ -465,6 +469,13 @@
     { name: "VIP LEVEL - 4", icon: "💎", features: ["120 GB High-Speed Data", "Priority Support"], price: 30000 }
   ];
   
+  // Phone validation function
+  function isValidPhone(phone) {
+    if (!phone) return false;
+    const cleaned = phone.replace(/\s/g, '');
+    return /^(09|\+959)[0-9]{7,9}$/.test(cleaned);
+  }
+  
   function copyToClipboard(text, method) {
     navigator.clipboard.writeText(text).then(() => {
       showToast(`${method} number copied: ${text}`, "#22c55e");
@@ -544,47 +555,65 @@
   async function createOrder() {
     if (!selectedPlan) { showToast("Select a plan first!", "#f97316"); return null; }
     const phone = document.getElementById('orderPhone').value.trim();
-    if (!phone || phone.length < 9) { showToast("Valid phone number required", "#f97316"); return null; }
+    if (!isValidPhone(phone)) { 
+      showToast("Please enter a valid phone number (09xxxxxxxxx)", "#f97316"); 
+      return null; 
+    }
     try {
       showToast("Creating order...", "#3b82f6");
       const res = await fetch('/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packageName: selectedPlan.name, phone })
+        body: JSON.stringify({ packageName: selectedPlan.name, phone, note: document.getElementById('orderNote').value || '' })
       });
       const data = await res.json();
       if (data.success) {
         createdOrderId = data.orderId;
         showToast(`Order #${createdOrderId} created!`, "#22c55e");
         return data.orderId;
-      } else { showToast(`Failed: ${data.message}`, "#ef4444"); return null; }
-    } catch (error) { showToast("Network error", "#ef4444"); return null; }
+      } else { 
+        showToast(`Failed: ${data.message}`, "#ef4444"); 
+        return null; 
+      }
+    } catch (error) { 
+      showToast("Network error", "#ef4444"); 
+      return null; 
+    }
   }
   
   async function submitPayment(orderId) {
     if (!orderId) { showToast("Order ID missing", "#ef4444"); return false; }
     if (!selectedImageFile) { showToast("Upload screenshot", "#f97316"); return false; }
-    const phone = document.getElementById('orderPhone').value.trim();
-    const note = document.getElementById('orderNote').value || '';
+    
     const formData = new FormData();
     formData.append('orderId', orderId);
-    formData.append('packageName', selectedPlan.name);
-    formData.append('phone', phone);
     formData.append('screenshot', selectedImageFile);
-    formData.append('note', note);
+    formData.append('note', document.getElementById('orderNote').value || '');
+    
     try {
       const res = await fetch('/submit-payment', { method: 'POST', body: formData });
       const result = await res.json();
-      if (result.success) { showToast("✅ Payment submitted!", "#22c55e"); return true; }
-      else { showToast(`❌ ${result.message}`, "#ef4444"); return false; }
-    } catch (error) { showToast("❌ Network error", "#ef4444"); return false; }
+      if (result.success) { 
+        showToast("✅ Payment submitted! Admin will approve within 24 hours.", "#22c55e"); 
+        return true;
+      } else { 
+        showToast(`❌ ${result.message}`, "#ef4444"); 
+        return false; 
+      }
+    } catch (error) { 
+      showToast("❌ Network error", "#ef4444"); 
+      return false; 
+    }
   }
   
   async function submitOrder() {
     if (isSubmitting) { showToast("Please wait...", "#f97316"); return; }
     if (!selectedPlan) { showToast("Select a plan first!", "#f97316"); return; }
     const phone = document.getElementById('orderPhone').value.trim();
-    if (!phone || phone.length < 9) { showToast("Valid phone number required", "#f97316"); return; }
+    if (!isValidPhone(phone)) { 
+      showToast("Please enter a valid phone number (09xxxxxxxxx)", "#f97316"); 
+      return; 
+    }
     if (!selectedImageFile) { showToast("Upload screenshot", "#f97316"); return; }
     
     isSubmitting = true;
@@ -603,13 +632,22 @@
           setTimeout(() => fetchOrdersByPhone(), 500);
         }
       }
-    } catch (error) { showToast("Error", "#ef4444"); }
-    finally { isSubmitting = false; btn.innerHTML = original; btn.disabled = false; }
+    } catch (error) { 
+      showToast("Error", "#ef4444"); 
+    } finally { 
+      isSubmitting = false; 
+      btn.innerHTML = original; 
+      btn.disabled = false; 
+    }
   }
   
   document.getElementById('screenshotInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file && file.type.startsWith('image/')) {
+      if (file.size > 5 * 1024 * 1024) {
+        showToast("Image too large! Max 5MB", "#ef4444");
+        return;
+      }
       selectedImageFile = file;
       const reader = new FileReader();
       reader.onload = function(ev) {
@@ -632,8 +670,8 @@
     const phone = document.getElementById('trackPhone').value.trim();
     const resultDiv = document.getElementById('trackResult');
     
-    if (!phone || phone.length < 9) {
-      showToast("Enter valid phone number", "#f97316");
+    if (!isValidPhone(phone)) {
+      showToast("Enter valid phone number (09xxxxxxxxx)", "#f97316");
       return;
     }
     
@@ -652,6 +690,7 @@
           resultDiv.innerHTML = `<div style="background:#0f172a; border-radius:20px; padding:1.5rem; text-align:center;">
             <i class="fas fa-box-open" style="font-size:2.5rem; color:#64748b;"></i>
             <p style="margin-top:0.8rem;">No orders found for this number.</p>
+            <p style="font-size:0.7rem; color:#64748b;">Want to order? Select a plan above!</p>
           </div>`;
           return;
         }
@@ -666,7 +705,7 @@
           let statusText = '', statusColor = '';
           switch(order.status) {
             case 'pending_payment': statusText = '⏳ Pending'; statusColor = '#f59e0b'; break;
-            case 'payment_received': statusText = '💰 Paid'; statusColor = '#3b82f6'; break;
+            case 'payment_received': statusText = '💰 Paid - Waiting Approval'; statusColor = '#3b82f6'; break;
             case 'approved': statusText = '✅ Active'; statusColor = '#22c55e'; break;
             case 'expired': statusText = '⏰ Expired'; statusColor = '#ef4444'; break;
             case 'rejected': statusText = '❌ Rejected'; statusColor = '#ef4444'; break;
@@ -681,17 +720,17 @@
           let countdownHtml = '';
           if (isActive && order.endDate) {
             const remaining = Math.ceil((new Date(order.endDate) - new Date()) / (86400000));
-            const percent = Math.max(0, (remaining / 30) * 100);
+            const percent = Math.max(0, Math.min(100, (remaining / 30) * 100));
             
             countdownHtml = `
               <div class="countdown-progress">
                 <div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 0.4rem; font-size:0.7rem;">
-                  <span><i class="fas fa-calendar-check"></i> ${formatDate(order.startDate)}</span>
+                  <span><i class="fas fa-calendar-check"></i> Start: ${formatDate(order.startDate)}</span>
                   <div class="days-remaining">
                     <span class="days-number">${remaining > 0 ? remaining : 0}</span>
                     <span>days left</span>
                   </div>
-                  <span><i class="fas fa-calendar-times"></i> ${formatDate(order.endDate)}</span>
+                  <span><i class="fas fa-calendar-times"></i> Expires: ${formatDate(order.endDate)}</span>
                 </div>
                 <div class="progress-bar-container">
                   <div class="progress-bar-active" style="width: ${percent}%;"></div>
@@ -719,6 +758,7 @@
                 <div><i class="fas fa-money-bill"></i> ${order.price.toLocaleString()} KS</div>
                 <div><i class="fas fa-calendar"></i> ${formattedDate}</div>
               </div>
+              ${order.note ? `<div style="margin-top:0.5rem; padding:0.5rem; background:#0f172a; border-radius:10px; font-size:0.7rem; color:#94a3b8;"><i class="fas fa-pencil-alt"></i> Note: ${order.note}</div>` : ''}
               ${countdownHtml}
             </div>
           `;
@@ -741,8 +781,8 @@
       fetchOrdersByPhone();
     } else {
       const phone = document.getElementById('trackPhone').value.trim();
-      if (phone) fetchOrdersByPhone();
-      else showToast("Enter phone number first", "#f97316");
+      if (isValidPhone(phone)) fetchOrdersByPhone();
+      else showToast("Enter valid phone number first", "#f97316");
     }
   }
   
