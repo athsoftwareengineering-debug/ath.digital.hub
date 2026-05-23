@@ -230,7 +230,7 @@
       align-items: center;
     }
     
-    .theme-toggle, .refresh-toggle, .logout-top-btn, .settings-btn {
+    .theme-toggle, .refresh-toggle, .logout-top-btn {
       background: var(--bg-surface);
       border: 1px solid var(--border);
       padding: 8px 16px;
@@ -241,11 +241,9 @@
       font-size: 0.8rem;
       transition: all 0.3s;
     }
-    .theme-toggle:hover, .refresh-toggle:hover, .logout-top-btn:hover, .settings-btn:hover { background: var(--primary); color: #0f172a; }
+    .theme-toggle:hover, .refresh-toggle:hover, .logout-top-btn:hover { background: var(--primary); color: #0f172a; }
     .logout-top-btn { background: var(--danger); color: white; border-color: var(--danger); }
     .logout-top-btn:hover { background: #dc2626; }
-    .settings-btn { background: var(--info); color: white; border-color: var(--info); }
-    .settings-btn:hover { background: #2563eb; }
     
     .stats-grid {
       display: grid;
@@ -462,98 +460,6 @@
     .action-reject { background: #ef444420; color: #ef4444; border: 1px solid #ef4444; }
     .action-reject:hover { background: #ef4444; color: white; }
     
-    .settings-modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.95);
-      z-index: 2000;
-      justify-content: center;
-      align-items: center;
-    }
-    .settings-modal-content {
-      background: var(--bg-surface);
-      border-radius: 24px;
-      padding: 1.5rem;
-      max-width: 450px;
-      width: 90%;
-      max-height: 85vh;
-      overflow-y: auto;
-    }
-    .settings-modal-content h2 {
-      color: var(--primary);
-      margin-bottom: 1rem;
-      font-size: 1.2rem;
-      text-align: center;
-    }
-    .settings-tabs {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 0.5rem;
-    }
-    .settings-tab {
-      flex: 1;
-      padding: 8px;
-      text-align: center;
-      background: var(--bg-dark);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      transition: all 0.3s;
-    }
-    .settings-tab.active {
-      background: var(--primary);
-      color: #0f172a;
-      border-color: var(--primary);
-    }
-    .settings-tab:hover:not(.active) { border-color: var(--primary); }
-    .settings-panel { display: none; }
-    .settings-panel.active { display: block; }
-    .settings-form-group { margin-bottom: 1rem; }
-    .settings-form-group label {
-      display: block;
-      margin-bottom: 0.3rem;
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-    }
-    .settings-form-group input {
-      width: 100%;
-      padding: 10px 12px;
-      background: var(--bg-dark);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text-primary);
-      font-size: 0.85rem;
-    }
-    .settings-form-group input:focus { outline: none; border-color: var(--primary); }
-    .settings-btn-submit {
-      width: 100%;
-      padding: 10px;
-      background: var(--primary);
-      border: none;
-      border-radius: 40px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 0.5rem;
-      transition: all 0.3s;
-    }
-    .settings-btn-submit:hover { transform: scale(1.02); background: var(--primary-dark); }
-    .settings-message {
-      margin-top: 0.8rem;
-      padding: 8px;
-      border-radius: 8px;
-      font-size: 0.75rem;
-      text-align: center;
-      display: none;
-    }
-    .settings-message.success { background: rgba(34,197,94,0.2); color: #22c55e; border: 1px solid #22c55e; }
-    .settings-message.error { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; }
-    .settings-message.info { background: rgba(59,130,246,0.2); color: #3b82f6; border: 1px solid #3b82f6; }
-    
     .modal {
       display: none;
       position: fixed;
@@ -573,7 +479,7 @@
       text-align: center;
     }
     .modal-content h3 { margin-bottom: 0.8rem; color: var(--primary); font-size: 1.1rem; }
-    .modal-content img { max-width: 100%; border-radius: 12px; margin: 0.8rem 0; border: 1px solid var(--border); }
+    .modal-content img { max-width: 100%; max-height: 400px; border-radius: 12px; margin: 0.8rem 0; border: 1px solid var(--border); object-fit: contain; }
     
     .modal-buttons {
       display: flex;
@@ -718,7 +624,6 @@
             <i class="fas fa-pause"></i> Pause Auto Refresh
           </button>
           <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> Dark / Light</button>
-          <button class="settings-btn" onclick="openSettings()"><i class="fas fa-cog"></i> Settings</button>
           <button class="logout-top-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
       </div>
@@ -785,60 +690,6 @@
   </div>
 </div>
 
-<div id="settingsModal" class="settings-modal">
-  <div class="settings-modal-content">
-    <h2><i class="fas fa-cog"></i> Admin Settings</h2>
-    <div class="settings-tabs">
-      <div class="settings-tab active" data-tab="change-password">Change Password</div>
-      <div class="settings-tab" data-tab="forgot-password">Forgot Password</div>
-    </div>
-    
-    <div id="changePasswordPanel" class="settings-panel active">
-      <div class="settings-form-group">
-        <label>Current Password</label>
-        <input type="password" id="currentPassword" placeholder="Enter current password">
-      </div>
-      <div class="settings-form-group">
-        <label>New Password</label>
-        <input type="password" id="newPassword" placeholder="Enter new password">
-      </div>
-      <div class="settings-form-group">
-        <label>Confirm New Password</label>
-        <input type="password" id="confirmPassword" placeholder="Confirm new password">
-      </div>
-      <button class="settings-btn-submit" onclick="changePassword()">Update Password</button>
-      <div id="changePwdMessage" class="settings-message"></div>
-    </div>
-    
-    <div id="forgotPasswordPanel" class="settings-panel">
-      <div class="settings-form-group">
-        <label>Email Address</label>
-        <input type="email" id="resetEmail" placeholder="Enter your email address">
-      </div>
-      <button class="settings-btn-submit" onclick="sendVerificationCode()">Send Verification Code</button>
-      <div id="forgotMessage" class="settings-message"></div>
-      
-      <div id="verifySection" style="display:none; margin-top: 1rem;">
-        <div class="settings-form-group">
-          <label>Verification Code</label>
-          <input type="text" id="verificationCode" placeholder="Enter 6-digit code">
-        </div>
-        <div class="settings-form-group">
-          <label>New Password</label>
-          <input type="password" id="resetNewPassword" placeholder="Enter new password">
-        </div>
-        <div class="settings-form-group">
-          <label>Confirm New Password</label>
-          <input type="password" id="resetConfirmPassword" placeholder="Confirm new password">
-        </div>
-        <button class="settings-btn-submit" onclick="resetPasswordWithCode()">Reset Password</button>
-      </div>
-    </div>
-    
-    <button onclick="closeSettings()" style="width:100%; margin-top:1rem; padding:8px; background:var(--bg-dark); border:1px solid var(--border); border-radius:40px; color:var(--text-primary); cursor:pointer;">Close</button>
-  </div>
-</div>
-
 <div id="screenshotModal" class="modal">
   <div class="modal-content">
     <h3><i class="fas fa-image"></i> Payment Screenshot</h3>
@@ -851,7 +702,7 @@
 </div>
 
 <script>
-  const ADMIN_PASSWORD = "mytel2024";
+  // Admin password from server - will be checked via API
   let allOrders = [];
   let selectedOrders = new Set();
   let dailyChart, packageChart;
@@ -860,9 +711,8 @@
   let isAutoRefreshOn = true;
   let refreshCount = 0;
   let isSidebarCollapsed = false;
-  let pendingResetEmail = "";
-  let generatedCode = "";
   
+  // Helper Functions
   function copyPhoneNumber(phone, element) {
     navigator.clipboard.writeText(phone).then(() => {
       const originalText = element.innerHTML;
@@ -918,6 +768,10 @@
     setTimeout(() => notif.remove(), 3000);
   }
   
+  function getAuthToken() {
+    return sessionStorage.getItem('adminAuthToken');
+  }
+  
   async function login(password) {
     try {
       const res = await fetch('/api/admin/login', {
@@ -926,7 +780,12 @@
         body: JSON.stringify({ password })
       });
       const data = await res.json();
-      return data.success;
+      if (data.success) {
+        sessionStorage.setItem('adminAuthToken', password);
+        sessionStorage.setItem('adminLoggedIn', 'true');
+        return true;
+      }
+      return false;
     } catch (error) {
       return false;
     }
@@ -934,14 +793,14 @@
   
   async function loadAllData() {
     await loadOrders();
-    loadCharts();
+    await loadCharts();
     checkExpiringSoon();
   }
   
   async function loadOrders() {
     try {
       const res = await fetch('/api/admin/orders', {
-        headers: { 'x-admin-auth': ADMIN_PASSWORD }
+        headers: { 'x-admin-auth': getAuthToken() }
       });
       const data = await res.json();
       if (data.success) {
@@ -949,6 +808,8 @@
         renderStats(data.stats);
         applyFilters();
         if (isAutoRefreshOn) updateRefreshIndicator();
+      } else if (data.message === "Unauthorized") {
+        logout();
       }
     } catch(err) { console.error(err); }
   }
@@ -983,6 +844,7 @@
     const container = document.getElementById('ordersList');
     if (!orders.length) {
       container.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--text-secondary);">📭 No orders found</div>';
+      document.getElementById('selectAll').checked = false;
       return;
     }
     
@@ -1004,7 +866,7 @@
         <div class="order-card-row">
           <div class="order-grid">
             <div class="order-checkbox-cell">
-              <input type="checkbox" class="order-checkbox" value="${order.id}" ${isChecked ? 'checked' : ''} onchange="updateSelectedCount()">
+              <input type="checkbox" class="order-checkbox" value="${order.id}" ${isChecked ? 'checked' : ''} onchange="toggleOrderSelection(${order.id}, this.checked)">
             </div>
             <div class="order-id" data-label="Order ID">
               <strong>#${order.id}</strong>
@@ -1021,6 +883,7 @@
             </div>
             <div class="order-status" data-label="Status">
               <span class="status-badge ${statusClass}">${statusText}</span>
+              ${order.daysRemaining && order.status === 'approved' ? `<span style="font-size:0.6rem; margin-left:5px;">(${order.daysRemaining}d left)</span>` : ''}
             </div>
             <div class="order-date" data-label="Date">
               ${formattedDate}
@@ -1041,20 +904,34 @@
     
     container.innerHTML = html;
     updateSelectedCountUI();
+    
+    const selectAll = document.getElementById('selectAll');
+    if (selectAll) {
+      const allCheckboxes = document.querySelectorAll('.order-checkbox');
+      selectAll.checked = allCheckboxes.length > 0 && allCheckboxes.length === selectedOrders.size;
+    }
+  }
+  
+  function toggleOrderSelection(orderId, isChecked) {
+    if (isChecked) {
+      selectedOrders.add(orderId);
+    } else {
+      selectedOrders.delete(orderId);
+    }
+    updateSelectedCountUI();
   }
   
   function toggleSelectAll() {
     const selectAll = document.getElementById('selectAll');
     const checkboxes = document.querySelectorAll('.order-checkbox');
-    checkboxes.forEach(cb => cb.checked = selectAll.checked);
-    updateSelectedCount();
-  }
-  
-  function updateSelectedCount() {
-    const checkboxes = document.querySelectorAll('.order-checkbox');
-    selectedOrders.clear();
     checkboxes.forEach(cb => {
-      if (cb.checked) selectedOrders.add(parseInt(cb.value));
+      cb.checked = selectAll.checked;
+      const id = parseInt(cb.value);
+      if (selectAll.checked) {
+        selectedOrders.add(id);
+      } else {
+        selectedOrders.delete(id);
+      }
     });
     updateSelectedCountUI();
   }
@@ -1068,35 +945,37 @@
     } else {
       bulkDiv.classList.remove('show');
     }
-    const selectAllCheckbox = document.getElementById('selectAll');
-    if (selectAllCheckbox) {
-      const allCheckboxes = document.querySelectorAll('.order-checkbox');
-      selectAllCheckbox.checked = allCheckboxes.length > 0 && allCheckboxes.length === selectedOrders.size;
-    }
   }
   
   function clearSelection() {
+    selectedOrders.clear();
     document.querySelectorAll('.order-checkbox').forEach(cb => cb.checked = false);
-    updateSelectedCount();
+    updateSelectedCountUI();
+    const selectAll = document.getElementById('selectAll');
+    if (selectAll) selectAll.checked = false;
   }
   
   async function bulkApprove() {
     if (!confirm(`Approve ${selectedOrders.size} orders? 30 days countdown will start.`)) return;
+    let successCount = 0;
     for (let id of selectedOrders) {
-      await updateOrder(id, 'approved', false);
+      const success = await updateOrder(id, 'approved', false);
+      if (success) successCount++;
     }
-    showNotification(`✅ ${selectedOrders.size} orders approved!`);
-    loadOrders();
+    showNotification(`✅ ${successCount} orders approved!`);
+    await loadOrders();
     clearSelection();
   }
   
   async function bulkReject() {
     if (!confirm(`Reject ${selectedOrders.size} orders?`)) return;
+    let successCount = 0;
     for (let id of selectedOrders) {
-      await updateOrder(id, 'rejected', false);
+      const success = await updateOrder(id, 'rejected', false);
+      if (success) successCount++;
     }
-    showNotification(`❌ ${selectedOrders.size} orders rejected!`);
-    loadOrders();
+    showNotification(`❌ ${successCount} orders rejected!`);
+    await loadOrders();
     clearSelection();
   }
   
@@ -1104,33 +983,53 @@
     try {
       const res = await fetch('/api/admin/update-order', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-auth': ADMIN_PASSWORD },
+        headers: { 
+          'Content-Type': 'application/json', 
+          'x-admin-auth': getAuthToken() 
+        },
         body: JSON.stringify({ orderId, status })
       });
       const data = await res.json();
       if (data.success && showMsg) {
         showNotification(`Order #${orderId} ${status === 'approved' ? 'approved! 30 days started.' : 'rejected.'}`);
-        loadOrders();
+        await loadOrders();
       }
       return data.success;
-    } catch(err) { return false; }
+    } catch(err) { 
+      return false; 
+    }
   }
   
+  // Fixed viewScreenshot function - with error handling
   async function viewScreenshot(orderId) {
     showNotification('Loading screenshot...', 'info');
     try {
       const res = await fetch(`/api/admin/order-screenshot?orderId=${orderId}`, {
-        headers: { 'x-admin-auth': ADMIN_PASSWORD }
+        headers: { 'x-admin-auth': getAuthToken() }
       });
       const data = await res.json();
+      
       if (data.success && data.screenshotUrl) {
         currentScreenshotUrl = data.screenshotUrl;
-        document.getElementById('screenshotImg').src = currentScreenshotUrl;
+        const img = document.getElementById('screenshotImg');
+        
+        img.onload = () => {
+          console.log('Screenshot loaded successfully');
+          showNotification('Screenshot loaded!', 'success');
+        };
+        img.onerror = () => {
+          console.error('Failed to load screenshot:', currentScreenshotUrl);
+          showNotification('Failed to load image - file may be missing', 'error');
+          img.src = '';
+        };
+        
+        img.src = currentScreenshotUrl;
         document.getElementById('screenshotModal').style.display = 'flex';
       } else {
-        showNotification('No screenshot available', 'error');
+        showNotification(data.message || 'No screenshot available', 'error');
       }
     } catch(err) {
+      console.error('View screenshot error:', err);
       showNotification('Failed to load screenshot', 'error');
     }
   }
@@ -1160,10 +1059,11 @@
     if (searchPhone) filtered = filtered.filter(o => o.phone.includes(searchPhone));
     if (status !== 'all') filtered = filtered.filter(o => o.status === status);
     
-    const headers = ['Order ID', 'Package', 'Phone', 'Price (KS)', 'Status', 'Order Date'];
+    const headers = ['Order ID', 'Package', 'Phone', 'Price (KS)', 'Status', 'Days Left', 'Order Date'];
     const rows = filtered.map(o => [
       o.id, o.packageName, o.phone, o.price,
       o.status === 'pending_payment' ? 'Pending' : o.status === 'payment_received' ? 'Paid' : o.status === 'approved' ? 'Active' : o.status === 'rejected' ? 'Rejected' : 'Expired',
+      o.daysRemaining || '-',
       formatEnglishDate(o.createdAt)
     ]);
     
@@ -1179,7 +1079,7 @@
   }
   
   async function loadCharts() {
-    const res = await fetch('/api/admin/orders', { headers: { 'x-admin-auth': ADMIN_PASSWORD } });
+    const res = await fetch('/api/admin/orders', { headers: { 'x-admin-auth': getAuthToken() } });
     const data = await res.json();
     if (data.success) {
       const orders = data.orders;
@@ -1193,20 +1093,26 @@
         dailyCounts.push(orders.filter(o => o.createdAt && o.createdAt.startsWith(dateStr)).length);
       }
       if (dailyChart) dailyChart.destroy();
-      dailyChart = new Chart(document.getElementById('dailyChart'), {
-        type: 'line',
-        data: { labels: last7Days, datasets: [{ label: 'Orders', data: dailyCounts, borderColor: '#facc15', backgroundColor: '#facc1520', fill: true, tension: 0.4 }] },
-        options: { responsive: true, maintainAspectRatio: true }
-      });
+      const ctx1 = document.getElementById('dailyChart')?.getContext('2d');
+      if (ctx1) {
+        dailyChart = new Chart(ctx1, {
+          type: 'line',
+          data: { labels: last7Days, datasets: [{ label: 'Orders', data: dailyCounts, borderColor: '#facc15', backgroundColor: '#facc1520', fill: true, tension: 0.4 }] },
+          options: { responsive: true, maintainAspectRatio: true }
+        });
+      }
       
       const packageRevenue = {};
       orders.forEach(o => { if (o.status === 'approved') packageRevenue[o.packageName] = (packageRevenue[o.packageName] || 0) + o.price; });
       if (packageChart) packageChart.destroy();
-      packageChart = new Chart(document.getElementById('packageChart'), {
-        type: 'bar',
-        data: { labels: Object.keys(packageRevenue), datasets: [{ label: 'Revenue (KS)', data: Object.values(packageRevenue), backgroundColor: '#facc15', borderRadius: 8 }] },
-        options: { responsive: true, maintainAspectRatio: true }
-      });
+      const ctx2 = document.getElementById('packageChart')?.getContext('2d');
+      if (ctx2) {
+        packageChart = new Chart(ctx2, {
+          type: 'bar',
+          data: { labels: Object.keys(packageRevenue), datasets: [{ label: 'Revenue (KS)', data: Object.values(packageRevenue), backgroundColor: '#facc15', borderRadius: 8 }] },
+          options: { responsive: true, maintainAspectRatio: true }
+        });
+      }
     }
   }
   
@@ -1214,7 +1120,7 @@
     const expiringOrders = allOrders.filter(o => o.status === 'approved' && o.daysRemaining <= 5 && o.daysRemaining > 0);
     if (expiringOrders.length > 0) {
       document.getElementById('expiringAlert').style.display = 'flex';
-      document.getElementById('expiringText').innerHTML = `⚠️ ${expiringOrders.length} order(s) expiring soon!`;
+      document.getElementById('expiringText').innerHTML = `⚠️ ${expiringOrders.length} order(s) expiring soon! Click to view.`;
     } else {
       document.getElementById('expiringAlert').style.display = 'none';
     }
@@ -1224,6 +1130,7 @@
     const expiringOrders = allOrders.filter(o => o.status === 'approved' && o.daysRemaining <= 5 && o.daysRemaining > 0);
     renderOrders(expiringOrders);
     document.getElementById('pageTitle').innerText = 'Expiring Soon';
+    document.getElementById('chartsContainer').style.display = 'none';
     showNotification(`Found ${expiringOrders.length} orders expiring soon`, 'info');
   }
   
@@ -1267,206 +1174,47 @@
   
   function toggleTheme() {
     document.body.classList.toggle('light-mode');
-    showNotification('Theme changed!');
+    const isLight = document.body.classList.contains('light-mode');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    showNotification(isLight ? 'Light mode enabled' : 'Dark mode enabled');
   }
   
-  // Settings Functions
-  function openSettings() {
-    document.getElementById('settingsModal').style.display = 'flex';
-    document.getElementById('currentPassword').value = '';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('confirmPassword').value = '';
-    document.getElementById('resetEmail').value = '';
-    document.getElementById('verificationCode').value = '';
-    document.getElementById('resetNewPassword').value = '';
-    document.getElementById('resetConfirmPassword').value = '';
-    document.getElementById('verifySection').style.display = 'none';
-    document.getElementById('changePwdMessage').style.display = 'none';
-    document.getElementById('forgotMessage').style.display = 'none';
+  function loadTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-mode');
+    }
   }
   
-  function closeSettings() {
-    document.getElementById('settingsModal').style.display = 'none';
-  }
-  
-  document.querySelectorAll('.settings-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const tabId = tab.getAttribute('data-tab');
-      document.getElementById('changePasswordPanel').classList.remove('active');
-      document.getElementById('forgotPasswordPanel').classList.remove('active');
-      if (tabId === 'change-password') {
-        document.getElementById('changePasswordPanel').classList.add('active');
-      } else {
-        document.getElementById('forgotPasswordPanel').classList.add('active');
-      }
-      document.getElementById('changePwdMessage').style.display = 'none';
-      document.getElementById('forgotMessage').style.display = 'none';
-      document.getElementById('verifySection').style.display = 'none';
-    });
-  });
-  
-  function changePassword() {
-    const currentPwd = document.getElementById('currentPassword').value;
-    const newPwd = document.getElementById('newPassword').value;
-    const confirmPwd = document.getElementById('confirmPassword').value;
-    const msgDiv = document.getElementById('changePwdMessage');
-    
-    if (!currentPwd || !newPwd || !confirmPwd) {
-      msgDiv.className = 'settings-message error';
-      msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please fill in all fields';
-      msgDiv.style.display = 'block';
-      return;
-    }
-    
-    if (currentPwd !== ADMIN_PASSWORD) {
-      msgDiv.className = 'settings-message error';
-      msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Current password is incorrect';
-      msgDiv.style.display = 'block';
-      return;
-    }
-    
-    if (newPwd.length < 6) {
-      msgDiv.className = 'settings-message error';
-      msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> New password must be at least 6 characters';
-      msgDiv.style.display = 'block';
-      return;
-    }
-    
-    if (newPwd !== confirmPwd) {
-      msgDiv.className = 'settings-message error';
-      msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> New passwords do not match';
-      msgDiv.style.display = 'block';
-      return;
-    }
-    
-    ADMIN_PASSWORD = newPwd;
-    msgDiv.className = 'settings-message success';
-    msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Password changed successfully!';
-    msgDiv.style.display = 'block';
-    
-    document.getElementById('currentPassword').value = '';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('confirmPassword').value = '';
-    
-    showNotification('✅ Password changed successfully!', 'success');
-  }
-  
-  function sendVerificationCode() {
-    const email = document.getElementById('resetEmail').value.trim();
-    const msgDiv = document.getElementById('forgotMessage');
-    
-    if (!email) {
-      msgDiv.className = 'settings-message error';
-      msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter your email address';
-      msgDiv.style.display = 'block';
-      return;
-    }
-    
-    if (!email.includes('@') || !email.includes('.')) {
-      msgDiv.className = 'settings-message error';
-      msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter a valid email address';
-      msgDiv.style.display = 'block';
-      return;
-    }
-    
-    generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
-    pendingResetEmail = email;
-    
-    msgDiv.className = 'settings-message info';
-    msgDiv.innerHTML = `<i class="fas fa-envelope"></i> Verification code sent to ${email}<br><small>Demo Code: <strong>${generatedCode}</strong></small>`;
-    msgDiv.style.display = 'block';
-    
-    document.getElementById('verifySection').style.display = 'block';
-    
-    showNotification(`📧 Verification code sent to ${email}`, 'info');
-  }
-  
-  function resetPasswordWithCode() {
-    const code = document.getElementById('verificationCode').value;
-    const newPwd = document.getElementById('resetNewPassword').value;
-    const confirmPwd = document.getElementById('resetConfirmPassword').value;
-    const msgDiv = document.getElementById('forgotMessage');
-    
-    if (!code) {
-      msgDiv.className = 'settings-message error';
-      msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter verification code';
-      msgDiv.style.display = 'block';
-      return;
-    }
-    
-    if (code !== generatedCode) {
-      msgDiv.className = 'settings-message error';
-      msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Invalid verification code';
-      msgDiv.style.display = 'block';
-      return;
-    }
-    
-    if (!newPwd || !confirmPwd) {
-      msgDiv.className = 'settings-message error';
-      msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter new password';
-      msgDiv.style.display = 'block';
-      return;
-    }
-    
-    if (newPwd.length < 6) {
-      msgDiv.className = 'settings-message error';
-      msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Password must be at least 6 characters';
-      msgDiv.style.display = 'block';
-      return;
-    }
-    
-    if (newPwd !== confirmPwd) {
-      msgDiv.className = 'settings-message error';
-      msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Passwords do not match';
-      msgDiv.style.display = 'block';
-      return;
-    }
-    
-    ADMIN_PASSWORD = newPwd;
-    
-    msgDiv.className = 'settings-message success';
-    msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Password reset successfully! Please login with new password.';
-    msgDiv.style.display = 'block';
-    
-    document.getElementById('resetEmail').value = '';
-    document.getElementById('verificationCode').value = '';
-    document.getElementById('resetNewPassword').value = '';
-    document.getElementById('resetConfirmPassword').value = '';
-    document.getElementById('verifySection').style.display = 'none';
-    generatedCode = "";
-    
-    showNotification('✅ Password reset successfully!', 'success');
-    
-    setTimeout(() => {
-      if (confirm('Password changed! Do you want to login again?')) {
-        logout();
-      }
-    }, 2000);
-  }
-  
+  // Navigation
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', () => {
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       item.classList.add('active');
       const page = item.getAttribute('data-page');
+      const chartsContainer = document.getElementById('chartsContainer');
       document.getElementById('pageTitle').innerText = page === 'dashboard' ? 'Dashboard' : page === 'orders' ? 'Orders' : page === 'expiring' ? 'Expiring Soon' : 'Analytics';
+      
       if (page === 'dashboard') {
-        document.getElementById('chartsContainer').style.display = 'grid';
+        if (chartsContainer) chartsContainer.style.display = 'grid';
         loadAllData();
       } else if (page === 'expiring') {
-        document.getElementById('chartsContainer').style.display = 'none';
+        if (chartsContainer) chartsContainer.style.display = 'none';
         showExpiringPage();
-      } else {
-        document.getElementById('chartsContainer').style.display = 'none';
+      } else if (page === 'orders') {
+        if (chartsContainer) chartsContainer.style.display = 'none';
         applyFilters();
+      } else if (page === 'analytics') {
+        if (chartsContainer) chartsContainer.style.display = 'grid';
+        loadCharts();
       }
+      
       if (window.innerWidth <= 768) closeMobileSidebar();
     });
   });
   
   function logout() {
+    sessionStorage.removeItem('adminAuthToken');
     sessionStorage.removeItem('adminLoggedIn');
     location.reload();
   }
@@ -1474,12 +1222,17 @@
   // Login Handler
   document.getElementById('loginBtn').onclick = async function() {
     const password = document.getElementById('adminPassword').value;
+    const loginBtn = document.getElementById('loginBtn');
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+    
     if (await login(password)) {
       sessionStorage.setItem('adminLoggedIn', 'true');
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('dashboardSection').style.display = 'block';
       loadSidebarState();
-      loadAllData();
+      loadTheme();
+      await loadAllData();
       startAutoRefresh();
     } else {
       const err = document.getElementById('loginError');
@@ -1487,12 +1240,17 @@
       err.style.display = 'block';
       setTimeout(() => err.style.display = 'none', 2000);
     }
+    
+    loginBtn.disabled = false;
+    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Access Dashboard';
   };
   
-  if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+  // Check login status
+  if (sessionStorage.getItem('adminLoggedIn') === 'true' && sessionStorage.getItem('adminAuthToken')) {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('dashboardSection').style.display = 'block';
     loadSidebarState();
+    loadTheme();
     loadAllData();
     startAutoRefresh();
   }
@@ -1501,6 +1259,7 @@
     if (window.innerWidth > 768) closeMobileSidebar();
   });
   
+  // Expose functions globally
   window.copyPhoneNumber = copyPhoneNumber;
   window.toggleSidebar = toggleSidebar;
   window.openMobileSidebar = openMobileSidebar;
@@ -1511,7 +1270,7 @@
   window.applyFilters = applyFilters;
   window.exportToCSV = exportToCSV;
   window.toggleSelectAll = toggleSelectAll;
-  window.updateSelectedCount = updateSelectedCount;
+  window.toggleOrderSelection = toggleOrderSelection;
   window.clearSelection = clearSelection;
   window.bulkApprove = bulkApprove;
   window.bulkReject = bulkReject;
@@ -1519,11 +1278,6 @@
   window.toggleTheme = toggleTheme;
   window.toggleAutoRefresh = toggleAutoRefresh;
   window.logout = logout;
-  window.openSettings = openSettings;
-  window.closeSettings = closeSettings;
-  window.changePassword = changePassword;
-  window.sendVerificationCode = sendVerificationCode;
-  window.resetPasswordWithCode = resetPasswordWithCode;
 </script>
 </body>
 </html>
