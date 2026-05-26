@@ -344,7 +344,7 @@ app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
   }
 });
 
-// ========== DELETE ORDER (Permanent) – ADDED ==========
+// ========== DELETE ORDER (Permanent) ==========
 app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
   const { orderId } = req.body;
 
@@ -353,13 +353,13 @@ app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
   }
 
   try {
-    // 1. Get order info (to optionally delete screenshot file)
+    // Get order info to delete screenshot file
     const order = await database.getOrderById(parseInt(orderId));
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found" });
     }
 
-    // 2. Delete screenshot file from server (if exists)
+    // Delete screenshot file from server (if exists)
     if (order.screenshotPath) {
       const fullPath = path.join(__dirname, order.screenshotPath);
       if (fs.existsSync(fullPath)) {
@@ -372,13 +372,13 @@ app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
       }
     }
 
-    // 3. Delete order from database
+    // Delete order from database
     const result = await database.deleteOrder(parseInt(orderId));
     if (!result || result.changes === 0) {
       return res.status(500).json({ success: false, message: "Failed to delete order" });
     }
 
-    // 4. Notify admin via Telegram (optional)
+    // Notify admin via Telegram (optional)
     await sendTelegramMessage(ADMIN_CHAT_ID, `🗑️ Order #${orderId} permanently deleted by admin.`);
 
     res.json({ success: true, message: `Order #${orderId} deleted` });
@@ -426,7 +426,7 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// Submit Payment
+// Submit Payment (FIXED: keep screenshot file)
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
   try {
@@ -465,13 +465,19 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
     await sendToGroupPaymentReceived(order, fileBuffer);
     
+    // ✅ IMPORTANT FIX: DO NOT delete the screenshot file so admin can view it later
+    // The file will remain in /temp_uploads/ for future reference
+    
     res.json({ success: true, message: "Payment submitted!" });
   } catch (error) {
     console.error('Submit payment error:', error);
     res.status(500).json({ success: false, message: "Server error" });
   } finally {
+    // ❌ REMOVED: fs.unlinkSync(tempFilePath) – keep the file for admin viewing
+    // Only delete if you want to clean up later via separate cron job
     if (tempFilePath && fs.existsSync(tempFilePath)) {
-      try { fs.unlinkSync(tempFilePath); } catch(e) {}
+      console.log(`📁 Keeping screenshot file: ${tempFilePath}`);
+      // Do nothing – keep file
     }
   }
 });
@@ -554,19 +560,15 @@ app.get('/', (req, res) => {
 // ========== START SERVER ==========
 const PORT = process.env.PORT || 10000;
 
-// Error handlers to prevent app from exiting
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err.message);
   console.error(err.stack);
-  // Don't exit, just log
 });
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('❌ Unhandled Rejection:', reason);
-  // Don't exit, just log
 });
 
-// Start server
 const server = app.listen(PORT, () => {
   console.log(`\n🚀 Server running on port ${PORT}`);
   console.log(`📱 Customer: ${BASE_URL}/`);
@@ -575,7 +577,6 @@ const server = app.listen(PORT, () => {
   console.log(`📸 Screenshot Debug: ${BASE_URL}/debug/screenshots`);
   console.log(`✅ Health Check: ${BASE_URL}/health\n`);
   
-  // Start expiry checker
   try {
     database.startExpiryChecker(60);
   } catch (err) {
@@ -583,7 +584,6 @@ const server = app.listen(PORT, () => {
   }
 });
 
-// Handle server errors
 server.on('error', (err) => {
   console.error('Server error:', err.message);
 });
