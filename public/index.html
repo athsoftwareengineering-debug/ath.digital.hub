@@ -117,9 +117,8 @@
   
   <h2 class="section-title" style="text-align:center; font-size:1.8rem; margin:2rem 0 1rem;">✨ Choose Your Premium Plan</h2>
   
-  <!-- ========== PLAN CARDS (STATIC HTML - သေချာပေါ်ရန်) ========== -->
+  <!-- Static Plan Cards - သေချာပေါ်ရန် -->
   <div class="plans-container">
-    <!-- VIP LEVEL - 1 -->
     <div class="plan-card" data-plan="VIP LEVEL - 1">
       <div class="plan-icon">🏆</div>
       <div class="plan-title">VIP LEVEL - 1</div>
@@ -131,7 +130,6 @@
       <div class="price">15,000 <small>KS</small></div>
       <button class="select-plan-btn" data-plan="VIP LEVEL - 1"><i class="fas fa-shopping-cart"></i> Select Plan</button>
     </div>
-    <!-- VIP LEVEL - 2 -->
     <div class="plan-card" data-plan="VIP LEVEL - 2">
       <div class="plan-icon">🏆</div>
       <div class="plan-title">VIP LEVEL - 2</div>
@@ -143,7 +141,6 @@
       <div class="price">20,000 <small>KS</small></div>
       <button class="select-plan-btn" data-plan="VIP LEVEL - 2"><i class="fas fa-shopping-cart"></i> Select Plan</button>
     </div>
-    <!-- VIP LEVEL - 3 -->
     <div class="plan-card" data-plan="VIP LEVEL - 3">
       <div class="plan-icon">🏆</div>
       <div class="plan-title">VIP LEVEL - 3</div>
@@ -155,7 +152,6 @@
       <div class="price">25,000 <small>KS</small></div>
       <button class="select-plan-btn" data-plan="VIP LEVEL - 3"><i class="fas fa-shopping-cart"></i> Select Plan</button>
     </div>
-    <!-- VIP LEVEL - 4 -->
     <div class="plan-card" data-plan="VIP LEVEL - 4">
       <div class="plan-icon">💎</div>
       <div class="plan-title">VIP LEVEL - 4</div>
@@ -168,7 +164,13 @@
     </div>
   </div>
   
-  <div class="tracking-section"><div class="tracking-title"><i class="fas fa-search"></i><h3>Track Your Orders <span class="auto-refresh-badge"><i class="fas fa-sync-alt"></i> Auto Refresh 30s</span></h3><p style="color:#94a3b8; font-size:0.75rem; margin-top:0.5rem;">Enter your phone number to check all your orders</p></div><div class="tracking-form"><input type="tel" id="trackPhone" placeholder="📞 Enter phone number (09xxxxxxxxx)"><button id="trackBtn" onclick="manualRefresh()"><i class="fas fa-chart-line"></i> Check Status</button></div><div class="refresh-indicator" id="refreshIndicator"><i class="fas fa-sync-alt"></i> Auto refreshing every 30 seconds</div><div id="trackResult" class="track-result"></div></div>
+  <div class="tracking-section">
+    <div class="tracking-title"><i class="fas fa-search"></i><h3>Track Your Orders <span class="auto-refresh-badge"><i class="fas fa-sync-alt"></i> Auto Refresh 30s</span></h3><p style="color:#94a3b8; font-size:0.75rem; margin-top:0.5rem;">Enter your phone number to check all your orders</p></div>
+    <div class="tracking-form"><input type="tel" id="trackPhone" placeholder="📞 Enter phone number (09xxxxxxxxx)"><button id="trackBtn" onclick="manualRefresh()"><i class="fas fa-chart-line"></i> Check Status</button></div>
+    <div class="refresh-indicator" id="refreshIndicator"><i class="fas fa-sync-alt"></i> Auto refreshing every 30 seconds</div>
+    <div id="trackResult" class="track-result"></div>
+  </div>
+  
   <div class="footer">
     <div class="brand-footer">
       <div class="ath-icon"><i class="fas fa-globe"></i><span>ATH DIGITAL HUB</span><i class="fas fa-bolt"></i></div>
@@ -195,7 +197,6 @@
 </script>
 
 <script>
-  // Order system JavaScript (ပြင်ဆင်ပြီး)
   let isSubmitting = false, selectedPlan = null, selectedImageFile = null, createdOrderId = null, autoRefreshInterval = null, currentTrackPhone = '', retryCount = 0, refreshCount = 0;
   const plans = [
     { name: "VIP LEVEL - 1", icon: "🏆", features: ["22 GB Data", "8000 On-Net Mins", "5000 SMS"], price: 15000 },
@@ -207,7 +208,6 @@
   function isValidPhone(p) { if (!p) return false; return /^(09|\+959)[0-9]{7,9}$/.test(p.replace(/\s/g, '')); }
   function copyToClipboard(t, m) { navigator.clipboard.writeText(t).then(() => showToast(`${m} number copied: ${t}`, "#22c55e")).catch(() => showToast("Failed to copy", "#ef4444")); }
   
-  // Event binding for static plan cards
   function bindPlanEvents() {
     document.querySelectorAll('.select-plan-btn').forEach(btn => {
       btn.removeEventListener('click', planClickHandler);
@@ -216,19 +216,15 @@
   }
   function planClickHandler(e) {
     e.stopPropagation();
-    const planName = e.currentTarget.getAttribute('data-plan');
-    selectPlan(planName);
+    selectPlan(e.currentTarget.getAttribute('data-plan'));
   }
   
   function selectPlan(planName) {
     selectedPlan = plans.find(p => p.name === planName);
     if (!selectedPlan) return;
-    // Remove selected class from all plan cards
     document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
-    // Add selected class to the clicked card
     const parentCard = document.querySelector(`.plan-card[data-plan="${planName}"]`);
     if (parentCard) parentCard.classList.add('selected');
-    
     document.getElementById('selectedPlanInfo').innerHTML = `<i class="fas fa-gem" style="color:#facc15;"></i> <strong style="color:#facc15;">${selectedPlan.icon} ${selectedPlan.name}</strong><br> 💰 Price: ${selectedPlan.price.toLocaleString()} KS`;
     document.getElementById('orderPhone').value = '';
     document.getElementById('orderNote').value = '';
@@ -255,7 +251,6 @@
   
   document.getElementById('trackPhone').addEventListener('keypress',(e)=>{if(e.key==='Enter')manualRefresh();});
   
-  // Initialize everything when DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => { bindPlanEvents(); startAutoRefresh(); });
   } else {
