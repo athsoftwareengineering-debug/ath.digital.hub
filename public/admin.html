@@ -322,7 +322,7 @@
       font-size: 0.65rem;
       cursor: pointer;
     }
-    .order-actions { min-width: 140px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .order-actions { min-width: 200px; display: flex; gap: 8px; flex-wrap: wrap; }
     .action-btn {
       padding: 5px 12px;
       border-radius: 30px;
@@ -333,6 +333,7 @@
     }
     .action-approve { background: #22c55e20; color: #22c55e; border: 1px solid #22c55e; }
     .action-reject { background: #ef444420; color: #ef4444; border: 1px solid #ef4444; }
+    .action-delete { background: #ef444420; color: #ef4444; border: 1px solid #ef4444; }
     .modal {
       display: none;
       position: fixed;
@@ -597,6 +598,7 @@
         <span id="selectedCount">0 selected</span>
         <button onclick="bulkApprove()" style="background:#22c55e20; color:#22c55e; border:1px solid #22c55e;"><i class="fas fa-check"></i> Approve Selected</button>
         <button onclick="bulkReject()" style="background:#ef444420; color:#ef4444; border:1px solid #ef4444;"><i class="fas fa-times"></i> Reject Selected</button>
+        <button onclick="bulkDelete()" style="background:#ef444420; color:#ef4444; border:1px solid #ef4444;"><i class="fas fa-trash-alt"></i> Delete Selected</button>
         <button onclick="clearSelection()" style="background:#64748b20; color:#64748b; border:1px solid #64748b;">Cancel</button>
       </div>
       
@@ -610,7 +612,7 @@
           <div style="width:110px;">Status</div>
           <div style="width:150px;">Date</div>
           <div style="width:70px;">SS</div>
-          <div style="width:150px;">Action</div>
+          <div style="width:200px;">Action</div>
         </div>
         <div id="ordersList">Loading orders...</div>
       </div>
@@ -886,7 +888,8 @@
               ${order.status === 'payment_received' ? `
                 <button class="action-btn action-approve" onclick="updateOrder(${order.id}, 'approved')"><i class="fas fa-check"></i> Approve</button>
                 <button class="action-btn action-reject" onclick="updateOrder(${order.id}, 'rejected')"><i class="fas fa-times"></i> Reject</button>
-              ` : '<span style="color:#64748b;">-</span>'}
+              ` : ''}
+              <button class="action-btn action-delete" onclick="deleteOrder(${order.id})"><i class="fas fa-trash-alt"></i> Delete</button>
             </div>
           </div>
         </div>
@@ -970,6 +973,51 @@
     clearSelection();
   }
   
+  // ========== DELETE FUNCTIONS ==========
+  async function deleteOrder(orderId, showMsg = true) {
+    if (!confirm(`⚠️ Are you sure you want to DELETE order #${orderId}? This action cannot be undone.`)) {
+      return false;
+    }
+    
+    try {
+      const res = await fetch('/api/admin/delete-order', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json', 
+          'x-admin-auth': getAuthToken() 
+        },
+        body: JSON.stringify({ orderId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (showMsg) showNotification(`🗑️ Order #${orderId} deleted successfully!`, 'success');
+        await loadOrders();
+        return true;
+      } else {
+        showNotification(data.message || 'Failed to delete order', 'error');
+        return false;
+      }
+    } catch(err) {
+      showNotification('Network error while deleting', 'error');
+      return false;
+    }
+  }
+  
+  async function bulkDelete() {
+    if (selectedOrders.size === 0) return;
+    if (!confirm(`⚠️ PERMANENTLY DELETE ${selectedOrders.size} order(s)? This cannot be undone.`)) return;
+    
+    let successCount = 0;
+    for (let id of selectedOrders) {
+      const success = await deleteOrder(id, false);
+      if (success) successCount++;
+    }
+    showNotification(`🗑️ ${successCount} order(s) permanently deleted.`, 'info');
+    await loadOrders();
+    clearSelection();
+  }
+  
+  // Original updateOrder (kept as is)
   async function updateOrder(orderId, status, showMsg = true) {
     try {
       const res = await fetch('/api/admin/update-order', {
@@ -991,7 +1039,6 @@
     }
   }
   
-  // ========== SCREENSHOT VIEW - FIXED ==========
   async function viewScreenshot(orderId) {
     showNotification('Loading screenshot...', 'info');
     try {
@@ -1000,29 +1047,18 @@
       });
       const data = await res.json();
       
-      console.log('Screenshot response:', data);
-      
       if (data.success && data.screenshotUrl) {
         currentScreenshotUrl = data.screenshotUrl;
         const img = document.getElementById('screenshotImg');
-        
-        img.onload = () => {
-          console.log('Screenshot loaded successfully');
-          showNotification('Screenshot loaded!', 'success');
-        };
-        img.onerror = (e) => {
-          console.error('Failed to load screenshot:', currentScreenshotUrl);
-          showNotification('Failed to load image - file may be missing', 'error');
-          img.src = '';
-        };
-        
+        img.onload = () => showNotification('Screenshot loaded!', 'success');
+        img.onerror = () => showNotification('Failed to load image', 'error');
         img.src = data.screenshotUrl + '?t=' + new Date().getTime();
         document.getElementById('screenshotModal').style.display = 'flex';
       } else {
         showNotification(data.message || 'No screenshot available', 'error');
       }
     } catch(err) {
-      console.error('View screenshot error:', err);
+      console.error(err);
       showNotification('Failed to load screenshot', 'error');
     }
   }
@@ -1177,7 +1213,7 @@
     }
   }
   
-  // ========== SETTINGS FUNCTIONS ==========
+  // Settings functions (unchanged)
   function openSettings() {
     document.getElementById('settingsModal').style.display = 'flex';
     document.getElementById('currentPassword').value = '';
@@ -1248,17 +1284,13 @@
       return;
     }
     
-    // Update local storage
     sessionStorage.setItem('adminAuthToken', newPwd);
-    
     msgDiv.className = 'settings-message success';
     msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Password changed successfully!';
     msgDiv.style.display = 'block';
-    
     document.getElementById('currentPassword').value = '';
     document.getElementById('newPassword').value = '';
     document.getElementById('confirmPassword').value = '';
-    
     showNotification('✅ Password changed successfully!', 'success');
   }
   
@@ -1286,9 +1318,7 @@
     msgDiv.className = 'settings-message info';
     msgDiv.innerHTML = `<i class="fas fa-envelope"></i> Verification code sent to ${email}<br><small>Demo Code: <strong>${generatedCode}</strong></small>`;
     msgDiv.style.display = 'block';
-    
     document.getElementById('verifySection').style.display = 'block';
-    
     showNotification(`📧 Verification code sent to ${email}`, 'info');
   }
   
@@ -1334,7 +1364,6 @@
     }
     
     sessionStorage.setItem('adminAuthToken', newPwd);
-    
     msgDiv.className = 'settings-message success';
     msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Password reset successfully! Please login with new password.';
     msgDiv.style.display = 'block';
@@ -1413,7 +1442,6 @@
     loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Access Dashboard';
   };
   
-  // Check login status
   if (sessionStorage.getItem('adminLoggedIn') === 'true' && sessionStorage.getItem('adminAuthToken')) {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('dashboardSection').style.display = 'block';
@@ -1433,6 +1461,8 @@
   window.openMobileSidebar = openMobileSidebar;
   window.closeMobileSidebar = closeMobileSidebar;
   window.updateOrder = updateOrder;
+  window.deleteOrder = deleteOrder;
+  window.bulkDelete = bulkDelete;
   window.viewScreenshot = viewScreenshot;
   window.closeModal = closeModal;
   window.applyFilters = applyFilters;
