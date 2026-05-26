@@ -10,6 +10,7 @@ const database = require('./database');
 const app = express();
 
 // ========== TIME ZONE ==========
+// Myanmar Time (UTC+6:30)
 process.env.TZ = 'Asia/Yangon';
 
 function getMyanmarTime12hr() {
@@ -86,13 +87,11 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// ========== HELPER: MASK PHONE NUMBER FOR GROUP ==========
+// ========== HELPER: MASK PHONE NUMBER FOR GROUP (first 4, last 3) ==========
 function maskPhone(phone) {
   if (!phone) return phone;
-  // Remove any spaces or non-digit characters
   const cleaned = phone.replace(/\D/g, '');
-  if (cleaned.length < 7) return phone; // too short, return as is
-  // Show first 4 digits and last 3 digits, mask the rest with *
+  if (cleaned.length < 7) return phone;
   const first4 = cleaned.slice(0, 4);
   const last3 = cleaned.slice(-3);
   const middleLength = cleaned.length - 4 - 3;
@@ -149,7 +148,7 @@ async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
 }
 
 // ========== GROUP MESSAGES (WITH MASKED PHONE) ==========
-// Note: These functions are for GROUP only. Admin messages keep full phone number.
+// Only these two are sent to group (approve/reject)
 async function sendToGroupOrderApproved(order) {
   if (!GROUP_CHAT_ID) return false;
   const startDate = new Date(order.startDate);
@@ -199,9 +198,7 @@ async function sendToGroupOrderRejected(order, reason = "ငွေလွှဲ �
   return await sendTelegramMessage(GROUP_CHAT_ID, message);
 }
 
-// (Note: sendToGroupNewOrder and sendToGroupPaymentReceived are not used as per previous request, but we keep them commented)
-// async function sendToGroupNewOrder(order) { ... }
-// async function sendToGroupPaymentReceived(order, screenshotBuffer) { ... }
+// (Note: No group messages for new order or payment received)
 
 // ========== TELEGRAM WEBHOOK ==========
 app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
@@ -399,7 +396,7 @@ app.post('/order', async (req, res) => {
     await database.createOrder(newOrder);
     // Admin gets full phone number
     await sendTelegramMessage(ADMIN_CHAT_ID, `🆕 New Order #${newOrder.id}\n📦 ${packageName}\n📞 ${phone}\n💰 ${packageData.price.toLocaleString()} KS`);
-    // No group message for new order (as requested)
+    // No group message for new order
     
     res.json({ success: true, orderId: newOrder.id });
   } catch (error) {
@@ -408,7 +405,7 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// Submit Payment (only admin receives, no group)
+// Submit Payment (only admin receives, no group, screenshot kept)
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
   try {
@@ -446,20 +443,21 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
       ]]
     };
     await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
-    // No group message for payment received (as requested)
+    // No group message for payment received
     
     res.json({ success: true, message: "Payment submitted!" });
   } catch (error) {
     console.error('Submit payment error:', error);
     res.status(500).json({ success: false, message: "Server error" });
   } finally {
+    // Keep screenshot file for admin viewing – do NOT delete
     if (tempFilePath && fs.existsSync(tempFilePath)) {
       console.log(`📁 Keeping screenshot file: ${tempFilePath}`);
     }
   }
 });
 
-// Track by Phone
+// Track by Phone (for customer page)
 app.get('/api/track-by-phone', async (req, res) => {
   const { phone } = req.query;
   if (!phone || !/^(09|\+959)[0-9]{7,9}$/.test(phone)) {
@@ -469,7 +467,7 @@ app.get('/api/track-by-phone', async (req, res) => {
   res.json({ success: true, orders: userOrders, count: userOrders.length });
 });
 
-// Search orders
+// Search orders (admin)
 app.get('/api/admin/search', isAuthenticated, async (req, res) => {
   const { q } = req.query;
   if (!q) {
