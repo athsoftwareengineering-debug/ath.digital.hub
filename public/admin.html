@@ -1,591 +1,185 @@
 <!DOCTYPE html>
 <html lang="my">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard | ATH VIP DATA</title>
-  
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="X-Frame-Options" content="DENY">
-  <meta http-equiv="X-XSS-Protection" content="1; mode=block">
-  <meta name="referrer" content="strict-origin-when-cross-origin">
-  
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
-      padding: 1rem;
-    }
-    .container { max-width: 1400px; margin: 0 auto; }
-    
-    /* Login Box */
-    .login-box {
-      max-width: 420px;
-      margin: 100px auto;
-      background: #1e293b;
-      padding: 2rem;
-      border-radius: 24px;
-      text-align: center;
-      border: 1px solid rgba(0,200,255,0.2);
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-    }
-    .login-box h2 {
-      margin-bottom: 1.5rem;
-      color: #facc15;
-    }
-    .login-box input {
-      width: 100%;
-      padding: 14px;
-      margin: 12px 0;
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      color: white;
-      font-size: 0.9rem;
-      transition: all 0.3s;
-    }
-    .login-box input:focus {
-      outline: none;
-      border-color: #facc15;
-      box-shadow: 0 0 0 2px rgba(250,204,21,0.2);
-    }
-    .login-box button {
-      background: #facc15;
-      color: #0f172a;
-      border: none;
-      padding: 14px;
-      width: 100%;
-      border-radius: 40px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-      font-size: 1rem;
-      transition: transform 0.2s;
-    }
-    .login-box button:hover { transform: scale(1.02); }
-    
-    /* Dashboard */
-    .dashboard { display: none; }
-    
-    /* Stats Grid */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .stat-card {
-      background: #1e293b;
-      padding: 1.2rem;
-      border-radius: 20px;
-      text-align: center;
-      border: 1px solid rgba(255,255,255,0.05);
-      transition: transform 0.2s;
-    }
-    .stat-card:hover { transform: translateY(-3px); background: #2d3a5e; }
-    .stat-card .value { font-size: 2rem; font-weight: 800; color: #facc15; }
-    .stat-card .label { font-size: 0.8rem; color: #94a3b8; margin-top: 5px; }
-    
-    /* Filters */
-    .filters {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin: 1.5rem 0;
-      background: #1e293b;
-      padding: 1rem;
-      border-radius: 20px;
-    }
-    .filters input, .filters select {
-      background: #0f172a;
-      border: 1px solid #334155;
-      padding: 10px 16px;
-      border-radius: 40px;
-      color: white;
-      font-size: 0.85rem;
-    }
-    .filters button {
-      background: #3b82f6;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 40px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .filters button:hover { opacity: 0.9; transform: scale(1.02); }
-    
-    /* Order Card */
-    .order-card {
-      background: #1e293b;
-      border-radius: 20px;
-      padding: 1.2rem;
-      margin-bottom: 1rem;
-      border-left: 5px solid #facc15;
-      transition: all 0.2s;
-    }
-    .order-card:hover { transform: translateX(5px); background: #2d3a5e; }
-    .order-header {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      margin-bottom: 0.8rem;
-      gap: 10px;
-    }
-    .order-id { font-family: monospace; font-size: 0.75rem; background: #0f172a; padding: 4px 12px; border-radius: 40px; }
-    
-    /* Status Badges */
-    .status-badge {
-      padding: 4px 14px;
-      border-radius: 40px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-    .status-pending { background: #f9731620; color: #f97316; border:1px solid #f97316; }
-    .status-paid { background: #3b82f620; color: #3b82f6; border:1px solid #3b82f6; }
-    .status-approved { background: #22c55e20; color: #22c55e; border:1px solid #22c55e; }
-    .status-rejected { background: #ef444420; color: #ef4444; border:1px solid #ef4444; }
-    .status-expired { background: #64748b20; color: #64748b; border:1px solid #64748b; }
-    
-    /* Buttons */
-    .btn-sm {
-      padding: 6px 16px;
-      border-radius: 40px;
-      font-size: 0.75rem;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-      margin: 4px 6px 4px 0;
-      transition: all 0.2s;
-    }
-    .btn-sm:hover { transform: scale(1.02); opacity: 0.9; }
-    .btn-approve { background: #22c55e; color: white; }
-    .btn-paid { background: #3b82f6; color: white; }
-    .btn-reject { background: #f97316; color: white; }
-    .btn-delete { background: #ef4444; color: white; }
-    .btn-expire { background: #64748b; color: white; }
-    
-    /* Screenshot */
-    img.screenshot-thumb {
-      width: 65px;
-      height: 65px;
-      object-fit: cover;
-      border-radius: 12px;
-      cursor: pointer;
-      border: 2px solid rgba(255,255,255,0.1);
-      transition: transform 0.2s;
-    }
-    img.screenshot-thumb:hover { transform: scale(1.05); border-color: #facc15; }
-    
-    /* Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      top:0; left:0;
-      width:100%; height:100%;
-      background: rgba(0,0,0,0.95);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    .modal-content { max-width: 90%; max-height: 90%; }
-    .modal-content img { max-width:100%; max-height:90vh; border-radius: 12px; }
-    .close-modal {
-      position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer;
-    }
-    
-    /* Header */
-    .header-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .admin-badge {
-      background: #facc1520;
-      color: #facc15;
-      padding: 6px 16px;
-      border-radius: 40px;
-      font-size: 0.8rem;
-      border: 1px solid #facc1540;
-    }
-    .logout-btn, .refresh-btn {
-      padding: 8px 20px;
-      border: none;
-      border-radius: 40px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .logout-btn { background: #ef4444; color: white; }
-    .refresh-btn { background: #3b82f6; color: white; margin-right: 8px; }
-    .logout-btn:hover, .refresh-btn:hover { transform: scale(1.02); opacity: 0.9; }
-    
-    .detail-row { margin-bottom: 6px; font-size: 0.85rem; }
-    .detail-row strong { color: #94a3b8; min-width: 100px; display: inline-block; }
-    .expiry-info { margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); color: #00ffff; font-size: 0.8rem; }
-    .empty-state { text-align: center; padding: 3rem; color: #64748b; }
-    
-    @media (max-width: 600px) {
-      .stats-grid { grid-template-columns: repeat(2,1fr); }
-      .detail-row strong { min-width: 80px; }
-      .filters { flex-direction: column; }
-      .filters input, .filters select, .filters button { width: 100%; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | ATH VIP DATA</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background: #0f172a; font-family: 'Inter', sans-serif; }
+        .order-card { transition: all 0.3s ease; }
+        .status-pending { background: #fef3c7; color: #d97706; }
+        .status-paid { background: #dbeafe; color: #2563eb; }
+        .status-approved { background: #d1fae5; color: #059669; }
+        .status-rejected { background: #fee2e2; color: #dc2626; }
+        .status-expired { background: #f3f4f6; color: #6b7280; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 1000; }
+        .modal.show { display: flex; }
+    </style>
 </head>
-<body>
+<body class="bg-slate-900 text-white">
 
-<!-- Login Section -->
-<div id="loginSection" class="login-box">
-  <h2><i class="fas fa-shield-alt"></i> Admin Login</h2>
-  <input type="email" id="loginEmail" placeholder="admin@example.com">
-  <input type="password" id="loginPassword" placeholder="စကားဝှက်">
-  <button onclick="login()"><i class="fas fa-sign-in-alt"></i> ဝင်ရောက်မည်</button>
-  <div id="loginError" style="color:#ef4444; margin-top:1rem; font-size:0.8rem;"></div>
-</div>
-
-<!-- Dashboard -->
-<div id="dashboard" class="dashboard container">
-  <div class="header-bar">
-    <div>
-      <h1><i class="fas fa-crown" style="color:#facc15;"></i> MYTEL Admin Panel</h1>
-      <div class="admin-badge" id="adminEmailDisplay"><i class="fas fa-envelope"></i> Loading...</div>
+<div id="loginContainer" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-slate-800 rounded-2xl p-8 w-full max-w-md shadow-2xl border border-slate-700">
+        <h2 class="text-2xl font-bold text-center mb-6">Admin Login</h2>
+        <input type="password" id="adminPassword" placeholder="Enter Admin Password" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-yellow-500 mb-4">
+        <button onclick="login()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-bold py-3 rounded-xl transition">Login</button>
+        <div id="loginError" class="text-red-500 text-center mt-4 hidden"></div>
     </div>
-    <div>
-      <button class="refresh-btn" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
-      <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ထွက်ရန်</button>
-    </div>
-  </div>
-  
-  <!-- Stats -->
-  <div class="stats-grid" id="statsGrid"></div>
-  
-  <!-- Filters -->
-  <div class="filters">
-    <input type="text" id="searchPhone" placeholder="📞 ဖုန်းနံပါတ်ဖြင့် ရှာရန်">
-    <select id="statusFilter">
-      <option value="all">📋 အားလုံး</option>
-      <option value="pending_payment">⏳ ဆိုင်းငံ့ (Pending)</option>
-      <option value="payment_received">💰 ငွေရပြီး (Paid)</option>
-      <option value="approved">✅ အသက်ဝင်ဆဲ (Active)</option>
-      <option value="rejected">❌ ငြင်းပယ်ထား</option>
-      <option value="expired">⏰ သက်တမ်းကုန်</option>
-    </select>
-    <button onclick="applyFilters()"><i class="fas fa-filter"></i> စစ်ဆေးမည်</button>
-    <button onclick="exportToCSV()" style="background:#22c55e;"><i class="fas fa-download"></i> CSV ထုတ်မည်</button>
-  </div>
-  
-  <!-- Orders List -->
-  <div id="ordersList"></div>
 </div>
 
-<!-- Image Modal -->
-<div id="imageModal" class="modal" onclick="closeModal()">
-  <span class="close-modal" onclick="closeModal()">&times;</span>
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <img id="modalImage" src="">
-  </div>
-</div>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, query, orderBy, onSnapshot, updateDoc, doc, deleteDoc, getDocs, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCN7GMpY6dqGzVlMevMZPG76guq3DvQPd8",
-    authDomain: "mytelordersystem.firebaseapp.com",
-    projectId: "mytelordersystem",
-    storageBucket: "mytelordersystem.firebasestorage.app",
-    messagingSenderId: "366519284419",
-    appId: "1:366519284419:web:0044583e2ef8aa7260a876"
-  };
-  
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-
-  // Admin Email (Security Rules နှင့် ကိုက်ညီရန်)
-  const ADMIN_EMAIL = "ath.softwareengineering@gmail.com";
-  
-  let allOrders = [];
-  let unsubscribeOrders = null;
-  let currentUser = null;
-
-  // Login Function
-  window.login = async () => {
-    const email = document.getElementById('loginEmail').value.trim();
-    const pwd = document.getElementById('loginPassword').value;
-    
-    if (!email || !pwd) {
-      document.getElementById('loginError').innerText = "ကျေးဇူးပြု၍ Email နှင့် Password ထည့်ပါ";
-      return;
-    }
-    
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, pwd);
-      const user = userCredential.user;
-      
-      // Admin Email စစ်ဆေးခြင်း (Security Rules နှင့်အညီ)
-      if (user.email !== ADMIN_EMAIL) {
-        await signOut(auth);
-        document.getElementById('loginError').innerHTML = "⛔ သင်သည် Admin မဟုတ်ပါ။ <br> ဤအကန့်ကို Admin မှသာ ဝင်ရောက်နိုင်သည်။";
-        return;
-      }
-      
-      document.getElementById('loginError').innerText = '';
-    } catch (err) {
-      let errorMsg = "Login မအောင်မြင်ပါ။ ";
-      if (err.code === 'auth/invalid-credential') {
-        errorMsg += "Email သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။";
-      } else if (err.code === 'auth/user-not-found') {
-        errorMsg += "ဤအီးမေးလ်ဖြင့် အကောင့်မရှိပါ။";
-      } else {
-        errorMsg += err.message;
-      }
-      document.getElementById('loginError').innerText = errorMsg;
-    }
-  };
-
-  window.logout = async () => {
-    await signOut(auth);
-    location.reload();
-  };
-
-  window.refreshData = () => {
-    if (unsubscribeOrders) {
-      unsubscribeOrders();
-      startListening();
-    }
-  };
-
-  // Expiry Checker
-  async function checkAndUpdateExpiredOrders() {
-    const now = new Date();
-    const q = query(collection(db, "orders"), where("status", "==", "approved"));
-    const snapshot = await getDocs(q);
-    let updatedCount = 0;
-    for (const docSnap of snapshot.docs) {
-      const order = docSnap.data();
-      if (order.endDate && order.endDate.toDate() < now) {
-        await updateDoc(docSnap.ref, { status: "expired" });
-        updatedCount++;
-      }
-    }
-    if (updatedCount > 0) {
-      console.log(`သက်တမ်းကုန်အော်ဒါ ${updatedCount} ခု ပြောင်းလဲပြီးပါပြီ။`);
-    }
-  }
-
-  // Auth State Listener
-  onAuthStateChanged(auth, (user) => {
-    currentUser = user;
-    
-    if (user && user.email === ADMIN_EMAIL) {
-      // Admin မှန်လျှင် Dashboard ပြမည်
-      document.getElementById('loginSection').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      document.getElementById('adminEmailDisplay').innerHTML = `<i class="fas fa-envelope"></i> ${user.email} (Admin)`;
-      startListening();
-      setInterval(checkAndUpdateExpiredOrders, 60 * 60 * 1000);
-      checkAndUpdateExpiredOrders();
-    } else if (user && user.email !== ADMIN_EMAIL) {
-      // Admin မဟုတ်လျှင် Logout လုပ်မည်
-      signOut(auth);
-      document.getElementById('loginSection').style.display = 'block';
-      document.getElementById('dashboard').style.display = 'none';
-      document.getElementById('loginError').innerHTML = "⛔ သင့်တွင် Admin အခွင့်အရေးမရှိပါ။";
-    } else {
-      // Not logged in
-      document.getElementById('loginSection').style.display = 'block';
-      document.getElementById('dashboard').style.display = 'none';
-      if (unsubscribeOrders) unsubscribeOrders();
-    }
-  });
-
-  function startListening() {
-    const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
-    unsubscribeOrders = onSnapshot(q, (snapshot) => {
-      allOrders = [];
-      snapshot.forEach(doc => {
-        allOrders.push({ id: doc.id, ...doc.data() });
-      });
-      updateStats();
-      applyFilters();
-    }, (error) => {
-      console.error("Firestore Error:", error);
-      document.getElementById('ordersList').innerHTML = '<div class="empty-state">Firestore ချိတ်ဆက်မှု အမှားရှိသည်။ Console ကိုစစ်ဆေးပါ။</div>';
-    });
-  }
-
-  function updateStats() {
-    const total = allOrders.length;
-    const pending = allOrders.filter(o => o.status === 'pending_payment').length;
-    const paid = allOrders.filter(o => o.status === 'payment_received').length;
-    const approved = allOrders.filter(o => o.status === 'approved').length;
-    const expired = allOrders.filter(o => o.status === 'expired').length;
-    const rejected = allOrders.filter(o => o.status === 'rejected').length;
-    const revenue = allOrders.filter(o => o.status === 'approved').reduce((sum, o) => sum + (o.price || 0), 0);
-    
-    document.getElementById('statsGrid').innerHTML = `
-      <div class="stat-card"><div class="value">${total}</div><div class="label">စုစုပေါင်း အော်ဒါ</div></div>
-      <div class="stat-card"><div class="value" style="color:#f97316;">${pending}</div><div class="label">⏳ ဆိုင်းငံ့ (Pending)</div></div>
-      <div class="stat-card"><div class="value" style="color:#3b82f6;">${paid}</div><div class="label">💰 ငွေရပြီး (Paid)</div></div>
-      <div class="stat-card"><div class="value" style="color:#22c55e;">${approved}</div><div class="label">✅ အသက်ဝင်ဆဲ (Active)</div></div>
-      <div class="stat-card"><div class="value" style="color:#64748b;">${expired}</div><div class="label">⏰ သက်တမ်းကုန်</div></div>
-      <div class="stat-card"><div class="value" style="color:#ef4444;">${rejected}</div><div class="label">❌ ငြင်းပယ်ထား</div></div>
-      <div class="stat-card"><div class="value">${(revenue / 1000).toFixed(0)}K</div><div class="label">ဝင်ငွေ (ကျပ်)</div></div>
-    `;
-  }
-
-  window.applyFilters = () => {
-    const search = document.getElementById('searchPhone').value.trim().toLowerCase();
-    const statusFilter = document.getElementById('statusFilter').value;
-    let filtered = allOrders.filter(o => {
-      if (search && !o.phone.includes(search)) return false;
-      if (statusFilter !== 'all' && o.status !== statusFilter) return false;
-      return true;
-    });
-    renderOrders(filtered);
-  };
-
-  window.exportToCSV = () => {
-    const headers = ['Order ID', 'Phone', 'Package', 'Price', 'Status', 'User Name', 'User Email', 'Date', 'Note'];
-    const rows = allOrders.map(order => [
-      order.id,
-      order.phone,
-      order.packageName,
-      order.price || 0,
-      order.status,
-      order.userName || 'N/A',
-      order.userEmail || 'N/A',
-      order.createdAt ? order.createdAt.toDate().toLocaleString() : 'N/A',
-      (order.note || '').replace(/,/g, " ")
-    ]);
-    
-    const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `mytel_orders_${new Date().toISOString().slice(0,19)}.csv`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-  };
-
-  function renderOrders(orders) {
-    const container = document.getElementById('ordersList');
-    if (!orders.length) {
-      container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox" style="font-size:2rem; margin-bottom:1rem;"></i><br>အော်ဒါမရှိသေးပါ။</div>';
-      return;
-    }
-    
-    let html = '';
-    orders.forEach(order => {
-      let statusClass = '', statusText = '';
-      switch(order.status) {
-        case 'pending_payment': statusClass = 'status-pending'; statusText = '⏳ ဆိုင်းငံ့နေသည်'; break;
-        case 'payment_received': statusClass = 'status-paid'; statusText = '💰 ငွေရရှိပြီး'; break;
-        case 'approved': statusClass = 'status-approved'; statusText = '✅ အသက်ဝင်နေသည်'; break;
-        case 'rejected': statusClass = 'status-rejected'; statusText = '❌ ငြင်းပယ်ထားသည်'; break;
-        case 'expired': statusClass = 'status-expired'; statusText = '⏰ သက်တမ်းကုန်ဆုံးပြီ'; break;
-        default: statusClass = 'status-pending'; statusText = order.status;
-      }
-      
-      const createdAt = order.createdAt ? order.createdAt.toDate().toLocaleString() : 'N/A';
-      const screenshotSrc = order.screenshotBase64 || order.screenshotURL || null;
-      
-      let expiryInfo = '';
-      let daysLeft = 0;
-      if (order.status === 'approved' && order.endDate) {
-        const end = order.endDate.toDate();
-        const now = new Date();
-        daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
-        expiryInfo = `<div class="expiry-info"><i class="fas fa-hourglass-half"></i> သက်တမ်းကုန်ရန်: ${daysLeft > 0 ? daysLeft : 0} ရက် ကျန်ရှိသည်</div>`;
-      }
-      
-      html += `
-        <div class="order-card">
-          <div class="order-header">
-            <span class="order-id"><i class="fas fa-hashtag"></i> ${order.id.substring(0, 12)}...</span>
-            <span class="status-badge ${statusClass}">${statusText}</span>
-          </div>
-          <div class="detail-row"><strong>📦 Package:</strong> ${order.packageName}</div>
-          <div class="detail-row"><strong>📞 Phone:</strong> <span style="color:#00ccff; font-weight:bold;">${order.phone}</span></div>
-          <div class="detail-row"><strong>💰 Price:</strong> ${order.price?.toLocaleString()} KS</div>
-          <div class="detail-row"><strong>👤 User:</strong> ${order.userName || 'N/A'} (${order.userEmail || 'N/A'})</div>
-          <div class="detail-row"><strong>📅 Date:</strong> ${createdAt}</div>
-          ${order.note ? `<div class="detail-row"><strong>📝 Note:</strong> <span style="color:#facc15;">${order.note}</span></div>` : ''}
-          
-          ${screenshotSrc ? `<div><img src="${screenshotSrc}" class="screenshot-thumb" onclick="showImage('${screenshotSrc.replace(/'/g, "\\'")}')"></div>` : '<div><em style="font-size:0.7rem;">📸 Screenshot မရှိပါ</em></div>'}
-          ${expiryInfo}
-          
-          <div style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.8rem;">
-            ${order.status === 'payment_received' ? `
-              <button class="btn-sm btn-approve" onclick="updateOrderStatus('${order.id}', 'approved')">✅ အတည်ပြုမည် (ရက် ၃၀)</button>
-              <button class="btn-sm btn-reject" onclick="updateOrderStatus('${order.id}', 'rejected')">❌ ငြင်းပယ်မည်</button>
-            ` : ''}
-            ${order.status === 'pending_payment' ? `
-              <button class="btn-sm btn-paid" onclick="updateOrderStatus('${order.id}', 'payment_received')">💰 ငွေရပြီဟု မှတ်သားမည်</button>
-            ` : ''}
-            ${order.status === 'approved' ? `
-              <button class="btn-sm btn-expire" onclick="updateOrderStatus('${order.id}', 'expired')">⏰ သက်တမ်းကုန်အဖြစ် သတ်မှတ်မည်</button>
-            ` : ''}
-            <button class="btn-sm btn-delete" onclick="deleteOrder('${order.id}')">🗑️ ဖျက်ပစ်မည်</button>
-          </div>
+<div id="dashboardContainer" style="display:none;">
+    <div class="container mx-auto p-4">
+        <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+            <h1 class="text-2xl font-bold"><i class="fas fa-crown text-yellow-500"></i> ATH Admin Panel</h1>
+            <div class="flex gap-3">
+                <button onclick="fetchOrders()" class="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-xl transition"><i class="fas fa-sync-alt"></i> Refresh</button>
+                <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-5 py-2 rounded-xl transition"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
         </div>
-      `;
-    });
-    container.innerHTML = html;
-  }
 
-  window.updateOrderStatus = async (orderId, newStatus) => {
-    try {
-      const orderRef = doc(db, "orders", orderId);
-      const updateData = { status: newStatus };
-      
-      if (newStatus === 'approved') {
-        const startDate = new Date();
-        const endDate = new Date();
-        endDate.setDate(endDate.getDate() + 30);
-        updateData.startDate = startDate;
-        updateData.endDate = endDate;
-      }
-      
-      await updateDoc(orderRef, updateData);
-      alert(`✅ အော်ဒါ #${orderId.substring(0,6)} ကို "${newStatus}" သို့ ပြောင်းလဲပြီးပါပြီ။`);
-    } catch (err) {
-      alert("❌ အမှားရှိသည်: " + err.message);
+        <div id="statsBar" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8"></div>
+
+        <div class="bg-slate-800 rounded-xl p-4 mb-6 flex flex-wrap gap-4">
+            <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search by phone or ID" class="flex-1 px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
+            <select id="statusFilter" onchange="applyFilters()" class="px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white">
+                <option value="all">All Status</option>
+                <option value="pending_payment">Pending</option>
+                <option value="payment_received">Paid (To Approve)</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="expired">Expired</option>
+            </select>
+        </div>
+
+        <div id="ordersContainer" class="space-y-4"></div>
+    </div>
+</div>
+
+<div id="imageModal" class="modal" onclick="closeModal()">
+    <div class="relative max-w-3xl p-4">
+        <img id="modalImage" src="" class="max-w-full max-h-[80vh] rounded-xl">
+    </div>
+</div>
+
+<script>
+    let isLoggedIn = false;
+    let adminToken = "";
+    let allOrders = [];
+
+    async function login() {
+        const pwd = document.getElementById('adminPassword').value;
+        try {
+            const response = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: pwd })
+            });
+            if (response.ok) {
+                isLoggedIn = true;
+                adminToken = pwd;
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('dashboardContainer').style.display = 'block';
+                fetchOrders();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+                document.getElementById('loginError').innerText = "Wrong Password!";
+            }
+        } catch { alert("Server connection error"); }
     }
-  };
 
-  window.deleteOrder = async (orderId) => {
-    if (!confirm(`⚠️ ဤအော်ဒါ #${orderId} ကို အပြီးတိုင် ဖျက်လိုပါသလား?\nဤလုပ်ဆောင်ချက်ကို ပြန်ပြင်လို့မရနိုင်ပါ။`)) return;
-    
-    try {
-      await deleteDoc(doc(db, "orders", orderId));
-      alert("🗑️ အော်ဒါအား ဖျက်ပစ်လိုက်ပါပြီ။");
-    } catch (err) {
-      alert("❌ ဖျက်၍မရပါ: " + err.message);
+    function logout() {
+        isLoggedIn = false; adminToken = "";
+        document.getElementById('dashboardContainer').style.display = 'none';
+        document.getElementById('loginContainer').style.display = 'flex';
     }
-  };
 
-  window.showImage = (url) => {
-    const modal = document.getElementById('imageModal');
-    document.getElementById('modalImage').src = url;
-    modal.style.display = 'flex';
-  };
-  
-  window.closeModal = () => {
-    document.getElementById('imageModal').style.display = 'none';
-  };
+    async function fetchOrders() {
+        try {
+            const response = await fetch('/api/admin/orders', { headers: { 'x-admin-auth': adminToken } });
+            const data = await response.json();
+            if (data.success) {
+                allOrders = data.orders;
+                renderStats(data.stats);
+                applyFilters();
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    function renderStats(stats) {
+        if (!stats) return;
+        document.getElementById('statsBar').innerHTML = `
+            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700"><p class="text-slate-400 text-sm">📊 Total Orders</p><h3 class="text-2xl font-bold">${stats.total}</h3></div>
+            <div class="bg-slate-800 p-4 rounded-xl border border-yellow-500/30"><p class="text-slate-400 text-sm">⏳ Pending</p><h3 class="text-2xl font-bold text-yellow-500">${stats.pending}</h3></div>
+            <div class="bg-slate-800 p-4 rounded-xl border border-blue-500/30"><p class="text-slate-400 text-sm">💰 Paid</p><h3 class="text-2xl font-bold text-blue-500">${stats.paid}</h3></div>
+            <div class="bg-slate-800 p-4 rounded-xl border border-green-500/30"><p class="text-slate-400 text-sm">✅ Active</p><h3 class="text-2xl font-bold text-green-500">${stats.approved}</h3></div>
+            <div class="bg-slate-800 p-4 rounded-xl border border-red-500/30"><p class="text-slate-400 text-sm">⏰ Expired</p><h3 class="text-2xl font-bold text-red-500">${stats.expired}</h3></div>
+            <div class="bg-slate-800 p-4 rounded-xl border border-purple-500/30"><p class="text-slate-400 text-sm">💵 Revenue</p><h3 class="text-2xl font-bold text-purple-500">${stats.revenue.toLocaleString()} KS</h3></div>
+        `;
+    }
+
+    function applyFilters() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const status = document.getElementById('statusFilter').value;
+        let filtered = allOrders.filter(o => (o.phone.includes(search) || o.id.toString().includes(search)) && (status === 'all' || o.status === status));
+        renderOrders(filtered);
+    }
+
+    function renderOrders(orders) {
+        const container = document.getElementById('ordersContainer');
+        if (!orders.length) { container.innerHTML = '<div class="text-center text-slate-400 py-10">No orders found</div>'; return; }
+        
+        let html = '';
+        orders.forEach(order => {
+            html += `
+                <div class="order-card bg-slate-800 rounded-xl p-5 border-l-4 border-yellow-500">
+                    <div class="flex justify-between items-start mb-3">
+                        <div><span class="font-mono text-sm bg-slate-700 px-3 py-1 rounded-lg">#${order.id}</span><span class="ml-3 text-lg font-bold">${order.packageName}</span></div>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-slate-700">${order.status}</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-slate-300">
+                        <div>📞 ${order.phone}</div><div>💰 ${order.price.toLocaleString()} KS</div><div>📅 ${order.createdAtMyanmar || order.createdAt}</div>
+                    </div>
+                    ${order.screenshotPath ? `<div class="mt-3"><img src="${order.screenshotPath}" class="w-20 h-20 object-cover rounded-lg cursor-pointer" onclick="showImage('${order.screenshotPath}')"></div>` : ''}
+                    <div class="flex gap-2 mt-4 pt-3 border-t border-slate-700">
+                        ${order.status === 'payment_received' ? `
+                            <button onclick="updateOrderStatus(${order.id}, 'approved')" class="bg-green-600 px-4 py-1.5 rounded-lg text-sm font-bold">Approve</button>
+                            <button onclick="promptReject(${order.id})" class="bg-red-600 px-4 py-1.5 rounded-lg text-sm font-bold">Reject</button>
+                        ` : ''}
+                        <button onclick="deleteOrder(${order.id})" class="bg-red-900 px-4 py-1.5 rounded-lg text-sm font-bold ml-auto">Delete</button>
+                    </div>
+                </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    async function updateOrderStatus(orderId, newStatus, rejectReason = null) {
+        const res = await fetch('/api/admin/update-order', {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-auth': adminToken },
+            body: JSON.stringify({ orderId, status: newStatus, rejectReason })
+        });
+        if ((await res.json()).success) { Swal.fire('Success', 'Order Updated', 'success'); fetchOrders(); }
+    }
+
+    async function promptReject(orderId) {
+        const { value: reason } = await Swal.fire({
+            title: 'Reject Reason', input: 'text', inputLabel: 'ပယ်ဖျက်ရသည့် အကြောင်းရင်းကို ထည့်ပါ',
+            inputPlaceholder: 'ဥပမာ - ငွေလွှဲကုဒ် မှားယွင်းနေပါသည်', showCancelButton: true
+        });
+        if (reason !== undefined) updateOrderStatus(orderId, 'rejected', reason || 'ငွေလွှဲ မှန်ကန်မှုမရှိပါ။');
+    }
+
+    async function deleteOrder(orderId) {
+        if ((await Swal.fire({ title: 'Are you sure?', text: "Delete permanent?", icon: 'warning', showCancelButton: true })).isConfirmed) {
+            const res = await fetch('/api/admin/delete-order', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-auth': adminToken }, body: JSON.stringify({ orderId }) });
+            if ((await res.json()).success) { Swal.fire('Deleted', '', 'success'); fetchOrders(); }
+        }
+    }
+
+    function showImage(url) { document.getElementById('modalImage').src = url; document.getElementById('imageModal').classList.add('show'); }
+    function closeModal() { document.getElementById('imageModal').classList.remove('show'); }
 </script>
 </body>
 </html>
