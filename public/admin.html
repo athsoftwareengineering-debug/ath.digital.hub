@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>ATH DIGITAL HUB | Admin</title>
+  <title>ATH DIGITAL HUB | Admin (Standalone)</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -640,7 +640,7 @@
     <div id="screenshotImageContainer" style="text-align: center; background: #00000020; border-radius: 16px; padding: 0.5rem;">
       <img id="screenshotImg" src="" alt="Screenshot" style="max-width: 100%; max-height: 70vh; border-radius: 12px; display: none;">
       <div id="screenshotErrorMsg" style="color: #ef4444; display: none; padding: 2rem;">
-        <i class="fas fa-exclamation-triangle"></i> Failed to load screenshot. File may be missing or path incorrect.
+        <i class="fas fa-exclamation-triangle"></i> No screenshot available for this order.
       </div>
     </div>
     <div class="modal-buttons" style="margin-top: 1rem;">
@@ -706,6 +706,46 @@
 </div>
 
 <script>
+  // ---------- LOCALSTORAGE BACKEND ----------
+  const STORAGE_KEY = 'mytel_vip_orders';
+  const ADMIN_PWD_KEY = 'admin_password';
+
+  // Default admin password
+  function getStoredPassword() {
+    let pwd = localStorage.getItem(ADMIN_PWD_KEY);
+    if (!pwd) {
+      pwd = 'admin123';
+      localStorage.setItem(ADMIN_PWD_KEY, pwd);
+    }
+    return pwd;
+  }
+
+  function loadOrdersFromStorage() {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return [];
+    try {
+      let orders = JSON.parse(stored);
+      // Ensure each order has necessary fields & compute daysRemaining
+      orders = orders.map(order => {
+        if (order.status === 'approved' && order.endDate) {
+          const remaining = Math.ceil((new Date(order.endDate) - new Date()) / (1000*60*60*24));
+          order.daysRemaining = remaining > 0 ? remaining : 0;
+          if (remaining <= 0) order.status = 'expired';
+        } else {
+          order.daysRemaining = null;
+        }
+        if (!order.screenshotData) order.screenshotData = null;
+        return order;
+      });
+      saveOrdersToStorage(orders);
+      return orders;
+    } catch(e) { return []; }
+  }
+
+  function saveOrdersToStorage(orders) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+  }
+
   let allOrders = [];
   let selectedOrders = new Set();
   let dailyChart, packageChart;
@@ -716,21 +756,8 @@
   let isSidebarCollapsed = false;
   let pendingResetEmail = "";
   let generatedCode = "";
-  
-  function getAuthToken() {
-    return sessionStorage.getItem('adminAuthToken');
-  }
-  
-  function showNotification(msg, type = 'success') {
-    const notif = document.createElement('div');
-    notif.className = 'notification';
-    notif.style.background = type === 'error' ? '#ef4444' : type === 'info' ? '#3b82f6' : '#22c55e';
-    notif.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'info' ? 'info-circle' : 'check-circle'}"></i> ${msg}`;
-    document.body.appendChild(notif);
-    notif.style.display = 'block';
-    setTimeout(() => notif.remove(), 3000);
-  }
-  
+
+  // Helper functions
   function formatEnglishDate(dateString) {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
@@ -740,7 +767,17 @@
       hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
     });
   }
-  
+
+  function showNotification(msg, type = 'success') {
+    const notif = document.createElement('div');
+    notif.className = 'notification';
+    notif.style.background = type === 'error' ? '#ef4444' : type === 'info' ? '#3b82f6' : '#22c55e';
+    notif.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'info' ? 'info-circle' : 'check-circle'}"></i> ${msg}`;
+    document.body.appendChild(notif);
+    notif.style.display = 'block';
+    setTimeout(() => notif.remove(), 3000);
+  }
+
   function copyPhoneNumber(phone, element) {
     navigator.clipboard.writeText(phone).then(() => {
       const originalText = element.innerHTML;
@@ -749,74 +786,18 @@
       showNotification(`📞 ${phone} copied!`, 'success');
     }).catch(() => showNotification('Failed to copy', 'error'));
   }
-  
-  function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    isSidebarCollapsed = !isSidebarCollapsed;
-    if (isSidebarCollapsed) sidebar.classList.add('collapsed');
-    else sidebar.classList.remove('collapsed');
-    localStorage.setItem('sidebarCollapsed', isSidebarCollapsed);
+
+  // ---------- Stats & Charts ----------
+  function computeStats(orders) {
+    const total = orders.length;
+    const pending = orders.filter(o => o.status === 'pending_payment').length;
+    const paid = orders.filter(o => o.status === 'payment_received').length;
+    const approved = orders.filter(o => o.status === 'approved').length;
+    const expired = orders.filter(o => o.status === 'expired').length;
+    const revenue = orders.filter(o => o.status === 'approved').reduce((sum, o) => sum + o.price, 0);
+    return { total, pending, paid, approved, expired, revenue };
   }
-  
-  function openMobileSidebar() {
-    document.getElementById('sidebar').classList.add('mobile-open');
-    document.querySelector('.overlay').classList.add('show');
-  }
-  
-  function closeMobileSidebar() {
-    document.getElementById('sidebar').classList.remove('mobile-open');
-    document.querySelector('.overlay').classList.remove('show');
-  }
-  
-  function loadSidebarState() {
-    const saved = localStorage.getItem('sidebarCollapsed');
-    if (saved === 'true') {
-      isSidebarCollapsed = true;
-      document.getElementById('sidebar').classList.add('collapsed');
-    }
-  }
-  
-  async function login(password) {
-    try {
-      const res = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
-      });
-      const data = await res.json();
-      if (data.success) {
-        sessionStorage.setItem('adminAuthToken', password);
-        sessionStorage.setItem('adminLoggedIn', 'true');
-        return true;
-      }
-      return false;
-    } catch (error) {
-      return false;
-    }
-  }
-  
-  async function loadAllData() {
-    await loadOrders();
-    await loadCharts();
-    checkExpiringSoon();
-  }
-  
-  async function loadOrders() {
-    try {
-      const res = await fetch('/api/admin/orders', {
-        headers: { 'x-admin-auth': getAuthToken() }
-      });
-      const data = await res.json();
-      if (data.success) {
-        allOrders = data.orders;
-        renderStats(data.stats);
-        applyFilters();
-      } else if (data.message === "Unauthorized") {
-        logout();
-      }
-    } catch(err) { console.error(err); }
-  }
-  
+
   function renderStats(stats) {
     document.getElementById('statsGrid').innerHTML = `
       <div class="stat-card"><div class="value">${stats.total}</div><div class="label">Total Orders</div></div>
@@ -827,7 +808,113 @@
       <div class="stat-card"><div class="value">${(stats.revenue/1000).toFixed(0)}K</div><div class="label">Revenue (KS)</div></div>
     `;
   }
-  
+
+  function updateCharts(orders) {
+    // Daily orders (last 7 days)
+    const last7Days = [];
+    const dailyCounts = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      last7Days.push(dateStr);
+      dailyCounts.push(orders.filter(o => o.createdAt && o.createdAt.startsWith(dateStr)).length);
+    }
+    if (dailyChart) dailyChart.destroy();
+    const ctx1 = document.getElementById('dailyChart')?.getContext('2d');
+    if (ctx1) {
+      dailyChart = new Chart(ctx1, {
+        type: 'line',
+        data: { labels: last7Days, datasets: [{ label: 'Orders', data: dailyCounts, borderColor: '#facc15', backgroundColor: '#facc1520', fill: true, tension: 0.4 }] },
+        options: { responsive: true, maintainAspectRatio: true }
+      });
+    }
+    // Revenue by package (approved orders)
+    const packageRevenue = {};
+    orders.forEach(o => { if (o.status === 'approved') packageRevenue[o.packageName] = (packageRevenue[o.packageName] || 0) + o.price; });
+    if (packageChart) packageChart.destroy();
+    const ctx2 = document.getElementById('packageChart')?.getContext('2d');
+    if (ctx2) {
+      packageChart = new Chart(ctx2, {
+        type: 'bar',
+        data: { labels: Object.keys(packageRevenue), datasets: [{ label: 'Revenue (KS)', data: Object.values(packageRevenue), backgroundColor: '#facc15', borderRadius: 8 }] },
+        options: { responsive: true, maintainAspectRatio: true }
+      });
+    }
+  }
+
+  function checkExpiringSoon(orders) {
+    const expiring = orders.filter(o => o.status === 'approved' && o.daysRemaining > 0 && o.daysRemaining <= 5);
+    if (expiring.length > 0) {
+      document.getElementById('expiringAlert').style.display = 'flex';
+      document.getElementById('expiringText').innerHTML = `⚠️ ${expiring.length} order(s) expiring soon! Click to view.`;
+    } else {
+      document.getElementById('expiringAlert').style.display = 'none';
+    }
+  }
+
+  // ---------- Order Management ----------
+  function saveOrderStatusChange(orderId, newStatus, startEndDates = null) {
+    let orders = loadOrdersFromStorage();
+    const index = orders.findIndex(o => o.id == orderId);
+    if (index === -1) return false;
+    orders[index].status = newStatus;
+    if (newStatus === 'approved' && !orders[index].startDate) {
+      const now = new Date();
+      const end = new Date();
+      end.setDate(now.getDate() + 30);
+      orders[index].startDate = now.toISOString();
+      orders[index].endDate = end.toISOString();
+      orders[index].daysRemaining = 30;
+    }
+    if (newStatus === 'rejected' || newStatus === 'expired') {
+      // keep dates but status changed
+    }
+    saveOrdersToStorage(orders);
+    return true;
+  }
+
+  function deleteOrderPermanently(orderId) {
+    let orders = loadOrdersFromStorage();
+    const newOrders = orders.filter(o => o.id != orderId);
+    if (newOrders.length === orders.length) return false;
+    saveOrdersToStorage(newOrders);
+    return true;
+  }
+
+  async function updateOrder(orderId, newStatus, showMsg = true) {
+    const success = saveOrderStatusChange(orderId, newStatus);
+    if (success) {
+      if (showMsg) showNotification(`Order #${orderId} ${newStatus === 'approved' ? 'approved (30 days active)' : 'rejected'}.`, 'success');
+      await refreshData();
+    } else {
+      showNotification(`Failed to update order #${orderId}`, 'error');
+    }
+    return success;
+  }
+
+  async function deleteOrder(orderId, showMsg = true) {
+    if (!confirm(`⚠️ Permanently delete order #${orderId}?`)) return false;
+    const success = deleteOrderPermanently(orderId);
+    if (success) {
+      if (showMsg) showNotification(`Order #${orderId} deleted.`, 'info');
+      await refreshData();
+      return true;
+    } else {
+      showNotification(`Order #${orderId} not found.`, 'error');
+      return false;
+    }
+  }
+
+  async function refreshData() {
+    allOrders = loadOrdersFromStorage();
+    const stats = computeStats(allOrders);
+    renderStats(stats);
+    applyFilters(); // will re-render filtered orders
+    updateCharts(allOrders);
+    checkExpiringSoon(allOrders);
+  }
+
   function applyFilters() {
     const searchPhone = document.getElementById('searchPhone').value.toLowerCase();
     const startDate = document.getElementById('startDate').value;
@@ -842,7 +929,7 @@
     
     renderOrders(filtered);
   }
-  
+
   function renderOrders(orders) {
     const container = document.getElementById('ordersList');
     if (!orders.length) {
@@ -859,6 +946,7 @@
         case 'approved': statusClass = 'status-approved'; statusText = '✅ Active'; break;
         case 'rejected': statusClass = 'status-rejected'; statusText = '❌ Rejected'; break;
         case 'expired': statusClass = 'status-expired'; statusText = '⏰ Expired'; break;
+        default: statusClass = ''; statusText = order.status;
       }
       
       const formattedDate = formatEnglishDate(order.createdAt);
@@ -868,7 +956,7 @@
         <div class="order-card-row">
           <div class="order-grid">
             <div class="order-checkbox-cell">
-              <input type="checkbox" class="order-checkbox" value="${order.id}" ${isChecked ? 'checked' : ''} onchange="toggleOrderSelection(${order.id}, this.checked)">
+              <input type="checkbox" class="order-checkbox" value="${order.id}" ${isChecked ? 'checked' : ''} onchange="toggleOrderSelection('${order.id}', this.checked)">
             </div>
             <div class="order-id" data-label="Order ID">
               <strong>#${order.id}</strong>
@@ -891,14 +979,14 @@
               ${formattedDate}
             </div>
             <div class="order-screenshot" data-label="Screenshot">
-              <button class="action-view" onclick="viewScreenshot(${order.id})"><i class="fas fa-image"></i> View</button>
+              <button class="action-view" onclick="viewScreenshot('${order.id}')"><i class="fas fa-image"></i> View</button>
             </div>
             <div class="order-actions" data-label="Actions">
-              ${order.status === 'payment_received' ? `
-                <button class="action-btn action-approve" onclick="updateOrder(${order.id}, 'approved')"><i class="fas fa-check"></i> Approve</button>
-                <button class="action-btn action-reject" onclick="updateOrder(${order.id}, 'rejected')"><i class="fas fa-times"></i> Reject</button>
+              ${(order.status === 'payment_received' || order.status === 'pending_payment') ? `
+                <button class="action-btn action-approve" onclick="updateOrder('${order.id}', 'approved')"><i class="fas fa-check"></i> Approve</button>
+                <button class="action-btn action-reject" onclick="updateOrder('${order.id}', 'rejected')"><i class="fas fa-times"></i> Reject</button>
               ` : ''}
-              <button class="action-btn action-delete" onclick="deleteOrder(${order.id})"><i class="fas fa-trash-alt"></i> Delete</button>
+              <button class="action-btn action-delete" onclick="deleteOrder('${order.id}')"><i class="fas fa-trash-alt"></i> Delete</button>
             </div>
           </div>
         </div>
@@ -914,7 +1002,7 @@
       selectAll.checked = allCheckboxes.length > 0 && allCheckboxes.length === selectedOrders.size;
     }
   }
-  
+
   function toggleOrderSelection(orderId, isChecked) {
     if (isChecked) {
       selectedOrders.add(orderId);
@@ -929,7 +1017,7 @@
     const checkboxes = document.querySelectorAll('.order-checkbox');
     checkboxes.forEach(cb => {
       cb.checked = selectAll.checked;
-      const id = parseInt(cb.value);
+      const id = cb.value;
       if (selectAll.checked) {
         selectedOrders.add(id);
       } else {
@@ -962,11 +1050,11 @@
     if (!confirm(`Approve ${selectedOrders.size} orders?`)) return;
     let successCount = 0;
     for (let id of selectedOrders) {
-      const success = await updateOrder(id, 'approved', false);
+      const success = saveOrderStatusChange(id, 'approved');
       if (success) successCount++;
     }
-    showNotification(`✅ ${successCount} orders approved!`);
-    await loadOrders();
+    await refreshData();
+    showNotification(`✅ ${successCount} orders approved!`, 'success');
     clearSelection();
   }
   
@@ -974,77 +1062,27 @@
     if (!confirm(`Reject ${selectedOrders.size} orders?`)) return;
     let successCount = 0;
     for (let id of selectedOrders) {
-      const success = await updateOrder(id, 'rejected', false);
+      const success = saveOrderStatusChange(id, 'rejected');
       if (success) successCount++;
     }
-    showNotification(`❌ ${successCount} orders rejected!`);
-    await loadOrders();
+    await refreshData();
+    showNotification(`❌ ${successCount} orders rejected!`, 'info');
     clearSelection();
-  }
-  
-  async function deleteOrder(orderId, showMsg = true) {
-    if (!confirm(`⚠️ Are you sure you want to DELETE order #${orderId}? This action cannot be undone.`)) {
-      return false;
-    }
-    try {
-      const res = await fetch('/api/admin/delete-order', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json', 
-          'x-admin-auth': getAuthToken() 
-        },
-        body: JSON.stringify({ orderId })
-      });
-      const data = await res.json();
-      if (data.success) {
-        if (showMsg) showNotification(`🗑️ Order #${orderId} deleted successfully!`, 'success');
-        await loadOrders();
-        return true;
-      } else {
-        showNotification(data.message || 'Failed to delete order', 'error');
-        return false;
-      }
-    } catch(err) {
-      showNotification('Network error while deleting', 'error');
-      return false;
-    }
   }
   
   async function bulkDelete() {
     if (selectedOrders.size === 0) return;
     if (!confirm(`⚠️ PERMANENTLY DELETE ${selectedOrders.size} order(s)? This cannot be undone.`)) return;
-    let successCount = 0;
-    for (let id of selectedOrders) {
-      const success = await deleteOrder(id, false);
-      if (success) successCount++;
-    }
-    showNotification(`🗑️ ${successCount} order(s) permanently deleted.`, 'info');
-    await loadOrders();
+    let orders = loadOrdersFromStorage();
+    const newOrders = orders.filter(o => !selectedOrders.has(o.id));
+    saveOrdersToStorage(newOrders);
+    await refreshData();
+    showNotification(`🗑️ ${selectedOrders.size} order(s) permanently deleted.`, 'info');
     clearSelection();
   }
-  
-  async function updateOrder(orderId, status, showMsg = true) {
-    try {
-      const res = await fetch('/api/admin/update-order', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json', 
-          'x-admin-auth': getAuthToken() 
-        },
-        body: JSON.stringify({ orderId, status })
-      });
-      const data = await res.json();
-      if (data.success && showMsg) {
-        showNotification(`Order #${orderId} ${status === 'approved' ? 'approved! 30 days started.' : 'rejected.'}`);
-        await loadOrders();
-      }
-      return data.success;
-    } catch(err) { 
-      return false; 
-    }
-  }
-  
-  async function viewScreenshot(orderId) {
+
+  function viewScreenshot(orderId) {
+    const order = allOrders.find(o => o.id == orderId);
     const modal = document.getElementById('screenshotModal');
     const img = document.getElementById('screenshotImg');
     const loading = document.getElementById('screenshotLoading');
@@ -1059,37 +1097,26 @@
     
     modal.style.display = 'flex';
     
-    try {
-      const res = await fetch(`/api/admin/order-screenshot?orderId=${orderId}`, {
-        headers: { 'x-admin-auth': getAuthToken() }
-      });
-      const data = await res.json();
-      
-      if (data.success && data.screenshotUrl) {
-        currentScreenshotUrl = data.screenshotUrl;
+    setTimeout(() => {
+      if (order && order.screenshotData) {
+        currentScreenshotUrl = order.screenshotData;
         img.onload = () => {
           loading.style.display = 'none';
           img.style.display = 'block';
           downloadBtn.disabled = false;
-          showNotification('Screenshot loaded', 'success');
         };
         img.onerror = () => {
           loading.style.display = 'none';
           errorDiv.style.display = 'block';
           downloadBtn.disabled = true;
-          showNotification('Failed to load image', 'error');
         };
-        img.src = data.screenshotUrl + '?t=' + Date.now();
+        img.src = order.screenshotData;
       } else {
         loading.style.display = 'none';
         errorDiv.style.display = 'block';
-        showNotification(data.message || 'No screenshot available', 'error');
+        downloadBtn.disabled = true;
       }
-    } catch (err) {
-      loading.style.display = 'none';
-      errorDiv.style.display = 'block';
-      showNotification('Network error', 'error');
-    }
+    }, 100);
   }
   
   function closeModal() {
@@ -1101,7 +1128,7 @@
     if (currentScreenshotUrl) {
       const a = document.createElement('a');
       a.href = currentScreenshotUrl;
-      a.download = `screenshot_${new Date().getTime()}.jpg`;
+      a.download = `screenshot_${Date.now()}.jpg`;
       a.click();
       showNotification('Downloading screenshot...', 'success');
     } else {
@@ -1135,68 +1162,21 @@
     URL.revokeObjectURL(url);
     showNotification('CSV exported successfully!');
   }
-  
-  async function loadCharts() {
-    const res = await fetch('/api/admin/orders', { headers: { 'x-admin-auth': getAuthToken() } });
-    const data = await res.json();
-    if (data.success) {
-      const orders = data.orders;
-      const last7Days = [];
-      const dailyCounts = [];
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
-        last7Days.push(dateStr);
-        dailyCounts.push(orders.filter(o => o.createdAt && o.createdAt.startsWith(dateStr)).length);
-      }
-      if (dailyChart) dailyChart.destroy();
-      const ctx1 = document.getElementById('dailyChart')?.getContext('2d');
-      if (ctx1) {
-        dailyChart = new Chart(ctx1, {
-          type: 'line',
-          data: { labels: last7Days, datasets: [{ label: 'Orders', data: dailyCounts, borderColor: '#facc15', backgroundColor: '#facc1520', fill: true, tension: 0.4 }] },
-          options: { responsive: true, maintainAspectRatio: true }
-        });
-      }
-      
-      const packageRevenue = {};
-      orders.forEach(o => { if (o.status === 'approved') packageRevenue[o.packageName] = (packageRevenue[o.packageName] || 0) + o.price; });
-      if (packageChart) packageChart.destroy();
-      const ctx2 = document.getElementById('packageChart')?.getContext('2d');
-      if (ctx2) {
-        packageChart = new Chart(ctx2, {
-          type: 'bar',
-          data: { labels: Object.keys(packageRevenue), datasets: [{ label: 'Revenue (KS)', data: Object.values(packageRevenue), backgroundColor: '#facc15', borderRadius: 8 }] },
-          options: { responsive: true, maintainAspectRatio: true }
-        });
-      }
-    }
-  }
-  
-  function checkExpiringSoon() {
-    const expiringOrders = allOrders.filter(o => o.status === 'approved' && o.daysRemaining <= 5 && o.daysRemaining > 0);
-    if (expiringOrders.length > 0) {
-      document.getElementById('expiringAlert').style.display = 'flex';
-      document.getElementById('expiringText').innerHTML = `⚠️ ${expiringOrders.length} order(s) expiring soon! Click to view.`;
-    } else {
-      document.getElementById('expiringAlert').style.display = 'none';
-    }
-  }
-  
+
   function showExpiringPage() {
-    const expiringOrders = allOrders.filter(o => o.status === 'approved' && o.daysRemaining <= 5 && o.daysRemaining > 0);
-    renderOrders(expiringOrders);
+    const expiring = allOrders.filter(o => o.status === 'approved' && o.daysRemaining > 0 && o.daysRemaining <= 5);
+    renderOrders(expiring);
     document.getElementById('pageTitle').innerText = 'Expiring Soon';
     document.getElementById('chartsContainer').style.display = 'none';
-    showNotification(`Found ${expiringOrders.length} orders expiring soon`, 'info');
+    showNotification(`Found ${expiring.length} orders expiring soon`, 'info');
   }
-  
+
+  // ---------- UI & Auto Refresh ----------
   function startAutoRefresh() {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     autoRefreshInterval = setInterval(() => {
       if (isAutoRefreshOn) {
-        loadOrders();
+        refreshData();
         refreshCount++;
         updateRefreshIndicator();
       }
@@ -1242,6 +1222,7 @@
     }
   }
   
+  // ---------- Settings & Password ----------
   function openSettings() {
     document.getElementById('settingsModal').style.display = 'flex';
     document.getElementById('currentPassword').value = '';
@@ -1290,7 +1271,8 @@
       msgDiv.style.display = 'block';
       return;
     }
-    if (currentPwd !== getAuthToken()) {
+    const storedPwd = getStoredPassword();
+    if (currentPwd !== storedPwd) {
       msgDiv.className = 'settings-message error';
       msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Current password is incorrect';
       msgDiv.style.display = 'block';
@@ -1308,7 +1290,7 @@
       msgDiv.style.display = 'block';
       return;
     }
-    sessionStorage.setItem('adminAuthToken', newPwd);
+    localStorage.setItem(ADMIN_PWD_KEY, newPwd);
     msgDiv.className = 'settings-message success';
     msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Password changed successfully!';
     msgDiv.style.display = 'block';
@@ -1329,7 +1311,7 @@
     }
     if (!email.includes('@') || !email.includes('.')) {
       msgDiv.className = 'settings-message error';
-      msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter a valid email address';
+      msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Valid email required';
       msgDiv.style.display = 'block';
       return;
     }
@@ -1377,7 +1359,7 @@
       msgDiv.style.display = 'block';
       return;
     }
-    sessionStorage.setItem('adminAuthToken', newPwd);
+    localStorage.setItem(ADMIN_PWD_KEY, newPwd);
     msgDiv.className = 'settings-message success';
     msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Password reset successfully! Please login with new password.';
     msgDiv.style.display = 'block';
@@ -1395,6 +1377,33 @@
     }, 2000);
   }
   
+  // ---------- Sidebar & Navigation ----------
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    isSidebarCollapsed = !isSidebarCollapsed;
+    if (isSidebarCollapsed) sidebar.classList.add('collapsed');
+    else sidebar.classList.remove('collapsed');
+    localStorage.setItem('sidebarCollapsed', isSidebarCollapsed);
+  }
+  
+  function openMobileSidebar() {
+    document.getElementById('sidebar').classList.add('mobile-open');
+    document.querySelector('.overlay').classList.add('show');
+  }
+  
+  function closeMobileSidebar() {
+    document.getElementById('sidebar').classList.remove('mobile-open');
+    document.querySelector('.overlay').classList.remove('show');
+  }
+  
+  function loadSidebarState() {
+    const saved = localStorage.getItem('sidebarCollapsed');
+    if (saved === 'true') {
+      isSidebarCollapsed = true;
+      document.getElementById('sidebar').classList.add('collapsed');
+    }
+  }
+  
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', () => {
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1403,24 +1412,33 @@
       const chartsContainer = document.getElementById('chartsContainer');
       document.getElementById('pageTitle').innerText = page === 'dashboard' ? 'Dashboard' : page === 'orders' ? 'Orders' : page === 'expiring' ? 'Expiring Soon' : 'Analytics';
       if (page === 'dashboard') {
-        if (chartsContainer) chartsContainer.style.display = 'grid';
-        loadAllData();
+        chartsContainer.style.display = 'grid';
+        refreshData();
       } else if (page === 'expiring') {
-        if (chartsContainer) chartsContainer.style.display = 'none';
+        chartsContainer.style.display = 'none';
         showExpiringPage();
       } else if (page === 'orders') {
-        if (chartsContainer) chartsContainer.style.display = 'none';
+        chartsContainer.style.display = 'none';
         applyFilters();
       } else if (page === 'analytics') {
-        if (chartsContainer) chartsContainer.style.display = 'grid';
-        loadCharts();
+        chartsContainer.style.display = 'grid';
+        updateCharts(allOrders);
       }
       if (window.innerWidth <= 768) closeMobileSidebar();
     });
   });
   
+  // ---------- Login ----------
+  function login(password) {
+    const stored = getStoredPassword();
+    if (password === stored) {
+      sessionStorage.setItem('adminLoggedIn', 'true');
+      return true;
+    }
+    return false;
+  }
+  
   function logout() {
-    sessionStorage.removeItem('adminAuthToken');
     sessionStorage.removeItem('adminLoggedIn');
     location.reload();
   }
@@ -1430,16 +1448,16 @@
     const loginBtn = document.getElementById('loginBtn');
     loginBtn.disabled = true;
     loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-    if (await login(password)) {
+    if (login(password)) {
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('dashboardSection').style.display = 'block';
       loadSidebarState();
       loadTheme();
-      await loadAllData();
+      await refreshData();
       startAutoRefresh();
     } else {
       const err = document.getElementById('loginError');
-      err.innerText = 'Wrong password!';
+      err.innerText = 'Wrong password! (default: admin123)';
       err.style.display = 'block';
       setTimeout(() => err.style.display = 'none', 2000);
     }
@@ -1447,12 +1465,12 @@
     loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Access Dashboard';
   };
   
-  if (sessionStorage.getItem('adminLoggedIn') === 'true' && sessionStorage.getItem('adminAuthToken')) {
+  if (sessionStorage.getItem('adminLoggedIn') === 'true') {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('dashboardSection').style.display = 'block';
     loadSidebarState();
     loadTheme();
-    loadAllData();
+    refreshData();
     startAutoRefresh();
   }
   
@@ -1460,13 +1478,13 @@
     if (window.innerWidth > 768) closeMobileSidebar();
   });
   
+  // Expose functions globally
   window.copyPhoneNumber = copyPhoneNumber;
   window.toggleSidebar = toggleSidebar;
   window.openMobileSidebar = openMobileSidebar;
   window.closeMobileSidebar = closeMobileSidebar;
   window.updateOrder = updateOrder;
   window.deleteOrder = deleteOrder;
-  window.bulkDelete = bulkDelete;
   window.viewScreenshot = viewScreenshot;
   window.closeModal = closeModal;
   window.applyFilters = applyFilters;
@@ -1476,6 +1494,7 @@
   window.clearSelection = clearSelection;
   window.bulkApprove = bulkApprove;
   window.bulkReject = bulkReject;
+  window.bulkDelete = bulkDelete;
   window.showExpiringPage = showExpiringPage;
   window.toggleTheme = toggleTheme;
   window.toggleAutoRefresh = toggleAutoRefresh;
