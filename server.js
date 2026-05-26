@@ -4,13 +4,23 @@ const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
+const morgan = require('morgan');
 
 const database = require('./database');
 
 const app = express();
 
+// ========== SECURITY HEADERS ==========
+app.use(helmet());
+app.disable('x-powered-by');
+
+// ========== LOGGING ==========
+app.use(morgan('combined'));
+
 // ========== TIME ZONE ==========
-// Myanmar Time (UTC+6:30)
 process.env.TZ = 'Asia/Yangon';
 
 function getMyanmarTime12hr() {
@@ -37,6 +47,8 @@ const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
 const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "mytel2024";
 const BASE_URL = process.env.BASE_URL || `http://localhost:${process.env.PORT || 10000}`;
+const ADMIN_PATH = process.env.ADMIN_PATH || '/admin';
+const ALLOWED_ADMIN_IPS = process.env.ALLOWED_ADMIN_IPS ? process.env.ALLOWED_ADMIN_IPS.split(',') : [];
 
 console.log(`\n🔐 ========== SYSTEM STARTUP ==========`);
 console.log(`🔑 Admin Password: ${ADMIN_PASSWORD}`);
@@ -45,12 +57,14 @@ console.log(`📨 BOT_TOKEN: ${BOT_TOKEN ? '✅' : '❌'}`);
 console.log(`👤 ADMIN_CHAT_ID: ${ADMIN_CHAT_ID ? '✅' : '❌'}`);
 console.log(`👥 GROUP_CHAT_ID: ${GROUP_CHAT_ID ? '✅' : '❌'}`);
 console.log(`🌐 BASE_URL: ${BASE_URL}`);
+console.log(`🔒 Admin Path: ${ADMIN_PATH}`);
+console.log(`🛡️ Allowed Admin IPs: ${ALLOWED_ADMIN_IPS.length ? ALLOWED_ADMIN_IPS.join(',') : 'All IPs (not restricted)'}`);
 console.log(`======================================\n`);
 
 // ========== MIDDLEWARE ==========
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '1mb' })); // Reduced from 50mb for security
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // ========== STATIC FILES ==========
 const publicDir = path.join(__dirname, 'public');
@@ -64,6 +78,25 @@ app.use('/temp_uploads', express.static(uploadDir));
 console.log(`📁 Public folder: ${publicDir}`);
 console.log(`📁 Upload folder: ${uploadDir}`);
 
+// ========== RATE LIMITING ==========
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: { success: false, message: "Too many requests, please try again later." }
+});
+
+const strictLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10,
+  message: { success: false, message: "Too many attempts, try again later." }
+});
+
+app.use('/api/admin/login', strictLimiter);
+app.use('/api/admin/', apiLimiter);
+app.use('/order', apiLimiter);
+app.use('/submit-payment', apiLimiter);
+app.use('/api/track-by-phone', apiLimiter);
+
 // ========== PACKAGES ==========
 const PACKAGES = {
   "VIP LEVEL - 1": { price: 15000, desc: "22GB / 8000 Mins / 5000 SMS" },
@@ -72,7 +105,7 @@ const PACKAGES = {
   "VIP LEVEL - 4": { price: 30000, desc: "120GB High-Speed Data" }
 };
 
-// ========== FILE UPLOAD ==========
+// ========== FILE UPLOAD SECURITY ==========
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadDir);
@@ -84,10 +117,17 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only JPEG/PNG images allowed'), false);
+    }
+  }
 });
 
-// ========== HELPER: MASK PHONE NUMBER FOR GROUP (first 4, last 3) ==========
+// ========== HELPER: MASK PHONE NUMBER FOR GROUP ==========
 function maskPhone(phone) {
   if (!phone) return phone;
   const cleaned = phone.replace(/\D/g, '');
@@ -148,7 +188,6 @@ async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
 }
 
 // ========== GROUP MESSAGES (WITH MASKED PHONE) ==========
-// Only these two are sent to group (approve/reject)
 async function sendToGroupOrderApproved(order) {
   if (!GROUP_CHAT_ID) return false;
   const startDate = new Date(order.startDate);
@@ -198,13 +237,22 @@ async function sendToGroupOrderRejected(order, reason = "ငွေလွှဲ �
   return await sendTelegramMessage(GROUP_CHAT_ID, message);
 }
 
-// (Note: No group messages for new order or payment received)
+// ========== IP WHITELIST FOR ADMIN ==========
+function adminIPWhitelist(req, res, next) {
+  if (ALLOWED_ADMIN_IPS.length === 0) return next();
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+  if (ALLOWED_ADMIN_IPS.includes(clientIp)) {
+    next();
+  } else {
+    console.log(`🔒 Blocked admin access from IP: ${clientIp}`);
+    res.status(403).json({ success: false, message: "Access denied" });
+  }
+}
 
 // ========== TELEGRAM WEBHOOK ==========
 app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
   try {
     const update = req.body;
-    
     if (update && update.callback_query) {
       const callbackData = update.callback_query.data;
       const chatId = update.callback_query.message.chat.id;
@@ -212,28 +260,23 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
       if (callbackData.startsWith('approve_')) {
         const orderId = parseInt(callbackData.split('_')[1]);
         const order = await database.getOrderById(orderId);
-        
         if (order && order.status === 'payment_received') {
           const startDate = new Date();
           const endDate = new Date();
           endDate.setDate(endDate.getDate() + 30);
-          
           await database.updateOrderStatus(orderId, 'approved', startDate.toISOString(), endDate.toISOString(), 30);
           await sendTelegramMessage(chatId, `✅ Order #${orderId} approved! 30 days started.`);
-          // Send to GROUP with masked phone
           await sendToGroupOrderApproved(order);
         }
       } else if (callbackData.startsWith('reject_')) {
         const orderId = parseInt(callbackData.split('_')[1]);
         const order = await database.getOrderById(orderId);
-        
         if (order) {
           await database.updateOrderStatus(orderId, 'rejected');
           await sendTelegramMessage(chatId, `❌ Order #${orderId} rejected.`);
           await sendToGroupOrderRejected(order);
         }
       }
-      
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -254,8 +297,8 @@ function isAuthenticated(req, res, next) {
   res.status(401).json({ success: false, message: "Unauthorized" });
 }
 
-// Admin Login
-app.post('/api/admin/login', (req, res) => {
+// Admin Login (with validation)
+app.post('/api/admin/login', strictLimiter, async (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_PASSWORD) {
     res.json({ success: true, message: "Login successful" });
@@ -264,7 +307,9 @@ app.post('/api/admin/login', (req, res) => {
   }
 });
 
-// Get all orders
+// Admin routes (with IP whitelist and auth)
+app.use('/api/admin', adminIPWhitelist);
+
 app.get('/api/admin/orders', isAuthenticated, async (req, res) => {
   try {
     const orders = await database.getAllOrders();
@@ -276,7 +321,6 @@ app.get('/api/admin/orders', isAuthenticated, async (req, res) => {
   }
 });
 
-// Get order screenshot
 app.get('/api/admin/order-screenshot', isAuthenticated, async (req, res) => {
   const orderId = parseInt(req.query.orderId);
   try {
@@ -294,21 +338,17 @@ app.get('/api/admin/order-screenshot', isAuthenticated, async (req, res) => {
   }
 });
 
-// Update order status
 app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
   const { orderId, status, rejectReason } = req.body;
   try {
     const order = await database.getOrderById(parseInt(orderId));
-    
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found" });
     }
-    
     if (status === 'approved' && !order.startDate) {
       const startDate = new Date();
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + 30);
-      
       await database.updateOrderStatus(parseInt(orderId), 'approved', startDate.toISOString(), endDate.toISOString(), 30);
       await sendTelegramMessage(ADMIN_CHAT_ID, `✅ Order #${orderId} approved! 30 days started.`);
       await sendToGroupOrderApproved(order);
@@ -319,7 +359,6 @@ app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
     } else {
       await database.updateOrderStatus(parseInt(orderId), status);
     }
-    
     res.json({ success: true });
   } catch (err) {
     console.error('Update order error:', err);
@@ -327,20 +366,16 @@ app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
   }
 });
 
-// ========== DELETE ORDER ==========
 app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
   const { orderId } = req.body;
-
   if (!orderId || isNaN(parseInt(orderId))) {
     return res.status(400).json({ success: false, message: "Invalid order ID" });
   }
-
   try {
     const order = await database.getOrderById(parseInt(orderId));
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found" });
     }
-
     if (order.screenshotPath) {
       const fullPath = path.join(__dirname, order.screenshotPath);
       if (fs.existsSync(fullPath)) {
@@ -352,12 +387,10 @@ app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
         }
       }
     }
-
     const result = await database.deleteOrder(parseInt(orderId));
     if (!result || result.changes === 0) {
       return res.status(500).json({ success: false, message: "Failed to delete order" });
     }
-
     await sendTelegramMessage(ADMIN_CHAT_ID, `🗑️ Order #${orderId} permanently deleted by admin.`);
     res.json({ success: true, message: `Order #${orderId} deleted` });
   } catch (error) {
@@ -366,20 +399,20 @@ app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
   }
 });
 
-// Create Order (only admin receives, no group)
-app.post('/order', async (req, res) => {
+// Create Order (with validation)
+app.post('/order', [
+  body('packageName').isIn(Object.keys(PACKAGES)),
+  body('phone').matches(/^(09|\+959)[0-9]{7,9}$/),
+  body('note').optional().isString().isLength({ max: 500 })
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, message: errors.array()[0].msg });
+  }
   try {
     const { packageName, phone, note } = req.body;
     const mt = getMyanmarTime12hr();
-    
     const packageData = PACKAGES[packageName];
-    if (!packageData) {
-      return res.status(400).json({ success: false, message: "Invalid package" });
-    }
-    
-    if (!phone || !/^(09|\+959)[0-9]{7,9}$/.test(phone)) {
-      return res.status(400).json({ success: false, message: "Invalid phone number" });
-    }
     
     const newOrder = {
       id: await database.getNextOrderId(),
@@ -392,12 +425,8 @@ app.post('/order', async (req, res) => {
       updatedAt: mt.iso,
       note: note || ''
     };
-    
     await database.createOrder(newOrder);
-    // Admin gets full phone number
     await sendTelegramMessage(ADMIN_CHAT_ID, `🆕 New Order #${newOrder.id}\n📦 ${packageName}\n📞 ${phone}\n💰 ${packageData.price.toLocaleString()} KS`);
-    // No group message for new order
-    
     res.json({ success: true, orderId: newOrder.id });
   } catch (error) {
     console.error('Create order error:', error);
@@ -405,36 +434,27 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// Submit Payment (only admin receives, no group, screenshot kept)
+// Submit Payment (with validation, keep screenshot)
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
   try {
     const orderId = parseInt(req.body.orderId);
     const screenshot = req.file;
     const note = req.body.note || '';
-    
     if (!screenshot) {
       return res.status(400).json({ success: false, message: "Screenshot required" });
     }
-    
     const order = await database.getOrderById(orderId);
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found" });
     }
-    
     tempFilePath = screenshot.path;
     const fileBuffer = fs.readFileSync(tempFilePath);
-    
     const screenshotPath = `/temp_uploads/${screenshot.filename}`;
-    console.log(`📸 Saving screenshot: ${screenshotPath}`);
-    
     await database.updateOrderScreenshot(orderId, screenshotPath);
     await database.updateOrderStatus(orderId, 'payment_received');
-    if (note) {
-      await database.updateOrderNote(orderId, note);
-    }
+    if (note) await database.updateOrderNote(orderId, note);
     
-    // Admin gets full phone number
     const caption = `💰 Payment Received #${orderId}\n📦 ${order.packageName}\n📞 ${order.phone}\n💰 ${order.price.toLocaleString()} KS`;
     const keyboard = {
       inline_keyboard: [[
@@ -443,21 +463,18 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
       ]]
     };
     await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
-    // No group message for payment received
-    
     res.json({ success: true, message: "Payment submitted!" });
   } catch (error) {
     console.error('Submit payment error:', error);
     res.status(500).json({ success: false, message: "Server error" });
   } finally {
-    // Keep screenshot file for admin viewing – do NOT delete
     if (tempFilePath && fs.existsSync(tempFilePath)) {
       console.log(`📁 Keeping screenshot file: ${tempFilePath}`);
     }
   }
 });
 
-// Track by Phone (for customer page)
+// Track by Phone
 app.get('/api/track-by-phone', async (req, res) => {
   const { phone } = req.query;
   if (!phone || !/^(09|\+959)[0-9]{7,9}$/.test(phone)) {
@@ -467,7 +484,7 @@ app.get('/api/track-by-phone', async (req, res) => {
   res.json({ success: true, orders: userOrders, count: userOrders.length });
 });
 
-// Search orders (admin)
+// Admin search
 app.get('/api/admin/search', isAuthenticated, async (req, res) => {
   const { q } = req.query;
   if (!q) {
@@ -478,7 +495,7 @@ app.get('/api/admin/search', isAuthenticated, async (req, res) => {
   res.json({ success: true, orders: results });
 });
 
-// Debug screenshots endpoint
+// Debug screenshots
 app.get('/debug/screenshots', isAuthenticated, async (req, res) => {
   try {
     const files = fs.existsSync(uploadDir) ? fs.readdirSync(uploadDir) : [];
@@ -487,28 +504,19 @@ app.get('/debug/screenshots', isAuthenticated, async (req, res) => {
       url: `${BASE_URL}/temp_uploads/${file}`,
       path: `/temp_uploads/${file}`
     }));
-    
     const orders = await database.getAllOrders();
     const dbScreenshots = orders.filter(o => o.screenshotPath).map(o => ({
       orderId: o.id,
       screenshotPath: o.screenshotPath,
       fullUrl: `${BASE_URL}${o.screenshotPath}`
     }));
-    
-    res.json({ 
-      success: true, 
-      uploadFolder: uploadDir,
-      fileCount: files.length,
-      files: fileList,
-      dbScreenshots: dbScreenshots,
-      baseUrl: BASE_URL
-    });
+    res.json({ success: true, uploadFolder: uploadDir, fileCount: files.length, files: fileList, dbScreenshots: dbScreenshots, baseUrl: BASE_URL });
   } catch (err) {
     res.json({ success: false, error: err.message });
   }
 });
 
-// Test group endpoint
+// Test group
 app.get('/test-group', async (req, res) => {
   if (!GROUP_CHAT_ID) {
     return res.json({ success: false, error: "GROUP_CHAT_ID not set" });
@@ -518,49 +526,41 @@ app.get('/test-group', async (req, res) => {
   res.json({ success: result, groupId: GROUP_CHAT_ID });
 });
 
-// Health check
+// Health
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // ========== SERVE PAGES ==========
-app.get('/admin', (req, res) => {
+app.get(ADMIN_PATH, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
-
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ========== START SERVER ==========
 const PORT = process.env.PORT || 10000;
-
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err.message);
-  console.error(err.stack);
 });
-
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason) => {
   console.error('❌ Unhandled Rejection:', reason);
 });
-
 const server = app.listen(PORT, () => {
   console.log(`\n🚀 Server running on port ${PORT}`);
   console.log(`📱 Customer: ${BASE_URL}/`);
-  console.log(`👑 Admin: ${BASE_URL}/admin`);
+  console.log(`👑 Admin: ${BASE_URL}${ADMIN_PATH}`);
   console.log(`🔑 Admin Password: ${ADMIN_PASSWORD}`);
   console.log(`📸 Screenshot Debug: ${BASE_URL}/debug/screenshots`);
   console.log(`✅ Health Check: ${BASE_URL}/health\n`);
-  
   try {
     database.startExpiryChecker(60);
   } catch (err) {
     console.error('Expiry checker error:', err.message);
   }
 });
-
 server.on('error', (err) => {
   console.error('Server error:', err.message);
 });
-
 module.exports = app;
