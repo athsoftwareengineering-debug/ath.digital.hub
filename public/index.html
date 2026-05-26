@@ -162,7 +162,7 @@
 </div>
 
 <script>
-  // Plans Data
+  // Plans Data (သေချာပေါက် ပြသမည်)
   const plans = [
     { name: "VIP LEVEL - 1", icon: "🏆", features: ["22 GB Data", "8000 On-Net Mins", "5000 SMS"], price: 15000 },
     { name: "VIP LEVEL - 2", icon: "🏆", features: ["40 GB Data", "250 On-Net Mins", "25 Any Net Mins"], price: 20000 },
@@ -173,9 +173,10 @@
   let selectedPlan = null;
   let screenshotFile = null;
 
-  // Render plans
+  // Render plans dynamically
   function renderPlans() {
     const container = document.getElementById('plansContainer');
+    if (!container) return;
     container.innerHTML = '';
     plans.forEach(plan => {
       const card = document.createElement('div');
@@ -196,6 +197,7 @@
 
   function selectPlan(planName) {
     selectedPlan = plans.find(p => p.name === planName);
+    // Highlight selected card
     document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
     document.querySelector(`.plan-card[data-plan="${planName}"]`).classList.add('selected');
     document.getElementById('selectedPlanName').innerHTML = `${selectedPlan.icon} ${selectedPlan.name} — ${selectedPlan.price.toLocaleString()} KS`;
@@ -247,7 +249,7 @@
       createdAt: new Date().toISOString(),
       startDate: new Date().toISOString(),
       endDate: new Date(Date.now() + 30*86400000).toISOString(),
-      screenshotData: URL.createObjectURL(screenshotFile) // note: not persistent across reloads, but works for demo
+      screenshotData: URL.createObjectURL(screenshotFile)
     };
     orders.push(newOrder);
     localStorage.setItem('mytel_orders', JSON.stringify(orders));
@@ -296,6 +298,7 @@
   }
 
   renderPlans();
+  // Expose functions globally
   window.selectPlan = selectPlan;
   window.submitOrder = submitOrder;
   window.cancelOrder = cancelOrder;
