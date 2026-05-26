@@ -344,6 +344,50 @@ app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
   }
 });
 
+// ========== DELETE ORDER (Permanent) – ADDED ==========
+app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
+  const { orderId } = req.body;
+
+  if (!orderId || isNaN(parseInt(orderId))) {
+    return res.status(400).json({ success: false, message: "Invalid order ID" });
+  }
+
+  try {
+    // 1. Get order info (to optionally delete screenshot file)
+    const order = await database.getOrderById(parseInt(orderId));
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    // 2. Delete screenshot file from server (if exists)
+    if (order.screenshotPath) {
+      const fullPath = path.join(__dirname, order.screenshotPath);
+      if (fs.existsSync(fullPath)) {
+        try {
+          fs.unlinkSync(fullPath);
+          console.log(`🗑️ Deleted screenshot: ${fullPath}`);
+        } catch (err) {
+          console.error(`Failed to delete screenshot: ${err.message}`);
+        }
+      }
+    }
+
+    // 3. Delete order from database
+    const result = await database.deleteOrder(parseInt(orderId));
+    if (!result || result.changes === 0) {
+      return res.status(500).json({ success: false, message: "Failed to delete order" });
+    }
+
+    // 4. Notify admin via Telegram (optional)
+    await sendTelegramMessage(ADMIN_CHAT_ID, `🗑️ Order #${orderId} permanently deleted by admin.`);
+
+    res.json({ success: true, message: `Order #${orderId} deleted` });
+  } catch (error) {
+    console.error("Delete order error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // Create Order
 app.post('/order', async (req, res) => {
   try {
