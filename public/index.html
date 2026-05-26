@@ -240,11 +240,14 @@
       cursor: pointer;
       font-size: 0.7rem;
       background: rgba(0,0,0,0.3);
+      transition: all 0.3s;
     }
+    .upload-area:hover { background: rgba(0,200,255,0.1); border-color: #FFD700; }
     .preview-img { max-width: 100%; max-height: 70px; margin-top: 6px; border-radius: 10px; display: none; }
     .button-group { display: flex; gap: 0.8rem; margin-top: 0.8rem; }
     .btn-submit, .btn-cancel { flex: 1; padding: 0.6rem; border-radius: 40px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: none; }
     .btn-submit { background: linear-gradient(95deg, #22c55e, #16a34a); color: white; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-cancel { background: linear-gradient(95deg, #ef4444, #dc2626); color: white; }
     .track-section {
       position: relative;
@@ -406,7 +409,7 @@
   </div>
   <div class="main-title">✨ MYTEL VIP DATA ✨</div>
 
-  <!-- User Bar (Simplified for SQLite - No Google Login) -->
+  <!-- User Bar -->
   <div class="user-bar">
     <div class="user-info">
       <i class="fas fa-user-astronaut"></i> <span>Customer Portal</span>
@@ -439,8 +442,18 @@
     <div class="input-group"><label>📞 ဖုန်းနံပါတ် (09xxxxxxxxx)</label><input type="tel" id="orderPhone" placeholder="ဥပမာ - 09789999368"></div>
     <div class="input-group"><label>📝 မှတ်ချက် (မထည့်လည်းရ)</label><textarea id="orderNote" rows="1" placeholder="အထူးလိုအပ်ချက်များ..."></textarea></div>
     <div class="payment-box"><div class="payment-label">💳 KPay / WavePay</div><div class="account-name">👤 AUNG THU HTWE</div><div class="copy-number" onclick="copyPhoneNumber()">📞 09789999368  <i class="fas fa-copy"></i></div></div>
-    <div class="upload-area" onclick="document.getElementById('screenshotInput').click()"><i class="fas fa-images"></i> 📸 ငွေလွှဲပုံတင်ရန် (Gallery / Camera)<input type="file" id="screenshotInput" accept="image/*" capture style="display:none"><img id="previewImg" class="preview-img" alt="Preview"></div>
-    <div class="button-group"><button class="btn-submit" onclick="submitOrder()">✅ အော်ဒါတင်မည်</button><button class="btn-cancel" onclick="cancelOrder()">❌ ပယ်ဖျက်မည်</button></div>
+    
+    <!-- ✅ ပြင်ဆင်ပြီး - capture attribute ကိုဖယ်ရှားထားသည် -->
+    <div class="upload-area" onclick="document.getElementById('screenshotInput').click()">
+      <i class="fas fa-images"></i> 📸 ငွေလွှဲပုံတင်ရန် (ဓာတ်ပုံဖိုင်ရွေးရန်)
+      <input type="file" id="screenshotInput" accept="image/*" style="display:none">
+      <img id="previewImg" class="preview-img" alt="Preview">
+    </div>
+    
+    <div class="button-group">
+      <button class="btn-submit" onclick="submitOrder()">✅ အော်ဒါတင်မည်</button>
+      <button class="btn-cancel" onclick="cancelOrder()">❌ ပယ်ဖျက်မည်</button>
+    </div>
   </div>
 
   <!-- TRACK SECTION -->
@@ -467,7 +480,7 @@
 </div>
 
 <script>
-  // ========== REALISTIC WEATHER BACKGROUND ==========
+  // ========== WEATHER BACKGROUND (မူလအတိုင်း) ==========
   const canvas = document.getElementById('weather-canvas');
   const ctx = canvas.getContext('2d');
   let width, height;
@@ -477,7 +490,6 @@
   let lightningBolts = [];
   let wind = 0;
   let lastTime = 0;
-
   const API_KEY = '07a9874048fa713d2fdcef25a482e06d';
 
   function resizeCanvas() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
@@ -637,20 +649,24 @@
     showToast("အော်ဒါကို ပယ်ဖျက်လိုက်ပါပြီ");
   };
 
-  // Screenshot handler
+  // Screenshot handler - ပုံဖိုင်ရွေးရန် (Camera မပါ)
   document.getElementById('screenshotInput').addEventListener('change', (e) => {
     const file = e.target.files[0];
-    if (file && file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024) {
-      screenshotFile = file;
-      const reader = new FileReader();
-      reader.onload = (ev) => { 
-        document.getElementById('previewImg').src = ev.target.result; 
-        document.getElementById('previewImg').style.display = 'block'; 
-        showToast("✅ Screenshot တင်ပြီးပါပြီ!"); 
-      };
-      reader.readAsDataURL(file);
-    } else { 
-      showToast("ဓာတ်ပုံသည် 5MB ထက်မကြီးရပါ"); 
+    if (file && file.type.startsWith('image/')) {
+      if (file.size <= 5 * 1024 * 1024) {
+        screenshotFile = file;
+        const reader = new FileReader();
+        reader.onload = (ev) => { 
+          document.getElementById('previewImg').src = ev.target.result; 
+          document.getElementById('previewImg').style.display = 'block'; 
+          showToast("✅ Screenshot တင်ပြီးပါပြီ!"); 
+        };
+        reader.readAsDataURL(file);
+      } else { 
+        showToast("ဓာတ်ပုံသည် 5MB ထက်မကြီးရပါ"); 
+      }
+    } else if (file) {
+      showToast("JPEG သို့မဟုတ် PNG ဖိုင်သာ တင်နိုင်ပါသည်");
     }
   });
 
