@@ -114,8 +114,60 @@
     <div class="form-group"><label><i class="fas fa-image"></i> Payment Screenshot <span style="color:#ef4444;">*</span></label><div class="file-upload-area" onclick="document.getElementById('screenshotInput').click()"><input type="file" id="screenshotInput" accept="image/*" style="display:none"><i class="fas fa-cloud-upload-alt"></i> Click to upload KPay/WavePay screenshot<img id="previewImg" class="preview-img"></div></div>
     <div class="button-group"><button class="btn-submit" id="submitOrderBtn"><i class="fas fa-paper-plane"></i> Submit Order</button><button class="btn-cancel" id="cancelOrderBtn"><i class="fas fa-times"></i> Cancel</button></div>
   </div>
+  
   <h2 class="section-title" style="text-align:center; font-size:1.8rem; margin:2rem 0 1rem;">✨ Choose Your Premium Plan</h2>
-  <div class="plans-container" id="plans-container"></div>
+  
+  <!-- Plan Cards - Direct HTML to ensure they always appear -->
+  <div class="plans-container">
+    <!-- VIP LEVEL - 1 -->
+    <div class="plan-card" data-plan="VIP LEVEL - 1">
+      <div class="plan-icon">🏆</div>
+      <div class="plan-title">VIP LEVEL - 1</div>
+      <ul class="feature-list">
+        <li><i class="fas fa-check-circle"></i> 22 GB Data</li>
+        <li><i class="fas fa-check-circle"></i> 8000 On-Net Mins</li>
+        <li><i class="fas fa-check-circle"></i> 5000 SMS</li>
+      </ul>
+      <div class="price">15,000 <small>KS</small></div>
+      <button class="select-plan-btn" data-plan="VIP LEVEL - 1"><i class="fas fa-shopping-cart"></i> Select Plan</button>
+    </div>
+    <!-- VIP LEVEL - 2 -->
+    <div class="plan-card" data-plan="VIP LEVEL - 2">
+      <div class="plan-icon">🏆</div>
+      <div class="plan-title">VIP LEVEL - 2</div>
+      <ul class="feature-list">
+        <li><i class="fas fa-check-circle"></i> 40 GB Data</li>
+        <li><i class="fas fa-check-circle"></i> 250 On-Net Mins</li>
+        <li><i class="fas fa-check-circle"></i> 25 Any Net Mins</li>
+      </ul>
+      <div class="price">20,000 <small>KS</small></div>
+      <button class="select-plan-btn" data-plan="VIP LEVEL - 2"><i class="fas fa-shopping-cart"></i> Select Plan</button>
+    </div>
+    <!-- VIP LEVEL - 3 -->
+    <div class="plan-card" data-plan="VIP LEVEL - 3">
+      <div class="plan-icon">🏆</div>
+      <div class="plan-title">VIP LEVEL - 3</div>
+      <ul class="feature-list">
+        <li><i class="fas fa-check-circle"></i> 40 GB Data</li>
+        <li><i class="fas fa-check-circle"></i> 1400 On-Net Mins</li>
+        <li><i class="fas fa-check-circle"></i> 8000 SMS</li>
+      </ul>
+      <div class="price">25,000 <small>KS</small></div>
+      <button class="select-plan-btn" data-plan="VIP LEVEL - 3"><i class="fas fa-shopping-cart"></i> Select Plan</button>
+    </div>
+    <!-- VIP LEVEL - 4 -->
+    <div class="plan-card" data-plan="VIP LEVEL - 4">
+      <div class="plan-icon">💎</div>
+      <div class="plan-title">VIP LEVEL - 4</div>
+      <ul class="feature-list">
+        <li><i class="fas fa-check-circle"></i> 120 GB High-Speed Data</li>
+        <li><i class="fas fa-check-circle"></i> Priority Support</li>
+      </ul>
+      <div class="price">30,000 <small>KS</small></div>
+      <button class="select-plan-btn" data-plan="VIP LEVEL - 4"><i class="fas fa-shopping-cart"></i> Select Plan</button>
+    </div>
+  </div>
+  
   <div class="tracking-section"><div class="tracking-title"><i class="fas fa-search"></i><h3>Track Your Orders <span class="auto-refresh-badge"><i class="fas fa-sync-alt"></i> Auto Refresh 30s</span></h3><p style="color:#94a3b8; font-size:0.75rem; margin-top:0.5rem;">Enter your phone number to check all your orders</p></div><div class="tracking-form"><input type="tel" id="trackPhone" placeholder="📞 Enter phone number (09xxxxxxxxx)"><button id="trackBtn" onclick="manualRefresh()"><i class="fas fa-chart-line"></i> Check Status</button></div><div class="refresh-indicator" id="refreshIndicator"><i class="fas fa-sync-alt"></i> Auto refreshing every 30 seconds</div><div id="trackResult" class="track-result"></div></div>
   <div class="footer">
     <div class="brand-footer">
@@ -148,31 +200,22 @@
     { name: "VIP LEVEL - 3", icon: "🏆", features: ["40 GB Data", "1400 On-Net Mins", "8000 SMS"], price: 25000 },
     { name: "VIP LEVEL - 4", icon: "💎", features: ["120 GB High-Speed Data", "Priority Support"], price: 30000 }
   ];
+  
   function isValidPhone(p) { if (!p) return false; return /^(09|\+959)[0-9]{7,9}$/.test(p.replace(/\s/g, '')); }
   function copyToClipboard(t, m) { navigator.clipboard.writeText(t).then(() => showToast(`${m} number copied: ${t}`, "#22c55e")).catch(() => showToast("Failed to copy", "#ef4444")); }
-  function renderPlans() {
-    const container = document.getElementById('plans-container');
-    if (!container) return;
-    container.innerHTML = '';
-    plans.forEach(plan => {
-      const card = document.createElement('div');
-      card.className = 'plan-card';
-      card.innerHTML = `
-        <div class="plan-icon">${plan.icon}</div>
-        <div class="plan-title">${plan.name}</div>
-        <ul class="feature-list">${plan.features.map(f => `<li><i class="fas fa-check-circle"></i> ${f}</li>`).join('')}</ul>
-        <div class="price">${plan.price.toLocaleString()} <small>KS</small></div>
-        <button class="select-plan-btn" data-plan="${plan.name}"><i class="fas fa-shopping-cart"></i> Select Plan</button>
-      `;
-      container.appendChild(card);
-    });
+  
+  // Attach click events to all plan buttons (both static and dynamic)
+  function attachPlanEvents() {
     document.querySelectorAll('.select-plan-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        selectPlan(btn.getAttribute('data-plan'));
-      });
+      btn.removeEventListener('click', planClickHandler);
+      btn.addEventListener('click', planClickHandler);
     });
   }
+  function planClickHandler(e) {
+    e.stopPropagation();
+    selectPlan(e.currentTarget.getAttribute('data-plan'));
+  }
+  
   function selectPlan(pn) {
     selectedPlan = plans.find(p => p.name === pn);
     if (!selectedPlan) return;
@@ -192,6 +235,7 @@
     document.getElementById('orderFormCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
     showToast(`Selected: ${selectedPlan.name}`, "#facc15");
   }
+  
   function cancelOrder() { selectedPlan = null; selectedImageFile = null; createdOrderId = null; document.getElementById('orderFormCard').classList.remove('show'); document.getElementById('selectionAlert').style.display = 'none'; document.getElementById('previewImg').style.display = 'none'; document.getElementById('screenshotInput').value = ''; document.getElementById('orderPhone').value = ''; document.getElementById('orderNote').value = ''; document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected')); showToast("Order cancelled", "#f97316"); }
   async function createOrder() { if (!selectedPlan) { showToast("Select a plan first!", "#f97316"); return null; } const phone = document.getElementById('orderPhone').value.trim(); if (!isValidPhone(phone)) { showToast("Please enter a valid phone number (09xxxxxxxxx)", "#f97316"); return null; } try { showToast("Creating order...", "#3b82f6"); const res = await fetch('/order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ packageName: selectedPlan.name, phone, note: document.getElementById('orderNote').value || '' }) }); const data = await res.json(); if (data.success) { createdOrderId = data.orderId; showToast(`Order #${createdOrderId} created!`, "#22c55e"); return data.orderId; } else { showToast(`Failed: ${data.message}`, "#ef4444"); return null; } } catch (error) { showToast("Network error", "#ef4444"); return null; } }
   async function submitPayment(orderId) { if (!orderId) { showToast("Order ID missing", "#ef4444"); return false; } if (!selectedImageFile) { showToast("Upload screenshot", "#f97316"); return false; } const formData = new FormData(); formData.append('orderId', orderId); formData.append('screenshot', selectedImageFile); formData.append('note', document.getElementById('orderNote').value || ''); try { const res = await fetch('/submit-payment', { method: 'POST', body: formData }); const result = await res.json(); if (result.success) { showToast("✅ အော်ဒါတင်ခြင်းအောင်မြင်ပါသည်။ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ။", "#22c55e"); return true; } else { showToast(`❌ ${result.message}`, "#ef4444"); return false; } } catch (error) { showToast("❌ Network error", "#ef4444"); return false; } }
@@ -202,12 +246,14 @@
   function manualRefresh() { if (currentTrackPhone) fetchOrdersByPhone(); else { const phone = document.getElementById('trackPhone').value.trim(); if (isValidPhone(phone)) fetchOrdersByPhone(); else showToast("Enter valid phone number first", "#f97316"); } }
   function startAutoRefresh() { if (autoRefreshInterval) clearInterval(autoRefreshInterval); autoRefreshInterval = setInterval(() => { if (currentTrackPhone) { fetchOrdersByPhone(); refreshCount++; const ind = document.getElementById('refreshIndicator'); ind.innerHTML = `<i class="fas fa-sync-alt fa-spin"></i> Auto refreshed (${refreshCount})`; setTimeout(() => { ind.innerHTML = `<i class="fas fa-sync-alt"></i> Auto refreshing every 30 seconds (${refreshCount} total)`; }, 2000); } }, 30000); }
   function showToast(msg,bg) { const toast = document.getElementById('toast'); toast.style.background = bg; toast.innerText = msg; toast.style.display = 'block'; setTimeout(()=>toast.style.display='none',3000); }
+  
   document.getElementById('trackPhone').addEventListener('keypress',(e)=>{if(e.key==='Enter')manualRefresh();});
-  // Ensure DOM is fully loaded before rendering plans
+  
+  // Initialize
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => { renderPlans(); startAutoRefresh(); });
+    document.addEventListener('DOMContentLoaded', () => { attachPlanEvents(); startAutoRefresh(); });
   } else {
-    renderPlans(); startAutoRefresh();
+    attachPlanEvents(); startAutoRefresh();
   }
   document.getElementById('submitOrderBtn').onclick = submitOrder;
   document.getElementById('cancelOrderBtn').onclick = cancelOrder;
