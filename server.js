@@ -63,7 +63,7 @@ console.log(`======================================\n`);
 
 // ========== MIDDLEWARE ==========
 app.use(cors());
-app.use(express.json({ limit: '1mb' })); // Reduced from 50mb for security
+app.use(express.json({ limit: '1mb' })); // လုံခြုံရေးအတွက် payload size ကန့်သတ်ခြင်း
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // ========== STATIC FILES ==========
@@ -117,7 +117,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
       cb(null, true);
@@ -237,7 +237,7 @@ async function sendToGroupOrderRejected(order, reason = "ငွေလွှဲ �
   return await sendTelegramMessage(GROUP_CHAT_ID, message);
 }
 
-// ========== IP WHITELIST FOR ADMIN ==========
+// ========== IP WHITELIST FOR ADMIN (Optional) ==========
 function adminIPWhitelist(req, res, next) {
   if (ALLOWED_ADMIN_IPS.length === 0) return next();
   const clientIp = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
@@ -297,8 +297,11 @@ function isAuthenticated(req, res, next) {
   res.status(401).json({ success: false, message: "Unauthorized" });
 }
 
-// Admin Login (with validation)
-app.post('/api/admin/login', strictLimiter, async (req, res) => {
+// Apply IP whitelist to all admin routes
+app.use('/api/admin', adminIPWhitelist);
+
+// Admin Login
+app.post('/api/admin/login', (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_PASSWORD) {
     res.json({ success: true, message: "Login successful" });
@@ -307,9 +310,7 @@ app.post('/api/admin/login', strictLimiter, async (req, res) => {
   }
 });
 
-// Admin routes (with IP whitelist and auth)
-app.use('/api/admin', adminIPWhitelist);
-
+// Get all orders
 app.get('/api/admin/orders', isAuthenticated, async (req, res) => {
   try {
     const orders = await database.getAllOrders();
@@ -321,6 +322,7 @@ app.get('/api/admin/orders', isAuthenticated, async (req, res) => {
   }
 });
 
+// Get order screenshot
 app.get('/api/admin/order-screenshot', isAuthenticated, async (req, res) => {
   const orderId = parseInt(req.query.orderId);
   try {
@@ -338,6 +340,7 @@ app.get('/api/admin/order-screenshot', isAuthenticated, async (req, res) => {
   }
 });
 
+// Update order status (with validation)
 app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
   const { orderId, status, rejectReason } = req.body;
   try {
@@ -366,6 +369,7 @@ app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
   }
 });
 
+// Delete order
 app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
   const { orderId } = req.body;
   if (!orderId || isNaN(parseInt(orderId))) {
@@ -401,9 +405,9 @@ app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
 
 // Create Order (with validation)
 app.post('/order', [
-  body('packageName').isIn(Object.keys(PACKAGES)),
-  body('phone').matches(/^(09|\+959)[0-9]{7,9}$/),
-  body('note').optional().isString().isLength({ max: 500 })
+  body('packageName').isIn(Object.keys(PACKAGES)).withMessage('Invalid package'),
+  body('phone').matches(/^(09|\+959)[0-9]{7,9}$/).withMessage('Invalid phone number'),
+  body('note').optional().isString().isLength({ max: 500 }).withMessage('Note too long')
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -441,6 +445,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
     const orderId = parseInt(req.body.orderId);
     const screenshot = req.file;
     const note = req.body.note || '';
+    
     if (!screenshot) {
       return res.status(400).json({ success: false, message: "Screenshot required" });
     }
@@ -526,7 +531,7 @@ app.get('/test-group', async (req, res) => {
   res.json({ success: result, groupId: GROUP_CHAT_ID });
 });
 
-// Health
+// Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -541,12 +546,15 @@ app.get('/', (req, res) => {
 
 // ========== START SERVER ==========
 const PORT = process.env.PORT || 10000;
+
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err.message);
+  console.error(err.stack);
 });
 process.on('unhandledRejection', (reason) => {
   console.error('❌ Unhandled Rejection:', reason);
 });
+
 const server = app.listen(PORT, () => {
   console.log(`\n🚀 Server running on port ${PORT}`);
   console.log(`📱 Customer: ${BASE_URL}/`);
@@ -563,4 +571,5 @@ const server = app.listen(PORT, () => {
 server.on('error', (err) => {
   console.error('Server error:', err.message);
 });
+
 module.exports = app;
