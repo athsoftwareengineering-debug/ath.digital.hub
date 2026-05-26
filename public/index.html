@@ -117,7 +117,7 @@
   
   <h2 class="section-title" style="text-align:center; font-size:1.8rem; margin:2rem 0 1rem;">✨ Choose Your Premium Plan</h2>
   
-  <!-- Plan Cards - Direct HTML to ensure they always appear -->
+  <!-- ========== PLAN CARDS (STATIC HTML - သေချာပေါ်ရန်) ========== -->
   <div class="plans-container">
     <!-- VIP LEVEL - 1 -->
     <div class="plan-card" data-plan="VIP LEVEL - 1">
@@ -177,6 +177,7 @@
   </div>
 </div>
 <div id="toast" class="toast"></div>
+
 <script type="module">
   import * as THREE from 'three';
   const container = document.getElementById('canvas-container');
@@ -192,7 +193,9 @@
   let time = 0; function animate3D() { requestAnimationFrame(animate3D); time += 0.006; knot.rotation.x += 0.003; knot.rotation.y += 0.005; ring.rotation.x = Math.sin(time * 0.5) * 0.2; ring.rotation.y = time * 0.3; stars.rotation.y += 0.0003; camera.position.x += (0 - camera.position.x) * 0.02; camera.position.y += (1.2 - camera.position.y) * 0.02; camera.lookAt(0, 0, 0); renderer.render(scene, camera); } animate3D();
   window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
 </script>
+
 <script>
+  // Order system JavaScript (ပြင်ဆင်ပြီး)
   let isSubmitting = false, selectedPlan = null, selectedImageFile = null, createdOrderId = null, autoRefreshInterval = null, currentTrackPhone = '', retryCount = 0, refreshCount = 0;
   const plans = [
     { name: "VIP LEVEL - 1", icon: "🏆", features: ["22 GB Data", "8000 On-Net Mins", "5000 SMS"], price: 15000 },
@@ -204,8 +207,8 @@
   function isValidPhone(p) { if (!p) return false; return /^(09|\+959)[0-9]{7,9}$/.test(p.replace(/\s/g, '')); }
   function copyToClipboard(t, m) { navigator.clipboard.writeText(t).then(() => showToast(`${m} number copied: ${t}`, "#22c55e")).catch(() => showToast("Failed to copy", "#ef4444")); }
   
-  // Attach click events to all plan buttons (both static and dynamic)
-  function attachPlanEvents() {
+  // Event binding for static plan cards
+  function bindPlanEvents() {
     document.querySelectorAll('.select-plan-btn').forEach(btn => {
       btn.removeEventListener('click', planClickHandler);
       btn.addEventListener('click', planClickHandler);
@@ -213,16 +216,19 @@
   }
   function planClickHandler(e) {
     e.stopPropagation();
-    selectPlan(e.currentTarget.getAttribute('data-plan'));
+    const planName = e.currentTarget.getAttribute('data-plan');
+    selectPlan(planName);
   }
   
-  function selectPlan(pn) {
-    selectedPlan = plans.find(p => p.name === pn);
+  function selectPlan(planName) {
+    selectedPlan = plans.find(p => p.name === planName);
     if (!selectedPlan) return;
+    // Remove selected class from all plan cards
     document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
-    document.querySelectorAll('.plan-card').forEach(c => {
-      if (c.querySelector('.select-plan-btn')?.getAttribute('data-plan') === pn) c.classList.add('selected');
-    });
+    // Add selected class to the clicked card
+    const parentCard = document.querySelector(`.plan-card[data-plan="${planName}"]`);
+    if (parentCard) parentCard.classList.add('selected');
+    
     document.getElementById('selectedPlanInfo').innerHTML = `<i class="fas fa-gem" style="color:#facc15;"></i> <strong style="color:#facc15;">${selectedPlan.icon} ${selectedPlan.name}</strong><br> 💰 Price: ${selectedPlan.price.toLocaleString()} KS`;
     document.getElementById('orderPhone').value = '';
     document.getElementById('orderNote').value = '';
@@ -249,11 +255,11 @@
   
   document.getElementById('trackPhone').addEventListener('keypress',(e)=>{if(e.key==='Enter')manualRefresh();});
   
-  // Initialize
+  // Initialize everything when DOM ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => { attachPlanEvents(); startAutoRefresh(); });
+    document.addEventListener('DOMContentLoaded', () => { bindPlanEvents(); startAutoRefresh(); });
   } else {
-    attachPlanEvents(); startAutoRefresh();
+    bindPlanEvents(); startAutoRefresh();
   }
   document.getElementById('submitOrderBtn').onclick = submitOrder;
   document.getElementById('cancelOrderBtn').onclick = cancelOrder;
