@@ -86,6 +86,20 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }
 });
 
+// ========== HELPER: MASK PHONE NUMBER FOR GROUP ==========
+function maskPhone(phone) {
+  if (!phone) return phone;
+  // Remove any spaces or non-digit characters
+  const cleaned = phone.replace(/\D/g, '');
+  if (cleaned.length < 7) return phone; // too short, return as is
+  // Show first 4 digits and last 3 digits, mask the rest with *
+  const first4 = cleaned.slice(0, 4);
+  const last3 = cleaned.slice(-3);
+  const middleLength = cleaned.length - 4 - 3;
+  const masked = first4 + '*'.repeat(middleLength) + last3;
+  return masked;
+}
+
 // ========== TELEGRAM FUNCTIONS ==========
 async function sendTelegramMessage(chatId, text, keyboard = null) {
   if (!BOT_TOKEN || !chatId) return false;
@@ -134,8 +148,8 @@ async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   }
 }
 
-// ========== GROUP MESSAGES ==========
-// အတည်ပြုပြီးနောက် GROUP သို့ ပို့ရန်အတွက် ထားရှိမည် (အော်ဒါအသစ်နှင့် ငွေလွှဲပြေစာအတွက် မပို့တော့ပါ)
+// ========== GROUP MESSAGES (WITH MASKED PHONE) ==========
+// Note: These functions are for GROUP only. Admin messages keep full phone number.
 async function sendToGroupOrderApproved(order) {
   if (!GROUP_CHAT_ID) return false;
   const startDate = new Date(order.startDate);
@@ -152,10 +166,12 @@ async function sendToGroupOrderApproved(order) {
     hour: '2-digit', minute: '2-digit', second: '2-digit'
   });
   
+  const maskedPhone = maskPhone(order.phone);
+  
   const message = `✅ <b>အော်ဒါအတည်ပြုပြီးပါပြီ။</b> ✅
 ━━━━━━━━━━━━━━━━━━━━
 🆔 အော်ဒါအမှတ်: <b>#${order.id}</b>
-📞 ဖုန်းနံပါတ်: <code>${order.phone}</code>
+📞 ဖုန်းနံပါတ်: <code>${maskedPhone}</code>
 📦 Package: <b>${order.packageName}</b>
 💰 ပမာဏ: <b>${order.price.toLocaleString()} KS</b>
 📅 စတင်ရက်: ${startDateStr}
@@ -168,10 +184,11 @@ async function sendToGroupOrderApproved(order) {
 
 async function sendToGroupOrderRejected(order, reason = "ငွေလွှဲ မှန်ကန်မှုမရှိပါ။") {
   if (!GROUP_CHAT_ID) return false;
+  const maskedPhone = maskPhone(order.phone);
   const message = `❌ <b>အော်ဒါပယ်ဖျက်ခြင်း</b> ❌
 ━━━━━━━━━━━━━━━━━━━━
 🆔 အော်ဒါအမှတ်: <b>#${order.id}</b>
-📞 ဖုန်းနံပါတ်: <code>${order.phone}</code>
+📞 ဖုန်းနံပါတ်: <code>${maskedPhone}</code>
 📦 Package: <b>${order.packageName}</b>
 💰 ပမာဏ: <b>${order.price.toLocaleString()} KS</b>
 📝 အကြောင်းရင်း: ${reason}
@@ -182,7 +199,7 @@ async function sendToGroupOrderRejected(order, reason = "ငွေလွှဲ �
   return await sendTelegramMessage(GROUP_CHAT_ID, message);
 }
 
-// အောက်ပါ function များကို GROUP သို့ မပို့တော့ပါ (မှတ်ချက်ပြုထားသည်)
+// (Note: sendToGroupNewOrder and sendToGroupPaymentReceived are not used as per previous request, but we keep them commented)
 // async function sendToGroupNewOrder(order) { ... }
 // async function sendToGroupPaymentReceived(order, screenshotBuffer) { ... }
 
@@ -206,7 +223,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           
           await database.updateOrderStatus(orderId, 'approved', startDate.toISOString(), endDate.toISOString(), 30);
           await sendTelegramMessage(chatId, `✅ Order #${orderId} approved! 30 days started.`);
-          // ✅ GROUP သို့ အတည်ပြုကြောင်း ပို့မည်
+          // Send to GROUP with masked phone
           await sendToGroupOrderApproved(order);
         }
       } else if (callbackData.startsWith('reject_')) {
@@ -216,7 +233,6 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         if (order) {
           await database.updateOrderStatus(orderId, 'rejected');
           await sendTelegramMessage(chatId, `❌ Order #${orderId} rejected.`);
-          // ✅ GROUP သို့ ပယ်ဖျက်ကြောင်း ပို့မည်
           await sendToGroupOrderRejected(order);
         }
       }
@@ -298,12 +314,10 @@ app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
       
       await database.updateOrderStatus(parseInt(orderId), 'approved', startDate.toISOString(), endDate.toISOString(), 30);
       await sendTelegramMessage(ADMIN_CHAT_ID, `✅ Order #${orderId} approved! 30 days started.`);
-      // ✅ GROUP သို့ အတည်ပြုကြောင်း ပို့မည်
       await sendToGroupOrderApproved(order);
     } else if (status === 'rejected') {
       await database.updateOrderStatus(parseInt(orderId), 'rejected');
       await sendTelegramMessage(ADMIN_CHAT_ID, `❌ Order #${orderId} rejected.`);
-      // ✅ GROUP သို့ ပယ်ဖျက်ကြောင်း ပို့မည်
       await sendToGroupOrderRejected(order, rejectReason);
     } else {
       await database.updateOrderStatus(parseInt(orderId), status);
@@ -316,7 +330,7 @@ app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
   }
 });
 
-// ========== DELETE ORDER (Permanent) ==========
+// ========== DELETE ORDER ==========
 app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
   const { orderId } = req.body;
 
@@ -383,9 +397,9 @@ app.post('/order', async (req, res) => {
     };
     
     await database.createOrder(newOrder);
-    // 📩 အော်ဒါအသစ် – Admin ထံသာ ပို့မည် (GROUP သို့ မပို့)
+    // Admin gets full phone number
     await sendTelegramMessage(ADMIN_CHAT_ID, `🆕 New Order #${newOrder.id}\n📦 ${packageName}\n📞 ${phone}\n💰 ${packageData.price.toLocaleString()} KS`);
-    // ❌ await sendToGroupNewOrder(newOrder);   // ဖျက်ထားပါသည်
+    // No group message for new order (as requested)
     
     res.json({ success: true, orderId: newOrder.id });
   } catch (error) {
@@ -423,6 +437,7 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
       await database.updateOrderNote(orderId, note);
     }
     
+    // Admin gets full phone number
     const caption = `💰 Payment Received #${orderId}\n📦 ${order.packageName}\n📞 ${order.phone}\n💰 ${order.price.toLocaleString()} KS`;
     const keyboard = {
       inline_keyboard: [[
@@ -430,9 +445,8 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
         { text: "❌ Reject", callback_data: `reject_${orderId}` }
       ]]
     };
-    // 📩 ငွေလွှဲပြေစာ – Admin ထံသာ ပို့မည် (GROUP သို့ မပို့)
     await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
-    // ❌ await sendToGroupPaymentReceived(order, fileBuffer);   // ဖျက်ထားပါသည်
+    // No group message for payment received (as requested)
     
     res.json({ success: true, message: "Payment submitted!" });
   } catch (error) {
@@ -496,7 +510,7 @@ app.get('/debug/screenshots', isAuthenticated, async (req, res) => {
   }
 });
 
-// Test group endpoint (optional)
+// Test group endpoint
 app.get('/test-group', async (req, res) => {
   if (!GROUP_CHAT_ID) {
     return res.json({ success: false, error: "GROUP_CHAT_ID not set" });
