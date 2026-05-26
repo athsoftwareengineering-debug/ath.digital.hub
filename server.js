@@ -135,43 +135,7 @@ async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
 }
 
 // ========== GROUP MESSAGES ==========
-async function sendToGroupNewOrder(order) {
-  if (!GROUP_CHAT_ID) return false;
-  const mt = getMyanmarTime12hr();
-  const message = `🆕 <b>အော်ဒါအသစ်ဝင်ရောက်လာပါသည်။</b> 🆕
-━━━━━━━━━━━━━━━━━━━━
-🆔 အော်ဒါအမှတ်: <b>#${order.id}</b>
-📦 Package: <b>${order.packageName}</b>
-📞 ဖုန်းနံပါတ်: <code>${order.phone}</code>
-💰 ပမာဏ: <b>${order.price.toLocaleString()} KS</b>
-⏰ အချိန်: ${mt.full}
-━━━━━━━━━━━━━━━━━━━━
-⏳ Status: <b>⏳ စောင့်ဆိုင်းဆဲ (စစ်ဆေးနေပါသည်)</b>`;
-  return await sendTelegramMessage(GROUP_CHAT_ID, message);
-}
-
-async function sendToGroupPaymentReceived(order, screenshotBuffer) {
-  if (!GROUP_CHAT_ID) return false;
-  const mt = getMyanmarTime12hr();
-  const caption = `💰 <b>ငွေလွှဲအတည်ပြုချက်တင်ပြီးပါပြီ။</b> 💰
-━━━━━━━━━━━━━━━━━━━━
-🆔 အော်ဒါအမှတ်: <b>#${order.id}</b>
-📦 Package: <b>${order.packageName}</b>
-📞 ဖုန်းနံပါတ်: <code>${order.phone}</code>
-💰 ပမာဏ: <b>${order.price.toLocaleString()} KS</b>
-⏰ အချိန်: ${mt.full}
-━━━━━━━━━━━━━━━━━━━━
-⏳ Status: <b>⏳ စစ်ဆေးနေပါသည်။ ခွင့်ပြုချက်ကို စောင့်ပါ။</b>`;
-  
-  const keyboard = {
-    inline_keyboard: [[
-      { text: "✅ Approve (30 Days)", callback_data: `approve_${order.id}` },
-      { text: "❌ Reject", callback_data: `reject_${order.id}` }
-    ]]
-  };
-  return await sendTelegramPhoto(GROUP_CHAT_ID, screenshotBuffer, caption, keyboard);
-}
-
+// အတည်ပြုပြီးနောက် GROUP သို့ ပို့ရန်အတွက် ထားရှိမည် (အော်ဒါအသစ်နှင့် ငွေလွှဲပြေစာအတွက် မပို့တော့ပါ)
 async function sendToGroupOrderApproved(order) {
   if (!GROUP_CHAT_ID) return false;
   const startDate = new Date(order.startDate);
@@ -218,6 +182,10 @@ async function sendToGroupOrderRejected(order, reason = "ငွေလွှဲ �
   return await sendTelegramMessage(GROUP_CHAT_ID, message);
 }
 
+// အောက်ပါ function များကို GROUP သို့ မပို့တော့ပါ (မှတ်ချက်ပြုထားသည်)
+// async function sendToGroupNewOrder(order) { ... }
+// async function sendToGroupPaymentReceived(order, screenshotBuffer) { ... }
+
 // ========== TELEGRAM WEBHOOK ==========
 app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
   try {
@@ -238,6 +206,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           
           await database.updateOrderStatus(orderId, 'approved', startDate.toISOString(), endDate.toISOString(), 30);
           await sendTelegramMessage(chatId, `✅ Order #${orderId} approved! 30 days started.`);
+          // ✅ GROUP သို့ အတည်ပြုကြောင်း ပို့မည်
           await sendToGroupOrderApproved(order);
         }
       } else if (callbackData.startsWith('reject_')) {
@@ -247,6 +216,7 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
         if (order) {
           await database.updateOrderStatus(orderId, 'rejected');
           await sendTelegramMessage(chatId, `❌ Order #${orderId} rejected.`);
+          // ✅ GROUP သို့ ပယ်ဖျက်ကြောင်း ပို့မည်
           await sendToGroupOrderRejected(order);
         }
       }
@@ -328,10 +298,12 @@ app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
       
       await database.updateOrderStatus(parseInt(orderId), 'approved', startDate.toISOString(), endDate.toISOString(), 30);
       await sendTelegramMessage(ADMIN_CHAT_ID, `✅ Order #${orderId} approved! 30 days started.`);
+      // ✅ GROUP သို့ အတည်ပြုကြောင်း ပို့မည်
       await sendToGroupOrderApproved(order);
     } else if (status === 'rejected') {
       await database.updateOrderStatus(parseInt(orderId), 'rejected');
       await sendTelegramMessage(ADMIN_CHAT_ID, `❌ Order #${orderId} rejected.`);
+      // ✅ GROUP သို့ ပယ်ဖျက်ကြောင်း ပို့မည်
       await sendToGroupOrderRejected(order, rejectReason);
     } else {
       await database.updateOrderStatus(parseInt(orderId), status);
@@ -353,13 +325,11 @@ app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
   }
 
   try {
-    // Get order info to delete screenshot file
     const order = await database.getOrderById(parseInt(orderId));
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found" });
     }
 
-    // Delete screenshot file from server (if exists)
     if (order.screenshotPath) {
       const fullPath = path.join(__dirname, order.screenshotPath);
       if (fs.existsSync(fullPath)) {
@@ -372,15 +342,12 @@ app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
       }
     }
 
-    // Delete order from database
     const result = await database.deleteOrder(parseInt(orderId));
     if (!result || result.changes === 0) {
       return res.status(500).json({ success: false, message: "Failed to delete order" });
     }
 
-    // Notify admin via Telegram (optional)
     await sendTelegramMessage(ADMIN_CHAT_ID, `🗑️ Order #${orderId} permanently deleted by admin.`);
-
     res.json({ success: true, message: `Order #${orderId} deleted` });
   } catch (error) {
     console.error("Delete order error:", error);
@@ -388,7 +355,7 @@ app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
   }
 });
 
-// Create Order
+// Create Order (only admin receives, no group)
 app.post('/order', async (req, res) => {
   try {
     const { packageName, phone, note } = req.body;
@@ -416,8 +383,9 @@ app.post('/order', async (req, res) => {
     };
     
     await database.createOrder(newOrder);
+    // 📩 အော်ဒါအသစ် – Admin ထံသာ ပို့မည် (GROUP သို့ မပို့)
     await sendTelegramMessage(ADMIN_CHAT_ID, `🆕 New Order #${newOrder.id}\n📦 ${packageName}\n📞 ${phone}\n💰 ${packageData.price.toLocaleString()} KS`);
-    await sendToGroupNewOrder(newOrder);
+    // ❌ await sendToGroupNewOrder(newOrder);   // ဖျက်ထားပါသည်
     
     res.json({ success: true, orderId: newOrder.id });
   } catch (error) {
@@ -426,7 +394,7 @@ app.post('/order', async (req, res) => {
   }
 });
 
-// Submit Payment (FIXED: keep screenshot file)
+// Submit Payment (only admin receives, no group)
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
   try {
@@ -462,22 +430,17 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
         { text: "❌ Reject", callback_data: `reject_${orderId}` }
       ]]
     };
+    // 📩 ငွေလွှဲပြေစာ – Admin ထံသာ ပို့မည် (GROUP သို့ မပို့)
     await sendTelegramPhoto(ADMIN_CHAT_ID, fileBuffer, caption, keyboard);
-    await sendToGroupPaymentReceived(order, fileBuffer);
-    
-    // ✅ IMPORTANT FIX: DO NOT delete the screenshot file so admin can view it later
-    // The file will remain in /temp_uploads/ for future reference
+    // ❌ await sendToGroupPaymentReceived(order, fileBuffer);   // ဖျက်ထားပါသည်
     
     res.json({ success: true, message: "Payment submitted!" });
   } catch (error) {
     console.error('Submit payment error:', error);
     res.status(500).json({ success: false, message: "Server error" });
   } finally {
-    // ❌ REMOVED: fs.unlinkSync(tempFilePath) – keep the file for admin viewing
-    // Only delete if you want to clean up later via separate cron job
     if (tempFilePath && fs.existsSync(tempFilePath)) {
       console.log(`📁 Keeping screenshot file: ${tempFilePath}`);
-      // Do nothing – keep file
     }
   }
 });
@@ -533,7 +496,7 @@ app.get('/debug/screenshots', isAuthenticated, async (req, res) => {
   }
 });
 
-// Test group endpoint
+// Test group endpoint (optional)
 app.get('/test-group', async (req, res) => {
   if (!GROUP_CHAT_ID) {
     return res.json({ success: false, error: "GROUP_CHAT_ID not set" });
