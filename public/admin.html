@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>ATH DIGITAL HUB | MYTEL Admin</title>
+  <title>ATH DIGITAL HUB | Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -348,11 +348,11 @@
       background: var(--bg-surface);
       border-radius: 20px;
       padding: 1.5rem;
-      max-width: 500px;
-      width: 90%;
+      max-width: 700px;
+      width: 95%;
       text-align: center;
     }
-    .modal-content img { max-width: 100%; max-height: 400px; border-radius: 12px; margin: 0.8rem 0; }
+    .modal-content img { max-width: 100%; max-height: 70vh; border-radius: 12px; }
     .modal-buttons { display: flex; gap: 0.8rem; justify-content: center; margin-top: 0.8rem; }
     .modal-btn {
       padding: 8px 20px;
@@ -629,14 +629,27 @@
   </div>
 </div>
 
-<!-- Screenshot Modal -->
+<!-- Screenshot Modal - Improved -->
 <div id="screenshotModal" class="modal">
-  <div class="modal-content">
-    <h3><i class="fas fa-image"></i> Payment Screenshot</h3>
-    <img id="screenshotImg" src="" alt="Screenshot">
-    <div class="modal-buttons">
-      <button class="modal-btn modal-btn-download" id="downloadScreenshotBtn"><i class="fas fa-download"></i> Download</button>
-      <button class="modal-btn modal-btn-close" onclick="closeModal()"><i class="fas fa-times"></i> Close</button>
+  <div class="modal-content" style="max-width: 700px; width: 95%; padding: 1rem;">
+    <h3 style="margin-bottom: 0.5rem;"><i class="fas fa-image"></i> Payment Screenshot</h3>
+    <div id="screenshotLoading" style="display: none; text-align: center; padding: 2rem;">
+      <i class="fas fa-spinner fa-pulse fa-2x"></i>
+      <p>Loading image...</p>
+    </div>
+    <div id="screenshotImageContainer" style="text-align: center; background: #00000020; border-radius: 16px; padding: 0.5rem;">
+      <img id="screenshotImg" src="" alt="Screenshot" style="max-width: 100%; max-height: 70vh; border-radius: 12px; display: none;">
+      <div id="screenshotErrorMsg" style="color: #ef4444; display: none; padding: 2rem;">
+        <i class="fas fa-exclamation-triangle"></i> Failed to load screenshot. File may be missing or path incorrect.
+      </div>
+    </div>
+    <div class="modal-buttons" style="margin-top: 1rem;">
+      <button class="modal-btn modal-btn-download" id="downloadScreenshotBtn" disabled>
+        <i class="fas fa-download"></i> Download
+      </button>
+      <button class="modal-btn modal-btn-close" onclick="closeModal()">
+        <i class="fas fa-times"></i> Close
+      </button>
     </div>
   </div>
 </div>
@@ -649,7 +662,6 @@
       <div class="settings-tab active" data-tab="change-password">Change Password</div>
       <div class="settings-tab" data-tab="forgot-password">Forgot Password</div>
     </div>
-    
     <div id="changePasswordPanel" class="settings-panel active">
       <div class="settings-form-group">
         <label>Current Password</label>
@@ -666,7 +678,6 @@
       <button class="settings-btn-submit" onclick="changePassword()">Update Password</button>
       <div id="changePwdMessage" class="settings-message"></div>
     </div>
-    
     <div id="forgotPasswordPanel" class="settings-panel">
       <div class="settings-form-group">
         <label>Email Address</label>
@@ -674,7 +685,6 @@
       </div>
       <button class="settings-btn-submit" onclick="sendVerificationCode()">Send Verification Code</button>
       <div id="forgotMessage" class="settings-message"></div>
-      
       <div id="verifySection" style="display:none; margin-top: 1rem;">
         <div class="settings-form-group">
           <label>Verification Code</label>
@@ -691,7 +701,6 @@
         <button class="settings-btn-submit" onclick="resetPasswordWithCode()">Reset Password</button>
       </div>
     </div>
-    
     <button onclick="closeSettings()" style="width:100%; margin-top:1rem; padding:8px; background:var(--bg-dark); border:1px solid var(--border); border-radius:40px; color:var(--text-primary); cursor:pointer;">Close</button>
   </div>
 </div>
@@ -973,12 +982,10 @@
     clearSelection();
   }
   
-  // ========== DELETE FUNCTIONS ==========
   async function deleteOrder(orderId, showMsg = true) {
     if (!confirm(`⚠️ Are you sure you want to DELETE order #${orderId}? This action cannot be undone.`)) {
       return false;
     }
-    
     try {
       const res = await fetch('/api/admin/delete-order', {
         method: 'POST',
@@ -1006,7 +1013,6 @@
   async function bulkDelete() {
     if (selectedOrders.size === 0) return;
     if (!confirm(`⚠️ PERMANENTLY DELETE ${selectedOrders.size} order(s)? This cannot be undone.`)) return;
-    
     let successCount = 0;
     for (let id of selectedOrders) {
       const success = await deleteOrder(id, false);
@@ -1017,7 +1023,6 @@
     clearSelection();
   }
   
-  // Original updateOrder (kept as is)
   async function updateOrder(orderId, status, showMsg = true) {
     try {
       const res = await fetch('/api/admin/update-order', {
@@ -1039,8 +1044,22 @@
     }
   }
   
+  // Improved viewScreenshot with loading & error handling
   async function viewScreenshot(orderId) {
-    showNotification('Loading screenshot...', 'info');
+    const modal = document.getElementById('screenshotModal');
+    const img = document.getElementById('screenshotImg');
+    const loading = document.getElementById('screenshotLoading');
+    const errorDiv = document.getElementById('screenshotErrorMsg');
+    const downloadBtn = document.getElementById('downloadScreenshotBtn');
+    
+    img.style.display = 'none';
+    errorDiv.style.display = 'none';
+    loading.style.display = 'block';
+    downloadBtn.disabled = true;
+    currentScreenshotUrl = null;
+    
+    modal.style.display = 'flex';
+    
     try {
       const res = await fetch(`/api/admin/order-screenshot?orderId=${orderId}`, {
         headers: { 'x-admin-auth': getAuthToken() }
@@ -1049,17 +1068,28 @@
       
       if (data.success && data.screenshotUrl) {
         currentScreenshotUrl = data.screenshotUrl;
-        const img = document.getElementById('screenshotImg');
-        img.onload = () => showNotification('Screenshot loaded!', 'success');
-        img.onerror = () => showNotification('Failed to load image', 'error');
-        img.src = data.screenshotUrl + '?t=' + new Date().getTime();
-        document.getElementById('screenshotModal').style.display = 'flex';
+        img.onload = () => {
+          loading.style.display = 'none';
+          img.style.display = 'block';
+          downloadBtn.disabled = false;
+          showNotification('Screenshot loaded', 'success');
+        };
+        img.onerror = () => {
+          loading.style.display = 'none';
+          errorDiv.style.display = 'block';
+          downloadBtn.disabled = true;
+          showNotification('Failed to load image', 'error');
+        };
+        img.src = data.screenshotUrl + '?t=' + Date.now();
       } else {
+        loading.style.display = 'none';
+        errorDiv.style.display = 'block';
         showNotification(data.message || 'No screenshot available', 'error');
       }
-    } catch(err) {
-      console.error(err);
-      showNotification('Failed to load screenshot', 'error');
+    } catch (err) {
+      loading.style.display = 'none';
+      errorDiv.style.display = 'block';
+      showNotification('Network error', 'error');
     }
   }
   
@@ -1213,7 +1243,6 @@
     }
   }
   
-  // Settings functions (unchanged)
   function openSettings() {
     document.getElementById('settingsModal').style.display = 'flex';
     document.getElementById('currentPassword').value = '';
@@ -1262,28 +1291,24 @@
       msgDiv.style.display = 'block';
       return;
     }
-    
     if (currentPwd !== getAuthToken()) {
       msgDiv.className = 'settings-message error';
       msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Current password is incorrect';
       msgDiv.style.display = 'block';
       return;
     }
-    
     if (newPwd.length < 6) {
       msgDiv.className = 'settings-message error';
       msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> New password must be at least 6 characters';
       msgDiv.style.display = 'block';
       return;
     }
-    
     if (newPwd !== confirmPwd) {
       msgDiv.className = 'settings-message error';
       msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> New passwords do not match';
       msgDiv.style.display = 'block';
       return;
     }
-    
     sessionStorage.setItem('adminAuthToken', newPwd);
     msgDiv.className = 'settings-message success';
     msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Password changed successfully!';
@@ -1297,24 +1322,20 @@
   function sendVerificationCode() {
     const email = document.getElementById('resetEmail').value.trim();
     const msgDiv = document.getElementById('forgotMessage');
-    
     if (!email) {
       msgDiv.className = 'settings-message error';
       msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter your email address';
       msgDiv.style.display = 'block';
       return;
     }
-    
     if (!email.includes('@') || !email.includes('.')) {
       msgDiv.className = 'settings-message error';
       msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter a valid email address';
       msgDiv.style.display = 'block';
       return;
     }
-    
     generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
     pendingResetEmail = email;
-    
     msgDiv.className = 'settings-message info';
     msgDiv.innerHTML = `<i class="fas fa-envelope"></i> Verification code sent to ${email}<br><small>Demo Code: <strong>${generatedCode}</strong></small>`;
     msgDiv.style.display = 'block';
@@ -1327,56 +1348,47 @@
     const newPwd = document.getElementById('resetNewPassword').value;
     const confirmPwd = document.getElementById('resetConfirmPassword').value;
     const msgDiv = document.getElementById('forgotMessage');
-    
     if (!code) {
       msgDiv.className = 'settings-message error';
       msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter verification code';
       msgDiv.style.display = 'block';
       return;
     }
-    
     if (code !== generatedCode) {
       msgDiv.className = 'settings-message error';
       msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Invalid verification code';
       msgDiv.style.display = 'block';
       return;
     }
-    
     if (!newPwd || !confirmPwd) {
       msgDiv.className = 'settings-message error';
       msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter new password';
       msgDiv.style.display = 'block';
       return;
     }
-    
     if (newPwd.length < 6) {
       msgDiv.className = 'settings-message error';
       msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Password must be at least 6 characters';
       msgDiv.style.display = 'block';
       return;
     }
-    
     if (newPwd !== confirmPwd) {
       msgDiv.className = 'settings-message error';
       msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Passwords do not match';
       msgDiv.style.display = 'block';
       return;
     }
-    
     sessionStorage.setItem('adminAuthToken', newPwd);
     msgDiv.className = 'settings-message success';
     msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Password reset successfully! Please login with new password.';
     msgDiv.style.display = 'block';
-    
     document.getElementById('resetEmail').value = '';
     document.getElementById('verificationCode').value = '';
     document.getElementById('resetNewPassword').value = '';
     document.getElementById('resetConfirmPassword').value = '';
     document.getElementById('verifySection').style.display = 'none';
     generatedCode = "";
-    
     showNotification('✅ Password reset successfully!', 'success');
-    
     setTimeout(() => {
       if (confirm('Password changed! Do you want to login again?')) {
         logout();
@@ -1384,7 +1396,6 @@
     }, 2000);
   }
   
-  // Navigation
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', () => {
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1392,7 +1403,6 @@
       const page = item.getAttribute('data-page');
       const chartsContainer = document.getElementById('chartsContainer');
       document.getElementById('pageTitle').innerText = page === 'dashboard' ? 'Dashboard' : page === 'orders' ? 'Orders' : page === 'expiring' ? 'Expiring Soon' : 'Analytics';
-      
       if (page === 'dashboard') {
         if (chartsContainer) chartsContainer.style.display = 'grid';
         loadAllData();
@@ -1406,7 +1416,6 @@
         if (chartsContainer) chartsContainer.style.display = 'grid';
         loadCharts();
       }
-      
       if (window.innerWidth <= 768) closeMobileSidebar();
     });
   });
@@ -1417,13 +1426,11 @@
     location.reload();
   }
   
-  // Login Handler
   document.getElementById('loginBtn').onclick = async function() {
     const password = document.getElementById('adminPassword').value;
     const loginBtn = document.getElementById('loginBtn');
     loginBtn.disabled = true;
     loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-    
     if (await login(password)) {
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('dashboardSection').style.display = 'block';
@@ -1437,7 +1444,6 @@
       err.style.display = 'block';
       setTimeout(() => err.style.display = 'none', 2000);
     }
-    
     loginBtn.disabled = false;
     loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Access Dashboard';
   };
@@ -1455,7 +1461,6 @@
     if (window.innerWidth > 768) closeMobileSidebar();
   });
   
-  // Expose functions globally
   window.copyPhoneNumber = copyPhoneNumber;
   window.toggleSidebar = toggleSidebar;
   window.openMobileSidebar = openMobileSidebar;
