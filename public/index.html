@@ -142,11 +142,56 @@
 </script>
 <script>
   let isSubmitting = false, selectedPlan = null, selectedImageFile = null, createdOrderId = null, autoRefreshInterval = null, currentTrackPhone = '', retryCount = 0, refreshCount = 0;
-  const plans = [{ name: "VIP LEVEL - 1", icon: "🏆", features: ["22 GB Data", "8000 On-Net Mins", "5000 SMS"], price: 15000 }, { name: "VIP LEVEL - 2", icon: "🏆", features: ["40 GB Data", "250 On-Net Mins", "25 Any Net Mins"], price: 20000 }, { name: "VIP LEVEL - 3", icon: "🏆", features: ["40 GB Data", "1400 On-Net Mins", "8000 SMS"], price: 25000 }, { name: "VIP LEVEL - 4", icon: "💎", features: ["120 GB High-Speed Data", "Priority Support"], price: 30000 }];
+  const plans = [
+    { name: "VIP LEVEL - 1", icon: "🏆", features: ["22 GB Data", "8000 On-Net Mins", "5000 SMS"], price: 15000 },
+    { name: "VIP LEVEL - 2", icon: "🏆", features: ["40 GB Data", "250 On-Net Mins", "25 Any Net Mins"], price: 20000 },
+    { name: "VIP LEVEL - 3", icon: "🏆", features: ["40 GB Data", "1400 On-Net Mins", "8000 SMS"], price: 25000 },
+    { name: "VIP LEVEL - 4", icon: "💎", features: ["120 GB High-Speed Data", "Priority Support"], price: 30000 }
+  ];
   function isValidPhone(p) { if (!p) return false; return /^(09|\+959)[0-9]{7,9}$/.test(p.replace(/\s/g, '')); }
   function copyToClipboard(t, m) { navigator.clipboard.writeText(t).then(() => showToast(`${m} number copied: ${t}`, "#22c55e")).catch(() => showToast("Failed to copy", "#ef4444")); }
-  function renderPlans() { const container = document.getElementById('plans-container'); container.innerHTML = ''; plans.forEach(plan => { const card = document.createElement('div'); card.className = 'plan-card'; card.innerHTML = `<div class="plan-icon">${plan.icon}</div><div class="plan-title">${plan.name}</div><ul class="feature-list">${plan.features.map(f => `<li><i class="fas fa-check-circle"></i> ${f}</li>`).join('')}</ul><div class="price">${plan.price.toLocaleString()} <small>KS</small></div><button class="select-plan-btn" data-plan="${plan.name}"><i class="fas fa-shopping-cart"></i> Select Plan</button>`; container.appendChild(card); }); document.querySelectorAll('.select-plan-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); selectPlan(btn.getAttribute('data-plan')); })); }
-  function selectPlan(pn) { selectedPlan = plans.find(p => p.name === pn); if (!selectedPlan) return; document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected')); document.querySelectorAll('.plan-card').forEach(c => { if (c.querySelector('.select-plan-btn')?.getAttribute('data-plan') === pn) c.classList.add('selected'); }); document.getElementById('selectedPlanInfo').innerHTML = `<i class="fas fa-gem" style="color:#facc15;"></i> <strong style="color:#facc15;">${selectedPlan.icon} ${selectedPlan.name}</strong><br> 💰 Price: ${selectedPlan.price.toLocaleString()} KS`; document.getElementById('orderPhone').value = ''; document.getElementById('orderNote').value = ''; document.getElementById('previewImg').style.display = 'none'; selectedImageFile = null; document.getElementById('screenshotInput').value = ''; createdOrderId = null; document.getElementById('selectionAlert').style.display = 'block'; document.getElementById('orderFormCard').classList.add('show'); document.getElementById('orderFormCard').scrollIntoView({ behavior: 'smooth', block: 'center' }); showToast(`Selected: ${selectedPlan.name}`, "#facc15"); }
+  function renderPlans() {
+    const container = document.getElementById('plans-container');
+    if (!container) { console.error("plans-container not found"); return; }
+    container.innerHTML = '';
+    plans.forEach(plan => {
+      const card = document.createElement('div');
+      card.className = 'plan-card';
+      card.innerHTML = `
+        <div class="plan-icon">${plan.icon}</div>
+        <div class="plan-title">${plan.name}</div>
+        <ul class="feature-list">${plan.features.map(f => `<li><i class="fas fa-check-circle"></i> ${f}</li>`).join('')}</ul>
+        <div class="price">${plan.price.toLocaleString()} <small>KS</small></div>
+        <button class="select-plan-btn" data-plan="${plan.name}"><i class="fas fa-shopping-cart"></i> Select Plan</button>
+      `;
+      container.appendChild(card);
+    });
+    document.querySelectorAll('.select-plan-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectPlan(btn.getAttribute('data-plan'));
+      });
+    });
+  }
+  function selectPlan(pn) {
+    selectedPlan = plans.find(p => p.name === pn);
+    if (!selectedPlan) return;
+    document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.plan-card').forEach(c => {
+      if (c.querySelector('.select-plan-btn')?.getAttribute('data-plan') === pn) c.classList.add('selected');
+    });
+    document.getElementById('selectedPlanInfo').innerHTML = `<i class="fas fa-gem" style="color:#facc15;"></i> <strong style="color:#facc15;">${selectedPlan.icon} ${selectedPlan.name}</strong><br> 💰 Price: ${selectedPlan.price.toLocaleString()} KS`;
+    document.getElementById('orderPhone').value = '';
+    document.getElementById('orderNote').value = '';
+    document.getElementById('previewImg').style.display = 'none';
+    selectedImageFile = null;
+    document.getElementById('screenshotInput').value = '';
+    createdOrderId = null;
+    document.getElementById('selectionAlert').style.display = 'block';
+    document.getElementById('orderFormCard').classList.add('show');
+    document.getElementById('orderFormCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    showToast(`Selected: ${selectedPlan.name}`, "#facc15");
+  }
   function cancelOrder() { selectedPlan = null; selectedImageFile = null; createdOrderId = null; document.getElementById('orderFormCard').classList.remove('show'); document.getElementById('selectionAlert').style.display = 'none'; document.getElementById('previewImg').style.display = 'none'; document.getElementById('screenshotInput').value = ''; document.getElementById('orderPhone').value = ''; document.getElementById('orderNote').value = ''; document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected')); showToast("Order cancelled", "#f97316"); }
   async function createOrder() { if (!selectedPlan) { showToast("Select a plan first!", "#f97316"); return null; } const phone = document.getElementById('orderPhone').value.trim(); if (!isValidPhone(phone)) { showToast("Please enter a valid phone number (09xxxxxxxxx)", "#f97316"); return null; } try { showToast("Creating order...", "#3b82f6"); const res = await fetch('/order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ packageName: selectedPlan.name, phone, note: document.getElementById('orderNote').value || '' }) }); const data = await res.json(); if (data.success) { createdOrderId = data.orderId; showToast(`Order #${createdOrderId} created!`, "#22c55e"); return data.orderId; } else { showToast(`Failed: ${data.message}`, "#ef4444"); return null; } } catch (error) { showToast("Network error", "#ef4444"); return null; } }
   async function submitPayment(orderId) { if (!orderId) { showToast("Order ID missing", "#ef4444"); return false; } if (!selectedImageFile) { showToast("Upload screenshot", "#f97316"); return false; } const formData = new FormData(); formData.append('orderId', orderId); formData.append('screenshot', selectedImageFile); formData.append('note', document.getElementById('orderNote').value || ''); try { const res = await fetch('/submit-payment', { method: 'POST', body: formData }); const result = await res.json(); if (result.success) { showToast("✅ အော်ဒါတင်ခြင်းအောင်မြင်ပါသည်။ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ။", "#22c55e"); return true; } else { showToast(`❌ ${result.message}`, "#ef4444"); return false; } } catch (error) { showToast("❌ Network error", "#ef4444"); return false; } }
@@ -158,8 +203,17 @@
   function startAutoRefresh() { if (autoRefreshInterval) clearInterval(autoRefreshInterval); autoRefreshInterval = setInterval(() => { if (currentTrackPhone) { fetchOrdersByPhone(); refreshCount++; const ind = document.getElementById('refreshIndicator'); ind.innerHTML = `<i class="fas fa-sync-alt fa-spin"></i> Auto refreshed (${refreshCount})`; setTimeout(() => { ind.innerHTML = `<i class="fas fa-sync-alt"></i> Auto refreshing every 30 seconds (${refreshCount} total)`; }, 2000); } }, 30000); }
   function showToast(msg,bg) { const toast = document.getElementById('toast'); toast.style.background = bg; toast.innerText = msg; toast.style.display = 'block'; setTimeout(()=>toast.style.display='none',3000); }
   document.getElementById('trackPhone').addEventListener('keypress',(e)=>{if(e.key==='Enter')manualRefresh();});
-  renderPlans(); startAutoRefresh(); document.getElementById('submitOrderBtn').onclick = submitOrder; document.getElementById('cancelOrderBtn').onclick = cancelOrder;
-  window.copyToClipboard = copyToClipboard; window.manualRefresh = manualRefresh; window.fetchOrdersByPhone = fetchOrdersByPhone;
+  // Ensure DOM is fully loaded before rendering plans
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { renderPlans(); startAutoRefresh(); });
+  } else {
+    renderPlans(); startAutoRefresh();
+  }
+  document.getElementById('submitOrderBtn').onclick = submitOrder;
+  document.getElementById('cancelOrderBtn').onclick = cancelOrder;
+  window.copyToClipboard = copyToClipboard;
+  window.manualRefresh = manualRefresh;
+  window.fetchOrdersByPhone = fetchOrdersByPhone;
 </script>
 </body>
 </html>
