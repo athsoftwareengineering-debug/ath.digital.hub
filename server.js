@@ -14,7 +14,10 @@ const database = require('./database');
 const app = express();
 
 // ========== SECURITY HEADERS ==========
-app.use(helmet());
+// Helmet ၏ default CSP ကို ပိတ်ထားပါသည် (HTML ထဲရှိ ကိုယ်ပိုင် Meta CSP ကို သုံးနိုင်ရန်)
+app.use(helmet({
+  contentSecurityPolicy: false,
+}));
 app.disable('x-powered-by');
 
 // ========== LOGGING ==========
@@ -47,7 +50,7 @@ const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
 const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "mytel2024";
 const BASE_URL = process.env.BASE_URL || `http://localhost:${process.env.PORT || 10000}`;
-const ADMIN_PATH = process.env.ADMIN_PATH || '/admin';  // မူလအတိုင်း /admin ဖြစ်စေရန်
+const ADMIN_PATH = process.env.ADMIN_PATH || '/admin';
 const ALLOWED_ADMIN_IPS = process.env.ALLOWED_ADMIN_IPS ? process.env.ALLOWED_ADMIN_IPS.split(',') : [];
 
 console.log(`\n🔐 ========== SYSTEM STARTUP ==========`);
@@ -74,9 +77,6 @@ app.use(express.static(publicDir));
 const uploadDir = path.join(__dirname, 'temp_uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 app.use('/temp_uploads', express.static(uploadDir));
-
-console.log(`📁 Public folder: ${publicDir}`);
-console.log(`📁 Upload folder: ${uploadDir}`);
 
 // ========== RATE LIMITING ==========
 const apiLimiter = rateLimit({
@@ -167,17 +167,19 @@ async function sendTelegramMessage(chatId, text, keyboard = null) {
 async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   if (!BOT_TOKEN || !chatId) return false;
   try {
+    const FormData = require('form-data');
     const formData = new FormData();
-    const blob = new Blob([buffer], { type: 'image/jpeg' });
     formData.append('chat_id', chatId);
-    formData.append('photo', blob, 'screenshot.jpg');
+    formData.append('photo', buffer, { filename: 'screenshot.jpg' });
     formData.append('caption', caption);
     formData.append('parse_mode', 'HTML');
     if (keyboard) formData.append('reply_markup', JSON.stringify(keyboard));
     
+    // ပြင်ဆင်ချက်- formData.getHeaders() ကို ထည့်သွင်းပေးလိုက်သဖြင့် ပုံမှန်အလုပ်လုပ်သွားပါမည်
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
       method: 'POST',
-      body: formData
+      body: formData,
+      headers: formData.getHeaders() 
     });
     const result = await response.json();
     return result.ok;
@@ -187,7 +189,7 @@ async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   }
 }
 
-// ========== GROUP MESSAGES (WITH MASKED PHONE) ==========
+// ========== GROUP MESSAGES ==========
 async function sendToGroupOrderApproved(order) {
   if (!GROUP_CHAT_ID) return false;
   const startDate = new Date(order.startDate);
@@ -237,7 +239,7 @@ async function sendToGroupOrderRejected(order, reason = "ငွေလွှဲ �
   return await sendTelegramMessage(GROUP_CHAT_ID, message);
 }
 
-// ========== IP WHITELIST FOR ADMIN (Optional) ==========
+// ========== IP WHITELIST FOR ADMIN ==========
 function adminIPWhitelist(req, res, next) {
   if (ALLOWED_ADMIN_IPS.length === 0) return next();
   const clientIp = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
@@ -264,7 +266,17 @@ app.post(`/webhook/${BOT_TOKEN}`, async (req, res) => {
           const startDate = new Date();
           const endDate = new Date();
           endDate.setDate(endDate.getDate() + 30);
-          await database.updateOrderStatus(orderId, 'approved', startDate.toISOString(), endDate.toISOString(), 30);
+          
+          const startDateISO = startDate.toISOString();
+          const endDateISO = endDate.toISOString();
+          
+          await database.updateOrderStatus(orderId, 'approved', startDateISO, endDateISO, 30);
+          
+          // ပြင်ဆင်ချက်- Group Notification ထဲတွင် ရက်စွဲများ မှန်ကန်စေရန် Object ကို Update လုပ်ပေးခြင်း
+          order.status = 'approved';
+          order.startDate = startDateISO;
+          order.endDate = endDateISO;
+          
           await sendTelegramMessage(chatId, `✅ Order #${orderId} approved! 30 days started.`);
           await sendToGroupOrderApproved(order);
         }
@@ -351,7 +363,16 @@ app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
       const startDate = new Date();
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + 30);
-      await database.updateOrderStatus(parseInt(orderId), 'approved', startDate.toISOString(), endDate.toISOString(), 30);
+      
+      const startDateISO = startDate.toISOString();
+      const endDateISO = endDate.toISOString();
+      
+      await database.updateOrderStatus(parseInt(orderId), 'approved', startDateISO, endDateISO, 30);
+      
+      order.status = 'approved';
+      order.startDate = startDateISO;
+      order.endDate = endDateISO;
+      
       await sendTelegramMessage(ADMIN_CHAT_ID, `✅ Order #${orderId} approved! 30 days started.`);
       await sendToGroupOrderApproved(order);
     } else if (status === 'rejected') {
@@ -470,21 +491,21 @@ app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   } catch (error) {
     console.error('Submit payment error:', error);
     res.status(500).json({ success: false, message: "Server error" });
-  } finally {
-    if (tempFilePath && fs.existsSync(tempFilePath)) {
-      console.log(`📁 Keeping screenshot file: ${tempFilePath}`);
-    }
   }
 });
 
 // Track by Phone
 app.get('/api/track-by-phone', async (req, res) => {
-  const { phone } = req.query;
-  if (!phone || !/^(09|\+959)[0-9]{7,9}$/.test(phone)) {
-    return res.status(400).json({ success: false, message: "Valid phone number required" });
+  try {
+    const { phone } = req.query;
+    if (!phone || !/^(09|\+959)[0-9]{7,9}$/.test(phone)) {
+      return res.status(400).json({ success: false, message: "Valid phone number required" });
+    }
+    const userOrders = await database.getOrdersByPhone(phone);
+    res.json({ success: true, orders: userOrders, count: userOrders.length });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
-  const userOrders = await database.getOrdersByPhone(phone);
-  res.json({ success: true, orders: userOrders, count: userOrders.length });
 });
 
 // Admin search
@@ -534,7 +555,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ========== SERVE PAGES (မူလ frontend မပျက်) ==========
+// ========== SERVE PAGES ==========
 app.get(ADMIN_PATH, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
@@ -547,7 +568,6 @@ const PORT = process.env.PORT || 10000;
 
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err.message);
-  console.error(err.stack);
 });
 process.on('unhandledRejection', (reason) => {
   console.error('❌ Unhandled Rejection:', reason);
@@ -565,9 +585,6 @@ const server = app.listen(PORT, () => {
   } catch (err) {
     console.error('Expiry checker error:', err.message);
   }
-});
-server.on('error', (err) => {
-  console.error('Server error:', err.message);
 });
 
 module.exports = app;
