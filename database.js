@@ -2,13 +2,11 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 
-// Ensure data directory exists
 const dataDir = path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
 const db = new sqlite3.Database(path.join(dataDir, 'orders.db'));
 
-// Create tables (using serialize for async operations)
 db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS orders (
@@ -37,11 +35,9 @@ db.serialize(() => {
     )
   `);
 
-  // Initialize order counter
   db.run(`INSERT OR IGNORE INTO settings (key, value) VALUES ('lastOrderId', '0')`);
 });
 
-// Promisify for async/await
 function getAsync(sql, params = []) {
   return new Promise((resolve, reject) => {
     db.get(sql, params, (err, result) => {
@@ -99,15 +95,12 @@ async function createOrder(order) {
 async function updateOrderStatus(id, status, startDate = null, endDate = null, daysRemaining = null) {
   let query = `UPDATE orders SET status = ?, updatedAt = ?`;
   const params = [status, new Date().toISOString()];
-  
   if (startDate) {
     query += `, startDate = ?, endDate = ?, daysRemaining = ?`;
     params.push(startDate, endDate, daysRemaining);
   }
-  
   query += ` WHERE id = ?`;
   params.push(id);
-  
   return await runAsync(query, params);
 }
 
@@ -156,7 +149,6 @@ async function getStats() {
       SUM(CASE WHEN status = 'approved' THEN price ELSE 0 END) as revenue
     FROM orders
   `);
-  
   return {
     total: stats?.total || 0,
     pending: stats?.pending || 0,
@@ -170,7 +162,6 @@ async function getStats() {
 
 function startExpiryChecker(intervalMinutes = 60) {
   let isRunning = false;
-  
   const check = async () => {
     if (isRunning) return;
     isRunning = true;
@@ -185,14 +176,8 @@ function startExpiryChecker(intervalMinutes = 60) {
       isRunning = false;
     }
   };
-  
-  // Run immediately on start
   check();
-  
-  // Then run on interval
   const interval = setInterval(check, intervalMinutes * 60 * 1000);
-  
-  // Return function to stop checker
   return () => clearInterval(interval);
 }
 
