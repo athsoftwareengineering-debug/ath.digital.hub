@@ -47,7 +47,7 @@ const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
 const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "mytel2024";
 const BASE_URL = process.env.BASE_URL || `http://localhost:${process.env.PORT || 10000}`;
-const ADMIN_PATH = process.env.ADMIN_PATH || '/admin';
+const ADMIN_PATH = process.env.ADMIN_PATH || '/admin';  // မူလအတိုင်း /admin ဖြစ်စေရန်
 const ALLOWED_ADMIN_IPS = process.env.ALLOWED_ADMIN_IPS ? process.env.ALLOWED_ADMIN_IPS.split(',') : [];
 
 console.log(`\n🔐 ========== SYSTEM STARTUP ==========`);
@@ -63,7 +63,7 @@ console.log(`======================================\n`);
 
 // ========== MIDDLEWARE ==========
 app.use(cors());
-app.use(express.json({ limit: '1mb' })); // လုံခြုံရေးအတွက် payload size ကန့်သတ်ခြင်း
+app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // ========== STATIC FILES ==========
@@ -80,13 +80,13 @@ console.log(`📁 Upload folder: ${uploadDir}`);
 
 // ========== RATE LIMITING ==========
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: { success: false, message: "Too many requests, please try again later." }
 });
 
 const strictLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
+  windowMs: 60 * 60 * 1000,
   max: 10,
   message: { success: false, message: "Too many attempts, try again later." }
 });
@@ -117,7 +117,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
       cb(null, true);
@@ -297,7 +297,6 @@ function isAuthenticated(req, res, next) {
   res.status(401).json({ success: false, message: "Unauthorized" });
 }
 
-// Apply IP whitelist to all admin routes
 app.use('/api/admin', adminIPWhitelist);
 
 // Admin Login
@@ -340,7 +339,7 @@ app.get('/api/admin/order-screenshot', isAuthenticated, async (req, res) => {
   }
 });
 
-// Update order status (with validation)
+// Update order status
 app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
   const { orderId, status, rejectReason } = req.body;
   try {
@@ -403,7 +402,7 @@ app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
   }
 });
 
-// Create Order (with validation)
+// Create Order
 app.post('/order', [
   body('packageName').isIn(Object.keys(PACKAGES)).withMessage('Invalid package'),
   body('phone').matches(/^(09|\+959)[0-9]{7,9}$/).withMessage('Invalid phone number'),
@@ -438,14 +437,13 @@ app.post('/order', [
   }
 });
 
-// Submit Payment (with validation, keep screenshot)
+// Submit Payment
 app.post('/submit-payment', upload.single('screenshot'), async (req, res) => {
   let tempFilePath = null;
   try {
     const orderId = parseInt(req.body.orderId);
     const screenshot = req.file;
     const note = req.body.note || '';
-    
     if (!screenshot) {
       return res.status(400).json({ success: false, message: "Screenshot required" });
     }
@@ -536,7 +534,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ========== SERVE PAGES ==========
+// ========== SERVE PAGES (မူလ frontend မပျက်) ==========
 app.get(ADMIN_PATH, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
