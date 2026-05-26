@@ -15,10 +15,7 @@
       padding: 1rem;
     }
     .container { max-width: 1300px; margin: 0 auto; }
-    .logo {
-      text-align: center;
-      margin: 1rem 0;
-    }
+    .logo { text-align: center; margin: 1rem 0; }
     .logo span {
       background: linear-gradient(135deg, #facc15, #eab308);
       display: inline-block;
@@ -116,17 +113,16 @@
       padding: 10px 20px;
       border-radius: 40px;
       display: none;
+      z-index: 1000;
     }
-    @media (max-width: 700px) {
-      .plan-card { width: 100%; }
-    }
+    @media (max-width: 700px) { .plan-card { width: 100%; } }
   </style>
 </head>
 <body>
 <div class="container">
   <div class="logo"><span>ATH DIGITAL HUB</span></div>
   <h1>✨ MYTEL VIP DATA ✨</h1>
-  <p style="text-align:center">📅 30 days validity · Auto activation after screenshot</p>
+  <p style="text-align:center">📅 30 days validity · Admin will approve after screenshot</p>
 
   <div class="plans" id="plansContainer"></div>
 
@@ -143,8 +139,8 @@
     
     <div style="border:2px dashed #facc15; border-radius:1rem; padding:1rem; text-align:center; margin:1rem 0; cursor:pointer" onclick="document.getElementById('screenshot').click()">
       📸 Upload payment screenshot
-      <input type="file" id="screenshot" accept="image/*" style="display:none">
-      <img id="preview" style="max-width:100%; margin-top:8px; display:none">
+      <input type="file" id="screenshot" accept="image/jpeg,image/png" style="display:none">
+      <img id="preview" style="max-width:100%; margin-top:8px; border-radius:12px; display:none">
     </div>
     
     <button onclick="submitOrder()">✅ Submit Order & Activate</button>
@@ -161,8 +157,26 @@
   <div class="toast" id="toast"></div>
 </div>
 
-<script>
-  // Plans Data (သေချာပေါက် ပြသမည်)
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCN7GMpY6dqGzVlMevMZPG76guq3DvQPd8",
+    authDomain: "mytelordersystem.firebaseapp.com",
+    projectId: "mytelordersystem",
+    storageBucket: "mytelordersystem.firebasestorage.app",
+    messagingSenderId: "366519284419",
+    appId: "1:366519284419:web:0044583e2ef8aa7260a876",
+    measurementId: "G-GEJ93W2RTY"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  // Plans Data
   const plans = [
     { name: "VIP LEVEL - 1", icon: "🏆", features: ["22 GB Data", "8000 On-Net Mins", "5000 SMS"], price: 15000 },
     { name: "VIP LEVEL - 2", icon: "🏆", features: ["40 GB Data", "250 On-Net Mins", "25 Any Net Mins"], price: 20000 },
@@ -173,10 +187,8 @@
   let selectedPlan = null;
   let screenshotFile = null;
 
-  // Render plans dynamically
   function renderPlans() {
     const container = document.getElementById('plansContainer');
-    if (!container) return;
     container.innerHTML = '';
     plans.forEach(plan => {
       const card = document.createElement('div');
@@ -185,27 +197,24 @@
       card.innerHTML = `
         <div class="plan-icon">${plan.icon}</div>
         <div class="plan-title">${plan.name}</div>
-        <ul class="features">
-          ${plan.features.map(f => `<li><i class="fas fa-check-circle"></i> ${f}</li>`).join('')}
-        </ul>
+        <ul class="features">${plan.features.map(f => `<li><i class="fas fa-check-circle"></i> ${f}</li>`).join('')}</ul>
         <div class="price">${plan.price.toLocaleString()} KS</div>
-        <button onclick="selectPlan('${plan.name}')">Select Plan</button>
+        <button onclick="window.selectPlan('${plan.name}')">Select Plan</button>
       `;
       container.appendChild(card);
     });
   }
 
-  function selectPlan(planName) {
+  window.selectPlan = function(planName) {
     selectedPlan = plans.find(p => p.name === planName);
-    // Highlight selected card
     document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
     document.querySelector(`.plan-card[data-plan="${planName}"]`).classList.add('selected');
     document.getElementById('selectedPlanName').innerHTML = `${selectedPlan.icon} ${selectedPlan.name} — ${selectedPlan.price.toLocaleString()} KS`;
     document.getElementById('orderForm').classList.add('show');
     document.getElementById('orderForm').scrollIntoView({ behavior: 'smooth' });
-  }
+  };
 
-  function cancelOrder() {
+  window.cancelOrder = function() {
     selectedPlan = null;
     screenshotFile = null;
     document.getElementById('orderForm').classList.remove('show');
@@ -214,11 +223,19 @@
     document.getElementById('phone').value = '';
     document.getElementById('note').value = '';
     showToast("Order cancelled");
-  }
+  };
 
-  document.getElementById('screenshot').addEventListener('change', function(e) {
+  document.getElementById('screenshot').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (!file.type.startsWith('image/')) {
+        showToast("Only image files allowed");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast("Max 5MB");
+        return;
+      }
       screenshotFile = file;
       const reader = new FileReader();
       reader.onload = ev => {
@@ -231,79 +248,107 @@
     }
   });
 
-  function submitOrder() {
+  window.submitOrder = async function() {
     if (!selectedPlan) { showToast("Please select a plan first!"); return; }
     const phone = document.getElementById('phone').value.trim();
     if (!/^(09|\+959)[0-9]{7,9}$/.test(phone)) { showToast("Invalid phone number (09xxxxxxxxx)"); return; }
     if (!screenshotFile) { showToast("Please upload payment screenshot"); return; }
 
-    // Save order to localStorage
-    const orders = JSON.parse(localStorage.getItem('mytel_orders') || '[]');
-    const newOrder = {
-      id: 'MYT' + Date.now(),
-      packageName: selectedPlan.name,
-      price: selectedPlan.price,
-      phone: phone,
-      note: document.getElementById('note').value,
-      status: 'approved', // auto approve for demo
-      createdAt: new Date().toISOString(),
-      startDate: new Date().toISOString(),
-      endDate: new Date(Date.now() + 30*86400000).toISOString(),
-      screenshotData: URL.createObjectURL(screenshotFile)
-    };
-    orders.push(newOrder);
-    localStorage.setItem('mytel_orders', JSON.stringify(orders));
-    showToast(`✅ Order #${newOrder.id} activated! 30 days valid.`);
-    cancelOrder();
-    document.getElementById('trackPhone').value = phone;
-    trackOrder();
-  }
+    const submitBtn = event.target;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
 
-  function trackOrder() {
+    try {
+      // 1. Upload screenshot to Firebase Storage
+      const timestamp = Date.now();
+      const storageRef = ref(storage, `screenshots/${timestamp}.jpg`);
+      await uploadBytes(storageRef, screenshotFile);
+      const screenshotURL = await getDownloadURL(storageRef);
+
+      // 2. Save order to Firestore
+      const orderData = {
+        packageName: selectedPlan.name,
+        price: selectedPlan.price,
+        phone: phone,
+        note: document.getElementById('note').value || '',
+        status: 'pending_payment',
+        createdAt: serverTimestamp(),
+        screenshotURL: screenshotURL
+      };
+      const docRef = await addDoc(collection(db, "orders"), orderData);
+      
+      showToast(`✅ Order #${docRef.id} submitted! Admin will approve soon.`);
+      cancelOrder();
+      document.getElementById('trackPhone').value = phone;
+      trackOrder();
+    } catch (error) {
+      console.error(error);
+      showToast("Submission failed: " + error.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "✅ Submit Order & Activate";
+    }
+  };
+
+  window.trackOrder = async function() {
     const phone = document.getElementById('trackPhone').value.trim();
     if (!phone) { showToast("Enter phone number"); return; }
-    const orders = JSON.parse(localStorage.getItem('mytel_orders') || '[]');
-    const userOrders = orders.filter(o => o.phone === phone);
     const resultDiv = document.getElementById('trackResult');
-    if (userOrders.length === 0) {
-      resultDiv.innerHTML = '<p>No orders found for this number.</p>';
-      return;
+    resultDiv.innerHTML = '<p><i class="fas fa-spinner fa-pulse"></i> Searching...</p>';
+    try {
+      const q = query(collection(db, "orders"), where("phone", "==", phone), orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        resultDiv.innerHTML = '<p>No orders found for this number.</p>';
+        return;
+      }
+      let html = '<div style="background:#1e293b; border-radius:1rem; padding:1rem;">';
+      querySnapshot.forEach(doc => {
+        const order = doc.data();
+        let statusText = "", statusColor = "";
+        switch(order.status) {
+          case 'pending_payment': statusText = "⏳ Pending"; statusColor = "#f97316"; break;
+          case 'payment_received': statusText = "💰 Paid (waiting approval)"; statusColor = "#3b82f6"; break;
+          case 'approved': statusText = "✅ Active"; statusColor = "#22c55e"; break;
+          case 'rejected': statusText = "❌ Rejected"; statusColor = "#ef4444"; break;
+          case 'expired': statusText = "⏰ Expired"; statusColor = "#64748b"; break;
+          default: statusText = order.status;
+        }
+        let expiryInfo = "";
+        if (order.status === 'approved' && order.endDate) {
+          const end = order.endDate.toDate();
+          const remaining = Math.ceil((end - new Date()) / (1000*60*60*24));
+          expiryInfo = `<br>Expires in: ${remaining} days`;
+        }
+        html += `
+          <div style="border-bottom:1px solid #334155; margin-bottom:1rem; padding-bottom:0.5rem">
+            <strong>#${doc.id}</strong> - ${order.packageName}<br>
+            Status: <span style="color:${statusColor}">${statusText}</span>${expiryInfo}<br>
+            Ordered: ${order.createdAt ? order.createdAt.toDate().toLocaleString() : 'N/A'}
+          </div>
+        `;
+      });
+      html += '</div>';
+      resultDiv.innerHTML = html;
+    } catch (err) {
+      resultDiv.innerHTML = '<p>Error fetching orders.</p>';
+      console.error(err);
     }
-    let html = '<div style="background:#1e293b; border-radius:1rem; padding:1rem;">';
-    userOrders.forEach(order => {
-      const remaining = Math.max(0, Math.ceil((new Date(order.endDate) - new Date()) / (1000*60*60*24)));
-      html += `
-        <div style="border-bottom:1px solid #334155; margin-bottom:1rem; padding-bottom:0.5rem">
-          <strong>#${order.id}</strong> - ${order.packageName}<br>
-          Status: <span style="color:#22c55e">✅ Active</span><br>
-          Expires in: ${remaining} days<br>
-          Ordered: ${new Date(order.createdAt).toLocaleDateString()}
-        </div>
-      `;
-    });
-    html += '</div>';
-    resultDiv.innerHTML = html;
-  }
+  };
 
-  function copyNumber(num) {
+  window.copyNumber = function(num) {
     navigator.clipboard.writeText(num);
     showToast(`Copied: ${num}`);
-  }
+  };
 
   function showToast(msg) {
     const toast = document.getElementById('toast');
     toast.innerText = msg;
     toast.style.display = 'block';
-    setTimeout(() => toast.style.display = 'none', 2000);
+    setTimeout(() => toast.style.display = 'none', 3000);
   }
 
   renderPlans();
-  // Expose functions globally
-  window.selectPlan = selectPlan;
-  window.submitOrder = submitOrder;
-  window.cancelOrder = cancelOrder;
-  window.trackOrder = trackOrder;
-  window.copyNumber = copyNumber;
 </script>
 </body>
 </html>
