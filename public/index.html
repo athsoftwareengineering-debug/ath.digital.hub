@@ -163,7 +163,6 @@
       transition: all 0.3s;
     }
     .select-plan-btn:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(250,204,21,0.4); }
-    /* No "Order cancelled" text anywhere in cards */
     
     .tracking-section {
       background: rgba(15,23,42,0.6);
@@ -488,7 +487,6 @@
     plans.forEach(plan => {
       const card = document.createElement('div');
       card.className = 'plan-card';
-      // ✅ No "Order cancelled" text anywhere inside card
       card.innerHTML = `
         <div class="plan-icon">${plan.icon}</div>
         <div class="plan-title">${plan.name}</div>
@@ -550,7 +548,6 @@
     document.getElementById('orderPhone').value = '';
     document.getElementById('orderNote').value = '';
     document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
-    // ✅ Show a simple toast instead of inline error
     showToast("Order cancelled", "#f97316");
   }
   
@@ -596,7 +593,7 @@
       const res = await fetch('/submit-payment', { method: 'POST', body: formData });
       const result = await res.json();
       if (result.success) { 
-        // ✅ Green success message (Myanmar)
+        // ✅ ပြင်ဆင်ထားသော အောင်မြင်ကြောင်း စာသား
         showToast("✅ အော်ဒါတင်ခြင်းအောင်မြင်ပါသည်။ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ။", "#22c55e"); 
         return true;
       } else { 
