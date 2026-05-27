@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="ATH 5G+">
   
+  <!-- Manifest ချိတ်ဆက်ခြင်း -->
   <link rel="manifest" href="manifest.json">
   
   <!-- ATH Logo Icon for Home Screen -->
@@ -23,14 +24,10 @@
     .bg-gradient { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 50%, #0a0a2a, #03030f); z-index: -2; }
     .content { position: relative; z-index: 10; max-width: 500px; margin: 0 auto; padding: 1rem; min-height: 100vh; }
     
-    /* Logo Styles - မူရင်းအတိုင်း */
     .app-logo { text-align: center; margin-bottom: 0.5rem; }
-    .logo-svg { width: 100px; height: 100px; margin: 0 auto; filter: drop-shadow(0 0 15px rgba(0,200,255,0.3)); }
     .logo-text { font-size: 2.5rem; font-weight: 900; background: linear-gradient(135deg, #FFD700, #FF69B4, #00FFFF); -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: -1px; }
     .logo-sub { font-size: 0.7rem; color: #00ccff; letter-spacing: 2px; margin-top: -5px; }
-    .official-text { font-size: 0.6rem; color: #FFD700; text-align: center; margin-top: 5px; margin-bottom: 20px; background: rgba(0,0,0,0.3); display: inline-block; padding: 3px 12px; border-radius: 30px; width: auto; }
     
-    /* Install Modal */
     .install-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
     .install-card { background: linear-gradient(145deg, #0f1a2e, #0a0f1f); border-radius: 2rem; padding: 2rem; max-width: 320px; text-align: center; border: 1px solid rgba(0,200,255,0.4); }
     .install-icon svg { width: 70px; margin-bottom: 0.5rem; }
@@ -40,12 +37,12 @@
     .install-btn { background: linear-gradient(95deg, #00ccff, #0099cc); border: none; padding: 0.8rem 1.5rem; border-radius: 3rem; color: white; font-weight: 700; cursor: pointer; }
     .later-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 0.8rem 1.5rem; border-radius: 3rem; color: white; cursor: pointer; }
     .install-banner { position: fixed; bottom: 20px; left: 20px; right: 20px; background: linear-gradient(95deg, #0f1a2e, #0a0f1f); border-radius: 3rem; padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(0,200,255,0.3); z-index: 999; animation: slideUp 0.5s ease; }
+    
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     .hidden { display: none !important; }
     .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #22c55e; color: #0a0a2a; padding: 0.5rem 1rem; border-radius: 40px; font-size: 0.75rem; font-weight: 700; display: none; z-index: 1100; white-space: nowrap; }
     
-    /* Login Container - မူရင်းအတိုင်း */
     .login-container { background: rgba(10,20,45,0.9); backdrop-filter: blur(16px); border-radius: 2rem; padding: 2rem; border: 1px solid rgba(0,200,255,0.4); margin: 1rem 0; text-align: center; }
     .login-input { width: 100%; padding: 0.8rem 1rem 0.8rem 2.5rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(0,200,255,0.3); border-radius: 2rem; color: white; margin-bottom: 1rem; font-size: 0.9rem; }
     .input-icon { position: relative; text-align: left; }
@@ -58,7 +55,6 @@
     .switch-text span { color: #00ccff; }
     .scan-text { text-align: center; font-size: 0.65rem; color: #FFD700; margin-top: 1rem; padding-top: 0.5rem; border-top: 1px dashed rgba(0,200,255,0.2); cursor: pointer; }
     
-    /* Dashboard */
     .dashboard { display: none; }
     .tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; justify-content: center; }
     .tab-btn { background: transparent; border: none; padding: 0.5rem 1rem; border-radius: 2rem; color: #8892b0; font-weight: 600; cursor: pointer; }
@@ -114,7 +110,7 @@
     <div><button id="bannerInstallBtn">Install</button><button id="closeBannerBtn" style="background:transparent; color:#8892b0; margin-left:8px;">✕</button></div>
   </div>
 
-  <!-- Login Section - မူရင်းပုံစံအတိုင်း -->
+  <!-- Login Section -->
   <div id="loginSection" class="login-container">
     <div class="app-logo">
       <div class="logo-text">ATH</div>
@@ -142,7 +138,6 @@
     <button class="google-btn" onclick="loginWithGoogle()"><i class="fab fa-google"></i> Continue with Google</button>
     <div class="switch-text" id="switchAuthText">Don't have account? <span>Register</span></div>
     
-    <!-- အောက်ဆုံး Scan to Register - ပုံစံအတိုင်းထည့်ထား -->
     <div class="scan-text" onclick="showScanQR()">
       <i class="fas fa-qrcode"></i> สแกนเพื่อสมัคร (Scan to Register)
     </div>
@@ -349,7 +344,7 @@
     }
   });
 
-  // ============= INSTALL =============
+  // ============= PWA INSTALL LOGIC =============
   let deferredPrompt;
   const installModal = document.getElementById('installModal');
   const installBanner = document.getElementById('installBanner');
@@ -409,5 +404,21 @@
     }, 2000);
   }
 </script>
+
+<!-- Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(registration => {
+          console.log('Service Worker registered with scope:', registration.scope);
+        })
+        .catch(error => {
+          console.error('Service Worker registration failed:', error);
+        });
+    });
+  }
+</script>
+
 </body>
 </html>
