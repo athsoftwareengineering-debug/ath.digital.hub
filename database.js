@@ -3,8 +3,6 @@ const path = require('path');
 const fs = require('fs');
 
 // Render Persistent Disk ကို ဦးစားပေးသုံးမယ်
-// Render မှာ Disk ထည့်ထားရင် RENDER_DISK_PATH ရှိမယ်
-// မထည့်ထားရင် local ./data folder ကိုသုံးမယ်
 const DATA_DIR = process.env.RENDER_DISK_PATH || path.join(__dirname, 'data');
 
 if (!fs.existsSync(DATA_DIR)) {
