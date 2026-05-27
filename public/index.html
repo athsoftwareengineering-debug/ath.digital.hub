@@ -1,493 +1,208 @@
 <!DOCTYPE html>
 <html lang="my">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>ATH Ultra Weather System | Myanmar Real-time</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  overflow: hidden;
-  font-family: 'Inter', sans-serif;
-  background: #020617;
-  color: white;
-}
-
-#weather-canvas {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
-
-.glass {
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-  backdrop-filter: blur(3px);
-  z-index: 1;
-}
-
-/* Weather Bar */
-.weather-bar {
-  position: fixed;
-  top: 25px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 14px 28px;
-  border-radius: 80px;
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-}
-
-.weather-icon { font-size: 32px; }
-.weather-temp { font-size: 26px; font-weight: 900; }
-.weather-desc { font-size: 13px; opacity: 0.8; }
-.weather-location { font-size: 12px; color: #7dd3fc; }
-
-/* Hero */
-.hero {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  z-index: 10;
-  text-align: center;
-  padding: 20px;
-}
-
-.logo {
-  font-size: clamp(70px, 10vw, 140px);
-  font-weight: 900;
-  background: linear-gradient(45deg, #FFD700, #00FFFF, #FF69B4);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: glow 6s linear infinite;
-}
-
-@keyframes glow {
-  0% { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(360deg); }
-}
-
-.subtitle {
-  margin-top: -10px;
-  font-size: clamp(14px, 3vw, 24px);
-  letter-spacing: 3px;
-  color: #cbd5e1;
-}
-
-.status {
-  margin-top: 20px;
-  font-size: 14px;
-  color: #7dd3fc;
-  background: rgba(0,0,0,0.4);
-  padding: 8px 20px;
-  border-radius: 40px;
-  backdrop-filter: blur(4px);
-}
-
-.refresh-btn {
-  margin-top: 20px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,215,0,0.3);
-  padding: 8px 20px;
-  border-radius: 40px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: 0.2s;
-  color: #ffd966;
-}
-
-.refresh-btn:hover {
-  background: rgba(255,215,0,0.2);
-  transform: scale(1.02);
-}
-
-.light {
-  position: absolute;
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.25;
-  animation: moveLight 12s ease-in-out infinite alternate;
-  z-index: 0;
-}
-
-.light1 { background: #00ccff; top: -100px; left: -100px; }
-.light2 { background: #ff69b4; bottom: -100px; right: -100px; }
-
-@keyframes moveLight {
-  from { transform: translate(0,0) scale(1); }
-  to { transform: translate(80px,40px) scale(1.2); }
-}
-
-/* Loading state */
-.loading {
-  animation: pulse 1.5s infinite;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>ATH 5G+ | MYTEL Official Seller - Fully Connected</title>
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #03030f; color: #fff; overflow-x: hidden; }
+    #weather-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    .content { position: relative; z-index: 10; max-width: 1300px; margin: 0 auto; padding: 0.8rem 1rem 1rem; }
+    .weather-bar { background: rgba(0,0,0,0.55); backdrop-filter: blur(10px); border-radius: 60px; padding: 0.4rem 1.2rem; display: inline-flex; align-items: center; gap: 12px; font-size: 0.8rem; margin-bottom: 0.8rem; border: 1px solid rgba(0,200,255,0.4); }
+    @keyframes softBlink { 0%,100%{ opacity:1; } 50%{ opacity:0.6; text-shadow:0 0 6px #FFD700; } }
+    .blinking-text { animation: softBlink 1.5s ease-in-out infinite; color: #FFD700; font-weight: 500; }
+    .blinking-text-light { animation: softBlink 1.2s ease-in-out infinite; color: #00ccff; }
+    .footer { text-align: center; margin-top: 2rem; padding: 0.8rem; border-top: 1px solid rgba(0,200,255,0.15); }
+    .footer-text { font-size: 0.6rem; color: #5a6e8a; letter-spacing: 0.5px; }
+    .weather-icon { font-size: 1.2rem; filter: drop-shadow(0 0 5px rgba(0,200,255,0.5)); }
+    .weather-temp { font-weight: 800; color: #FFD700; font-size: 1rem; }
+    .weather-desc { color: #cbd5e1; font-size: 0.7rem; text-transform: capitalize; }
+    .brand-header { text-align: center; margin-bottom: 0.3rem; animation: fadeInDown 0.8s ease; }
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+    .logo { font-size: clamp(2rem, 8vw, 3rem); font-weight: 900; background: linear-gradient(135deg, #FFD700, #FFA500, #FF69B4, #00FFFF); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: logoGlow 3s ease infinite; }
+    @keyframes logoGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    .brand-name { font-size: clamp(0.8rem, 4vw, 1rem); background: linear-gradient(135deg, #c0c0c0, #ffffff, #00ccff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .official-badge { display: inline-block; background: linear-gradient(95deg, #facc15, #ff69b4); border-radius: 40px; padding: 0.2rem 0.8rem; font-size: 0.6rem; font-weight: 700; color: #0a0a2a; margin-top: 5px; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.02); box-shadow:0 0 0 6px rgba(250,204,21,0.2); } }
+    .fiveg { color: #00ccff; font-size: 0.7rem; margin-left: 5px; display: inline-block; animation: blink 1.5s infinite; }
+    @keyframes blink { 0%,100%{ opacity:1; text-shadow:0 0 5px #00ccff; } 50%{ opacity:0.6; } }
+    .main-title { text-align: center; font-size: clamp(1rem, 5vw, 1.3rem); margin: 0.3rem 0; color: #FFD700; }
+    .user-bar { display: flex; justify-content: flex-end; align-items: center; gap: 0.8rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .user-info { background: rgba(10,20,40,0.6); backdrop-filter: blur(8px); padding: 0.2rem 1rem; border-radius: 40px; font-size: 0.7rem; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(0,200,255,0.3); }
+    .login-btn, .logout-btn { background: linear-gradient(95deg, #00ccff, #0099cc); border: none; padding: 0.3rem 1rem; border-radius: 40px; font-weight: 700; font-size: 0.7rem; cursor: pointer; color: white; transition: transform 0.2s; }
+    .login-btn:hover, .logout-btn:hover { transform: scale(1.05); }
+    .plans-container { display: flex; flex-direction: column; gap: 0.8rem; margin: 1rem 0; }
+    .plan-card { position: relative; background: rgba(10, 15, 35, 0.6); backdrop-filter: blur(12px); border-radius: 1rem; padding: 0.7rem 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; border: 1px solid rgba(0,200,255,0.25); cursor: pointer; transition: all 0.3s ease; overflow: hidden; }
+    .plan-card::before { content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0, #00ccff, #ff0080); background-size: 300% 300%; border-radius: 1rem; z-index: -2; opacity: 0; transition: opacity 0.3s; animation: runningLight 3s linear infinite; }
+    .plan-card:hover::before { opacity: 0.7; }
+    .plan-card.selected::before { opacity: 1; }
+    @keyframes runningLight { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    .plan-card:hover { transform: translateX(5px) scale(1.01); background: rgba(0,200,255,0.12); border-color: #00ccff; }
+    .plan-card.selected { background: rgba(0,200,255,0.18); border: 1px solid transparent; transform: scale(1.02); box-shadow: 0 0 25px rgba(0,200,255,0.4); }
+    .plan-info { display: flex; align-items: center; gap: 12px; flex: 2; }
+    .plan-icon { font-size: 1.6rem; }
+    .plan-card.selected .plan-icon { transform: scale(1.1); }
+    .plan-details h4 { font-size: 0.95rem; font-weight: 800; color: #00ccff; margin-bottom: 2px; }
+    .plan-features { display: flex; gap: 12px; font-size: 0.7rem; flex-wrap: wrap; }
+    .feature-text { color: #cbd5e1; }
+    .data-text { color: #FFD700; font-weight: 700; }
+    .mins-text { color: #00ccff; font-weight: 700; }
+    .sms-text { color: #ff69b4; font-weight: 700; }
+    .plan-price { font-size: 1.1rem; font-weight: 800; color: #FFD700; }
+    .select-plan-btn { background: linear-gradient(95deg, #00ccff, #0099cc); border: none; padding: 0.5rem 1.2rem; border-radius: 40px; font-size: 0.75rem; font-weight: 700; color: white; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
+    .select-plan-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(0,200,255,0.6); }
+    .payment-card { max-width: 500px; margin: 1rem auto; background: rgba(10, 15, 35, 0.85); backdrop-filter: blur(16px); border-radius: 1.5rem; padding: 1.2rem; border: 1px solid rgba(0,200,255,0.4); animation: fadeInScale 0.4s ease; }
+    @keyframes fadeInScale { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+    .selected-plan-name { font-size: 0.95rem; font-weight: 800; text-align: center; color: #FFD700; background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 60px; margin-bottom: 0.8rem; }
+    .input-group { margin-bottom: 0.7rem; }
+    .input-group label { font-size: 0.65rem; color: #8892b0; display: block; margin-bottom: 0.2rem; }
+    .input-group input, .input-group textarea { width: 100%; padding: 8px 12px; background: #0a0a20; border: 1px solid #2a2a50; border-radius: 40px; color: white; font-size: 0.85rem; }
+    .payment-box { background: rgba(0, 0, 0, 0.4); border-radius: 1rem; padding: 0.6rem; text-align: center; margin: 0.6rem 0; }
+    .copy-number { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(95deg, #FFD700, #FFA500); color: #0a0a2a; padding: 0.3rem 1rem; border-radius: 60px; font-size: 0.9rem; font-weight: 800; cursor: pointer; }
+    .upload-area { border: 2px dashed #00ccff; border-radius: 1rem; padding: 0.6rem; text-align: center; margin: 0.6rem 0; cursor: pointer; font-size: 0.7rem; background: rgba(0,0,0,0.3); }
+    .preview-img { max-width: 100%; max-height: 70px; margin-top: 6px; border-radius: 10px; display: none; }
+    .button-group { display: flex; gap: 0.8rem; margin-top: 0.8rem; }
+    .btn-submit, .btn-cancel { flex: 1; padding: 0.6rem; border-radius: 40px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: none; }
+    .btn-submit { background: linear-gradient(95deg, #22c55e, #16a34a); color: white; }
+    .btn-cancel { background: linear-gradient(95deg, #ef4444, #dc2626); color: white; }
+    .track-section { position: relative; background: rgba(10, 15, 35, 0.65); backdrop-filter: blur(16px); border-radius: 1.5rem; padding: 1.2rem; margin-top: 1.5rem; border: 1px solid rgba(0,200,255,0.3); transition: all 0.3s ease; }
+    .track-section:hover { transform: translateY(-3px); box-shadow: 0 0 25px rgba(0,200,255,0.3); }
+    .track-header { text-align: center; font-size: 1rem; font-weight: 800; color: #00ccff; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 0.5rem; }
+    .track-sub { text-align: center; font-size: 0.65rem; color: #8892b0; margin-bottom: 0.8rem; }
+    .track-input-wrapper { max-width: 450px; margin: 0 auto; }
+    .track-input-box { display: flex; align-items: center; gap: 0.5rem; background: rgba(0, 0, 0, 0.5); border-radius: 60px; padding: 0.2rem 0.2rem 0.2rem 1rem; border: 1px solid rgba(0,200,255,0.4); transition: all 0.3s; }
+    .track-input-box:focus-within { border-color: #00ccff; box-shadow: 0 0 15px rgba(0,200,255,0.4); }
+    .track-input-box input { flex: 1; background: transparent; border: none; padding: 0.7rem 0; color: white; outline: none; font-size: 0.85rem; }
+    .track-input-box button { background: linear-gradient(95deg, #00ccff, #0099cc); border: none; padding: 0.5rem 1.2rem; border-radius: 60px; font-weight: 800; font-size: 0.75rem; color: white; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+    .track-input-box button:hover { transform: scale(1.03); }
+    .track-result-container { margin-top: 1rem; max-height: 320px; overflow-y: auto; padding-right: 5px; }
+    .order-card { background: linear-gradient(125deg, rgba(25, 35, 60, 0.85), rgba(15, 20, 45, 0.9)); border-radius: 1rem; padding: 0.8rem 1rem; margin-bottom: 0.8rem; border-left: 3px solid #00ccff; transition: all 0.3s ease; animation: fadeInUp 0.3s ease-out; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    .order-card:hover { transform: translateX(5px); border-left-color: #FFD700; }
+    .order-id { font-weight: 800; color: #00ccff; font-size: 0.75rem; background: rgba(0,200,255,0.15); padding: 3px 10px; border-radius: 30px; }
+    .order-status-badge { font-size: 0.65rem; font-weight: 700; padding: 3px 12px; border-radius: 30px; }
+    .status-approved { background: #22c55e20; color: #22c55e; border: 1px solid #22c55e; }
+    .status-pending { background: #f9731620; color: #f97316; border: 1px solid #f97316; }
+    .status-paid { background: #3b82f620; color: #3b82f6; border: 1px solid #3b82f6; }
+    .order-details { font-size: 0.7rem; color: #c0c0e0; display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 6px; }
+    .order-details span i { width: 20px; color: #00ccff; }
+    .order-expiry { font-size: 0.65rem; color: #00ffff; margin-top: 5px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .expiry-progress { flex: 1; height: 4px; background: #2a2a50; border-radius: 10px; overflow: hidden; }
+    .expiry-fill { height: 100%; background: linear-gradient(90deg, #00ccff, #FFD700); width: 0%; transition: width 0.5s ease; }
+    .loading-spinner { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 1.5rem; color: #00ccff; }
+    .empty-state { text-align: center; padding: 1.5rem; color: #8892b0; background: rgba(0,0,0,0.3); border-radius: 20px; font-size: 0.8rem; }
+    .hidden { display: none; }
+    .toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: #22c55e; color: #0a0a2a; padding: 0.3rem 1rem; border-radius: 40px; font-size: 0.75rem; font-weight: 700; display: none; z-index: 1100; }
+    @media (max-width: 550px) {
+      .plan-card { flex-direction: column; text-align: center; }
+      .plan-info { justify-content: center; }
+      .plan-features { justify-content: center; }
+      .track-input-box { flex-direction: column; background: #0a0a20; padding: 0.6rem; border-radius: 1.5rem; }
+      .track-input-box input { width: 100%; text-align: center; }
+      .track-input-box button { width: 100%; justify-content: center; }
+    }
+  </style>
 </head>
 <body>
-
 <canvas id="weather-canvas"></canvas>
-<div class="glass"></div>
-<div class="light light1"></div>
-<div class="light light2"></div>
-
-<!-- Weather Bar -->
-<div class="weather-bar">
-  <div id="weatherIcon" class="weather-icon">☀️</div>
-  <div>
-    <div id="weatherTemp" class="weather-temp">--°C</div>
-    <div id="weatherDesc" class="weather-desc">ရာသီဥတု ဖတ်နေသည်...</div>
-    <div id="weatherLocation" class="weather-location">မြန်မာ</div>
+<div class="content">
+  <div style="display: flex; justify-content: center;">
+    <div class="weather-bar" id="weatherBar">
+      <div class="weather-icon" id="weatherIcon">🌤️</div>
+      <div><span id="weatherTemp" class="weather-temp">--°C</span> <span id="weatherDesc" class="weather-desc">Loading weather...</span></div>
+      <div><i class="fas fa-map-marker-alt" style="color:#00ccff;"></i> <span id="weatherLocation" style="font-size:0.7rem;">တည်နေရာ ရှာနေသည်...</span></div>
+    </div>
   </div>
-</div>
+  <div class="brand-header">
+    <div class="logo">ATH</div>
+    <div class="brand-name">ATH DIGITAL HUB <span class="fiveg">⚡ 5G+ ⚡</span></div>
+    <div class="official-badge"><i class="fas fa-certificate"></i> MYTEL Official Seller</div>
+  </div>
+  <div class="main-title">✨ MYTEL VIP DATA ✨</div>
+  <div class="user-bar">
+    <div id="userInfo" style="display:none;" class="user-info"><i class="fas fa-user-astronaut"></i> <span id="userName"></span> <button class="logout-btn" onclick="logout()">ထွက်ရန်</button></div>
+    <button class="login-btn" id="loginBtn" onclick="loginWithGoogle()"><i class="fab fa-google"></i> Google ဖြင့် ဝင်ရန်</button>
+  </div>
 
-<!-- Hero -->
-<div class="hero">
-  <div class="logo">ATH</div>
-  <div class="subtitle">ULTRA WEATHER ENGINE</div>
-  <div class="status" id="weatherStatus">🌦️ LIVE MYANMAR WEATHER</div>
-  <button class="refresh-btn" onclick="manualRefresh()"><i>⟳</i> ပြန်လည်စစ်ဆေးမည်</button>
+  <div id="plansSection" class="plans-container">
+    <div class="plan-card" data-plan="VIP LEVEL - 1" data-price="15000" data-icon="🏆"><div class="plan-info"><div class="plan-icon">🏆</div><div class="plan-details"><h4>VIP LEVEL - 1</h4><div class="plan-features"><span class="feature-text"><span class="data-text">22 GB</span> Data</span><span class="feature-text"><span class="mins-text">8000 Mins</span> On-Net</span><span class="feature-text"><span class="sms-text">5000 SMS</span></span></div></div></div><div class="plan-price">15,000 KS</div><button class="select-plan-btn"><i class="fas fa-shopping-cart"></i> ရွေးမည်</button></div>
+    <div class="plan-card" data-plan="VIP LEVEL - 2" data-price="20000" data-icon="🏆"><div class="plan-info"><div class="plan-icon">🏆</div><div class="plan-details"><h4>VIP LEVEL - 2</h4><div class="plan-features"><span class="feature-text"><span class="data-text">40 GB</span> Data</span><span class="feature-text"><span class="mins-text">250 Mins</span> On-Net</span><span class="feature-text"><span class="sms-text">25 Any Net</span></span></div></div></div><div class="plan-price">20,000 KS</div><button class="select-plan-btn"><i class="fas fa-shopping-cart"></i> ရွေးမည်</button></div>
+    <div class="plan-card" data-plan="VIP LEVEL - 3" data-price="25000" data-icon="🏆"><div class="plan-info"><div class="plan-icon">🏆</div><div class="plan-details"><h4>VIP LEVEL - 3</h4><div class="plan-features"><span class="feature-text"><span class="data-text">40 GB</span> Data</span><span class="feature-text"><span class="mins-text">1400 Mins</span> On-Net</span><span class="feature-text"><span class="sms-text">8000 SMS</span></span></div></div></div><div class="plan-price">25,000 KS</div><button class="select-plan-btn"><i class="fas fa-shopping-cart"></i> ရွေးမည်</button></div>
+    <div class="plan-card" data-plan="VIP LEVEL - 4" data-price="30000" data-icon="💎"><div class="plan-info"><div class="plan-icon">💎</div><div class="plan-details"><h4>VIP LEVEL - 4</h4><div class="plan-features"><span class="feature-text"><span class="data-text">120 GB</span> Data</span><span class="feature-text"><span class="mins-text">Priority</span> Support</span><span class="feature-text"><span class="sms-text">5G+ Ultra</span></span></div></div></div><div class="plan-price">30,000 KS</div><button class="select-plan-btn"><i class="fas fa-shopping-cart"></i> ရွေးမည်</button></div>
+  </div>
+
+  <div id="paymentCard" class="payment-card hidden">
+    <div class="selected-plan-name" id="selectedPlanName"></div>
+    <div class="input-group"><label>📞 ဖုန်းနံပါတ် (09xxxxxxxxx)</label><input type="tel" id="orderPhone" placeholder="ဥပမာ - 09789999368"></div>
+    <div class="input-group"><label>📝 မှတ်ချက် (မထည့်လည်းရ)</label><textarea id="orderNote" rows="1" placeholder="အထူးလိုအပ်ချက်များ..."></textarea></div>
+    <div class="payment-box"><div class="payment-label">💳 KPay / WavePay</div><div class="account-name">👤 AUNG THU HTWE</div><div class="copy-number" onclick="copyPhoneNumber()">📞 09789999368  <i class="fas fa-copy"></i></div></div>
+    <div class="upload-area" onclick="document.getElementById('screenshotInput').click()"><i class="fas fa-images"></i> 📸 ငွေလွှဲပုံတင်ရန် (Gallery / Camera)<input type="file" id="screenshotInput" accept="image/*" style="display:none"><img id="previewImg" class="preview-img" alt="Preview"></div>
+    <div class="button-group"><button class="btn-submit" onclick="submitOrder()">✅ အော်ဒါတင်မည်</button><button class="btn-cancel" onclick="cancelOrder()">❌ ပယ်ဖျက်မည်</button></div>
+  </div>
+
+  <div class="track-section">
+    <div class="track-header"><i class="fas fa-satellite-dish"></i> <span class="blinking-text">🔍 အော်ဒါအခြေအနေ စစ်ဆေးရန်</span> <i class="fas fa-chart-line"></i></div>
+    <div class="track-sub">အော်ဒါအခြေအနေ သိရှိရန် ဖုန်းနံပါတ် ထည့်သွင်းပါ</div>
+    <div class="track-input-wrapper">
+      <div class="track-input-box"><i class="fas fa-phone-alt"></i><input type="tel" id="trackPhone" placeholder="09xxxxxxxxx"><button onclick="trackOrder()"><i class="fas fa-search"></i> စစ်ဆေးမည်</button></div>
+    </div>
+    <div id="trackResult" class="track-result-container"><div class="empty-state"><i class="fas fa-rocket" style="font-size:1.5rem; margin-bottom:8px; display:block;"></i>သင်၏ အော်ဒါများ ဤနေရာတွင် ပေါ်လာပါမည်</div></div>
+    <div class="track-footer-note text-center text-xs text-slate-500 mt-2"><i class="fas fa-lock"></i> <span class="blinking-text-light">လုံခြုံစိတ်ချရသော စနစ်</span></div>
+  </div>
+  <div class="footer"><div class="footer-text"><i class="fas fa-copyright"></i> 2026 Developed by <strong>AUNG THU HTWE</strong> | All Rights Reserved</div></div>
+  <div class="toast" id="toast"></div>
 </div>
 
 <script>
-// =======================
-// CANVAS SETUP
-// =======================
-const canvas = document.getElementById("weather-canvas");
-const ctx = canvas.getContext("2d");
-let w, h;
+  // Weather & Canvas background (fully working)
+  const canvas = document.getElementById('weather-canvas');
+  const ctx = canvas.getContext('2d');
+  let width, height, currentWeather = 'clear', raindrops = [], clouds = [], lightningBolts = [], wind = 0, lastTime = 0;
+  function resizeCanvas() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
+  window.addEventListener('resize', resizeCanvas); resizeCanvas();
+  class RealRain { constructor() { this.reset(); } reset() { this.x = Math.random() * width; this.y = Math.random() * height - height; this.speed = 8 + Math.random() * 12; this.len = 12 + Math.random() * 15; this.wind = (Math.random() - 0.5) * 1.5; } update() { this.x += this.wind + wind * 0.5; this.y += this.speed; if (this.y > height || this.x < -50 || this.x > width + 50) this.reset(); } draw() { ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.x - 1.5 + (this.wind * 0.5), this.y + this.len); ctx.strokeStyle = `rgba(160, 200, 255, ${0.3 + Math.random() * 0.2})`; ctx.lineWidth = 1.5; ctx.stroke(); } }
+  class RealCloud { constructor(layer) { this.layer = layer; this.x = Math.random() * width; this.y = 20 + layer * 40 + Math.random() * 30; this.speed = 0.1 + Math.random() * 0.3 + layer * 0.1; this.alpha = 0.3 + layer * 0.15; } update() { this.x += this.speed; if (this.x > width + 300) this.x = -300; } draw() { ctx.fillStyle = `rgba(100, 110, 130, ${this.alpha})`; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(this.x + i * 40, this.y, 30 + i * 5, 0, Math.PI * 2); ctx.arc(this.x - i * 35 + 20, this.y - 10, 25 + i * 3, 0, Math.PI * 2); ctx.fill(); } } }
+  function initWeather(type) { currentWeather = type; raindrops = []; clouds = []; lightningBolts = []; if (type === 'rain' || type === 'thunder') { for (let i = 0; i < 350; i++) raindrops.push(new RealRain()); for (let i = 0; i < 5; i++) clouds.push(new RealCloud(i)); } else if (type === 'clouds') { for (let i = 0; i < 6; i++) clouds.push(new RealCloud(i)); } else { for (let i = 0; i < 3; i++) clouds.push(new RealCloud(i)); } wind = (Math.random() - 0.5) * 2; }
+  function drawSunRays() { let cx = width / 2, cy = 60; for (let i = 0; i < 20; i++) { ctx.beginPath(); ctx.moveTo(cx, cy); let angle = (Date.now() / 8000 + i * 0.4) % (Math.PI * 2); ctx.lineTo(cx + Math.cos(angle) * 400, cy + Math.sin(angle) * 300); ctx.strokeStyle = `rgba(255, 220, 120, ${0.03 + Math.sin(Date.now() / 3000) * 0.02})`; ctx.lineWidth = 35; ctx.stroke(); } }
+  function animateWeather(now) { requestAnimationFrame(animateWeather); let delta = Math.min(0.033, (now - lastTime) / 1000); lastTime = now; ctx.clearRect(0, 0, width, height); let grad = ctx.createLinearGradient(0,0,0,height); if (currentWeather === 'clear') { grad.addColorStop(0, '#0a3050'); grad.addColorStop(1, '#03030f'); } else if (currentWeather === 'clouds') { grad.addColorStop(0, '#1a3050'); grad.addColorStop(1, '#0a0a2a'); } else { grad.addColorStop(0, '#1a2040'); grad.addColorStop(1, '#0a0a2a'); } ctx.fillStyle = grad; ctx.fillRect(0, 0, width, height); if (currentWeather === 'clear') drawSunRays(); clouds.forEach(c => { c.update(); c.draw(); }); if (currentWeather === 'rain' || currentWeather === 'thunder') raindrops.forEach(r => { r.update(); r.draw(); }); ctx.fillStyle = 'rgba(3, 3, 15, 0.2)'; ctx.fillRect(0, 0, width, height); }
+  animateWeather();
+  const API_KEY = '07a9874048fa713d2fdcef25a482e06d';
+  async function fetchWeatherByCoords(lat, lon) { try { const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`); const data = await res.json(); if (data.cod === 200) { let condition = data.weather[0].main.toLowerCase(); if (condition.includes('rain')) condition = 'rain'; else if (condition.includes('cloud')) condition = 'clouds'; else condition = 'clear'; initWeather(condition); document.getElementById('weatherIcon').innerHTML = condition === 'clear' ? '☀️' : (condition === 'clouds' ? '☁️' : '🌧️'); document.getElementById('weatherTemp').innerHTML = `${Math.round(data.main.temp)}°C`; document.getElementById('weatherDesc').innerHTML = data.weather[0].description; document.getElementById('weatherLocation').innerHTML = data.name; } } catch(e) { fallbackWeather(); } }
+  function fallbackWeather() { initWeather('clouds'); document.getElementById('weatherTemp').innerHTML = '28°C'; document.getElementById('weatherDesc').innerHTML = 'တိမ်အနည်းငယ်'; document.getElementById('weatherLocation').innerHTML = 'ရန်ကုန်'; }
+  if ("geolocation" in navigator) { navigator.geolocation.getCurrentPosition(pos => fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude), err => fallbackWeather()); } else fallbackWeather();
+  setInterval(() => { if (navigator.geolocation) navigator.geolocation.getCurrentPosition(pos => fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude), err => fallbackWeather()); }, 10 * 60000);
+</script>
 
-function resize() {
-  w = canvas.width = window.innerWidth;
-  h = canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener("resize", resize);
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// =======================
-// WEATHER STATE
-// =======================
-let currentWeather = "clear";
-let rain = [];
-let clouds = [];
-let fogs = [];
-let stars = [];
-let flash = 0;
+  const firebaseConfig = { apiKey: "AIzaSyCN7GMpY6dqGzVlMevMZPG76guq3DvQPd8", authDomain: "mytelordersystem.firebaseapp.com", projectId: "mytelordersystem", storageBucket: "mytelordersystem.firebasestorage.app", messagingSenderId: "366519284419", appId: "1:366519284419:web:0044583e2ef8aa7260a876" };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+  let currentUser = null, selectedPlanData = null, screenshotBase64 = null;
 
-// =======================
-// RAIN
-// =======================
-class Rain {
-  constructor() { this.reset(); }
-  reset() {
-    this.x = Math.random() * w;
-    this.y = Math.random() * -h;
-    this.len = 10 + Math.random() * 25;
-    this.speed = 10 + Math.random() * 18;
-    this.wind = -2 + Math.random() * 4;
-    this.opacity = 0.2 + Math.random() * 0.5;
-  }
-  update() {
-    this.x += this.wind;
-    this.y += this.speed;
-    if (this.y > h) { this.reset(); this.y = -50; }
-  }
-  draw() {
-    ctx.beginPath();
-    ctx.moveTo(this.x, this.y);
-    ctx.lineTo(this.x + this.wind, this.y + this.len);
-    ctx.strokeStyle = `rgba(180,220,255,${this.opacity})`;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-  }
-}
+  window.loginWithGoogle = async () => { try { await signInWithPopup(auth, provider); showToast("လှိုက်လှဲစွာ ကြိုဆိုပါတယ်!"); } catch(e) { showToast("Login မအောင်မြင်ပါ"); } };
+  window.logout = async () => { await signOut(auth); };
+  onAuthStateChanged(auth, (user) => { currentUser = user; const infoDiv = document.getElementById('userInfo'); const loginBtn = document.getElementById('loginBtn'); if (user) { infoDiv.style.display = 'flex'; loginBtn.style.display = 'none'; document.getElementById('userName').innerText = user.displayName?.split(' ')[0] || user.email.split('@')[0]; } else { infoDiv.style.display = 'none'; loginBtn.style.display = 'block'; if (selectedPlanData) cancelOrder(); } });
 
-// =======================
-// CLOUD
-// =======================
-class Cloud {
-  constructor() {
-    this.x = Math.random() * w;
-    this.y = Math.random() * 250;
-    this.size = 180 + Math.random() * 300;
-    this.speed = 0.05 + Math.random() * 0.2;
-    this.opacity = 0.03 + Math.random() * 0.12;
-  }
-  update() {
-    this.x += this.speed;
-    if (this.x > w + 500) this.x = -500;
-  }
-  draw() {
-    const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
-    grd.addColorStop(0, `rgba(255,255,255,${this.opacity})`);
-    grd.addColorStop(1, `rgba(255,255,255,0)`);
-    ctx.fillStyle = grd;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
+  document.querySelectorAll('.plan-card').forEach(card => { card.querySelector('.select-plan-btn').addEventListener('click', (e) => { e.stopPropagation(); if (!currentUser) { showToast("ကျေးဇူးပြု၍ Google ဖြင့် အရင် Login ဝင်ပါ!"); return; } selectedPlanData = { name: card.getAttribute('data-plan'), price: parseInt(card.getAttribute('data-price')), icon: card.querySelector('.plan-icon').innerText }; document.getElementById('selectedPlanName').innerHTML = `${selectedPlanData.icon} ${selectedPlanData.name} — ${selectedPlanData.price.toLocaleString()} KS`; document.getElementById('plansSection').classList.add('hidden'); document.getElementById('paymentCard').classList.remove('hidden'); document.getElementById('orderPhone').value = ''; document.getElementById('orderNote').value = ''; document.getElementById('previewImg').style.display = 'none'; document.getElementById('screenshotInput').value = ''; screenshotBase64 = null; showToast(`ရွေးချယ်မှု- ${selectedPlanData.name}`); }); });
 
-// =======================
-// FOG
-// =======================
-class Fog {
-  constructor() {
-    this.x = Math.random() * w;
-    this.y = h - 100 + Math.random() * 120;
-    this.size = 200 + Math.random() * 200;
-    this.speed = 0.1 + Math.random() * 0.2;
-    this.opacity = 0.02 + Math.random() * 0.05;
-  }
-  update() {
-    this.x += this.speed;
-    if (this.x > w + 300) this.x = -300;
-  }
-  draw() {
-    const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
-    grd.addColorStop(0, `rgba(255,255,255,${this.opacity})`);
-    grd.addColorStop(1, `rgba(255,255,255,0)`);
-    ctx.fillStyle = grd;
-    ctx.fillRect(this.x - this.size, this.y - this.size, this.size * 2, this.size * 2);
-  }
-}
-
-// =======================
-// STAR
-// =======================
-class Star {
-  constructor() {
-    this.x = Math.random() * w;
-    this.y = Math.random() * h;
-    this.size = Math.random() * 2;
-    this.opacity = Math.random();
-  }
-  draw() {
-    ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-
-// Initialize particles
-for (let i = 0; i < 600; i++) rain.push(new Rain());
-for (let i = 0; i < 12; i++) clouds.push(new Cloud());
-for (let i = 0; i < 8; i++) fogs.push(new Fog());
-for (let i = 0; i < 250; i++) stars.push(new Star());
-
-function isNight() {
-  let h = new Date().getHours();
-  return (h >= 18 || h <= 5);
-}
-
-function drawSun() {
-  let x = w - 150;
-  let y = 120;
-  const grd = ctx.createRadialGradient(x, y, 10, x, y, 140);
-  grd.addColorStop(0, "rgba(255,220,100,0.9)");
-  grd.addColorStop(1, "rgba(255,220,100,0)");
-  ctx.fillStyle = grd;
-  ctx.beginPath();
-  ctx.arc(x, y, 140, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function lightningFlash() { flash = 1; }
-
-// =======================
-// ANIMATION LOOP
-// =======================
-function animate() {
-  requestAnimationFrame(animate);
-  ctx.clearRect(0, 0, w, h);
-  
-  // Background gradient
-  let bg = ctx.createLinearGradient(0, 0, 0, h);
-  if (isNight()) {
-    bg.addColorStop(0, "#020617");
-    bg.addColorStop(1, "#000000");
-  } else {
-    if (currentWeather === "clear") {
-      bg.addColorStop(0, "#1e3a8a");
-      bg.addColorStop(1, "#0f172a");
-    } else {
-      bg.addColorStop(0, "#1e293b");
-      bg.addColorStop(1, "#020617");
-    }
-  }
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, w, h);
-  
-  // Stars at night
-  if (isNight()) stars.forEach(s => s.draw());
-  
-  // Sun
-  if (currentWeather === "clear" && !isNight()) drawSun();
-  
-  // Clouds
-  clouds.forEach(c => { c.update(); c.draw(); });
-  
-  // Fog
-  if (currentWeather === "mist" || currentWeather === "clouds") {
-    fogs.forEach(f => { f.update(); f.draw(); });
-  }
-  
-  // Rain
-  if (currentWeather === "rain" || currentWeather === "thunderstorm") {
-    rain.forEach(r => { r.update(); r.draw(); });
-  }
-  
-  // Lightning
-  if (currentWeather === "thunderstorm") {
-    if (Math.random() < 0.01) lightningFlash();
-    if (flash > 0) {
-      ctx.fillStyle = `rgba(255,255,255,${flash})`;
-      ctx.fillRect(0, 0, w, h);
-      flash -= 0.05;
-    }
-  }
-  
-  // Dark overlay
-  ctx.fillStyle = "rgba(0,0,0,0.12)";
-  ctx.fillRect(0, 0, w, h);
-}
-animate();
-
-// =======================
-// WEATHER API (Myanmar အတွက် အထူးပြုပြင်)
-// =======================
-const API_KEY = "07a9874048fa713d2fdcef25a482e06d";
-
-// မြန်မာဘာသာပြန်
-const myanmarWeatherMap = {
-  "clear": "ကြည်လင်နေသည် ☀️",
-  "clouds": "တိမ်အနည်းငယ်ဖုံးနေသည် ☁️",
-  "rain": "မိုးရွာနေသည် 🌧️",
-  "drizzle": "မိုးဖွဲဖွဲရွာနေသည် 🌦️",
-  "thunderstorm": "မိုးကြိုးပစ်နေသည် ⛈️",
-  "mist": "မြူကျနေသည် 🌫️",
-  "fog": "မြူထူထပ်နေသည် 🌫️",
-  "haze": "အမှုန်အမွှားများနေသည် 🌁",
-  "snow": "နှင်းကျနေသည် ❄️"
-};
-
-function translateWeather(desc, weatherMain) {
-  const key = weatherMain.toLowerCase();
-  if (myanmarWeatherMap[key]) return myanmarWeatherMap[key];
-  if (desc.includes("rain")) return "မိုးရွာနေသည် 🌧️";
-  if (desc.includes("cloud")) return "တိမ်ဖုံးနေသည် ☁️";
-  if (desc.includes("clear")) return "ကြည်လင်နေသည် ☀️";
-  return desc + " 🌤️";
-}
-
-async function getWeather(lat, lon) {
-  try {
-    const statusDiv = document.getElementById("weatherStatus");
-    statusDiv.innerHTML = "🔄 ရာသီဥတု စစ်ဆေးနေသည်...";
-    
-    const res = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
-    );
-    
-    if (!res.ok) throw new Error(`API Error: ${res.status}`);
-    
-    const data = await res.json();
-    const temp = Math.round(data.main.temp);
-    const desc = data.weather[0].description.toLowerCase();
-    const weatherMain = data.weather[0].main.toLowerCase();
-    const city = data.name;
-    
-    // Update UI
-    document.getElementById("weatherTemp").innerHTML = `${temp}°C`;
-    document.getElementById("weatherDesc").innerHTML = translateWeather(desc, weatherMain);
-    document.getElementById("weatherLocation").innerHTML = city;
-    
-    // Set weather type for effects
-    if (weatherMain.includes("thunder")) {
-      currentWeather = "thunderstorm";
-      document.getElementById("weatherIcon").innerHTML = "⛈️";
-    } else if (weatherMain.includes("rain") || weatherMain.includes("drizzle")) {
-      currentWeather = "rain";
-      document.getElementById("weatherIcon").innerHTML = "🌧️";
-    } else if (weatherMain.includes("cloud")) {
-      currentWeather = "clouds";
-      document.getElementById("weatherIcon").innerHTML = "☁️";
-    } else if (weatherMain.includes("mist") || weatherMain.includes("fog") || weatherMain.includes("haze")) {
-      currentWeather = "mist";
-      document.getElementById("weatherIcon").innerHTML = "🌫️";
-    } else {
-      currentWeather = "clear";
-      document.getElementById("weatherIcon").innerHTML = isNight() ? "🌙" : "☀️";
-    }
-    
-    statusDiv.innerHTML = `🌍 လက်ရှိ ${city} ရာသီဥတု • အချိန်နှင့်တပြေးညီ`;
-    
-  } catch (error) {
-    console.error("Weather API Error:", error);
-    document.getElementById("weatherDesc").innerHTML = "အင်တာနက် ချိတ်ဆက်မှု စစ်ဆေးပါ 🌐";
-    document.getElementById("weatherStatus").innerHTML = "⚠️ API ချိတ်ဆက်မှု အမှား • Yangon ပုံသေပြထားသည်";
-    // Fallback to Yangon
-    if (lat !== 16.8661) getWeather(16.8661, 96.1951);
-  }
-}
-
-// Manual refresh
-function manualRefresh() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      pos => getWeather(pos.coords.latitude, pos.coords.longitude),
-      err => getWeather(16.8661, 96.1951)
-    );
-  } else {
-    getWeather(16.8661, 96.1951);
-  }
-}
-
-// Get location and weather
-if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(
-    pos => getWeather(pos.coords.latitude, pos.coords.longitude),
-    err => getWeather(16.8661, 96.1951)
-  );
-} else {
-  getWeather(16.8661, 96.1951);
-}
-
-// Auto refresh every 10 minutes
-setInterval(() => {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      pos => getWeather(pos.coords.latitude, pos.coords.longitude),
-      err => console.log("Auto refresh failed")
-    );
-  }
-}, 600000);
+  window.cancelOrder = function() { document.getElementById('paymentCard').classList.add('hidden'); document.getElementById('plansSection').classList.remove('hidden'); selectedPlanData = null; screenshotBase64 = null; showToast("အော်ဒါကို ပယ်ဖျက်လိုက်ပါပြီ"); };
+  document.getElementById('screenshotInput').addEventListener('change', (e) => { const file = e.target.files[0]; if (file && file.type.startsWith('image/') && file.size <= 4 * 1024 * 1024) { const reader = new FileReader(); reader.onload = (ev) => { screenshotBase64 = ev.target.result; document.getElementById('previewImg').src = screenshotBase64; document.getElementById('previewImg').style.display = 'block'; showToast("✅ Screenshot တင်ပြီးပါပြီ!"); }; reader.readAsDataURL(file); } else showToast("ဓာတ်ပုံသည် 4MB ထက်မကြီးရပါ"); });
+  window.copyPhoneNumber = () => { navigator.clipboard.writeText("09789999368"); showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ!"); };
+  window.submitOrder = async function() { if (!currentUser) { showToast("Login အရင်ဝင်ပါ"); return; } if (!selectedPlanData) { showToast("အစီအစဉ်တစ်ခု ရွေးချယ်ပါ"); return; } const phone = document.getElementById('orderPhone').value.trim(); if (!/^(09|\+?959)\d{7,9}$/.test(phone)) { showToast("မှန်ကန်သော ဖုန်းနံပါတ် ထည့်ပါ"); return; } if (!screenshotBase64) { showToast("ငွေလွှဲ Screenshot တင်ပါ"); return; } const btn = document.querySelector('.btn-submit'); btn.disabled = true; btn.innerText = "⏳ ခေတ္တစောင့်ပါ..."; try { await addDoc(collection(db, "orders"), { packageName: selectedPlanData.name, price: selectedPlanData.price, phone, userId: currentUser.uid, userEmail: currentUser.email, userName: currentUser.displayName, note: document.getElementById('orderNote').value || '', status: 'pending_payment', createdAt: serverTimestamp(), screenshotBase64 }); showToast("✅ အော်ဒါတင်သွင်းမှု အောင်မြင်သည်။ Admin မှ မကြာမီ အတည်ပြုပေးပါမည်။"); cancelOrder(); } catch(e) { showToast("အမှားအယွင်း: " + e.message); } finally { btn.disabled = false; btn.innerText = "✅ အော်ဒါတင်မည်"; } };
+  window.trackOrder = async function() { const phone = document.getElementById('trackPhone').value.trim(); const resultDiv = document.getElementById('trackResult'); if (!phone) { showToast("ဖုန်းနံပါတ် ဖြည့်ပါ"); return; } resultDiv.innerHTML = `<div class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i><span>ဒေတာ ရှာဖွေနေပါသည်...</span></div>`; try { const q = query(collection(db, "orders"), where("phone", "==", phone), orderBy("createdAt", "desc")); const snapshot = await getDocs(q); if (snapshot.empty) { resultDiv.innerHTML = `<div class="empty-state"><i class="fas fa-meteor" style="font-size:1.5rem; margin-bottom:8px; display:block;"></i>ဤဖုန်းနံပါတ်ဖြင့် အော်ဒါမရှိသေးပါ။</div>`; return; } let html = ''; snapshot.forEach(doc => { const order = doc.data(); let statusClass = '', statusText = ''; if (order.status === 'pending_payment') { statusClass = 'status-pending'; statusText = '⏳ ဆိုင်းငံ့နေသည်'; } else if (order.status === 'payment_received') { statusClass = 'status-paid'; statusText = '💰 ငွေလက်ခံရရှိပြီ (စောင့်ဆိုင်းနေသည်)'; } else if (order.status === 'approved') { statusClass = 'status-approved'; statusText = '✅ အသက်ဝင်နေသည်'; } else { statusClass = 'status-pending'; statusText = order.status; } const createdDate = order.createdAt ? order.createdAt.toDate() : new Date(); html += `<div class="order-card"><div class="order-header"><span class="order-id"><i class="fas fa-ticket-alt"></i> #${doc.id}</span><span class="order-status-badge ${statusClass}">${statusText}</span></div><div class="order-details"><span><i class="fas fa-gem"></i> ${order.packageName}</span><span><i class="fas fa-coins"></i> ${order.price?.toLocaleString()} KS</span><span><i class="fas fa-calendar"></i> ${createdDate.toLocaleDateString()}</span></div></div>`; }); resultDiv.innerHTML = html; } catch(e) { resultDiv.innerHTML = `<div class="empty-state" style="color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> အမှားအယွင်းရှိနေပါသည်။</div>`; console.error(e); } };
+  function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2500); }
 </script>
 </body>
 </html>
