@@ -1,108 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ATH VIP | 3D Admin Dimension</title>
-    <!-- Tailwind + Fonts + Libraries -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ATH MYTEL OFFICIAL | VIP Admin & Store</title>
+    <!-- Tailwind + Fonts + Icons -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Three.js for 3D background -->
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
-            }
-        }
-    </script>
     <style>
-        * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
-        body { overflow-x: hidden; background: #050b14; }
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #0a0c15; overflow-x: hidden; }
         
-        /* 3D canvas background */
-        #canvas-container {
+        /* animated text background for login */
+        .animated-bg-text {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 0;
+            overflow: hidden;
             pointer-events: none;
+            background: linear-gradient(145deg, #030614 0%, #0a0f2a 100%);
         }
+        .floating-text {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: rgba(255, 215, 0, 0.08);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            animation: moveText 22s linear infinite;
+            font-family: monospace;
+        }
+        @keyframes moveText {
+            0% { transform: translateX(100%) translateY(0) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateX(-20%) translateY(20px) rotate(2deg); opacity: 0.6; }
+            100% { transform: translateX(-120%) translateY(-10px) rotate(-1deg); opacity: 0.2; }
+        }
+        .floating-text:nth-child(2) { animation-duration: 28s; animation-delay: -5s; font-size: 2.2rem; top: 30%; }
+        .floating-text:nth-child(3) { animation-duration: 18s; animation-delay: -10s; font-size: 1.4rem; top: 60%; }
+        .floating-text:nth-child(4) { animation-duration: 32s; animation-delay: -18s; font-size: 2.5rem; top: 80%; }
+        .floating-text:nth-child(5) { animation-duration: 25s; animation-delay: -3s; font-size: 1.6rem; top: 15%; }
         
-        /* glassmorphic cards */
-        .glass-3d {
-            background: rgba(15, 25, 45, 0.55);
+        /* modern glass effects */
+        .glass-premium {
+            background: rgba(15, 25, 45, 0.65);
             backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 200, 50, 0.25);
             border-radius: 2rem;
-            border: 1px solid rgba(255, 215, 0, 0.25);
-            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,215,0,0.1) inset;
         }
-        
-        .glass-panel {
-            background: rgba(10, 20, 35, 0.65);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 200, 50, 0.2);
-            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        .glass-card {
+            background: rgba(10, 20, 35, 0.7);
+            backdrop-filter: blur(10px);
+            transition: all 0.25s;
+            border: 1px solid rgba(255, 200, 70, 0.2);
         }
-        
-        .glow-hover:hover {
-            border-color: rgba(255, 200, 50, 0.6);
-            box-shadow: 0 0 18px rgba(255, 200, 50, 0.2);
-            transform: translateY(-3px);
+        .glass-card:hover {
+            border-color: #fbbf24;
+            transform: translateY(-5px);
+            background: rgba(20, 35, 55, 0.85);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.4);
         }
-        
-        .stat-card-3d {
-            background: rgba(12, 22, 40, 0.7);
+        .vip-product-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,215,0,0.05));
             backdrop-filter: blur(8px);
-            border-bottom: 3px solid #fbbf24;
+            border-left: 4px solid #fbbf24;
+        }
+        .btn-gold {
+            background: linear-gradient(95deg, #eab308, #f59e0b);
             transition: 0.2s;
         }
-        
-        .stat-card-3d:hover { transform: translateY(-5px); background: rgba(20, 32, 55, 0.85); }
-        
-        .order-card-3d {
-            background: rgba(20, 30, 50, 0.7);
-            backdrop-filter: blur(6px);
-            border-left: 5px solid #fbbf24;
-            transition: all 0.25s ease;
+        .btn-gold:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(245,158,11,0.4);
         }
-        
-        .order-card-3d:hover {
-            transform: translateX(6px) scale(1.01);
-            background: rgba(30, 45, 70, 0.85);
-            box-shadow: 0 15px 30px -12px rgba(0,0,0,0.6);
-        }
-        
-        /* animated gradient text */
-        .gradient-text {
-            background: linear-gradient(135deg, #FFD966, #FFB347, #FF8C42);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: shimmer 3s linear infinite;
-        }
-        
-        @keyframes shimmer {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        .pulse-ring {
-            animation: pulseRing 2s infinite;
-        }
-        
-        @keyframes pulseRing {
-            0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); }
-            70% { box-shadow: 0 0 0 12px rgba(251, 191, 36, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
-        }
-        
         .modal-3d {
             display: none;
             position: fixed;
@@ -114,235 +90,181 @@
             align-items: center;
             z-index: 2000;
         }
-        
-        .modal-3d.show { display: flex; animation: fadeInScale 0.25s ease; }
-        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        
+        .modal-3d.show { display: flex; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .badge-status {
             backdrop-filter: blur(4px);
-            letter-spacing: 0.3px;
             font-weight: 600;
         }
-        
-        /* floating input */
-        .floating-input {
+        input, select {
             background: rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255,215,0,0.3);
             transition: 0.2s;
         }
-        .floating-input:focus {
+        input:focus, select:focus {
             border-color: #fbbf24;
-            box-shadow: 0 0 12px rgba(251,191,36,0.3);
             outline: none;
+            box-shadow: 0 0 0 2px rgba(251,191,36,0.2);
         }
-        
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0a0f1a; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<!-- 3D Canvas Background -->
-<div id="canvas-container"></div>
+<!-- Animated Background with "ATH MYTEL OFFICIAL SELLER" running text -->
+<div class="animated-bg-text">
+    <div class="floating-text">🏆 ATH MYTEL OFFICIAL SELLER 🏆</div>
+    <div class="floating-text">🔥 VIP DATA • FAST & SECURE 🔥</div>
+    <div class="floating-text">✨ MYTEL 5G+ ULTRA SPEED ✨</div>
+    <div class="floating-text">⚡ OFFICIAL RESELLER ⚡</div>
+    <div class="floating-text">📱 ATH DIGITAL HUB • TRUSTED 📱</div>
+</div>
 
-<!-- LOGIN SECTION (3D animated) -->
-<div id="loginContainer" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+<!-- LOGIN SECTION (3D glass + animated bg) -->
+<div id="loginContainer" class="fixed inset-0 z-50 flex items-center justify-center p-5">
     <div class="relative w-full max-w-md">
-        <!-- floating orbs -->
-        <div class="absolute -top-16 -left-16 w-48 h-48 bg-yellow-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div class="absolute -bottom-16 -right-16 w-56 h-56 bg-orange-500/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
-        
-        <div class="glass-3d p-8 rounded-2xl shadow-2xl transform transition-all duration-500 hover:scale-[1.01]">
+        <div class="glass-premium p-8 rounded-2xl shadow-2xl border border-yellow-500/40 transform transition-all">
             <div class="text-center mb-6">
                 <div class="relative inline-block">
-                    <div class="absolute inset-0 bg-yellow-500 rounded-full blur-xl opacity-50 animate-ping"></div>
-                    <i class="fas fa-crown text-6xl text-yellow-500 relative z-10 drop-shadow-lg"></i>
+                    <i class="fas fa-crown text-6xl text-yellow-500 drop-shadow-2xl"></i>
                 </div>
-                <h2 class="text-4xl font-black mt-4 gradient-text">ATH ADMIN</h2>
-                <p class="text-slate-300 text-sm mt-1 tracking-wide">3D • VIP Data Vault</p>
+                <h2 class="text-4xl font-black mt-3 bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent">ATH ADMIN</h2>
+                <p class="text-slate-300 text-sm mt-1">MYTEL Official Seller Portal</p>
             </div>
             <div class="space-y-5">
-                <div class="relative group">
-                    <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-yellow-500/70 text-lg"></i>
-                    <input type="password" id="adminPassword" placeholder="Enter master key" class="w-full pl-12 pr-4 py-4 bg-black/40 border border-yellow-500/40 rounded-xl text-white placeholder:text-slate-500 focus:border-yellow-400 transition-all floating-input" autocomplete="off">
+                <div class="relative">
+                    <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-yellow-500"></i>
+                    <input type="password" id="adminPassword" placeholder="Enter Master Password" class="w-full pl-11 pr-4 py-4 rounded-xl text-white placeholder:text-slate-400">
                 </div>
-                <button onclick="login()" class="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-500 hover:to-amber-500 text-white font-bold py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 shadow-xl pulse-ring">
-                    <i class="fas fa-key"></i> <span>ACCESS DASHBOARD</span> <i class="fas fa-arrow-right"></i>
-                </button>
-                <div id="loginError" class="text-red-400 text-center text-sm hidden bg-red-950/30 py-2 rounded-xl"></div>
+                <button onclick="login()" class="w-full btn-gold text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg"><i class="fas fa-key"></i> Access Dashboard</button>
+                <div id="loginError" class="text-red-400 text-sm text-center hidden bg-red-950/40 py-2 rounded-lg"></div>
             </div>
-            <div class="text-center text-slate-500 text-xs mt-6"><i class="fas fa-shield-alt"></i> Encrypted gateway • 3D secured</div>
+            <div class="text-center text-slate-500 text-xs mt-6"><i class="fas fa-shield-alt"></i> Encrypted gateway • ATH SECURE</div>
         </div>
     </div>
 </div>
 
-<!-- MAIN DASHBOARD (appears after login) -->
+<!-- MAIN DASHBOARD + VIP STORE HYBRID -->
 <div id="dashboardContainer" style="display:none;" class="relative z-10">
-    <div class="container mx-auto px-4 py-6 max-w-7xl">
-        <!-- Header with 3D style -->
+    <div class="container mx-auto px-4 py-5 max-w-7xl">
+        <!-- Header -->
         <div class="flex flex-wrap justify-between items-center mb-8 gap-4">
-            <div class="flex items-center gap-4">
-                <div class="bg-gradient-to-br from-yellow-500 to-orange-600 p-3 rounded-2xl shadow-2xl rotate-3">
-                    <i class="fas fa-crown text-3xl text-black"></i>
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-br from-yellow-500 to-orange-600 p-2.5 rounded-xl shadow-xl">
+                    <i class="fas fa-crown text-2xl text-black"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl md:text-4xl font-black tracking-tight"><span class="gradient-text">ATH</span> <span class="text-white">Admin Nexus</span></h1>
-                    <div class="flex items-center gap-2 text-sm text-yellow-400/80"><i class="fas fa-globe"></i> <span id="liveClock">--:--:--</span> • Myanmar Time</div>
+                    <h1 class="text-2xl md:text-3xl font-black"><span class="text-yellow-400">ATH</span> <span class="text-white">Admin Nexus</span></h1>
+                    <p class="text-xs text-yellow-500/80"><i class="fas fa-check-circle"></i> MYTEL OFFICIAL RESELLER</p>
                 </div>
             </div>
             <div class="flex gap-3">
-                <button onclick="fetchOrders()" class="glass-panel px-5 py-2.5 rounded-xl text-white hover:text-yellow-300 transition flex items-center gap-2"><i class="fas fa-sync-alt"></i> Sync</button>
-                <button onclick="logout()" class="glass-panel px-5 py-2.5 rounded-xl text-white hover:bg-red-800/50 transition flex items-center gap-2"><i class="fas fa-sign-out-alt"></i> Exit</button>
+                <button onclick="fetchOrders()" class="glass-card px-5 py-2 rounded-xl text-white flex items-center gap-2"><i class="fas fa-sync-alt"></i> Sync</button>
+                <button onclick="logout()" class="glass-card px-5 py-2 rounded-xl text-white hover:bg-red-800/40 flex items-center gap-2"><i class="fas fa-sign-out-alt"></i> Exit</button>
             </div>
         </div>
 
-        <!-- Stats grid + 3D chart -->
+        <!-- Stats + Chart Row -->
         <div class="grid lg:grid-cols-3 gap-6 mb-8">
             <div class="lg:col-span-2">
                 <div id="statsBar" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
             </div>
-            <div class="glass-3d p-5 rounded-2xl">
-                <h3 class="font-bold text-slate-200 flex items-center gap-2"><i class="fas fa-chart-pie text-yellow-500"></i> Status Analytics</h3>
-                <canvas id="statusChart" height="160" style="max-height: 170px; width:100%"></canvas>
+            <div class="glass-premium p-5 rounded-2xl">
+                <h3 class="font-bold text-yellow-400 flex items-center gap-2"><i class="fas fa-chart-pie"></i> Distribution</h3>
+                <canvas id="statusChart" height="150" style="max-height: 160px;"></canvas>
             </div>
         </div>
 
-        <!-- search & filter bar floating -->
-        <div class="glass-3d p-5 mb-8 flex flex-wrap gap-4 items-center rounded-2xl">
-            <div class="relative flex-1">
+        <!-- Filters & Search -->
+        <div class="glass-premium p-5 mb-8 flex flex-wrap gap-4 items-center rounded-2xl">
+            <div class="relative flex-1 min-w-[200px]">
                 <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-yellow-500"></i>
-                <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search by phone number or Order ID..." class="w-full pl-11 pr-4 py-3 bg-slate-900/60 border border-yellow-500/30 rounded-xl text-white focus:border-yellow-400 transition floating-input">
+                <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search by phone or Order ID" class="w-full pl-11 pr-4 py-3 rounded-xl text-white">
             </div>
-            <div class="w-52">
-                <select id="statusFilter" onchange="applyFilters()" class="w-full px-4 py-3 bg-slate-900/60 border border-yellow-500/30 rounded-xl text-white cursor-pointer focus:border-yellow-400">
-                    <option value="all">📋 All Orders</option>
+            <div class="w-48">
+                <select id="statusFilter" onchange="applyFilters()" class="w-full px-4 py-3 rounded-xl text-white">
+                    <option value="all">📋 All Status</option>
                     <option value="pending_payment">⏳ Pending</option>
-                    <option value="payment_received">💰 Paid (To Verify)</option>
-                    <option value="approved">✅ Active / Approved</option>
+                    <option value="payment_received">💰 Paid (to verify)</option>
+                    <option value="approved">✅ Active</option>
                     <option value="rejected">❌ Rejected</option>
                     <option value="expired">⌛ Expired</option>
                 </select>
             </div>
-            <div class="bg-slate-800/60 px-4 py-2 rounded-xl text-sm"><i class="far fa-file-alt"></i> <span id="resultCount">0</span> results</div>
+            <div class="bg-slate-800/60 px-4 py-2 rounded-xl text-sm text-slate-300"><i class="far fa-file-alt"></i> <span id="resultCount">0</span> entries</div>
         </div>
 
-        <!-- Orders dynamic list -->
-        <div id="ordersContainer" class="space-y-5 pb-12"></div>
+        <!-- Orders Container (Admin Order Management) -->
+        <h2 class="text-xl font-bold mb-4 text-yellow-400"><i class="fas fa-tasks"></i> Order Management</h2>
+        <div id="ordersContainer" class="space-y-4 pb-12"></div>
+        
+        <!-- VIP Store Section (modern products) -->
+        <div class="mt-12 pt-6 border-t border-yellow-500/20">
+            <div class="text-center mb-8">
+                <span class="bg-yellow-500/20 text-yellow-400 px-4 py-1 rounded-full text-sm font-bold"><i class="fas fa-store"></i> Official Store</span>
+                <h2 class="text-3xl font-black text-white mt-2">MYTEL VIP DATA PACKAGES</h2>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- VIP 1 -->
+                <div class="vip-product-card rounded-2xl p-5 text-white">
+                    <div class="flex justify-between"><span class="bg-amber-600/70 px-3 py-1 rounded-full text-xs">LEVEL 1</span><i class="fas fa-gem text-yellow-400 text-xl"></i></div>
+                    <h3 class="text-2xl font-black mt-3">22 GB</h3>
+                    <div class="space-y-1 text-sm text-slate-300 mt-2"><p>📞 8000 Mins On-Net</p><p>💬 5000 SMS</p><p>⚡ 4G/5G</p></div>
+                    <p class="text-2xl font-bold text-yellow-400 mt-4">15,000 KS</p>
+                    <button class="w-full mt-4 bg-white/10 hover:bg-yellow-500 py-2 rounded-xl transition"><i class="fas fa-shopping-cart"></i> Purchase</button>
+                </div>
+                <!-- VIP 2 -->
+                <div class="vip-product-card rounded-2xl p-5 text-white relative overflow-hidden">
+                    <div class="absolute top-2 right-2 bg-red-500 text-[10px] px-2 py-0.5 rounded-full">🔥 POPULAR</div>
+                    <div class="flex justify-between"><span class="bg-amber-600/70 px-3 py-1 rounded-full text-xs">LEVEL 2</span><i class="fas fa-chart-line text-yellow-400"></i></div>
+                    <h3 class="text-2xl font-black mt-3">40 GB</h3>
+                    <div class="space-y-1 text-sm text-slate-300 mt-2"><p>📞 250 Mins On-Net</p><p>🌐 25 Any Net</p><p>🚀 Turbo Speed</p></div>
+                    <p class="text-2xl font-bold text-yellow-400 mt-4">20,000 KS</p>
+                    <button class="w-full mt-4 bg-white/10 hover:bg-yellow-500 py-2 rounded-xl transition"><i class="fas fa-bolt"></i> Order Now</button>
+                </div>
+                <!-- VIP 3 -->
+                <div class="vip-product-card rounded-2xl p-5 text-white">
+                    <div class="flex justify-between"><span class="bg-amber-600/70 px-3 py-1 rounded-full text-xs">LEVEL 3</span><i class="fas fa-tower-cell text-yellow-400"></i></div>
+                    <h3 class="text-2xl font-black mt-3">40 GB</h3>
+                    <div class="space-y-1 text-sm text-slate-300 mt-2"><p>📞 1400 Mins On-Net</p><p>📨 8000 SMS</p><p>🎥 Unlimited Stream</p></div>
+                    <p class="text-2xl font-bold text-yellow-400 mt-4">25,000 KS</p>
+                    <button class="w-full mt-4 bg-white/10 hover:bg-yellow-500 py-2 rounded-xl transition"><i class="fas fa-crown"></i> Get VIP</button>
+                </div>
+                <!-- VIP 4 Ultra -->
+                <div class="vip-product-card rounded-2xl p-5 text-white border border-yellow-500/50">
+                    <div class="flex justify-between"><span class="bg-amber-600/70 px-3 py-1 rounded-full text-xs">ULTRA</span><i class="fas fa-star-of-life text-yellow-500"></i></div>
+                    <h3 class="text-2xl font-black mt-3">120 GB</h3>
+                    <div class="space-y-1 text-sm text-slate-300 mt-2"><p>🎧 Priority Support 24/7</p><p>📡 5G+ Ultra</p><p>🌍 Free Roaming Pack</p></div>
+                    <p class="text-2xl font-bold text-yellow-400 mt-4">30,000 KS</p>
+                    <button class="w-full mt-4 bg-gradient-to-r from-yellow-600 to-orange-500 hover:from-yellow-500 py-2 rounded-xl transition"><i class="fas fa-hand-sparkles"></i> Premium</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <!-- Image Modal -->
 <div id="imageModal" class="modal-3d" onclick="closeModal()">
     <div class="relative max-w-3xl p-4" onclick="event.stopPropagation()">
-        <img id="modalImage" src="" class="max-w-full max-h-[80vh] rounded-2xl shadow-2xl border-4 border-yellow-500/60">
-        <button onclick="closeModal()" class="absolute -top-4 -right-4 bg-black/80 rounded-full p-2 w-10 h-10 flex items-center justify-center text-white hover:bg-red-600 text-xl"><i class="fas fa-times"></i></button>
+        <img id="modalImage" src="" class="max-w-full max-h-[80vh] rounded-2xl border-4 border-yellow-500">
+        <button onclick="closeModal()" class="absolute -top-3 -right-3 bg-black/70 rounded-full p-2 text-white"><i class="fas fa-times"></i></button>
     </div>
 </div>
 
-<script type="module">
-    // 3D Background with Three.js - rotating torus knot + particles
-    import * as THREE from 'three';
-    const container = document.getElementById('canvas-container');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x050b14);
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 0, 12);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    container.appendChild(renderer.domElement);
-    
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0x222222);
-    scene.add(ambientLight);
-    const pointLight = new THREE.PointLight(0xffaa33, 1, 30);
-    pointLight.position.set(2, 3, 5);
-    scene.add(pointLight);
-    const backLight = new THREE.PointLight(0x3366ff, 0.5);
-    backLight.position.set(-2, 1, -4);
-    scene.add(backLight);
-    
-    // Main object: TorusKnot with gold material
-    const geometry = new THREE.TorusKnotGeometry(1.8, 0.45, 200, 32, 3, 4);
-    const material = new THREE.MeshStandardMaterial({ color: 0xffaa33, emissive: 0x442200, roughness: 0.3, metalness: 0.85 });
-    const knot = new THREE.Mesh(geometry, material);
-    scene.add(knot);
-    
-    // Floating particles
-    const particleCount = 1800;
-    const particlesGeometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(particleCount * 3);
-    for (let i = 0; i < particleCount; i++) {
-        positions[i*3] = (Math.random() - 0.5) * 60;
-        positions[i*3+1] = (Math.random() - 0.5) * 40;
-        positions[i*3+2] = (Math.random() - 0.5) * 30 - 15;
-    }
-    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const particleMaterial = new THREE.PointsMaterial({ color: 0xffaa66, size: 0.08, transparent: true, opacity: 0.5 });
-    const particles = new THREE.Points(particlesGeometry, particleMaterial);
-    scene.add(particles);
-    
-    // Star background effect - small stars
-    const starGeo = new THREE.BufferGeometry();
-    const starPos = [];
-    for (let i = 0; i < 1200; i++) {
-        starPos.push((Math.random() - 0.5) * 200);
-        starPos.push((Math.random() - 0.5) * 100);
-        starPos.push((Math.random() - 0.5) * 70 - 30);
-    }
-    starGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(starPos), 3));
-    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.05, transparent: true });
-    const stars = new THREE.Points(starGeo, starMat);
-    scene.add(stars);
-    
-    let time = 0;
-    function animate3D() {
-        requestAnimationFrame(animate3D);
-        time += 0.008;
-        knot.rotation.x = time * 0.5;
-        knot.rotation.y = time * 0.8;
-        knot.rotation.z = time * 0.3;
-        particles.rotation.y = time * 0.05;
-        stars.rotation.x = time * 0.02;
-        renderer.render(scene, camera);
-    }
-    animate3D();
-    
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-</script>
-
 <script>
-    // ---------- APP STATE ----------
     let adminToken = "";
     let allOrders = [];
     let chartInstance = null;
-    
-    // Clock for myanmar time
-    function updateClock() {
-        const now = new Date();
-        const myanmar = new Date(now.getTime() + (6.5 * 60 * 60 * 1000));
-        const timeStr = myanmar.toISOString().slice(11, 19);
-        if(document.getElementById('liveClock')) document.getElementById('liveClock').innerText = timeStr;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-    
-    // Login simulation with backend
+
+    // Login simulation with backend hook
     async function login() {
         const pwd = document.getElementById('adminPassword').value;
-        if (!pwd) {
-            Swal.fire({ icon: 'warning', title: 'Access key required', text: 'Enter admin password', background: '#0f172a', color: '#fff' });
-            return;
-        }
+        if (!pwd) { Swal.fire({ icon: 'warning', text: 'Enter password', background:'#1e293b' }); return; }
         try {
             const res = await fetch('/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ password: pwd })
             });
             const data = await res.json();
@@ -351,17 +273,14 @@
                 document.getElementById('loginContainer').style.display = 'none';
                 document.getElementById('dashboardContainer').style.display = 'block';
                 fetchOrders();
-                Swal.fire({ icon: 'success', title: 'Access Granted', text: 'Welcome to 3D Admin Nexus', background: '#1e293b', toast: true, timer: 1800, showConfirmButton: false });
+                Swal.fire({ icon: 'success', title: 'Welcome', text: 'ATH MYTEL Admin', background: '#1e293b', toast: true, timer: 1500 });
             } else {
-                const errDiv = document.getElementById('loginError');
-                errDiv.classList.remove('hidden');
-                errDiv.innerText = '❌ Authentication failed • Invalid master key';
+                document.getElementById('loginError').classList.remove('hidden');
+                document.getElementById('loginError').innerText = '❌ Invalid master key • Access denied';
             }
-        } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Connection Error', text: 'Backend unreachable. Using demo fallback?', background: '#1e293b' });
-        }
+        } catch(e) { Swal.fire({ icon: 'error', title: 'Backend error', text: 'Check API connection', background:'#1e293b' }); }
     }
-    
+
     async function fetchOrders() {
         if (!adminToken) return;
         try {
@@ -372,35 +291,31 @@
                 renderStats(data.stats);
                 updateChart(data.stats);
                 applyFilters();
-            } else {
-                Swal.fire({ icon: 'error', text: data.message || 'Unauthorized', background: '#1e293b' });
-                if (data.message === 'Unauthorized') logout();
-            }
-        } catch (err) { console.error(err); Swal.fire({ icon: 'error', title: 'Network error', text: 'Check API connection', background: '#1e293b' }); }
+            } else { if(data.message === 'Unauthorized') logout(); }
+        } catch(err) { console.error(err); }
     }
-    
+
     function renderStats(stats) {
-        if (!stats) return;
         document.getElementById('statsBar').innerHTML = `
-            <div class="stat-card-3d rounded-xl p-4"><div class="flex justify-between"><span class="text-slate-300 text-sm">📦 Total Orders</span><i class="fas fa-database text-yellow-400"></i></div><h3 class="text-2xl font-bold mt-1">${stats.total}</h3></div>
-            <div class="stat-card-3d rounded-xl p-4"><div class="flex justify-between"><span class="text-slate-300 text-sm">⏳ Pending</span><i class="fas fa-hourglass-half text-amber-400"></i></div><h3 class="text-2xl font-bold text-amber-400">${stats.pending}</h3></div>
-            <div class="stat-card-3d rounded-xl p-4"><div class="flex justify-between"><span class="text-slate-300 text-sm">💰 Paid to verify</span><i class="fas fa-coins text-blue-400"></i></div><h3 class="text-2xl font-bold text-blue-400">${stats.paid}</h3></div>
-            <div class="stat-card-3d rounded-xl p-4"><div class="flex justify-between"><span class="text-slate-300 text-sm">✅ Active</span><i class="fas fa-check-circle text-emerald-400"></i></div><h3 class="text-2xl font-bold text-emerald-400">${stats.approved}</h3></div>
-            <div class="stat-card-3d rounded-xl p-4"><div class="flex justify-between"><span class="text-slate-300 text-sm">⌛ Expired</span><i class="fas fa-calendar-times text-rose-400"></i></div><h3 class="text-2xl font-bold text-rose-400">${stats.expired}</h3></div>
-            <div class="stat-card-3d rounded-xl p-4"><div class="flex justify-between"><span class="text-slate-300 text-sm">💰 Revenue</span><i class="fas fa-chart-line text-purple-400"></i></div><h3 class="text-2xl font-bold text-purple-300">${stats.revenue.toLocaleString()} KS</h3></div>
+            <div class="glass-card rounded-xl p-4"><div class="text-slate-300 text-sm">📦 Total Orders</div><h3 class="text-2xl font-bold text-white">${stats.total}</h3></div>
+            <div class="glass-card rounded-xl p-4"><div class="text-slate-300 text-sm">⏳ Pending</div><h3 class="text-2xl font-bold text-amber-400">${stats.pending}</h3></div>
+            <div class="glass-card rounded-xl p-4"><div class="text-slate-300 text-sm">💰 Paid</div><h3 class="text-2xl font-bold text-blue-400">${stats.paid}</h3></div>
+            <div class="glass-card rounded-xl p-4"><div class="text-slate-300 text-sm">✅ Active</div><h3 class="text-2xl font-bold text-emerald-400">${stats.approved}</h3></div>
+            <div class="glass-card rounded-xl p-4"><div class="text-slate-300 text-sm">⌛ Expired</div><h3 class="text-2xl font-bold text-rose-400">${stats.expired}</h3></div>
+            <div class="glass-card rounded-xl p-4"><div class="text-slate-300 text-sm">💰 Revenue</div><h3 class="text-2xl font-bold text-purple-400">${stats.revenue.toLocaleString()} KS</h3></div>
         `;
     }
-    
+
     function updateChart(stats) {
         const ctx = document.getElementById('statusChart').getContext('2d');
-        if (chartInstance) chartInstance.destroy();
+        if(chartInstance) chartInstance.destroy();
         chartInstance = new Chart(ctx, {
             type: 'doughnut',
-            data: { labels: ['Pending', 'Paid', 'Approved', 'Rejected', 'Expired'], datasets: [{ data: [stats.pending, stats.paid, stats.approved, stats.rejected || 0, stats.expired], backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#6b7280'], borderWidth: 0, hoverOffset: 10 }] },
-            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1', font: { size: 11 } } } } }
+            data: { labels: ['Pending','Paid','Approved','Rejected','Expired'], datasets: [{ data: [stats.pending, stats.paid, stats.approved, stats.rejected||0, stats.expired], backgroundColor: ['#f59e0b','#3b82f6','#10b981','#ef4444','#6b7280'], borderWidth: 0 }] },
+            options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1' } } } }
         });
     }
-    
+
     function applyFilters() {
         const search = document.getElementById('searchInput').value.toLowerCase();
         const status = document.getElementById('statusFilter').value;
@@ -408,49 +323,29 @@
         document.getElementById('resultCount').innerText = filtered.length;
         renderOrders(filtered);
     }
-    
+
     function renderOrders(orders) {
         const container = document.getElementById('ordersContainer');
-        if (!orders.length) {
-            container.innerHTML = `<div class="glass-3d text-center py-16 text-slate-400 rounded-2xl"><i class="fas fa-inbox text-5xl mb-3 opacity-50"></i><p>No matching orders found.</p></div>`;
-            return;
-        }
+        if(!orders.length){ container.innerHTML = `<div class="glass-premium text-center py-12 text-slate-400">No orders found</div>`; return; }
         let html = '';
         orders.forEach(order => {
-            const statusMap = {
-                'pending_payment': { label: '⏳ Pending Payment', color: 'bg-amber-900/40 text-amber-300 border-amber-500' },
-                'payment_received': { label: '💰 Payment Received', color: 'bg-blue-900/40 text-blue-300 border-blue-500' },
-                'approved': { label: '✅ Approved / Active', color: 'bg-emerald-900/40 text-emerald-300 border-emerald-500' },
-                'rejected': { label: '❌ Rejected', color: 'bg-red-900/40 text-red-300 border-red-500' },
-                'expired': { label: '⌛ Expired', color: 'bg-slate-700/50 text-slate-300 border-slate-500' }
-            }[order.status] || { label: order.status, color: 'bg-slate-700' };
-            const rejectHtml = order.rejectReason ? `<div class="mt-2 text-xs bg-red-950/40 p-2 rounded-lg text-red-300"><i class="fas fa-comment-dots"></i> Reason: ${escapeHtml(order.rejectReason)}</div>` : '';
-            const proofImg = order.screenshotPath ? `<img src="${order.screenshotPath}" class="w-14 h-14 object-cover rounded-xl border border-yellow-500/60 cursor-pointer hover:scale-105 transition" onclick="showImage('${order.screenshotPath}')">` : `<div class="w-14 h-14 bg-slate-700/70 rounded-xl flex items-center justify-center"><i class="fas fa-receipt text-slate-400"></i></div>`;
-            
+            const statusMap = { 'pending_payment':'⏳ Pending','payment_received':'💰 Paid','approved':'✅ Active','rejected':'❌ Rejected','expired':'⌛ Expired' };
+            const badgeColor = { 'pending_payment':'bg-amber-900/50 text-amber-300','payment_received':'bg-blue-900/50 text-blue-300','approved':'bg-emerald-900/50 text-emerald-300','rejected':'bg-red-900/50 text-red-300','expired':'bg-slate-700/50 text-slate-300' }[order.status] || 'bg-slate-700';
+            const rejectHtml = order.rejectReason ? `<div class="mt-2 text-xs bg-red-950/40 p-2 rounded-lg text-red-300"><i class="fas fa-ban"></i> ${escapeHtml(order.rejectReason)}</div>` : '';
+            const proofImg = order.screenshotPath ? `<img src="${order.screenshotPath}" class="w-12 h-12 object-cover rounded-lg border border-yellow-500 cursor-pointer" onclick="showImage('${order.screenshotPath}')">` : `<div class="w-12 h-12 bg-slate-700 rounded-lg flex items-center justify-center"><i class="fas fa-receipt text-slate-500"></i></div>`;
             html += `
-                <div class="order-card-3d rounded-2xl p-5 transition-all">
-                    <div class="flex flex-wrap justify-between gap-3">
-                        <div class="flex items-center gap-3 flex-wrap">
-                            <span class="bg-black/50 font-mono text-sm px-3 py-1.5 rounded-xl border border-yellow-500/40"><i class="fas fa-hashtag text-yellow-400"></i> ${order.id}</span>
-                            <span class="font-extrabold text-lg">📦 ${escapeHtml(order.packageName)}</span>
-                            <span class="px-3 py-1 rounded-full text-xs font-bold border ${statusMap.color} badge-status">${statusMap.label}</span>
-                        </div>
-                        <div class="text-slate-400 text-xs"><i class="far fa-calendar-alt"></i> ${order.createdAtMyanmar || order.createdAt}</div>
+                <div class="glass-card rounded-2xl p-5">
+                    <div class="flex flex-wrap justify-between items-start gap-2">
+                        <div class="flex gap-3 items-center flex-wrap"><span class="font-mono text-sm bg-black/40 px-3 py-1 rounded-xl">#${order.id}</span><span class="font-bold">${order.packageName}</span><span class="px-3 py-1 rounded-full text-xs font-bold ${badgeColor}">${statusMap[order.status] || order.status}</span></div>
+                        <span class="text-xs text-slate-400">${order.createdAtMyanmar || order.createdAt}</span>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 text-sm">
-                        <div><i class="fas fa-phone-alt text-yellow-500 w-5"></i> <span class="font-mono">${order.phone}</span></div>
-                        <div><i class="fas fa-money-bill-wave text-green-400"></i> <span class="font-bold text-green-300">${Number(order.price).toLocaleString()} KS</span></div>
-                        <div><i class="fas fa-crown text-amber-400"></i> Level: ${order.ipLevel || 'VIP'}</div>
-                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3 text-sm"><div><i class="fas fa-phone text-yellow-500"></i> ${order.phone}</div><div><i class="fas fa-money-bill-wave text-green-400"></i> ${Number(order.price).toLocaleString()} KS</div><div><i class="fas fa-crown text-amber-400"></i> ${order.ipLevel || 'VIP'}</div></div>
                     ${rejectHtml}
                     <div class="flex justify-between items-center mt-4 pt-3 border-t border-white/10">
-                        <div class="flex gap-3 items-center">${proofImg}<span class="text-xs text-slate-400">payment slip</span></div>
+                        <div class="flex gap-2 items-center">${proofImg}<span class="text-xs text-slate-400">payment</span></div>
                         <div class="flex gap-2">
-                            ${order.status === 'payment_received' ? `
-                                <button onclick="updateOrderStatus(${order.id}, 'approved')" class="bg-emerald-700 hover:bg-emerald-600 px-5 py-2 rounded-xl text-sm font-bold transition shadow-md"><i class="fas fa-check-circle"></i> Approve</button>
-                                <button onclick="promptReject(${order.id})" class="bg-rose-700/80 hover:bg-rose-600 px-5 py-2 rounded-xl text-sm font-bold"><i class="fas fa-ban"></i> Reject</button>
-                            ` : ''}
-                            <button onclick="deleteOrder(${order.id})" class="bg-slate-700 hover:bg-red-800 px-5 py-2 rounded-xl text-sm font-bold"><i class="fas fa-trash"></i> Delete</button>
+                            ${order.status === 'payment_received' ? `<button onclick="updateOrderStatus(${order.id}, 'approved')" class="bg-emerald-700 hover:bg-emerald-600 px-4 py-1.5 rounded-lg text-sm">Approve</button><button onclick="promptReject(${order.id})" class="bg-rose-700 hover:bg-rose-600 px-4 py-1.5 rounded-lg text-sm">Reject</button>` : ''}
+                            <button onclick="deleteOrder(${order.id})" class="bg-slate-700 hover:bg-red-800 px-4 py-1.5 rounded-lg text-sm">Delete</button>
                         </div>
                     </div>
                 </div>
@@ -458,42 +353,27 @@
         });
         container.innerHTML = html;
     }
-    
-    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]; }); }
-    
-    async function updateOrderStatus(orderId, newStatus, rejectReason = null) {
-        try {
-            const res = await fetch('/api/admin/update-order', {
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-auth': adminToken },
-                body: JSON.stringify({ orderId, status: newStatus, rejectReason })
-            });
-            const data = await res.json();
-            if (data.success) { Swal.fire({ icon: 'success', title: 'Updated', text: `Order #${orderId} status changed`, toast: true, timer: 1500, showConfirmButton: false }); fetchOrders(); }
-            else Swal.fire({ icon: 'error', text: data.message });
-        } catch { Swal.fire({ icon: 'error', text: 'Update failed' }); }
+
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[m])); }
+    async function updateOrderStatus(orderId, newStatus, rejectReason=null){
+        const res = await fetch('/api/admin/update-order', { method:'POST', headers:{'Content-Type':'application/json','x-admin-auth':adminToken}, body:JSON.stringify({orderId, status:newStatus, rejectReason}) });
+        if((await res.json()).success){ Swal.fire({icon:'success',toast:true,timer:1200,title:'Updated'}); fetchOrders(); }
     }
-    
-    async function promptReject(orderId) {
-        const { value: reason } = await Swal.fire({
-            title: 'Rejection cause', input: 'text', inputLabel: 'Reason for rejecting this order', inputPlaceholder: 'Invalid payment proof / mismatch', background: '#1e293b', color: '#fff', confirmButtonColor: '#e11d48'
-        });
-        if (reason !== undefined) updateOrderStatus(orderId, 'rejected', reason || 'Verification failed');
+    async function promptReject(orderId){
+        const {value:reason}=await Swal.fire({title:'Rejection Reason', input:'text', inputLabel:'Why reject?', background:'#1e293b',color:'#fff'});
+        if(reason!==undefined) updateOrderStatus(orderId,'rejected',reason||'Verification failed');
     }
-    
-    async function deleteOrder(orderId) {
-        const confirm = await Swal.fire({ title: 'Delete order?', text: 'Action irreversible', icon: 'warning', showCancelButton: true, background: '#1e293b' });
-        if (confirm.isConfirmed) {
-            const res = await fetch('/api/admin/delete-order', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-auth': adminToken }, body: JSON.stringify({ orderId }) });
-            const data = await res.json();
-            if (data.success) { Swal.fire('Deleted', '', 'success'); fetchOrders(); }
-            else Swal.fire({ icon: 'error', text: data.message });
+    async function deleteOrder(orderId){
+        const confirm = await Swal.fire({title:'Delete order?', icon:'warning', showCancelButton:true, background:'#1e293b'});
+        if(confirm.isConfirmed){
+            const res = await fetch('/api/admin/delete-order', { method:'POST', headers:{'Content-Type':'application/json','x-admin-auth':adminToken}, body:JSON.stringify({orderId}) });
+            if((await res.json()).success){ Swal.fire('Deleted','','success'); fetchOrders(); }
         }
     }
-    
-    function showImage(url) { document.getElementById('modalImage').src = url; document.getElementById('imageModal').classList.add('show'); }
-    function closeModal() { document.getElementById('imageModal').classList.remove('show'); }
-    window.logout = function() { adminToken = ""; document.getElementById('dashboardContainer').style.display = 'none'; document.getElementById('loginContainer').style.display = 'flex'; };
-    window.login = login; window.fetchOrders = fetchOrders; window.applyFilters = applyFilters; window.updateOrderStatus = updateOrderStatus; window.promptReject = promptReject; window.deleteOrder = deleteOrder; window.showImage = showImage; window.closeModal = closeModal;
+    function showImage(url){ document.getElementById('modalImage').src=url; document.getElementById('imageModal').classList.add('show'); }
+    function closeModal(){ document.getElementById('imageModal').classList.remove('show'); }
+    function logout(){ adminToken=""; document.getElementById('dashboardContainer').style.display='none'; document.getElementById('loginContainer').style.display='flex'; }
+    window.login=login; window.fetchOrders=fetchOrders; window.applyFilters=applyFilters; window.updateOrderStatus=updateOrderStatus; window.promptReject=promptReject; window.deleteOrder=deleteOrder; window.showImage=showImage; window.closeModal=closeModal; window.logout=logout;
 </script>
 </body>
 </html>
