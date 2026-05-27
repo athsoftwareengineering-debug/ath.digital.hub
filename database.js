@@ -2,10 +2,17 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 
-const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+// Render Persistent Disk ကို ဦးစားပေးသုံးမယ်
+// Render မှာ Disk ထည့်ထားရင် RENDER_DISK_PATH ရှိမယ်
+// မထည့်ထားရင် local ./data folder ကိုသုံးမယ်
+const DATA_DIR = process.env.RENDER_DISK_PATH || path.join(__dirname, 'data');
 
-const dbPath = path.join(dataDir, 'orders.db');
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  console.log(`📁 Created data directory: ${DATA_DIR}`);
+}
+
+const dbPath = path.join(DATA_DIR, 'orders.db');
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('❌ Database connection error:', err.message);
@@ -14,9 +21,10 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 });
 
+// Create tables
 db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS orders (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY,
     packageName TEXT,
     phone TEXT,
     price INTEGER,
@@ -29,7 +37,10 @@ db.serialize(() => {
     startDate TEXT,
     endDate TEXT,
     daysRemaining INTEGER,
-    isExpired INTEGER DEFAULT 0
+    isExpired INTEGER DEFAULT 0,
+    userId TEXT,
+    userEmail TEXT,
+    userName TEXT
   )`);
 
   db.run(`CREATE TABLE IF NOT EXISTS settings (
@@ -41,8 +52,10 @@ db.serialize(() => {
   
   db.run(`CREATE INDEX IF NOT EXISTS idx_orders_phone ON orders(phone)`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_orders_userId ON orders(userId)`);
 });
 
+// Promise wrappers
 const run = (query, params = []) => new Promise((resolve, reject) => {
   db.run(query, params, function(err) {
     if (err) reject(err); else resolve(this);
@@ -69,11 +82,13 @@ module.exports = {
     return nextId;
   },
 
-  createOrder: async (o) => {
+  createOrder: async (order) => {
     return run(`INSERT INTO orders 
-      (id, packageName, phone, price, status, createdAt, createdAtMyanmar, updatedAt, note) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
-      [o.id, o.packageName, o.phone, o.price, o.status, o.createdAt, o.createdAtMyanmar, o.updatedAt, o.note || '']
+      (id, packageName, phone, price, status, createdAt, createdAtMyanmar, updatedAt, note, userId, userEmail, userName) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+      [order.id, order.packageName, order.phone, order.price, order.status, 
+       order.createdAt, order.createdAtMyanmar, order.updatedAt, order.note || '',
+       order.userId || '', order.userEmail || '', order.userName || '']
     );
   },
 
@@ -89,14 +104,18 @@ module.exports = {
     return all(`SELECT * FROM orders WHERE phone = ? ORDER BY createdAt DESC`, [phone]);
   },
 
-  searchOrders: (q) => {
-    return all(`SELECT * FROM orders WHERE phone LIKE ? OR note LIKE ? ORDER BY createdAt DESC`, 
-      [`%${q}%`, `%${q}%`]);
+  getOrdersByUserId: (userId) => {
+    return all(`SELECT * FROM orders WHERE userId = ? ORDER BY createdAt DESC`, [userId]);
   },
 
-  updateOrderScreenshot: (id, path) => {
+  searchOrders: (query) => {
+    return all(`SELECT * FROM orders WHERE phone LIKE ? OR note LIKE ? OR packageName LIKE ? ORDER BY createdAt DESC`, 
+      [`%${query}%`, `%${query}%`, `%${query}%`]);
+  },
+
+  updateOrderScreenshot: (id, screenshotPath) => {
     return run(`UPDATE orders SET screenshotPath = ?, updatedAt = ? WHERE id = ?`, 
-      [path, new Date().toISOString(), id]);
+      [screenshotPath, new Date().toISOString(), id]);
   },
 
   updateOrderNote: (id, note) => {
@@ -129,13 +148,13 @@ module.exports = {
     const revenue = await get(`SELECT SUM(price) as s FROM orders WHERE status = 'approved'`);
     
     return {
-      total: total.c || 0,
-      pending: pending.c || 0,
-      paid: paid.c || 0,
-      approved: approved.c || 0,
-      rejected: rejected.c || 0,
-      expired: expired.c || 0,
-      revenue: revenue.s || 0
+      total: total?.c || 0,
+      pending: pending?.c || 0,
+      paid: paid?.c || 0,
+      approved: approved?.c || 0,
+      rejected: rejected?.c || 0,
+      expired: expired?.c || 0,
+      revenue: revenue?.s || 0
     };
   },
 
