@@ -3,206 +3,494 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>ATH 5G+ | MYTEL Official Seller - Fully Connected</title>
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="X-Frame-Options" content="DENY">
-  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>ATH 5G+ | MYTEL Official Seller - Complete System</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background: #03030f; color: #fff; overflow-x: hidden; }
-    #weather-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-    .content { position: relative; z-index: 10; max-width: 1300px; margin: 0 auto; padding: 0.8rem 1rem 1rem; }
-    .weather-bar { background: rgba(0,0,0,0.55); backdrop-filter: blur(10px); border-radius: 60px; padding: 0.4rem 1.2rem; display: inline-flex; align-items: center; gap: 12px; font-size: 0.8rem; margin-bottom: 0.8rem; border: 1px solid rgba(0,200,255,0.4); }
-    @keyframes softBlink { 0%,100%{ opacity:1; } 50%{ opacity:0.6; text-shadow:0 0 6px #FFD700; } }
-    .blinking-text { animation: softBlink 1.5s ease-in-out infinite; color: #FFD700; font-weight: 500; }
-    .blinking-text-light { animation: softBlink 1.2s ease-in-out infinite; color: #00ccff; }
-    .footer { text-align: center; margin-top: 2rem; padding: 0.8rem; border-top: 1px solid rgba(0,200,255,0.15); }
-    .footer-text { font-size: 0.6rem; color: #5a6e8a; letter-spacing: 0.5px; }
-    .weather-icon { font-size: 1.2rem; filter: drop-shadow(0 0 5px rgba(0,200,255,0.5)); }
-    .weather-temp { font-weight: 800; color: #FFD700; font-size: 1rem; }
-    .weather-desc { color: #cbd5e1; font-size: 0.7rem; text-transform: capitalize; }
-    .brand-header { text-align: center; margin-bottom: 0.3rem; animation: fadeInDown 0.8s ease; }
-    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
-    .logo { font-size: clamp(2rem, 8vw, 3rem); font-weight: 900; background: linear-gradient(135deg, #FFD700, #FFA500, #FF69B4, #00FFFF); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: logoGlow 3s ease infinite; }
-    @keyframes logoGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-    .brand-name { font-size: clamp(0.8rem, 4vw, 1rem); background: linear-gradient(135deg, #c0c0c0, #ffffff, #00ccff); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .official-badge { display: inline-block; background: linear-gradient(95deg, #facc15, #ff69b4); border-radius: 40px; padding: 0.2rem 0.8rem; font-size: 0.6rem; font-weight: 700; color: #0a0a2a; margin-top: 5px; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.02); box-shadow:0 0 0 6px rgba(250,204,21,0.2); } }
-    .fiveg { color: #00ccff; font-size: 0.7rem; margin-left: 5px; display: inline-block; animation: blink 1.5s infinite; }
-    @keyframes blink { 0%,100%{ opacity:1; text-shadow:0 0 5px #00ccff; } 50%{ opacity:0.6; } }
-    .main-title { text-align: center; font-size: clamp(1rem, 5vw, 1.3rem); margin: 0.3rem 0; color: #FFD700; }
-    .user-bar { display: flex; justify-content: flex-end; align-items: center; gap: 0.8rem; margin-bottom: 1rem; flex-wrap: wrap; }
-    .user-info { background: rgba(10,20,40,0.6); backdrop-filter: blur(8px); padding: 0.2rem 1rem; border-radius: 40px; font-size: 0.7rem; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(0,200,255,0.3); }
-    .login-btn, .logout-btn { background: linear-gradient(95deg, #00ccff, #0099cc); border: none; padding: 0.3rem 1rem; border-radius: 40px; font-weight: 700; font-size: 0.7rem; cursor: pointer; color: white; transition: transform 0.2s; }
-    .login-btn:hover, .logout-btn:hover { transform: scale(1.05); }
-    .plans-container { display: flex; flex-direction: column; gap: 0.8rem; margin: 1rem 0; }
-    .plan-card { position: relative; background: rgba(10, 15, 35, 0.6); backdrop-filter: blur(12px); border-radius: 1rem; padding: 0.7rem 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; border: 1px solid rgba(0,200,255,0.25); cursor: pointer; transition: all 0.3s ease; overflow: hidden; }
-    .plan-card::before { content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0, #00ccff, #ff0080); background-size: 300% 300%; border-radius: 1rem; z-index: -2; opacity: 0; transition: opacity 0.3s; animation: runningLight 3s linear infinite; }
-    .plan-card:hover::before { opacity: 0.7; }
-    .plan-card.selected::before { opacity: 1; }
-    @keyframes runningLight { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-    .plan-card:hover { transform: translateX(5px) scale(1.01); background: rgba(0,200,255,0.12); border-color: #00ccff; }
-    .plan-card.selected { background: rgba(0,200,255,0.18); border: 1px solid transparent; transform: scale(1.02); box-shadow: 0 0 25px rgba(0,200,255,0.4); }
-    .plan-info { display: flex; align-items: center; gap: 12px; flex: 2; }
-    .plan-icon { font-size: 1.6rem; }
-    .plan-card.selected .plan-icon { transform: scale(1.1); }
-    .plan-details h4 { font-size: 0.95rem; font-weight: 800; color: #00ccff; margin-bottom: 2px; }
-    .plan-features { display: flex; gap: 12px; font-size: 0.7rem; flex-wrap: wrap; }
-    .feature-text { color: #cbd5e1; }
-    .data-text { color: #FFD700; font-weight: 700; }
-    .mins-text { color: #00ccff; font-weight: 700; }
-    .sms-text { color: #ff69b4; font-weight: 700; }
-    .plan-price { font-size: 1.1rem; font-weight: 800; color: #FFD700; }
-    .select-plan-btn { background: linear-gradient(95deg, #00ccff, #0099cc); border: none; padding: 0.5rem 1.2rem; border-radius: 40px; font-size: 0.75rem; font-weight: 700; color: white; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
-    .select-plan-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(0,200,255,0.6); }
-    .payment-card { max-width: 500px; margin: 1rem auto; background: rgba(10, 15, 35, 0.85); backdrop-filter: blur(16px); border-radius: 1.5rem; padding: 1.2rem; border: 1px solid rgba(0,200,255,0.4); animation: fadeInScale 0.4s ease; }
-    @keyframes fadeInScale { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
-    .selected-plan-name { font-size: 0.95rem; font-weight: 800; text-align: center; color: #FFD700; background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 60px; margin-bottom: 0.8rem; }
-    .input-group { margin-bottom: 0.7rem; }
-    .input-group label { font-size: 0.65rem; color: #8892b0; display: block; margin-bottom: 0.2rem; }
-    .input-group input, .input-group textarea { width: 100%; padding: 8px 12px; background: #0a0a20; border: 1px solid #2a2a50; border-radius: 40px; color: white; font-size: 0.85rem; }
-    .payment-box { background: rgba(0, 0, 0, 0.4); border-radius: 1rem; padding: 0.6rem; text-align: center; margin: 0.6rem 0; }
-    .copy-number { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(95deg, #FFD700, #FFA500); color: #0a0a2a; padding: 0.3rem 1rem; border-radius: 60px; font-size: 0.9rem; font-weight: 800; cursor: pointer; }
-    .upload-area { border: 2px dashed #00ccff; border-radius: 1rem; padding: 0.6rem; text-align: center; margin: 0.6rem 0; cursor: pointer; font-size: 0.7rem; background: rgba(0,0,0,0.3); }
-    .preview-img { max-width: 100%; max-height: 70px; margin-top: 6px; border-radius: 10px; display: none; }
-    .button-group { display: flex; gap: 0.8rem; margin-top: 0.8rem; }
-    .btn-submit, .btn-cancel { flex: 1; padding: 0.6rem; border-radius: 40px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: none; }
-    .btn-submit { background: linear-gradient(95deg, #22c55e, #16a34a); color: white; }
-    .btn-cancel { background: linear-gradient(95deg, #ef4444, #dc2626); color: white; }
-    .track-section { position: relative; background: rgba(10, 15, 35, 0.65); backdrop-filter: blur(16px); border-radius: 1.5rem; padding: 1.2rem; margin-top: 1.5rem; border: 1px solid rgba(0,200,255,0.3); transition: all 0.3s ease; }
-    .track-section:hover { transform: translateY(-3px); box-shadow: 0 0 25px rgba(0,200,255,0.3); }
-    .track-header { text-align: center; font-size: 1rem; font-weight: 800; color: #00ccff; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 0.5rem; }
-    .track-sub { text-align: center; font-size: 0.65rem; color: #8892b0; margin-bottom: 0.8rem; }
-    .track-input-wrapper { max-width: 450px; margin: 0 auto; }
-    .track-input-box { display: flex; align-items: center; gap: 0.5rem; background: rgba(0, 0, 0, 0.5); border-radius: 60px; padding: 0.2rem 0.2rem 0.2rem 1rem; border: 1px solid rgba(0,200,255,0.4); transition: all 0.3s; }
-    .track-input-box:focus-within { border-color: #00ccff; box-shadow: 0 0 15px rgba(0,200,255,0.4); }
-    .track-input-box input { flex: 1; background: transparent; border: none; padding: 0.7rem 0; color: white; outline: none; font-size: 0.85rem; }
-    .track-input-box button { background: linear-gradient(95deg, #00ccff, #0099cc); border: none; padding: 0.5rem 1.2rem; border-radius: 60px; font-weight: 800; font-size: 0.75rem; color: white; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
-    .track-input-box button:hover { transform: scale(1.03); }
-    .track-result-container { margin-top: 1rem; max-height: 320px; overflow-y: auto; padding-right: 5px; }
-    .order-card { background: linear-gradient(125deg, rgba(25, 35, 60, 0.85), rgba(15, 20, 45, 0.9)); border-radius: 1rem; padding: 0.8rem 1rem; margin-bottom: 0.8rem; border-left: 3px solid #00ccff; transition: all 0.3s ease; animation: fadeInUp 0.3s ease-out; }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-    .order-card:hover { transform: translateX(5px); border-left-color: #FFD700; }
-    .order-id { font-weight: 800; color: #00ccff; font-size: 0.75rem; background: rgba(0,200,255,0.15); padding: 3px 10px; border-radius: 30px; }
-    .order-status-badge { font-size: 0.65rem; font-weight: 700; padding: 3px 12px; border-radius: 30px; }
-    .status-approved { background: #22c55e20; color: #22c55e; border: 1px solid #22c55e; }
+    .bg-gradient { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 50%, #0a0a2a, #03030f); z-index: -2; }
+    .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; }
+    .content { position: relative; z-index: 10; max-width: 1200px; margin: 0 auto; padding: 1rem; }
+
+    /* Login Container */
+    .login-container { max-width: 450px; margin: 2rem auto; background: rgba(10,20,45,0.9); backdrop-filter: blur(16px); border-radius: 2rem; padding: 2rem; border: 1px solid rgba(0,200,255,0.4); box-shadow: 0 25px 45px rgba(0,0,0,0.3); }
+    .login-header { text-align: center; margin-bottom: 1.8rem; }
+    .login-logo { font-size: 2.5rem; font-weight: 900; background: linear-gradient(135deg, #FFD700, #FF69B4, #00FFFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .login-brand { font-size: 1rem; color: #00ccff; margin-top: 5px; }
+    .login-input { width: 100%; padding: 0.9rem 1rem 0.9rem 2.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(0,200,255,0.3); border-radius: 2rem; color: white; font-size: 0.9rem; outline: none; margin-bottom: 1rem; }
+    .login-input:focus { border-color: #00ccff; box-shadow: 0 0 12px rgba(0,200,255,0.4); }
+    .input-icon { position: relative; }
+    .input-icon i { position: absolute; left: 1rem; top: 0.9rem; color: #00ccff; }
+    .login-btn, .google-btn { width: 100%; padding: 0.85rem; border-radius: 2rem; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 1rem; border: none; margin-top: 0.5rem; }
+    .login-btn { background: linear-gradient(95deg, #00ccff, #0099cc); color: white; }
+    .google-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .google-btn:hover { background: rgba(255,255,255,0.2); }
+    .divider { display: flex; align-items: center; text-align: center; color: #5a6e8a; margin: 1rem 0; font-size: 0.7rem; }
+    .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid rgba(255,255,255,0.2); }
+    .divider::before { margin-right: 1rem; }
+    .divider::after { margin-left: 1rem; }
+    .switch-text { text-align: center; font-size: 0.7rem; color: #8892b0; margin-top: 1rem; cursor: pointer; }
+    .switch-text span { color: #00ccff; }
+
+    /* Dashboard */
+    .dashboard { display: none; }
+    .status-bar { background: rgba(0,0,0,0.55); backdrop-filter: blur(10px); border-radius: 60px; padding: 0.4rem 1.2rem; display: inline-flex; align-items: center; gap: 12px; font-size: 0.8rem; margin-bottom: 1rem; border: 1px solid rgba(0,200,255,0.4); }
+    .brand-header { text-align: center; margin-bottom: 1rem; }
+    .logo { font-size: 2.5rem; font-weight: 900; background: linear-gradient(135deg, #FFD700, #FF69B4, #00FFFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .brand-name { font-size: 1rem; color: #00ccff; }
+    .official-badge { background: linear-gradient(95deg, #facc15, #ff69b4); border-radius: 40px; padding: 0.2rem 0.8rem; font-size: 0.6rem; font-weight: 700; color: #0a0a2a; display: inline-block; margin-top: 5px; }
+    .user-info-bar { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #00ccff, #ff69b4); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; }
+    .tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(0,200,255,0.3); padding-bottom: 0.5rem; }
+    .tab-btn { background: transparent; border: none; padding: 0.6rem 1.2rem; border-radius: 2rem; color: #8892b0; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .tab-btn.active { background: linear-gradient(95deg, #00ccff, #0099cc); color: white; box-shadow: 0 0 12px rgba(0,200,255,0.4); }
+    .tab-content { display: none; animation: fadeIn 0.3s ease; }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .card { background: rgba(10,20,45,0.7); backdrop-filter: blur(12px); border-radius: 1.5rem; padding: 1.5rem; border: 1px solid rgba(0,200,255,0.2); margin-bottom: 1rem; }
+    .profile-row { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #00ccff, #ff69b4); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; }
+    .form-group { margin-bottom: 0.8rem; }
+    .form-group label { font-size: 0.7rem; color: #8892b0; display: block; margin-bottom: 0.3rem; }
+    .form-group input, .form-group textarea { width: 100%; padding: 0.7rem 1rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(0,200,255,0.3); border-radius: 2rem; color: white; font-size: 0.85rem; outline: none; }
+    .plan-card { background: rgba(0,0,0,0.3); border-radius: 1rem; padding: 1rem; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; border: 1px solid rgba(0,200,255,0.2); transition: 0.3s; cursor: pointer; }
+    .plan-card:hover { transform: translateX(5px); border-color: #00ccff; background: rgba(0,200,255,0.1); }
+    .plan-card h4 { color: #00ccff; }
+    .plan-price { color: #FFD700; font-weight: 800; }
+    .order-card { background: rgba(0,0,0,0.3); border-radius: 1rem; padding: 0.8rem; margin-bottom: 0.8rem; border-left: 3px solid #00ccff; }
+    .status-badge { font-size: 0.65rem; padding: 2px 10px; border-radius: 30px; display: inline-block; }
     .status-pending { background: #f9731620; color: #f97316; border: 1px solid #f97316; }
+    .status-approved { background: #22c55e20; color: #22c55e; border: 1px solid #22c55e; }
     .status-paid { background: #3b82f620; color: #3b82f6; border: 1px solid #3b82f6; }
-    .order-details { font-size: 0.7rem; color: #c0c0e0; display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 6px; }
-    .order-details span i { width: 20px; color: #00ccff; }
-    .order-expiry { font-size: 0.65rem; color: #00ffff; margin-top: 5px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .expiry-progress { flex: 1; height: 4px; background: #2a2a50; border-radius: 10px; overflow: hidden; }
-    .expiry-fill { height: 100%; background: linear-gradient(90deg, #00ccff, #FFD700); width: 0%; transition: width 0.5s ease; }
-    .loading-spinner { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 1.5rem; color: #00ccff; }
-    .empty-state { text-align: center; padding: 1.5rem; color: #8892b0; background: rgba(0,0,0,0.3); border-radius: 20px; font-size: 0.8rem; }
+    .btn-save, .btn-submit-order { background: linear-gradient(95deg, #22c55e, #16a34a); border: none; padding: 0.5rem 1.5rem; border-radius: 2rem; color: white; cursor: pointer; }
+    .btn-cancel { background: linear-gradient(95deg, #ef4444, #dc2626); border: none; padding: 0.5rem 1rem; border-radius: 2rem; color: white; cursor: pointer; }
+    .btn-logout { background: linear-gradient(95deg, #ef4444, #dc2626); border: none; padding: 0.5rem 1rem; border-radius: 2rem; color: white; cursor: pointer; font-size: 0.7rem; }
+    .track-input { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .track-input input { flex: 1; padding: 0.7rem 1rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(0,200,255,0.3); border-radius: 2rem; color: white; }
+    .track-input button { background: linear-gradient(95deg, #00ccff, #0099cc); border: none; padding: 0.7rem 1.2rem; border-radius: 2rem; cursor: pointer; color: white; font-weight: bold; }
     .hidden { display: none; }
-    .toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: #22c55e; color: #0a0a2a; padding: 0.3rem 1rem; border-radius: 40px; font-size: 0.75rem; font-weight: 700; display: none; z-index: 1100; }
-    @media (max-width: 550px) {
-      .plan-card { flex-direction: column; text-align: center; }
-      .plan-info { justify-content: center; }
-      .plan-features { justify-content: center; }
-      .track-input-box { flex-direction: column; background: #0a0a20; padding: 0.6rem; border-radius: 1.5rem; }
-      .track-input-box input { width: 100%; text-align: center; }
-      .track-input-box button { width: 100%; justify-content: center; }
-    }
+    .footer { text-align: center; margin-top: 2rem; font-size: 0.6rem; color: #5a6e8a; }
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #22c55e; color: #0a0a2a; padding: 0.5rem 1rem; border-radius: 40px; font-size: 0.75rem; font-weight: 700; display: none; z-index: 1100; white-space: nowrap; }
+    @media (max-width: 600px) { .tabs { justify-content: center; } .toast { white-space: normal; max-width: 90%; text-align: center; } }
   </style>
 </head>
 <body>
-<canvas id="weather-canvas"></canvas>
+<div class="bg-gradient"></div>
+<canvas id="particlesCanvas" class="particles"></canvas>
 <div class="content">
-  <div style="display: flex; justify-content: center;">
-    <div class="weather-bar" id="weatherBar">
-      <div class="weather-icon" id="weatherIcon">🌤️</div>
-      <div><span id="weatherTemp" class="weather-temp">--°C</span> <span id="weatherDesc" class="weather-desc">Loading weather...</span></div>
-      <div><i class="fas fa-map-marker-alt" style="color:#00ccff;"></i> <span id="weatherLocation" style="font-size:0.7rem;">တည်နေရာ ရှာနေသည်...</span></div>
+  <!-- LOGIN SECTION -->
+  <div id="loginSection" class="login-container">
+    <div class="login-header">
+      <div class="login-logo">ATH</div>
+      <div class="login-brand">ATH DIGITAL HUB <span style="color:#00ccff;">⚡5G+</span></div>
+      <div class="official-badge" style="margin-top:8px;"><i class="fas fa-certificate"></i> MYTEL Official Seller</div>
     </div>
-  </div>
-  <div class="brand-header">
-    <div class="logo">ATH</div>
-    <div class="brand-name">ATH DIGITAL HUB <span class="fiveg">⚡ 5G+ ⚡</span></div>
-    <div class="official-badge"><i class="fas fa-certificate"></i> MYTEL Official Seller</div>
-  </div>
-  <div class="main-title">✨ MYTEL VIP DATA ✨</div>
-  <div class="user-bar">
-    <div id="userInfo" style="display:none;" class="user-info"><i class="fas fa-user-astronaut"></i> <span id="userName"></span> <button class="logout-btn" onclick="logout()">ထွက်ရန်</button></div>
-    <button class="login-btn" id="loginBtn" onclick="loginWithGoogle()"><i class="fab fa-google"></i> Google ဖြင့် ဝင်ရန်</button>
-  </div>
-
-  <div id="plansSection" class="plans-container">
-    <div class="plan-card" data-plan="VIP LEVEL - 1" data-price="15000" data-icon="🏆"><div class="plan-info"><div class="plan-icon">🏆</div><div class="plan-details"><h4>VIP LEVEL - 1</h4><div class="plan-features"><span class="feature-text"><span class="data-text">22 GB</span> Data</span><span class="feature-text"><span class="mins-text">8000 Mins</span> On-Net</span><span class="feature-text"><span class="sms-text">5000 SMS</span></span></div></div></div><div class="plan-price">15,000 KS</div><button class="select-plan-btn"><i class="fas fa-shopping-cart"></i> ရွေးမည်</button></div>
-    <div class="plan-card" data-plan="VIP LEVEL - 2" data-price="20000" data-icon="🏆"><div class="plan-info"><div class="plan-icon">🏆</div><div class="plan-details"><h4>VIP LEVEL - 2</h4><div class="plan-features"><span class="feature-text"><span class="data-text">40 GB</span> Data</span><span class="feature-text"><span class="mins-text">250 Mins</span> On-Net</span><span class="feature-text"><span class="sms-text">25 Any Net</span></span></div></div></div><div class="plan-price">20,000 KS</div><button class="select-plan-btn"><i class="fas fa-shopping-cart"></i> ရွေးမည်</button></div>
-    <div class="plan-card" data-plan="VIP LEVEL - 3" data-price="25000" data-icon="🏆"><div class="plan-info"><div class="plan-icon">🏆</div><div class="plan-details"><h4>VIP LEVEL - 3</h4><div class="plan-features"><span class="feature-text"><span class="data-text">40 GB</span> Data</span><span class="feature-text"><span class="mins-text">1400 Mins</span> On-Net</span><span class="feature-text"><span class="sms-text">8000 SMS</span></span></div></div></div><div class="plan-price">25,000 KS</div><button class="select-plan-btn"><i class="fas fa-shopping-cart"></i> ရွေးမည်</button></div>
-    <div class="plan-card" data-plan="VIP LEVEL - 4" data-price="30000" data-icon="💎"><div class="plan-info"><div class="plan-icon">💎</div><div class="plan-details"><h4>VIP LEVEL - 4</h4><div class="plan-features"><span class="feature-text"><span class="data-text">120 GB</span> Data</span><span class="feature-text"><span class="mins-text">Priority</span> Support</span><span class="feature-text"><span class="sms-text">5G+ Ultra</span></span></div></div></div><div class="plan-price">30,000 KS</div><button class="select-plan-btn"><i class="fas fa-shopping-cart"></i> ရွေးမည်</button></div>
-  </div>
-
-  <div id="paymentCard" class="payment-card hidden">
-    <div class="selected-plan-name" id="selectedPlanName"></div>
-    <div class="input-group"><label>📞 ဖုန်းနံပါတ် (09xxxxxxxxx)</label><input type="tel" id="orderPhone" placeholder="ဥပမာ - 09789999368"></div>
-    <div class="input-group"><label>📝 မှတ်ချက် (မထည့်လည်းရ)</label><textarea id="orderNote" rows="1" placeholder="အထူးလိုအပ်ချက်များ..."></textarea></div>
-    <div class="payment-box"><div class="payment-label">💳 KPay / WavePay</div><div class="account-name">👤 AUNG THU HTWE</div><div class="copy-number" onclick="copyPhoneNumber()">📞 09789999368  <i class="fas fa-copy"></i></div></div>
-    <div class="upload-area" onclick="document.getElementById('screenshotInput').click()"><i class="fas fa-images"></i> 📸 ငွေလွှဲပုံတင်ရန် (Gallery / Camera)<input type="file" id="screenshotInput" accept="image/*" style="display:none"><img id="previewImg" class="preview-img" alt="Preview"></div>
-    <div class="button-group"><button class="btn-submit" onclick="submitOrder()">✅ အော်ဒါတင်မည်</button><button class="btn-cancel" onclick="cancelOrder()">❌ ပယ်ဖျက်မည်</button></div>
-  </div>
-
-  <div class="track-section">
-    <div class="track-header"><i class="fas fa-satellite-dish"></i> <span class="blinking-text">🔍 အော်ဒါအခြေအနေ စစ်ဆေးရန်</span> <i class="fas fa-chart-line"></i></div>
-    <div class="track-sub">အော်ဒါအခြေအနေ သိရှိရန် ဖုန်းနံပါတ် ထည့်သွင်းပါ</div>
-    <div class="track-input-wrapper">
-      <div class="track-input-box"><i class="fas fa-phone-alt"></i><input type="tel" id="trackPhone" placeholder="09xxxxxxxxx"><button onclick="trackOrder()"><i class="fas fa-search"></i> စစ်ဆေးမည်</button></div>
+    <div id="loginForm">
+      <div class="input-icon"><i class="fas fa-envelope"></i><input type="email" id="loginEmail" class="login-input" placeholder="Email address"></div>
+      <div class="input-icon"><i class="fas fa-lock"></i><input type="password" id="loginPassword" class="login-input" placeholder="Password"></div>
+      <button class="login-btn" onclick="handleEmailLogin()"><i class="fas fa-arrow-right-to-bracket"></i> Sign In</button>
     </div>
-    <div id="trackResult" class="track-result-container"><div class="empty-state"><i class="fas fa-rocket" style="font-size:1.5rem; margin-bottom:8px; display:block;"></i>သင်၏ အော်ဒါများ ဤနေရာတွင် ပေါ်လာပါမည်</div></div>
-    <div class="track-footer-note text-center text-xs text-slate-500 mt-2"><i class="fas fa-lock"></i> <span class="blinking-text-light">လုံခြုံစိတ်ချရသော စနစ်</span></div>
+    <div id="registerForm" style="display:none;">
+      <div class="input-icon"><i class="fas fa-user"></i><input type="text" id="regName" class="login-input" placeholder="Full Name"></div>
+      <div class="input-icon"><i class="fas fa-envelope"></i><input type="email" id="regEmail" class="login-input" placeholder="Email address"></div>
+      <div class="input-icon"><i class="fas fa-lock"></i><input type="password" id="regPassword" class="login-input" placeholder="Password (min 6 chars)"></div>
+      <div class="input-icon"><i class="fas fa-phone"></i><input type="tel" id="regPhone" class="login-input" placeholder="Phone Number (09xxxxxxxxx)"></div>
+      <button class="login-btn" onclick="handleRegister()"><i class="fas fa-user-plus"></i> Create Account</button>
+    </div>
+    <div class="divider">OR</div>
+    <button class="google-btn" onclick="loginWithGoogle()"><i class="fab fa-google"></i> Continue with Google</button>
+    <div class="switch-text" id="switchAuthText">Don't have an account? <span>Register now</span></div>
   </div>
-  <div class="footer"><div class="footer-text"><i class="fas fa-copyright"></i> 2026 Developed by <strong>AUNG THU HTWE</strong> | All Rights Reserved</div></div>
-  <div class="toast" id="toast"></div>
+
+  <!-- DASHBOARD SECTION -->
+  <div id="dashboardSection" class="dashboard">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+      <div class="status-bar">
+        <div><i class="fas fa-wifi"></i> <span id="timeDisplay"></span></div>
+        <div><i class="fas fa-map-marker-alt"></i> <span>Myanmar</span></div>
+        <div><i class="fas fa-temperature-high"></i> <span id="tempDisplay">28°C</span></div>
+      </div>
+      <div class="user-info-bar">
+        <div class="user-avatar" id="userAvatar">👤</div>
+        <span id="userNameDisplay"></span>
+        <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </div>
+    <div class="brand-header">
+      <div class="logo">ATH DIGITAL HUB</div>
+      <div class="brand-name">MYTEL Official Seller <span class="official-badge">5G+ Ready</span></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="profile"><i class="fas fa-user"></i> Profile</button>
+      <button class="tab-btn" data-tab="plans"><i class="fas fa-gem"></i> Plans</button>
+      <button class="tab-btn" data-tab="track"><i class="fas fa-search"></i> Track Order</button>
+      <button class="tab-btn" data-tab="settings"><i class="fas fa-cog"></i> Settings</button>
+    </div>
+
+    <!-- Profile Tab -->
+    <div id="profileTab" class="tab-content active">
+      <div class="card">
+        <div class="profile-row">
+          <div class="profile-avatar" id="profileAvatar">👤</div>
+          <div class="profile-info"><h3 id="profileName">Loading...</h3><p id="profileEmail"></p></div>
+        </div>
+        <div class="form-group"><label>📞 Phone Number</label><input type="tel" id="profilePhone" placeholder="09xxxxxxxxx"></div>
+        <div class="form-group"><label>📍 Address (Optional)</label><input type="text" id="profileAddress" placeholder="Your address"></div>
+        <button class="btn-save" onclick="updateProfile()"><i class="fas fa-save"></i> Save Profile</button>
+      </div>
+    </div>
+
+    <!-- Plans Tab -->
+    <div id="plansTab" class="tab-content">
+      <div class="card">
+        <h3 style="color:#FFD700; margin-bottom:1rem;"><i class="fas fa-tags"></i> VIP Data Packages</h3>
+        <div id="plansList">
+          <div class="plan-card" data-plan="VIP LEVEL - 1" data-price="15000"><div><h4>🏆 VIP LEVEL - 1</h4><div style="font-size:0.7rem;">22 GB Data | 8000 Mins On-Net | 5000 SMS</div></div><div class="plan-price">15,000 KS</div></div>
+          <div class="plan-card" data-plan="VIP LEVEL - 2" data-price="20000"><div><h4>🏆 VIP LEVEL - 2</h4><div style="font-size:0.7rem;">40 GB Data | 250 Mins On-Net | 25 Any Net</div></div><div class="plan-price">20,000 KS</div></div>
+          <div class="plan-card" data-plan="VIP LEVEL - 3" data-price="25000"><div><h4>🏆 VIP LEVEL - 3</h4><div style="font-size:0.7rem;">40 GB Data | 1400 Mins On-Net | 8000 SMS</div></div><div class="plan-price">25,000 KS</div></div>
+          <div class="plan-card" data-plan="VIP LEVEL - 4" data-price="30000"><div><h4>💎 VIP LEVEL - 4</h4><div style="font-size:0.7rem;">120 GB Data | Priority Support | 5G+ Ultra</div></div><div class="plan-price">30,000 KS</div></div>
+        </div>
+      </div>
+      <div id="orderFormCard" class="card hidden">
+        <h4 style="color:#00ccff;">Selected: <span id="selectedPlanName"></span> - <span id="selectedPlanPrice"></span> KS</h4>
+        <div class="form-group"><label>📞 Your Phone Number</label><input type="tel" id="orderPhone" placeholder="09xxxxxxxxx"></div>
+        <div class="form-group"><label>📝 Note (Optional)</label><input type="text" id="orderNote" placeholder="Any special request"></div>
+        <div style="background:rgba(0,0,0,0.3); border-radius:1rem; padding:0.8rem; margin:0.5rem 0; text-align:center;">
+          <p style="font-size:0.7rem;">💳 KPay / WavePay: <strong style="color:#FFD700;">09789999368</strong> (AUNG THU HTWE)</p>
+          <button class="btn-save" style="margin-top:5px; padding:0.3rem 1rem;" onclick="copyNumber()"><i class="fas fa-copy"></i> Copy Number</button>
+        </div>
+        <div class="form-group"><label>📸 Payment Screenshot (image)</label><input type="file" id="screenshotInput" accept="image/*"></div>
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;"><button class="btn-submit-order" onclick="submitOrder()"><i class="fas fa-check-circle"></i> Submit Order</button><button class="btn-cancel" onclick="cancelOrderForm()">Cancel</button></div>
+      </div>
+    </div>
+
+    <!-- Track Order Tab -->
+    <div id="trackTab" class="tab-content">
+      <div class="card">
+        <h3><i class="fas fa-search"></i> Track Your Orders</h3>
+        <div class="track-input"><input type="tel" id="trackPhoneInput" placeholder="Enter phone number (09xxxxxxxxx)"><button onclick="trackOrders()"><i class="fas fa-search"></i> Search</button></div>
+        <div id="trackResult">Enter your phone number to see orders.</div>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="settingsTab" class="tab-content">
+      <div class="card">
+        <h3><i class="fas fa-shield-alt"></i> Security Settings</h3>
+        <div class="form-group"><label>🔐 New Password</label><input type="password" id="newPassword" placeholder="Enter new password (min 6 chars)"></div>
+        <div class="form-group"><label>🔄 Confirm Password</label><input type="password" id="confirmPassword" placeholder="Confirm new password"></div>
+        <button class="btn-save" onclick="changePassword()"><i class="fas fa-key"></i> Change Password</button>
+        <hr style="margin:1rem 0; border-color:rgba(0,200,255,0.2);">
+        <h3><i class="fas fa-bell"></i> Notifications</h3>
+        <div class="form-group"><label><input type="checkbox" id="notifyEmail"> Email Order Updates</label></div>
+        <button class="btn-save" onclick="saveSettings()"><i class="fas fa-save"></i> Save Settings</button>
+      </div>
+    </div>
+    <div class="footer">© 2026 ATH DIGITAL HUB | MYTEL Official Seller</div>
+  </div>
+  <div id="toast" class="toast"></div>
 </div>
 
 <script>
-  // Weather & Canvas background (fully working)
-  const canvas = document.getElementById('weather-canvas');
-  const ctx = canvas.getContext('2d');
-  let width, height, currentWeather = 'clear', raindrops = [], clouds = [], lightningBolts = [], wind = 0, lastTime = 0;
-  function resizeCanvas() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
-  window.addEventListener('resize', resizeCanvas); resizeCanvas();
-  class RealRain { constructor() { this.reset(); } reset() { this.x = Math.random() * width; this.y = Math.random() * height - height; this.speed = 8 + Math.random() * 12; this.len = 12 + Math.random() * 15; this.wind = (Math.random() - 0.5) * 1.5; } update() { this.x += this.wind + wind * 0.5; this.y += this.speed; if (this.y > height || this.x < -50 || this.x > width + 50) this.reset(); } draw() { ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.x - 1.5 + (this.wind * 0.5), this.y + this.len); ctx.strokeStyle = `rgba(160, 200, 255, ${0.3 + Math.random() * 0.2})`; ctx.lineWidth = 1.5; ctx.stroke(); } }
-  class RealCloud { constructor(layer) { this.layer = layer; this.x = Math.random() * width; this.y = 20 + layer * 40 + Math.random() * 30; this.speed = 0.1 + Math.random() * 0.3 + layer * 0.1; this.alpha = 0.3 + layer * 0.15; } update() { this.x += this.speed; if (this.x > width + 300) this.x = -300; } draw() { ctx.fillStyle = `rgba(100, 110, 130, ${this.alpha})`; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(this.x + i * 40, this.y, 30 + i * 5, 0, Math.PI * 2); ctx.arc(this.x - i * 35 + 20, this.y - 10, 25 + i * 3, 0, Math.PI * 2); ctx.fill(); } } }
-  function initWeather(type) { currentWeather = type; raindrops = []; clouds = []; lightningBolts = []; if (type === 'rain' || type === 'thunder') { for (let i = 0; i < 350; i++) raindrops.push(new RealRain()); for (let i = 0; i < 5; i++) clouds.push(new RealCloud(i)); } else if (type === 'clouds') { for (let i = 0; i < 6; i++) clouds.push(new RealCloud(i)); } else { for (let i = 0; i < 3; i++) clouds.push(new RealCloud(i)); } wind = (Math.random() - 0.5) * 2; }
-  function drawSunRays() { let cx = width / 2, cy = 60; for (let i = 0; i < 20; i++) { ctx.beginPath(); ctx.moveTo(cx, cy); let angle = (Date.now() / 8000 + i * 0.4) % (Math.PI * 2); ctx.lineTo(cx + Math.cos(angle) * 400, cy + Math.sin(angle) * 300); ctx.strokeStyle = `rgba(255, 220, 120, ${0.03 + Math.sin(Date.now() / 3000) * 0.02})`; ctx.lineWidth = 35; ctx.stroke(); } }
-  function animateWeather(now) { requestAnimationFrame(animateWeather); let delta = Math.min(0.033, (now - lastTime) / 1000); lastTime = now; ctx.clearRect(0, 0, width, height); let grad = ctx.createLinearGradient(0,0,0,height); if (currentWeather === 'clear') { grad.addColorStop(0, '#0a3050'); grad.addColorStop(1, '#03030f'); } else if (currentWeather === 'clouds') { grad.addColorStop(0, '#1a3050'); grad.addColorStop(1, '#0a0a2a'); } else { grad.addColorStop(0, '#1a2040'); grad.addColorStop(1, '#0a0a2a'); } ctx.fillStyle = grad; ctx.fillRect(0, 0, width, height); if (currentWeather === 'clear') drawSunRays(); clouds.forEach(c => { c.update(); c.draw(); }); if (currentWeather === 'rain' || currentWeather === 'thunder') raindrops.forEach(r => { r.update(); r.draw(); }); ctx.fillStyle = 'rgba(3, 3, 15, 0.2)'; ctx.fillRect(0, 0, width, height); }
-  animateWeather();
-  const API_KEY = '07a9874048fa713d2fdcef25a482e06d';
-  async function fetchWeatherByCoords(lat, lon) { try { const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`); const data = await res.json(); if (data.cod === 200) { let condition = data.weather[0].main.toLowerCase(); if (condition.includes('rain')) condition = 'rain'; else if (condition.includes('cloud')) condition = 'clouds'; else condition = 'clear'; initWeather(condition); document.getElementById('weatherIcon').innerHTML = condition === 'clear' ? '☀️' : (condition === 'clouds' ? '☁️' : '🌧️'); document.getElementById('weatherTemp').innerHTML = `${Math.round(data.main.temp)}°C`; document.getElementById('weatherDesc').innerHTML = data.weather[0].description; document.getElementById('weatherLocation').innerHTML = data.name; } } catch(e) { fallbackWeather(); } }
-  function fallbackWeather() { initWeather('clouds'); document.getElementById('weatherTemp').innerHTML = '28°C'; document.getElementById('weatherDesc').innerHTML = 'တိမ်အနည်းငယ်'; document.getElementById('weatherLocation').innerHTML = 'ရန်ကုန်'; }
-  if ("geolocation" in navigator) { navigator.geolocation.getCurrentPosition(pos => fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude), err => fallbackWeather()); } else fallbackWeather();
-  setInterval(() => { if (navigator.geolocation) navigator.geolocation.getCurrentPosition(pos => fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude), err => fallbackWeather()); }, 10 * 60000);
+  // Firebase Config (ခင်ဗျားပေးထားတဲ့အတိုင်း)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCN7GMpY6dqGzVlMevMZPG76guq3DvQPd8",
+    authDomain: "mytelordersystem.firebaseapp.com",
+    databaseURL: "https://mytelordersystem-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "mytelordersystem",
+    storageBucket: "mytelordersystem.firebasestorage.app",
+    messagingSenderId: "366519284419",
+    appId: "1:366519284419:web:0044583e2ef8aa7260a876",
+    measurementId: "G-GEJ93W2RTY"
+  };
 </script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, getDocs, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-  const firebaseConfig = { apiKey: "AIzaSyCN7GMpY6dqGzVlMevMZPG76guq3DvQPd8", authDomain: "mytelordersystem.firebaseapp.com", projectId: "mytelordersystem", storageBucket: "mytelordersystem.firebasestorage.app", messagingSenderId: "366519284419", appId: "1:366519284419:web:0044583e2ef8aa7260a876" };
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
-  let currentUser = null, selectedPlanData = null, screenshotBase64 = null;
 
-  window.loginWithGoogle = async () => { try { await signInWithPopup(auth, provider); showToast("လှိုက်လှဲစွာ ကြိုဆိုပါတယ်!"); } catch(e) { showToast("Login မအောင်မြင်ပါ"); } };
-  window.logout = async () => { await signOut(auth); };
-  onAuthStateChanged(auth, (user) => { currentUser = user; const infoDiv = document.getElementById('userInfo'); const loginBtn = document.getElementById('loginBtn'); if (user) { infoDiv.style.display = 'flex'; loginBtn.style.display = 'none'; document.getElementById('userName').innerText = user.displayName?.split(' ')[0] || user.email.split('@')[0]; } else { infoDiv.style.display = 'none'; loginBtn.style.display = 'block'; if (selectedPlanData) cancelOrder(); } });
+  let currentUser = null;
+  let selectedPlan = null;
 
-  document.querySelectorAll('.plan-card').forEach(card => { card.querySelector('.select-plan-btn').addEventListener('click', (e) => { e.stopPropagation(); if (!currentUser) { showToast("ကျေးဇူးပြု၍ Google ဖြင့် အရင် Login ဝင်ပါ!"); return; } selectedPlanData = { name: card.getAttribute('data-plan'), price: parseInt(card.getAttribute('data-price')), icon: card.querySelector('.plan-icon').innerText }; document.getElementById('selectedPlanName').innerHTML = `${selectedPlanData.icon} ${selectedPlanData.name} — ${selectedPlanData.price.toLocaleString()} KS`; document.getElementById('plansSection').classList.add('hidden'); document.getElementById('paymentCard').classList.remove('hidden'); document.getElementById('orderPhone').value = ''; document.getElementById('orderNote').value = ''; document.getElementById('previewImg').style.display = 'none'; document.getElementById('screenshotInput').value = ''; screenshotBase64 = null; showToast(`ရွေးချယ်မှု- ${selectedPlanData.name}`); }); });
+  function showToast(msg, isError = false) {
+    const toast = document.getElementById('toast');
+    toast.style.background = isError ? '#dc2626' : '#22c55e';
+    toast.style.color = '#fff';
+    toast.innerText = msg;
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 3000);
+  }
 
-  window.cancelOrder = function() { document.getElementById('paymentCard').classList.add('hidden'); document.getElementById('plansSection').classList.remove('hidden'); selectedPlanData = null; screenshotBase64 = null; showToast("အော်ဒါကို ပယ်ဖျက်လိုက်ပါပြီ"); };
-  document.getElementById('screenshotInput').addEventListener('change', (e) => { const file = e.target.files[0]; if (file && file.type.startsWith('image/') && file.size <= 4 * 1024 * 1024) { const reader = new FileReader(); reader.onload = (ev) => { screenshotBase64 = ev.target.result; document.getElementById('previewImg').src = screenshotBase64; document.getElementById('previewImg').style.display = 'block'; showToast("✅ Screenshot တင်ပြီးပါပြီ!"); }; reader.readAsDataURL(file); } else showToast("ဓာတ်ပုံသည် 4MB ထက်မကြီးရပါ"); });
-  window.copyPhoneNumber = () => { navigator.clipboard.writeText("09789999368"); showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ!"); };
-  window.submitOrder = async function() { if (!currentUser) { showToast("Login အရင်ဝင်ပါ"); return; } if (!selectedPlanData) { showToast("အစီအစဉ်တစ်ခု ရွေးချယ်ပါ"); return; } const phone = document.getElementById('orderPhone').value.trim(); if (!/^(09|\+?959)\d{7,9}$/.test(phone)) { showToast("မှန်ကန်သော ဖုန်းနံပါတ် ထည့်ပါ"); return; } if (!screenshotBase64) { showToast("ငွေလွှဲ Screenshot တင်ပါ"); return; } const btn = document.querySelector('.btn-submit'); btn.disabled = true; btn.innerText = "⏳ ခေတ္တစောင့်ပါ..."; try { await addDoc(collection(db, "orders"), { packageName: selectedPlanData.name, price: selectedPlanData.price, phone, userId: currentUser.uid, userEmail: currentUser.email, userName: currentUser.displayName, note: document.getElementById('orderNote').value || '', status: 'pending_payment', createdAt: serverTimestamp(), screenshotBase64 }); showToast("✅ အော်ဒါတင်သွင်းမှု အောင်မြင်သည်။ Admin မှ မကြာမီ အတည်ပြုပေးပါမည်။"); cancelOrder(); } catch(e) { showToast("အမှားအယွင်း: " + e.message); } finally { btn.disabled = false; btn.innerText = "✅ အော်ဒါတင်မည်"; } };
-  window.trackOrder = async function() { const phone = document.getElementById('trackPhone').value.trim(); const resultDiv = document.getElementById('trackResult'); if (!phone) { showToast("ဖုန်းနံပါတ် ဖြည့်ပါ"); return; } resultDiv.innerHTML = `<div class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i><span>ဒေတာ ရှာဖွေနေပါသည်...</span></div>`; try { const q = query(collection(db, "orders"), where("phone", "==", phone), orderBy("createdAt", "desc")); const snapshot = await getDocs(q); if (snapshot.empty) { resultDiv.innerHTML = `<div class="empty-state"><i class="fas fa-meteor" style="font-size:1.5rem; margin-bottom:8px; display:block;"></i>ဤဖုန်းနံပါတ်ဖြင့် အော်ဒါမရှိသေးပါ။</div>`; return; } let html = ''; snapshot.forEach(doc => { const order = doc.data(); let statusClass = '', statusText = ''; if (order.status === 'pending_payment') { statusClass = 'status-pending'; statusText = '⏳ ဆိုင်းငံ့နေသည်'; } else if (order.status === 'payment_received') { statusClass = 'status-paid'; statusText = '💰 ငွေလက်ခံရရှိပြီ (စောင့်ဆိုင်းနေသည်)'; } else if (order.status === 'approved') { statusClass = 'status-approved'; statusText = '✅ အသက်ဝင်နေသည်'; } else { statusClass = 'status-pending'; statusText = order.status; } const createdDate = order.createdAt ? order.createdAt.toDate() : new Date(); html += `<div class="order-card"><div class="order-header"><span class="order-id"><i class="fas fa-ticket-alt"></i> #${doc.id}</span><span class="order-status-badge ${statusClass}">${statusText}</span></div><div class="order-details"><span><i class="fas fa-gem"></i> ${order.packageName}</span><span><i class="fas fa-coins"></i> ${order.price?.toLocaleString()} KS</span><span><i class="fas fa-calendar"></i> ${createdDate.toLocaleDateString()}</span></div></div>`; }); resultDiv.innerHTML = html; } catch(e) { resultDiv.innerHTML = `<div class="empty-state" style="color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> အမှားအယွင်းရှိနေပါသည်။</div>`; console.error(e); } };
-  function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2500); }
+  // Switch between Login/Register
+  let isLoginMode = true;
+  document.getElementById('switchAuthText')?.addEventListener('click', () => {
+    isLoginMode = !isLoginMode;
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const switchText = document.getElementById('switchAuthText');
+    if (isLoginMode) {
+      loginForm.style.display = 'block';
+      registerForm.style.display = 'none';
+      switchText.innerHTML = `Don't have an account? <span>Register now</span>`;
+    } else {
+      loginForm.style.display = 'none';
+      registerForm.style.display = 'block';
+      switchText.innerHTML = `Already have an account? <span>Sign In</span>`;
+    }
+  });
+
+  window.handleEmailLogin = async () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    if (!email || !password) { showToast("Please enter email and password", true); return; }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showToast("Login successful!");
+    } catch(e) { showToast(e.message, true); }
+  };
+
+  window.handleRegister = async () => {
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const phone = document.getElementById('regPhone').value.trim();
+    if (!name || !email || !password) { showToast("Please fill all fields", true); return; }
+    if (password.length < 6) { showToast("Password must be at least 6 characters", true); return; }
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, "users", userCred.user.uid), {
+        name: name, email: email, phone: phone || "", address: "", createdAt: serverTimestamp()
+      });
+      showToast("Account created! Please login.");
+      isLoginMode = true;
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('switchAuthText').innerHTML = `Don't have an account? <span>Register now</span>`;
+    } catch(e) { showToast(e.message, true); }
+  };
+
+  window.loginWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        await setDoc(userRef, { name: user.displayName || user.email.split('@')[0], email: user.email, phone: "", address: "", createdAt: serverTimestamp() });
+      }
+      showToast("Google login successful!");
+    } catch(e) { showToast(e.message, true); }
+  };
+
+  window.logout = async () => {
+    await signOut(auth);
+    showToast("Logged out");
+  };
+
+  window.updateProfile = async () => {
+    if (!currentUser) return;
+    const phone = document.getElementById('profilePhone').value;
+    const address = document.getElementById('profileAddress').value;
+    try {
+      await setDoc(doc(db, "users", currentUser.uid), { phone, address }, { merge: true });
+      showToast("Profile updated!");
+      loadUserProfile();
+    } catch(e) { showToast(e.message, true); }
+  };
+
+  async function loadUserProfile() {
+    if (!currentUser) return;
+    const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+    const data = userDoc.data() || { name: currentUser.displayName || currentUser.email.split('@')[0], email: currentUser.email, phone: "", address: "" };
+    document.getElementById('profileName').innerText = data.name || currentUser.email.split('@')[0];
+    document.getElementById('profileEmail').innerText = currentUser.email;
+    document.getElementById('profilePhone').value = data.phone || "";
+    document.getElementById('profileAddress').value = data.address || "";
+    document.getElementById('userNameDisplay').innerText = data.name?.split(' ')[0] || currentUser.email.split('@')[0];
+    const firstChar = (data.name?.charAt(0) || currentUser.email.charAt(0)).toUpperCase();
+    document.getElementById('userAvatar').innerText = firstChar;
+    document.getElementById('profileAvatar').innerText = firstChar;
+  }
+
+  // Plan Selection
+  document.querySelectorAll('.plan-card').forEach(card => {
+    card.addEventListener('click', () => {
+      if (!currentUser) { showToast("Please login first", true); return; }
+      selectedPlan = { name: card.getAttribute('data-plan'), price: card.getAttribute('data-price') };
+      document.getElementById('selectedPlanName').innerText = selectedPlan.name;
+      document.getElementById('selectedPlanPrice').innerText = selectedPlan.price;
+      document.getElementById('orderFormCard').classList.remove('hidden');
+    });
+  });
+
+  window.cancelOrderForm = () => {
+    document.getElementById('orderFormCard').classList.add('hidden');
+    selectedPlan = null;
+    document.getElementById('orderPhone').value = '';
+    document.getElementById('orderNote').value = '';
+    document.getElementById('screenshotInput').value = '';
+  };
+
+  window.copyNumber = () => {
+    navigator.clipboard.writeText("09789999368");
+    showToast("Phone number copied!");
+  };
+
+  window.submitOrder = async () => {
+    if (!currentUser) { showToast("Please login", true); return; }
+    if (!selectedPlan) { showToast("Select a plan first", true); return; }
+    const phone = document.getElementById('orderPhone').value.trim();
+    if (!/^(09|\+?959)\d{7,9}$/.test(phone)) { showToast("Valid Myanmar phone number required (09xxxxxxxxx)", true); return; }
+    const file = document.getElementById('screenshotInput').files[0];
+    if (!file) { showToast("Please upload payment screenshot", true); return; }
+    if (file.size > 2 * 1024 * 1024) { showToast("Image max 2MB", true); return; }
+    
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const screenshotBase64 = e.target.result;
+      const note = document.getElementById('orderNote').value;
+      try {
+        await addDoc(collection(db, "orders"), {
+          userId: currentUser.uid,
+          userEmail: currentUser.email,
+          packageName: selectedPlan.name,
+          price: parseInt(selectedPlan.price),
+          phone: phone,
+          note: note,
+          status: "pending_payment",
+          screenshotBase64: screenshotBase64,
+          createdAt: serverTimestamp()
+        });
+        showToast("Order submitted! Admin will verify soon.");
+        cancelOrderForm();
+      } catch(err) { showToast(err.message, true); }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.trackOrders = async () => {
+    const phone = document.getElementById('trackPhoneInput').value.trim();
+    if (!phone) { showToast("Enter phone number", true); return; }
+    const resultDiv = document.getElementById('trackResult');
+    resultDiv.innerHTML = '<div style="text-align:center;"><i class="fas fa-spinner fa-pulse"></i> Loading...</div>';
+    try {
+      const q = query(collection(db, "orders"), where("phone", "==", phone), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) { resultDiv.innerHTML = '<div class="card" style="text-align:center;">No orders found for this number.</div>'; return; }
+      let html = '';
+      snapshot.forEach(doc => {
+        const order = doc.data();
+        let statusClass = 'status-pending', statusText = '⏳ Pending';
+        if (order.status === 'payment_received') { statusClass = 'status-paid'; statusText = '💰 Payment Received'; }
+        else if (order.status === 'approved') { statusClass = 'status-approved'; statusText = '✅ Approved & Active'; }
+        html += `<div class="order-card"><div><strong>${order.packageName}</strong> - ${order.price?.toLocaleString()} KS</div><div><span class="status-badge ${statusClass}">${statusText}</span></div><div style="font-size:0.7rem; margin-top:5px;">📅 ${order.createdAt?.toDate().toLocaleDateString() || 'Just now'}</div></div>`;
+      });
+      resultDiv.innerHTML = html;
+    } catch(e) { resultDiv.innerHTML = `<div style="color:red;">Error: ${e.message}</div>`; }
+  };
+
+  window.changePassword = async () => {
+    if (!currentUser) return;
+    const newPass = document.getElementById('newPassword').value;
+    const confirm = document.getElementById('confirmPassword').value;
+    if (!newPass || newPass.length < 6) { showToast("Password must be at least 6 chars", true); return; }
+    if (newPass !== confirm) { showToast("Passwords do not match", true); return; }
+    try {
+      await updatePassword(currentUser, newPass);
+      showToast("Password changed successfully!");
+      document.getElementById('newPassword').value = '';
+      document.getElementById('confirmPassword').value = '';
+    } catch(e) { showToast(e.message, true); }
+  };
+
+  window.saveSettings = () => {
+    const notifyEmail = document.getElementById('notifyEmail').checked;
+    if (currentUser) {
+      localStorage.setItem(`notify_${currentUser.uid}`, notifyEmail);
+      showToast("Settings saved!");
+    }
+  };
+  
+  function loadSettings() {
+    if (currentUser) {
+      const val = localStorage.getItem(`notify_${currentUser.uid}`);
+      if (val !== null) document.getElementById('notifyEmail').checked = val === 'true';
+    }
+  }
+
+  // Tab Switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tabId = btn.getAttribute('data-tab');
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById(`${tabId}Tab`).classList.add('active');
+      if (tabId === 'profile') loadUserProfile();
+      if (tabId === 'settings') loadSettings();
+    });
+  });
+
+  // Auth State
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if (user) {
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('dashboardSection').style.display = 'block';
+      await loadUserProfile();
+      loadSettings();
+    } else {
+      document.getElementById('loginSection').style.display = 'block';
+      document.getElementById('dashboardSection').style.display = 'none';
+      selectedPlan = null;
+      cancelOrderForm();
+    }
+  });
+
+  // Time display
+  function updateTime() {
+    const now = new Date();
+    document.getElementById('timeDisplay').innerText = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  }
+  updateTime();
+  setInterval(updateTime, 1000);
+
+  // Particles Animation
+  const canvas = document.getElementById('particlesCanvas');
+  const ctx2 = canvas.getContext('2d');
+  let particles = [];
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+  for(let i = 0; i < 80; i++) {
+    particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 2, alpha: Math.random() * 0.5, speed: 0.2 + Math.random() * 0.5 });
+  }
+  function animateParticles() {
+    ctx2.clearRect(0, 0, canvas.width, canvas.height);
+    for(let p of particles) {
+      ctx2.beginPath();
+      ctx2.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx2.fillStyle = `rgba(0, 200, 255, ${p.alpha * 0.5})`;
+      ctx2.fill();
+      p.y -= p.speed;
+      if(p.y < 0) p.y = canvas.height;
+      p.x += (Math.random() - 0.5) * 0.5;
+    }
+    requestAnimationFrame(animateParticles);
+  }
+  animateParticles();
 </script>
 </body>
 </html>
