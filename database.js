@@ -2,8 +2,8 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 
-// Render Persistent Disk ကို ဦးစားပေးသုံးမယ်
-const DATA_DIR = process.env.RENDER_DISK_PATH || path.join(__dirname, 'data');
+// Free Tier အတွက် - project folder အောက်မှာ data folder သုံးမယ်
+const DATA_DIR = path.join(__dirname, 'data');
 
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
