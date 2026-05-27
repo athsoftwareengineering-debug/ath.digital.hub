@@ -31,13 +31,10 @@ function getMyanmarTime12hr() {
 // Config
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
-const GROUP_CHAT_ID = process.env.GROUP_CHAT_ID;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "mytel2024";
 const BASE_URL = process.env.BASE_URL || `https://ath-digital-hub.onrender.com`;
 const ADMIN_PATH = process.env.ADMIN_PATH || '/admin';
 
 console.log(`\n🔐 ========== SYSTEM STARTUP ==========`);
-console.log(`🔑 Admin Password: ${ADMIN_PASSWORD}`);
 console.log(`🌐 BASE_URL: ${BASE_URL}`);
 console.log(`======================================\n`);
 
@@ -58,7 +55,6 @@ app.use('/temp_uploads', express.static(uploadDir));
 // Rate limiting
 const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 const strictLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10 });
-app.use('/api/admin/login', strictLimiter);
 
 // Packages
 const PACKAGES = {
@@ -113,52 +109,99 @@ async function sendTelegramPhoto(chatId, buffer, caption, keyboard = null) {
   } catch { return false; }
 }
 
-// Authentication middleware
-function isAuthenticated(req, res, next) {
-  if (req.headers['x-admin-auth'] === ADMIN_PASSWORD) return next();
-  res.status(401).json({ success: false, message: "Unauthorized" });
-}
-
-// ============= API ROUTES =============
-
-// Admin login
-app.post('/api/admin/login', (req, res) => {
-  if (req.body.password === ADMIN_PASSWORD) res.json({ success: true });
-  else res.status(401).json({ success: false });
+// ============= ADMIN AUTHENTICATION =============
+// Admin login (SQLite)
+app.post('/api/admin/login', strictLimiter, async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: "Username and password required" });
+  }
+  
+  const admin = await database.verifyAdmin(username, password);
+  if (admin) {
+    // Generate simple session token (in production, use JWT)
+    const token = Buffer.from(`${admin.id}:${Date.now()}`).toString('base64');
+    await database.setSetting(`admin_token_${admin.id}`, token);
+    res.json({ 
+      success: true, 
+      token: token,
+      admin: { id: admin.id, username: admin.username, email: admin.email, full_name: admin.full_name, role: admin.role }
+    });
+  } else {
+    res.status(401).json({ success: false, message: "Invalid credentials" });
+  }
 });
 
-// Get all orders (admin)
-app.get('/api/admin/orders', isAuthenticated, async (req, res) => {
+// Verify admin token middleware
+async function verifyAdminToken(req, res, next) {
+  const token = req.headers['x-admin-token'];
+  if (!token) return res.status(401).json({ success: false, message: "No token provided" });
+  
+  // Decode token to get admin id
   try {
-    res.json({ success: true, orders: await database.getAllOrders(), stats: await database.getStats() });
+    const decoded = Buffer.from(token, 'base64').toString();
+    const adminId = decoded.split(':')[0];
+    const savedToken = await database.getSetting(`admin_token_${adminId}`);
+    if (savedToken === token) {
+      req.adminId = adminId;
+      return next();
+    }
+  } catch (e) {}
+  res.status(401).json({ success: false, message: "Invalid token" });
+}
+
+// ============= ADMIN API ROUTES =============
+app.get('/api/admin/orders', verifyAdminToken, async (req, res) => {
+  try {
+    const orders = await database.getAllOrders();
+    const stats = await database.getStats();
+    res.json({ success: true, orders, stats });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// Update order status (admin)
-app.post('/api/admin/update-order', isAuthenticated, async (req, res) => {
+app.get('/api/admin/orders/recent', verifyAdminToken, async (req, res) => {
+  try {
+    const orders = await database.getRecentOrders(parseInt(req.query.limit) || 10);
+    res.json({ success: true, orders });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+app.get('/api/admin/orders/status/:status', verifyAdminToken, async (req, res) => {
+  try {
+    const orders = await database.getOrdersByStatus(req.params.status);
+    res.json({ success: true, orders });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+app.post('/api/admin/update-order', verifyAdminToken, async (req, res) => {
   const { orderId, status, rejectReason } = req.body;
   try {
     const order = await database.getOrderById(parseInt(orderId));
     if (!order) return res.status(404).json({ success: false });
 
     if (status === 'approved' && !order.startDate) {
-      const start = new Date(); const end = new Date(); end.setDate(end.getDate() + 30);
+      const start = new Date(); 
+      const end = new Date(); 
+      end.setDate(end.getDate() + 30);
       await database.updateOrderStatus(parseInt(orderId), 'approved', start.toISOString(), end.toISOString(), 30);
-      await sendTelegramMessage(ADMIN_CHAT_ID, `✅ Order #${orderId} approved!`);
     } else if (status === 'rejected') {
       await database.updateOrderStatus(parseInt(orderId), 'rejected');
-      await sendTelegramMessage(ADMIN_CHAT_ID, `❌ Order #${orderId} rejected.`);
     } else {
       await database.updateOrderStatus(parseInt(orderId), status);
     }
     res.json({ success: true });
-  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+  } catch (err) { 
+    res.status(500).json({ success: false, message: err.message }); 
+  }
 });
 
-// Delete order (admin)
-app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
+app.post('/api/admin/delete-order', verifyAdminToken, async (req, res) => {
   const { orderId } = req.body;
   try {
     const order = await database.getOrderById(parseInt(orderId));
@@ -169,9 +212,64 @@ app.post('/api/admin/delete-order', isAuthenticated, async (req, res) => {
     }
     await database.deleteOrder(parseInt(orderId));
     res.json({ success: true });
-  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+  } catch (err) { 
+    res.status(500).json({ success: false, message: err.message }); 
+  }
 });
 
+// Admin management routes
+app.get('/api/admin/admins', verifyAdminToken, async (req, res) => {
+  try {
+    const admins = await database.getAllAdmins();
+    res.json({ success: true, admins });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+app.post('/api/admin/create-admin', verifyAdminToken, async (req, res) => {
+  const { username, password, email, fullName, role } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: "Username and password required" });
+  }
+  const result = await database.createAdmin(username, password, email, fullName, role || 'admin');
+  if (result.success) {
+    res.json({ success: true });
+  } else {
+    res.status(500).json({ success: false, message: result.error });
+  }
+});
+
+app.post('/api/admin/change-password', verifyAdminToken, async (req, res) => {
+  const { adminId, newPassword } = req.body;
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
+  }
+  await database.updateAdminPassword(parseInt(adminId), newPassword);
+  res.json({ success: true });
+});
+
+// Search orders
+app.get('/api/admin/search', verifyAdminToken, async (req, res) => {
+  try {
+    const orders = await database.searchOrders(req.query.q);
+    res.json({ success: true, orders });
+  } catch (err) { 
+    res.status(500).json({ success: false, message: err.message }); 
+  }
+});
+
+// Get stats
+app.get('/api/admin/stats', verifyAdminToken, async (req, res) => {
+  try {
+    const stats = await database.getStats();
+    res.json({ success: true, stats });
+  } catch (err) { 
+    res.status(500).json({ success: false, message: err.message }); 
+  }
+});
+
+// ============= PUBLIC API ROUTES =============
 // Create order (from frontend)
 app.post('/api/order', [
   body('packageName').isIn(Object.keys(PACKAGES)),
@@ -182,7 +280,6 @@ app.post('/api/order', [
     const { packageName, phone, note, userId, userEmail, userName } = req.body;
     const mt = getMyanmarTime12hr();
     const newOrder = { 
-      id: await database.getNextOrderId(), 
       packageName, 
       phone, 
       price: PACKAGES[packageName].price, 
@@ -196,10 +293,11 @@ app.post('/api/order', [
       userName: userName || ''
     };
     await database.createOrder(newOrder);
+    
     if (ADMIN_CHAT_ID && BOT_TOKEN) {
-      await sendTelegramMessage(ADMIN_CHAT_ID, `🆕 New Order #${newOrder.id}\n📞 ${phone}\n📦 ${packageName}\n👤 ${userEmail || 'Guest'}`);
+      await sendTelegramMessage(ADMIN_CHAT_ID, `🆕 New Order\n📞 ${phone}\n📦 ${packageName}\n👤 ${userEmail || 'Guest'}`);
     }
-    res.json({ success: true, orderId: newOrder.id });
+    res.json({ success: true });
   } catch (err) { 
     res.status(500).json({ success: false, message: err.message }); 
   }
@@ -210,6 +308,7 @@ app.post('/api/submit-payment', upload.single('screenshot'), async (req, res) =>
   try {
     const orderId = parseInt(req.body.orderId);
     if (!req.file) return res.status(400).json({ success: false, message: "Screenshot required" });
+    
     const order = await database.getOrderById(orderId);
     if (!order) return res.status(404).json({ success: false });
 
@@ -220,7 +319,7 @@ app.post('/api/submit-payment', upload.single('screenshot'), async (req, res) =>
 
     if (ADMIN_CHAT_ID && BOT_TOKEN) {
       const keyboard = { inline_keyboard: [[{ text: "✅ Approve", callback_data: `approve_${orderId}` }, { text: "❌ Reject", callback_data: `reject_${orderId}` }]] };
-      await sendTelegramPhoto(ADMIN_CHAT_ID, fs.readFileSync(req.file.path), `💰 Payment Received #${orderId}\n📞 ${order.phone}\n📦 ${order.packageName}`, keyboard);
+      await sendTelegramPhoto(ADMIN_CHAT_ID, fs.readFileSync(req.file.path), `💰 Payment Received #${order.id}\n📞 ${order.phone}\n📦 ${order.packageName}`, keyboard);
     }
     res.json({ success: true });
   } catch (err) { 
@@ -252,33 +351,25 @@ app.get('/api/my-orders', async (req, res) => {
   }
 });
 
-// Search orders (admin)
-app.get('/api/admin/search', isAuthenticated, async (req, res) => {
-  try {
-    const orders = await database.searchOrders(req.query.q);
-    res.json({ success: true, orders });
-  } catch (err) { 
-    res.status(500).json({ success: false, message: err.message }); 
-  }
-});
-
 // ============= FRONTEND ROUTES =============
 app.get(ADMIN_PATH, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
-// SPA fallback - အားလုံးကို index.html ပြန်ပို့ (PWA အတွက် အရေးကြီး)
+// SPA fallback
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/') || req.path.startsWith('/temp_uploads/')) return;
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ============= START SERVER (Render အတွက် 0.0.0.0 နဲ့ bind) =============
+// ============= START SERVER =============
 const PORT = parseInt(process.env.PORT) || 10000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📱 Frontend: ${BASE_URL}`);
   console.log(`🔧 Admin Panel: ${BASE_URL}${ADMIN_PATH}`);
+  console.log(`👤 Admin Login: username 'admin', password 'admin123'`);
   console.log(`✅ Server is ready!`);
+  database.startExpiryChecker(60);
 });
 
 module.exports = app;
