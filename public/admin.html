@@ -3,24 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ATH Admin | MYTEL Order Management</title>
+  <title>ATH Admin | Order Management</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background: #0a0c15; color: #fff; }
     .glass { background: rgba(15,25,45,0.6); backdrop-filter: blur(12px); border: 1px solid rgba(0,200,255,0.2); border-radius: 1.5rem; }
     .stat-card { background: linear-gradient(135deg, rgba(0,200,255,0.1), rgba(255,105,180,0.05)); border-radius: 1.2rem; padding: 1rem; border-bottom: 3px solid #00ccff; }
     .btn-gold { background: linear-gradient(95deg, #eab308, #f59e0b); }
-    .order-row { background: rgba(0,0,0,0.3); border-radius: 1rem; padding: 1rem; margin-bottom: 0.8rem; border-left: 3px solid #00ccff; }
+    .btn-gold:hover { transform: translateY(-2px); }
+    .order-row { background: rgba(0,0,0,0.3); border-radius: 1rem; padding: 1rem; margin-bottom: 0.8rem; border-left: 3px solid #00ccff; transition: all 0.2s; }
+    .order-row:hover { transform: translateX(5px); background: rgba(0,200,255,0.05); }
     .badge { display: inline-block; padding: 0.2rem 0.7rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 600; }
     .badge-pending { background: #f9731620; color: #f97316; border: 1px solid #f97316; }
     .badge-paid { background: #3b82f620; color: #3b82f6; border: 1px solid #3b82f6; }
     .badge-approved { background: #22c55e20; color: #22c55e; border: 1px solid #22c55e; }
     .badge-rejected { background: #ef444420; color: #ef4444; border: 1px solid #ef4444; }
-    input, select { background: rgba(0,0,0,0.4); border: 1px solid rgba(0,200,255,0.3); border-radius: 2rem; padding: 0.7rem 1rem; color: white; }
+    input, select { background: rgba(0,0,0,0.4); border: 1px solid rgba(0,200,255,0.3); border-radius: 2rem; padding: 0.7rem 1rem; color: white; outline: none; }
+    input:focus, select:focus { border-color: #00ccff; }
     .modal-img { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index:2000; }
     .modal-img.show { display: flex; }
     ::-webkit-scrollbar { width: 5px; }
@@ -53,12 +55,12 @@
     <button onclick="logout()" class="glass px-5 py-2 rounded-xl">Logout</button>
   </div>
 
-  <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
-    <div class="stat-card text-center"><div class="text-slate-400 text-sm">Total</div><h3 id="statTotal" class="text-2xl font-bold">0</h3></div>
-    <div class="stat-card text-center"><div class="text-slate-400 text-sm">Pending</div><h3 id="statPending" class="text-2xl font-bold text-amber-400">0</h3></div>
-    <div class="stat-card text-center"><div class="text-slate-400 text-sm">Paid</div><h3 id="statPaid" class="text-2xl font-bold text-blue-400">0</h3></div>
-    <div class="stat-card text-center"><div class="text-slate-400 text-sm">Active</div><h3 id="statActive" class="text-2xl font-bold text-emerald-400">0</h3></div>
-    <div class="stat-card text-center"><div class="text-slate-400 text-sm">Revenue</div><h3 id="statRevenue" class="text-2xl font-bold text-purple-400">0 KS</h3></div>
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+    <div class="stat-card text-center"><div class="text-slate-400">Total</div><h3 id="statTotal" class="text-2xl font-bold">0</h3></div>
+    <div class="stat-card text-center"><div class="text-slate-400">Pending</div><h3 id="statPending" class="text-2xl font-bold text-amber-400">0</h3></div>
+    <div class="stat-card text-center"><div class="text-slate-400">Paid</div><h3 id="statPaid" class="text-2xl font-bold text-blue-400">0</h3></div>
+    <div class="stat-card text-center"><div class="text-slate-400">Active</div><h3 id="statActive" class="text-2xl font-bold text-emerald-400">0</h3></div>
+    <div class="stat-card text-center"><div class="text-slate-400">Revenue</div><h3 id="statRevenue" class="text-2xl font-bold text-purple-400">0 KS</h3></div>
   </div>
 
   <div class="glass p-5 mb-8 flex flex-wrap gap-4">
@@ -80,68 +82,48 @@
   <div onclick="event.stopPropagation()"><img id="modalImage" class="max-w-full max-h-[80vh] rounded-2xl border-4 border-cyan-500"><button onclick="closeModal()" class="absolute top-4 right-4 bg-black/80 rounded-full p-2">✕</button></div>
 </div>
 
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCN7GMpY6dqGzVlMevMZPG76guq3DvQPd8",
-    authDomain: "mytelordersystem.firebaseapp.com",
-    projectId: "mytelordersystem",
-    storageBucket: "mytelordersystem.firebasestorage.app",
-    messagingSenderId: "366519284419",
-    appId: "1:366519284419:web:0044583e2ef8aa7260a876"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  
+<script>
+  let adminToken = "";
   let allOrders = [];
-  let ADMIN_PASSWORD = "104194@ath";
-  
-  window.login = () => {
+  const ADMIN_PASSWORD = "104194@ath";
+
+  async function login() {
     const pwd = document.getElementById('adminPassword').value;
     if (pwd !== ADMIN_PASSWORD) {
       document.getElementById('loginError').classList.remove('hidden');
       document.getElementById('loginError').innerText = 'Invalid password';
       return;
     }
+    adminToken = "admin-token";
     document.getElementById('loginContainer').style.display = 'none';
     document.getElementById('dashboardContainer').style.display = 'block';
-    fetchOrders();
-  };
-  
-  window.fetchOrders = async () => {
-    try {
-      const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
-      const snapshot = await getDocs(q);
-      allOrders = [];
-      snapshot.forEach(doc => {
-        allOrders.push({ id: doc.id, ...doc.data() });
-      });
-      updateStats();
-      applyFilters();
-    } catch(err) {
-      console.error("Error fetching orders:", err);
-      Swal.fire({ icon: 'error', title: 'Error', text: err.message });
-    }
-  };
-  
-  function updateStats() {
-    const total = allOrders.length;
-    const pending = allOrders.filter(o => o.status === 'pending_payment').length;
-    const paid = allOrders.filter(o => o.status === 'payment_received').length;
-    const approved = allOrders.filter(o => o.status === 'approved').length;
-    const revenue = allOrders.filter(o => o.status === 'approved').reduce((sum, o) => sum + (o.price || 0), 0);
-    
-    document.getElementById('statTotal').innerText = total;
-    document.getElementById('statPending').innerText = pending;
-    document.getElementById('statPaid').innerText = paid;
-    document.getElementById('statActive').innerText = approved;
-    document.getElementById('statRevenue').innerHTML = revenue.toLocaleString() + ' KS';
+    await fetchOrders();
   }
-  
+
+  async function fetchOrders() {
+    try {
+      const res = await fetch('/api/admin/orders', {
+        headers: { 'x-admin-auth': adminToken }
+      });
+      const data = await res.json();
+      if (data.success) {
+        allOrders = data.orders;
+        updateStats(data.stats);
+        applyFilters();
+      } else if (data.message === 'Unauthorized') {
+        logout();
+      }
+    } catch(err) { console.error(err); }
+  }
+
+  function updateStats(stats) {
+    document.getElementById('statTotal').innerText = stats.total;
+    document.getElementById('statPending').innerText = stats.pending;
+    document.getElementById('statPaid').innerText = stats.paid;
+    document.getElementById('statActive').innerText = stats.approved;
+    document.getElementById('statRevenue').innerHTML = stats.revenue.toLocaleString() + ' KS';
+  }
+
   function getStatusBadge(status) {
     const map = {
       'pending_payment': '<span class="badge badge-pending">⏳ Pending</span>',
@@ -151,15 +133,15 @@
     };
     return map[status] || '<span class="badge">Unknown</span>';
   }
-  
-  window.applyFilters = () => {
+
+  function applyFilters() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const status = document.getElementById('statusFilter').value;
     let filtered = allOrders.filter(o => o.phone?.toLowerCase().includes(search));
     if (status !== 'all') filtered = filtered.filter(o => o.status === status);
     renderOrders(filtered);
-  };
-  
+  }
+
   function renderOrders(orders) {
     const container = document.getElementById('ordersContainer');
     if (!orders.length) {
@@ -168,15 +150,15 @@
     }
     let html = '';
     orders.forEach(o => {
-      const screenshotHtml = o.screenshotBase64 
-        ? `<img src="${o.screenshotBase64}" class="w-14 h-14 object-cover rounded-xl border-2 border-cyan-500 cursor-pointer" onclick="showImage('${o.screenshotBase64}')">`
+      const screenshotHtml = o.screenshotPath 
+        ? `<img src="${o.screenshotPath}" class="w-14 h-14 object-cover rounded-xl border-2 border-cyan-500 cursor-pointer hover:scale-105" onclick="showImage('${o.screenshotPath}')">`
         : '<div class="w-14 h-14 bg-slate-700 rounded-xl flex items-center justify-center"><i class="fas fa-receipt"></i></div>';
       
       html += `
         <div class="order-row">
           <div class="flex justify-between flex-wrap gap-2">
-            <div><span class="text-xs bg-black/50 px-2 py-1 rounded-full">#${o.id?.slice(0,8)}</span> <span class="font-bold ml-2">${o.packageName}</span> ${getStatusBadge(o.status)}</div>
-            <span class="text-xs">${o.createdAt?.toDate?.().toLocaleString() || 'Just now'}</span>
+            <div><span class="text-xs bg-black/50 px-2 py-1 rounded-full">#${o.orderId || o.id}</span> <span class="font-bold ml-2">${o.packageName}</span> ${getStatusBadge(o.status)}</div>
+            <span class="text-xs">${new Date(o.createdAt).toLocaleString()}</span>
           </div>
           <div class="grid grid-cols-2 mt-2 text-sm">
             <div><i class="fas fa-phone"></i> ${o.phone}</div>
@@ -187,10 +169,10 @@
             <div class="flex gap-2">${screenshotHtml}</div>
             <div class="flex gap-2">
               ${o.status === 'payment_received' ? `
-                <button onclick="updateStatus('${o.id}', 'approved')" class="bg-emerald-700 px-3 py-1 rounded-lg text-sm">Approve</button>
-                <button onclick="updateStatus('${o.id}', 'rejected')" class="bg-rose-700 px-3 py-1 rounded-lg text-sm">Reject</button>
+                <button onclick="updateStatus(${o.id}, 'approved')" class="bg-emerald-700 px-3 py-1 rounded-lg text-sm">Approve</button>
+                <button onclick="updateStatus(${o.id}, 'rejected')" class="bg-rose-700 px-3 py-1 rounded-lg text-sm">Reject</button>
               ` : ''}
-              <button onclick="deleteOrder('${o.id}')" class="bg-slate-700 px-3 py-1 rounded-lg text-sm">Delete</button>
+              <button onclick="deleteOrder(${o.id})" class="bg-slate-700 px-3 py-1 rounded-lg text-sm">Delete</button>
             </div>
           </div>
         </div>
@@ -198,39 +180,38 @@
     });
     container.innerHTML = html;
   }
-  
-  window.updateStatus = async (orderId, newStatus) => {
-    try {
-      await updateDoc(doc(db, "orders", orderId), { status: newStatus, updatedAt: new Date() });
+
+  async function updateStatus(orderId, newStatus) {
+    const res = await fetch('/api/admin/update-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-auth': adminToken },
+      body: JSON.stringify({ orderId, status: newStatus })
+    });
+    if ((await res.json()).success) {
       Swal.fire({ icon: 'success', title: 'Updated', toast: true, timer: 1500 });
       fetchOrders();
-    } catch(err) {
-      Swal.fire({ icon: 'error', title: 'Error', text: err.message });
     }
-  };
-  
-  window.deleteOrder = async (orderId) => {
+  }
+
+  async function deleteOrder(orderId) {
     const confirm = await Swal.fire({ title: 'Delete?', icon: 'warning', showCancelButton: true });
     if (confirm.isConfirmed) {
-      await deleteDoc(doc(db, "orders", orderId));
+      await fetch('/api/admin/delete-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-auth': adminToken },
+        body: JSON.stringify({ orderId })
+      });
       fetchOrders();
     }
-  };
-  
-  window.showImage = (url) => {
-    document.getElementById('modalImage').src = url;
-    document.getElementById('imageModal').classList.add('show');
-  };
-  
-  window.closeModal = () => {
-    document.getElementById('imageModal').classList.remove('show');
-  };
-  
-  window.logout = () => {
-    document.getElementById('dashboardContainer').style.display = 'none';
-    document.getElementById('loginContainer').style.display = 'flex';
-    document.getElementById('adminPassword').value = '';
-  };
+  }
+
+  function showImage(url) { document.getElementById('modalImage').src = url; document.getElementById('imageModal').classList.add('show'); }
+  function closeModal() { document.getElementById('imageModal').classList.remove('show'); }
+  function logout() { adminToken = ""; document.getElementById('dashboardContainer').style.display = 'none'; document.getElementById('loginContainer').style.display = 'flex'; }
+
+  window.login = login; window.fetchOrders = fetchOrders; window.applyFilters = applyFilters;
+  window.updateStatus = updateStatus; window.deleteOrder = deleteOrder;
+  window.showImage = showImage; window.closeModal = closeModal; window.logout = logout;
 </script>
 </body>
 </html>
