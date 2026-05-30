@@ -156,7 +156,7 @@
         }
         .filter-btn:hover { background: var(--cyan); color: #030712; }
         
-        /* Orders List - Card Layout for Mobile */
+        /* Orders List - Card Layout */
         .orders-list {
             display: flex;
             flex-direction: column;
@@ -224,6 +224,23 @@
         .detail-value.price { color: var(--emerald); }
         .detail-value.cost { color: var(--amber); }
         .detail-value.profit { color: var(--cyan); }
+        
+        /* Countdown Timer Style */
+        .countdown-box {
+            background: rgba(0,212,255,0.08);
+            border-radius: 40px;
+            padding: 6px 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            font-family: 'Space Grotesk', monospace;
+            border: 1px solid rgba(0,212,255,0.2);
+        }
+        .countdown-box i { color: var(--cyan); }
+        .countdown-timer { font-weight: 700; color: var(--cyan); letter-spacing: 1px; }
         
         .order-actions {
             display: flex;
@@ -459,6 +476,7 @@
     let allOrders = [];
     let autoSyncInterval = null, countdownInterval = null;
     let secondsLeft = 30;
+    let activeCountdowns = {};
 
     const costPriceMap = {
         "VIP LEVEL - 1": 14500,
@@ -469,6 +487,45 @@
 
     function getCostPrice(plan) { return costPriceMap[plan] || 0; }
     function getProfit(price, plan) { return price - getCostPrice(plan); }
+    
+    // Calculate remaining days for approved order (30 days from activated_at)
+    function getRemainingTime(activatedAt) {
+        if (!activatedAt) return null;
+        const now = Date.now();
+        const endDate = new Date(activatedAt).getTime() + (30 * 24 * 60 * 60 * 1000);
+        const remaining = endDate - now;
+        if (remaining <= 0) return "Expired";
+        const days = Math.floor(remaining / (24 * 60 * 60 * 1000));
+        const hours = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+        const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+        const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+        return { days, hours, minutes, seconds, remaining };
+    }
+    
+    function formatCountdown(activatedAt) {
+        const time = getRemainingTime(activatedAt);
+        if (!time) return null;
+        if (time === "Expired") return "Expired";
+        return `${time.days}d ${time.hours}h ${time.minutes}m ${time.seconds}s`;
+    }
+
+    function startCountdownForOrder(orderId, activatedAt) {
+        if (activeCountdowns[orderId]) clearInterval(activeCountdowns[orderId]);
+        activeCountdowns[orderId] = setInterval(() => {
+            const elem = document.getElementById(`countdown-${orderId}`);
+            if (elem) {
+                const formatted = formatCountdown(activatedAt);
+                if (formatted === "Expired") {
+                    elem.innerHTML = `<i class="fas fa-calendar-times"></i> <span style="color:#f43f5e;">Expired</span>`;
+                    clearInterval(activeCountdowns[orderId]);
+                } else {
+                    elem.innerHTML = `<i class="fas fa-hourglass-half"></i> <span class="countdown-timer">${formatted}</span>`;
+                }
+            } else {
+                clearInterval(activeCountdowns[orderId]);
+            }
+        }, 1000);
+    }
 
     function updateCountdown() {
         const el = document.getElementById('autoSyncTimer');
@@ -557,6 +614,19 @@
         for (const o of orders) {
             let statusClass = o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected');
             let statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
+            
+            // Countdown for approved orders
+            let countdownHtml = '';
+            if (o.status === 'Approved' && o.activated_at) {
+                const initialCountdown = formatCountdown(o.activated_at);
+                countdownHtml = `
+                    <div class="countdown-box" id="countdown-${o.id}">
+                        <i class="fas fa-hourglass-half"></i>
+                        <span class="countdown-timer">${initialCountdown || 'Calculating...'}</span>
+                    </div>
+                `;
+            }
+            
             html += `
                 <div class="order-card">
                     <div class="order-header">
@@ -591,6 +661,7 @@
                             <div class="detail-value" style="font-size:0.65rem;">${new Date(o.created_at).toLocaleDateString()}</div>
                         </div>
                     </div>
+                    ${countdownHtml}
                     <div class="order-actions">
                         ${o.slip_url ? `<button class="screenshot-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> View Slip</button>` : '<span style="font-size:0.6rem;color:#64748b;">No slip</span>'}
                         ${o.status === 'Pending' ? `
@@ -603,6 +674,13 @@
             `;
         }
         container.innerHTML = html;
+        
+        // Start countdown timers for approved orders
+        for (const o of orders) {
+            if (o.status === 'Approved' && o.activated_at) {
+                startCountdownForOrder(o.id, o.activated_at);
+            }
+        }
     }
 
     async function approveOrder(id) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' }); if (res.ok) { showToast('✅ Approved'); loadOrders(); } else alert('Error'); }
