@@ -10,26 +10,20 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ============================================
-// MIDDLEWARE
-// ============================================
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Serve static files from root directory
 app.use(express.static(__dirname));
 
-// Serve uploads folder
+// Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
+    fs.mkdirSync(uploadsDir, { recursive: true });
 }
 app.use('/uploads', express.static('uploads'));
 
-// ============================================
-// FILE UPLOAD CONFIGURATION
-// ============================================
+// File upload configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'uploads/');
@@ -43,7 +37,7 @@ const upload = multer({
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png|gif/;
+        const allowedTypes = /jpeg|jpg|png|gif|webp/;
         const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
         const mimetype = allowedTypes.test(file.mimetype);
         if (mimetype && extname) {
@@ -55,20 +49,17 @@ const upload = multer({
 });
 
 // ============================================
-// STATIC HTML ROUTES (အရေးကြီးဆုံး)
+// STATIC HTML ROUTES
 // ============================================
 
-// Home page - serve index.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Index page
 app.get('/index.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Admin page
 app.get('/admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
 });
@@ -77,7 +68,6 @@ app.get('/admin.html', (req, res) => {
 // API ROUTES
 // ============================================
 
-// Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -115,7 +105,8 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
         res.json({ 
             success: true, 
             orderId: orderId,
-            message: 'Order created successfully'
+            message: 'Order created successfully',
+            slipUrl: slipUrl
         });
     } catch (error) {
         console.error('Error creating order:', error);
@@ -230,11 +221,13 @@ app.post('/api/admin/login', (req, res) => {
     }
 });
 
-// ============================================
-// START SERVER
-// ============================================
+// Serve uploaded files
+app.use('/uploads', express.static('uploads'));
+
+// Start server
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`📱 User Store: http://localhost:${PORT}/index.html`);
     console.log(`👨‍💼 Admin Panel: http://localhost:${PORT}/admin.html`);
+    console.log(`📁 Uploads folder: ${uploadsDir}`);
 });
