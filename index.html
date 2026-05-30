@@ -519,7 +519,6 @@
         <span id="autoRefreshTimer">Auto refresh: 30s</span>
     </div>
     
-    <!-- Track Your Order Card (ONLY THIS, no extra filters) -->
     <div class="panel-track-card">
         <div class="panel-track-title"><i class="fas fa-search"></i> Track Your Order</div>
         <div class="panel-track-input-group">
@@ -666,7 +665,7 @@
 
     function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
 
-    // TRACK YOUR ORDER - FIXED
+    // TRACK YOUR ORDER - FIXED (no success check, just check orders array)
     async function panelTrackOrder() {
         if (panelAutoHideTimer) clearTimeout(panelAutoHideTimer);
         const phone = document.getElementById('panelTrackPhoneInput').value.trim();
@@ -683,6 +682,7 @@
             const res = await fetch(`${API_BASE}/api/orders/${phone}`);
             const data = await res.json();
             
+            // Backend returns { orders: [...] } directly, no success field
             if (!data.orders || data.orders.length === 0) {
                 resultDiv.innerHTML = `<div style="color:var(--text-secondary);">📭 "${phone}" အတွက် အော်ဒါမရှိပါ။</div>`;
                 resultDiv.classList.add('show');
@@ -863,7 +863,7 @@
     document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
     
-    console.log("✅ App loaded - Track Your Order works. Filter orders removed.");
+    console.log("✅ App loaded - Track Your Order fixed (removed success check)");
 </script>
 </body>
 </html>
