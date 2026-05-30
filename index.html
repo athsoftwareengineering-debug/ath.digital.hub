@@ -175,6 +175,7 @@
             color: var(--cyan);
         }
         
+        /* My Orders Panel - Now with Track Order at Top */
         .history-panel {
             position: fixed;
             top: 0;
@@ -203,6 +204,59 @@
         .close-history { font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
         .close-history:hover { color: var(--rose); }
         
+        /* Track Order Card inside Panel */
+        .panel-track-card {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 1rem;
+            padding: 14px;
+            margin-bottom: 20px;
+        }
+        .panel-track-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--cyan);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .panel-track-input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .panel-track-input {
+            flex: 1;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 60px;
+            padding: 10px 14px;
+            color: white;
+            font-size: 0.8rem;
+        }
+        .panel-track-input:focus { border-color: var(--cyan); outline: none; }
+        .panel-track-btn {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .panel-track-btn:hover { transform: scale(0.98); background: var(--violet); }
+        .panel-track-result {
+            margin-top: 12px;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            display: none;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .panel-track-result.show { display: block; }
+        
         .order-item {
             background: rgba(0,0,0,0.4);
             border-radius: 16px;
@@ -228,6 +282,11 @@
             font-size: 0.7rem;
             font-family: 'Space Grotesk', monospace;
         }
+        
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 40px; font-size: 0.6rem; font-weight: 700; }
+        .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
+        .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
         
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -302,7 +361,7 @@
             <button class="buy-btn" data-plan="VIP LEVEL - 1" data-price="15000"><i class="fas fa-shopping-cart"></i> ဝယ်ယူမည်</button>
         </div>
         
-        <!-- TIER V2 - NOW WITH POPULAR FLAG -->
+        <!-- TIER V2 -->
         <div class="pack-card">
             <div class="featured-flag" style="background:linear-gradient(135deg,#00d4ff,#0891b2);">⭐ POPULAR</div>
             <div class="pack-tier" style="color:#00d4ff;">TIER V2</div>
@@ -343,12 +402,23 @@
     </div>
 </div>
 
-<!-- My Orders Side Panel -->
+<!-- My Orders Side Panel with Track Order at Top -->
 <div id="historyPanel" class="history-panel">
     <div class="history-header">
         <h3><i class="fas fa-list-ul"></i> ဝယ်ထားသမျှ အော်ဒါများ</h3>
         <span class="close-history" id="closeHistoryBtn">&times;</span>
     </div>
+    
+    <!-- Track Order Card inside Panel -->
+    <div class="panel-track-card">
+        <div class="panel-track-title"><i class="fas fa-search"></i> Track Your Order</div>
+        <div class="panel-track-input-group">
+            <input type="tel" id="panelTrackPhoneInput" class="panel-track-input" placeholder="📱 သင့်ဖုန်းနံပါတ် (09xxxxxxxxx)">
+            <button id="panelTrackBtn" class="panel-track-btn">🔎 ရှာမည်</button>
+        </div>
+        <div id="panelTrackResult" class="panel-track-result"></div>
+    </div>
+    
     <div id="historyList"><div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading orders...</div></div>
 </div>
 
@@ -375,7 +445,7 @@
 <script>
     const API_BASE = window.location.origin;
     let selectedPlan = "", selectedPrice = 0;
-    let autoHideTimer = null;
+    let panelAutoHideTimer = null;
     let countdownIntervals = {};
 
     function showToast(msg, isError = false) {
@@ -410,6 +480,64 @@
                 clearInterval(countdownIntervals[orderId]);
             }
         }, 1000);
+    }
+
+    // Panel Track Order Function
+    async function panelTrackOrder() {
+        if (panelAutoHideTimer) clearTimeout(panelAutoHideTimer);
+        const phone = document.getElementById('panelTrackPhoneInput').value.trim();
+        const resultDiv = document.getElementById('panelTrackResult');
+        
+        if (!phone) {
+            resultDiv.innerHTML = `<div style="color:var(--rose); padding:8px;">⚠️ ဖုန်းနံပါတ် ထည့်ပါ။</div>`;
+            resultDiv.classList.add('show');
+            panelAutoHideResult();
+            return;
+        }
+        
+        try {
+            const res = await fetch(`${API_BASE}/api/orders/${phone}`);
+            const data = await res.json();
+            
+            if (!data.orders || data.orders.length === 0) {
+                resultDiv.innerHTML = `<div style="color:var(--text-secondary);">📭 "${phone}" အတွက် အော်ဒါမရှိပါ။</div>`;
+                resultDiv.classList.add('show');
+                panelAutoHideResult();
+                return;
+            }
+            
+            let html = `<div style="text-align:left;">`;
+            for (const order of data.orders) {
+                let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
+                if (order.status === "Approved") { statusClass = "status-approved"; statusText = "✅ အတည်ပြုပြီး"; }
+                if (order.status === "Rejected") { statusClass = "status-rejected"; statusText = "❌ ပယ်ဖျက်ခံရ"; }
+                const dateStr = new Date(order.created_at).toLocaleString();
+                html += `<div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:10px; margin-bottom:8px;">
+                    <div style="display:flex; justify-content:space-between;"><strong style="color:var(--cyan);">${order.plan}</strong><span class="status-badge ${statusClass}">${statusText}</span></div>
+                    <div style="font-size:0.7rem;">💰 ${order.price.toLocaleString()} KS</div>
+                    <div style="font-size:0.6rem;">📅 ${dateStr}</div>
+                    ${order.status === "Pending" ? '<div style="font-size:0.6rem; color:#fbbf24;">🕒 အတည်ပြုချက်ကို စောင့်ဆိုင်းနေပါသည်။</div>' : ''}
+                </div>`;
+            }
+            html += `</div>`;
+            resultDiv.innerHTML = html;
+            resultDiv.classList.add('show');
+            document.getElementById('panelTrackPhoneInput').value = '';
+            panelAutoHideResult();
+        } catch(e) {
+            resultDiv.innerHTML = `<div style="color:var(--rose);">Error: ${e.message}</div>`;
+            resultDiv.classList.add('show');
+            panelAutoHideResult();
+        }
+    }
+
+    function panelAutoHideResult() {
+        if (panelAutoHideTimer) clearTimeout(panelAutoHideTimer);
+        panelAutoHideTimer = setTimeout(() => {
+            const resultDiv = document.getElementById('panelTrackResult');
+            resultDiv.classList.remove('show');
+            resultDiv.innerHTML = '';
+        }, 5000);
     }
 
     async function addOrder(phone, plan, price, file) {
@@ -475,6 +603,10 @@
     function openMyOrders() {
         document.getElementById('historyPanel').classList.add('open');
         loadAllOrders();
+        // Clear previous track result
+        document.getElementById('panelTrackResult').classList.remove('show');
+        document.getElementById('panelTrackResult').innerHTML = '';
+        document.getElementById('panelTrackPhoneInput').value = '';
     }
     function closeHistory() { document.getElementById('historyPanel').classList.remove('open'); }
 
@@ -504,8 +636,12 @@
     });
     document.getElementById('closeModalBtn').addEventListener('click', () => document.getElementById('paymentModal').classList.remove('active'));
     window.addEventListener('click', (e) => { if (e.target === document.getElementById('paymentModal')) document.getElementById('paymentModal').classList.remove('active'); });
+    
     document.getElementById('myOrdersBtn').addEventListener('click', openMyOrders);
     document.getElementById('closeHistoryBtn').addEventListener('click', closeHistory);
+    document.getElementById('panelTrackBtn').addEventListener('click', panelTrackOrder);
+    document.getElementById('panelTrackPhoneInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') panelTrackOrder(); });
+    
     document.getElementById('clickablePhone').addEventListener('click', () => { navigator.clipboard.writeText("09789999368"); showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။"); });
 </script>
 </body>
