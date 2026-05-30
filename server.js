@@ -10,7 +10,9 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// ============================================
+// MIDDLEWARE
+// ============================================
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -23,7 +25,9 @@ if (!fs.existsSync(uploadsDir)) {
 }
 app.use('/uploads', express.static('uploads'));
 
-// File upload configuration
+// ============================================
+// FILE UPLOAD CONFIGURATION
+// ============================================
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'uploads/');
@@ -51,15 +55,12 @@ const upload = multer({
 // ============================================
 // STATIC HTML ROUTES
 // ============================================
-
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
-
 app.get('/index.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
-
 app.get('/admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
 });
@@ -68,18 +69,72 @@ app.get('/admin.html', (req, res) => {
 // API ROUTES
 // ============================================
 
+// Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Create new order (with image upload)
+// ============================================
+// USER API - Track Order by Phone
+// ============================================
+app.get('/api/orders/:phone', async (req, res) => {
+    try {
+        const { phone } = req.params;
+        
+        if (!phone) {
+            return res.status(400).json({ success: false, error: 'Phone number is required' });
+        }
+        
+        const { data, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('phone', phone)
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('Supabase error:', error);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        res.json({ success: true, orders: data || [] });
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// ADMIN API - Get All Orders
+// ============================================
+app.get('/api/admin/orders', async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('Supabase admin error:', error);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        res.json({ success: true, orders: data || [] });
+    } catch (error) {
+        console.error('Error fetching all orders:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// CREATE ORDER (with image upload)
+// ============================================
 app.post('/api/orders', upload.single('slip'), async (req, res) => {
     try {
         const { phone, plan, price } = req.body;
         const slipFile = req.file;
         
         if (!phone || !plan || !price) {
-            return res.status(400).json({ error: 'Missing required fields' });
+            return res.status(400).json({ success: false, error: 'Missing required fields' });
         }
         
         let slipUrl = null;
@@ -100,58 +155,25 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
                 slip_url: slipUrl
             }]);
         
-        if (error) throw error;
+        if (error) {
+            console.error('Insert error:', error);
+            return res.status(500).json({ success: false, error: error.message });
+        }
         
         res.json({ 
             success: true, 
             orderId: orderId,
-            message: 'Order created successfully',
-            slipUrl: slipUrl
+            message: 'Order created successfully'
         });
     } catch (error) {
         console.error('Error creating order:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Get orders by phone number
-app.get('/api/orders/:phone', async (req, res) => {
-    try {
-        const { phone } = req.params;
-        
-        const { data, error } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('phone', phone)
-            .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        
-        res.json({ success: true, orders: data });
-    } catch (error) {
-        console.error('Error fetching orders:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Get all orders (admin)
-app.get('/api/admin/orders', async (req, res) => {
-    try {
-        const { data, error } = await supabaseAdmin
-            .from('orders')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        
-        res.json({ success: true, orders: data });
-    } catch (error) {
-        console.error('Error fetching all orders:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Approve order
+// ============================================
+// ADMIN - Approve Order
+// ============================================
 app.put('/api/admin/orders/:id/approve', async (req, res) => {
     try {
         const { id } = req.params;
@@ -164,16 +186,20 @@ app.put('/api/admin/orders/:id/approve', async (req, res) => {
             })
             .eq('id', id);
         
-        if (error) throw error;
+        if (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
         
         res.json({ success: true, message: 'Order approved successfully' });
     } catch (error) {
         console.error('Error approving order:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Reject order
+// ============================================
+// ADMIN - Reject Order
+// ============================================
 app.put('/api/admin/orders/:id/reject', async (req, res) => {
     try {
         const { id } = req.params;
@@ -183,16 +209,20 @@ app.put('/api/admin/orders/:id/reject', async (req, res) => {
             .update({ status: 'Rejected' })
             .eq('id', id);
         
-        if (error) throw error;
+        if (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
         
         res.json({ success: true, message: 'Order rejected successfully' });
     } catch (error) {
         console.error('Error rejecting order:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Delete order
+// ============================================
+// ADMIN - Delete Order
+// ============================================
 app.delete('/api/admin/orders/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -202,16 +232,20 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
             .delete()
             .eq('id', id);
         
-        if (error) throw error;
+        if (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
         
         res.json({ success: true, message: 'Order deleted successfully' });
     } catch (error) {
         console.error('Error deleting order:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Admin login
+// ============================================
+// ADMIN - Login
+// ============================================
 app.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
     if (password === process.env.ADMIN_PASSWORD) {
