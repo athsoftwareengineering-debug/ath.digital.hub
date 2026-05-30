@@ -519,6 +519,7 @@
         <span id="autoRefreshTimer">Auto refresh: 30s</span>
     </div>
     
+    <!-- Track Your Order Card (ONLY THIS, no extra filters) -->
     <div class="panel-track-card">
         <div class="panel-track-title"><i class="fas fa-search"></i> Track Your Order</div>
         <div class="panel-track-input-group">
@@ -665,15 +666,11 @@
 
     function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
 
-    // ============================================
-    // TRACK ORDER FUNCTION - FIXED
-    // ============================================
+    // TRACK YOUR ORDER - FIXED
     async function panelTrackOrder() {
         if (panelAutoHideTimer) clearTimeout(panelAutoHideTimer);
         const phone = document.getElementById('panelTrackPhoneInput').value.trim();
         const resultDiv = document.getElementById('panelTrackResult');
-        
-        console.log("🔍 Searching for phone:", phone);
         
         if (!phone) {
             resultDiv.innerHTML = `<div style="color:var(--rose); padding:8px;">⚠️ ဖုန်းနံပါတ် ထည့်ပါ။</div>`;
@@ -683,11 +680,8 @@
         }
         
         try {
-            const url = `${API_BASE}/api/orders/${phone}`;
-            console.log("📡 Fetching:", url);
-            const res = await fetch(url);
+            const res = await fetch(`${API_BASE}/api/orders/${phone}`);
             const data = await res.json();
-            console.log("📦 Response data:", data);
             
             if (!data.orders || data.orders.length === 0) {
                 resultDiv.innerHTML = `<div style="color:var(--text-secondary);">📭 "${phone}" အတွက် အော်ဒါမရှိပါ။</div>`;
@@ -722,7 +716,7 @@
             document.getElementById('panelTrackPhoneInput').value = '';
             panelAutoHideResult();
         } catch(e) {
-            console.error("❌ Track order error:", e);
+            console.error("Track order error:", e);
             resultDiv.innerHTML = `<div style="color:var(--rose);">Error: ${e.message}</div>`;
             resultDiv.classList.add('show');
             panelAutoHideResult();
@@ -759,28 +753,6 @@
             }
         } catch(e) {
             console.error("Load all orders error:", e);
-            document.getElementById('historyList').innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`;
-        }
-    }
-
-    // Search by phone for My Orders (Filter)
-    async function searchOrdersByPhone(phone) {
-        if (!phone) {
-            loadAllOrders();
-            return;
-        }
-        
-        try {
-            const res = await fetch(`${API_BASE}/api/orders/${phone}`);
-            const data = await res.json();
-            
-            if (!data.orders || data.orders.length === 0) {
-                document.getElementById('historyList').innerHTML = `<div class="empty-msg"><i class="fas fa-inbox"></i> "${phone}" အတွက် အော်ဒါမရှိပါ။</div>`;
-                return;
-            }
-            renderMyOrders(data.orders);
-        } catch(e) {
-            console.error("Search by phone error:", e);
             document.getElementById('historyList').innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`;
         }
     }
@@ -882,52 +854,16 @@
     document.getElementById('myOrdersBtn').addEventListener('click', openMyOrders);
     document.getElementById('closeHistoryBtn').addEventListener('click', closeHistory);
     
-    // Track Order button
+    // Track Your Order button
     document.getElementById('panelTrackBtn').addEventListener('click', panelTrackOrder);
     document.getElementById('panelTrackPhoneInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') panelTrackOrder(); });
-    
-    // Filter Orders - Search by phone
-    const historyPhoneInput = document.createElement('input');
-    // Add search input to My Orders panel header area
-    const searchContainer = document.createElement('div');
-    searchContainer.className = 'panel-track-card';
-    searchContainer.style.marginBottom = '12px';
-    searchContainer.style.padding = '10px';
-    searchContainer.innerHTML = `
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <input type="tel" id="filterPhoneInput" class="panel-track-input" placeholder="📱 ဖုန်းနံပါတ်ဖြင့် ရှာမည်" style="flex:1;">
-            <button id="filterSearchBtn" class="panel-track-btn" style="padding:10px 16px;">🔍 Filter Orders</button>
-            <button id="filterShowAllBtn" class="panel-track-btn" style="background:#334155;">📋 အကုန်ပြမည်</button>
-        </div>
-    `;
-    const panelTrackCard = document.querySelector('.panel-track-card');
-    if (panelTrackCard && panelTrackCard.parentNode) {
-        panelTrackCard.parentNode.insertBefore(searchContainer, panelTrackCard.nextSibling);
-    }
-    
-    document.getElementById('filterSearchBtn')?.addEventListener('click', () => {
-        const phone = document.getElementById('filterPhoneInput').value.trim();
-        if (phone) searchOrdersByPhone(phone);
-        else loadAllOrders();
-    });
-    document.getElementById('filterShowAllBtn')?.addEventListener('click', () => {
-        document.getElementById('filterPhoneInput').value = '';
-        loadAllOrders();
-    });
-    document.getElementById('filterPhoneInput')?.addEventListener('keypress', (e) => {
-        if(e.key === 'Enter') {
-            const phone = document.getElementById('filterPhoneInput').value.trim();
-            if (phone) searchOrdersByPhone(phone);
-            else loadAllOrders();
-        }
-    });
     
     document.getElementById('clickablePhone').addEventListener('click', () => { navigator.clipboard.writeText("09789999368"); showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။"); });
     
     document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
     
-    console.log("✅ App loaded - Track Order and Filter Orders should work");
+    console.log("✅ App loaded - Track Your Order works. Filter orders removed.");
 </script>
 </body>
 </html>
