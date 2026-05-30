@@ -33,10 +33,10 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
-// Admin simple auth
-const ADMIN_PASSWORD = 'admin123';
+// ✅ Admin password changed to 104194@ath
+const ADMIN_PASSWORD = '104194@ath';
 
-// In-memory orders (for demo, use SQLite in production)
+// In-memory orders
 let orders = [];
 let orderIdCounter = 1;
 
@@ -91,7 +91,7 @@ app.get('/api/my-orders', (req, res) => {
   res.json({ success: true, orders: userOrders });
 });
 
-// Admin API
+// Admin API with new password
 app.post('/api/admin/login', (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_PASSWORD) {
@@ -158,5 +158,6 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📱 User Dashboard: http://localhost:${PORT}/`);
-  console.log(`🔧 Admin Panel: http://localhost:${PORT}/admin (password: admin123)`);
+  console.log(`🔧 Admin Panel: http://localhost:${PORT}/admin`);
+  console.log(`🔑 Admin Password: 104194@ath`);
 });
