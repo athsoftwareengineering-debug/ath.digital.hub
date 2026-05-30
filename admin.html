@@ -116,6 +116,51 @@
         .stat-number.profit { color: var(--emerald); }
         .stat-number.cost { color: var(--amber); }
         
+        /* Search Bar */
+        .search-bar {
+            background: rgba(18, 22, 35, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0,212,255,0.15);
+            border-radius: 1rem;
+            padding: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .search-input {
+            flex: 1;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 40px;
+            padding: 10px 16px;
+            color: white;
+            font-size: 0.8rem;
+        }
+        .search-input:focus { border-color: var(--cyan); outline: none; }
+        .search-btn {
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .search-btn:hover { background: var(--cyan); color: #030712; }
+        .clear-search {
+            background: #334155;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        
         /* Filter Bar */
         .filter-bar {
             background: rgba(18, 22, 35, 0.8);
@@ -393,6 +438,15 @@
             text-align: center;
             padding: 12px;
         }
+        .search-result-badge {
+            background: rgba(0,212,255,0.1);
+            border-radius: 40px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
     </style>
 </head>
 <body>
@@ -417,6 +471,13 @@
             <div class="stat-card"><div class="stat-number cost" id="totalCost">0</div><div class="stat-label"><i class="fas fa-boxes"></i> Cost</div></div>
             <div class="stat-card"><div class="stat-number profit" id="totalProfit">0</div><div class="stat-label"><i class="fas fa-chart-line"></i> Profit</div></div>
             <div class="stat-card"><div class="stat-number" id="avgProfit">0</div><div class="stat-label"><i class="fas fa-percent"></i> Avg</div></div>
+        </div>
+        
+        <!-- Search by Phone -->
+        <div class="search-bar">
+            <input type="tel" id="searchPhoneInput" class="search-input" placeholder="🔍 Search by phone number (09xxxxxxxxx)">
+            <button class="search-btn" onclick="searchByPhone()"><i class="fas fa-search"></i> Search</button>
+            <button class="clear-search" onclick="clearSearch()"><i class="fas fa-times"></i> Clear</button>
         </div>
         
         <!-- Filter Bar -->
@@ -477,6 +538,7 @@
     let autoSyncInterval = null, countdownInterval = null;
     let secondsLeft = 30;
     let activeCountdowns = {};
+    let currentSearchPhone = "";
 
     const costPriceMap = {
         "VIP LEVEL - 1": 14500,
@@ -573,7 +635,7 @@
         try {
             const res = await fetch(`${API_BASE}/api/admin/orders`);
             const data = await res.json();
-            if (data.orders) { allOrders = data.orders; renderOrders(allOrders); updateStats(allOrders); document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | Total: ${allOrders.length}`; }
+            if (data.orders) { allOrders = data.orders; applyFiltersAndSearch(); document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | Total: ${allOrders.length}`; }
         } catch(e) { document.getElementById('ordersList').innerHTML = '<div class="loading">Connection Error</div>'; }
     }
 
@@ -595,27 +657,85 @@
         document.getElementById('avgProfit').innerHTML = (approved.length ? Math.round(profit / approved.length) : 0).toLocaleString() + 'K';
     }
 
-    function applyFilters() {
+    function applyFiltersAndSearch() {
         let filtered = [...allOrders];
+        
+        // Apply phone search
+        if (currentSearchPhone) {
+            filtered = filtered.filter(o => o.phone === currentSearchPhone);
+        }
+        
+        // Apply status filter
         const status = document.getElementById('statusFilter').value;
+        if (status !== 'all') filtered = filtered.filter(o => o.status === status);
+        
+        // Apply date filters
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
-        if (status !== 'all') filtered = filtered.filter(o => o.status === status);
         if (startDate) { const start = new Date(startDate); start.setHours(0,0,0,0); filtered = filtered.filter(o => new Date(o.created_at) >= start); }
         if (endDate) { const end = new Date(endDate); end.setHours(23,59,59,999); filtered = filtered.filter(o => new Date(o.created_at) <= end); }
-        renderOrders(filtered); updateStats(filtered);
+        
+        renderOrders(filtered);
+        updateStats(filtered);
+        
+        // Update search result message
+        const searchMsg = document.getElementById('searchResultMsg');
+        if (currentSearchPhone) {
+            const resultCount = filtered.length;
+            if (!document.getElementById('searchResultMsg')) {
+                const msgDiv = document.createElement('div');
+                msgDiv.id = 'searchResultMsg';
+                msgDiv.className = 'search-result-badge';
+                msgDiv.style.marginBottom = '12px';
+                msgDiv.style.justifyContent = 'center';
+                document.querySelector('.filter-bar').after(msgDiv);
+            }
+            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Phone: ${currentSearchPhone} | Found: ${resultCount} order(s)`;
+        } else {
+            if (document.getElementById('searchResultMsg')) {
+                document.getElementById('searchResultMsg').remove();
+            }
+        }
     }
-    function clearFilters() { document.getElementById('startDate').value = ''; document.getElementById('endDate').value = ''; document.getElementById('statusFilter').value = 'all'; renderOrders(allOrders); updateStats(allOrders); }
+
+    function searchByPhone() {
+        const phone = document.getElementById('searchPhoneInput').value.trim();
+        if (!phone) {
+            alert('Please enter a phone number');
+            return;
+        }
+        currentSearchPhone = phone;
+        applyFiltersAndSearch();
+    }
+    
+    function clearSearch() {
+        currentSearchPhone = "";
+        document.getElementById('searchPhoneInput').value = "";
+        applyFiltersAndSearch();
+    }
+
+    function applyFilters() {
+        applyFiltersAndSearch();
+    }
+    
+    function clearFilters() {
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        document.getElementById('statusFilter').value = 'all';
+        applyFiltersAndSearch();
+    }
 
     function renderOrders(orders) {
         const container = document.getElementById('ordersList');
-        if (!orders || orders.length === 0) { container.innerHTML = '<div class="loading">No orders found</div>'; return; }
+        if (!orders || orders.length === 0) { 
+            container.innerHTML = '<div class="loading">No orders found</div>'; 
+            return; 
+        }
         let html = '';
         for (const o of orders) {
             let statusClass = o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected');
             let statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
             
-            // Countdown for approved orders
             let countdownHtml = '';
             if (o.status === 'Approved' && o.activated_at) {
                 const initialCountdown = formatCountdown(o.activated_at);
@@ -675,7 +795,6 @@
         }
         container.innerHTML = html;
         
-        // Start countdown timers for approved orders
         for (const o of orders) {
             if (o.status === 'Approved' && o.activated_at) {
                 startCountdownForOrder(o.id, o.activated_at);
@@ -691,9 +810,11 @@
 
     document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+    document.getElementById('searchPhoneInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') searchByPhone(); });
 
     window.approveOrder = approveOrder; window.rejectOrder = rejectOrder; window.deleteOrder = deleteOrder; window.logout = logout;
     window.applyFilters = applyFilters; window.clearFilters = clearFilters; window.openScreenshot = openScreenshot; window.manualRefresh = manualRefresh;
+    window.searchByPhone = searchByPhone; window.clearSearch = clearSearch;
 
     if (token === 'logged_in') { document.getElementById('loginBox').style.display = 'none'; document.getElementById('adminContent').style.display = 'block'; document.getElementById('fabContainer').style.display = 'flex'; loadOrders(); startAutoSync(); }
 </script>
