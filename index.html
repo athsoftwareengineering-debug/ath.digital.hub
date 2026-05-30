@@ -82,7 +82,6 @@
         @media (min-width: 768px) { .hero h1 { font-size: 2.5rem; } }
         .hero p { color: var(--text-secondary); font-size: 0.8rem; margin-top: 8px; }
         
-        /* My Orders Panel */
         .history-panel {
             position: fixed;
             top: 0;
@@ -111,7 +110,6 @@
         .close-history { font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
         .close-history:hover { color: var(--rose); }
         
-        /* Auto Refresh Status */
         .auto-refresh-status {
             background: rgba(0,212,255,0.08);
             border-radius: 40px;
@@ -124,7 +122,6 @@
             justify-content: center;
         }
         
-        /* Track Order Card inside Panel */
         .panel-track-card {
             background: rgba(0, 212, 255, 0.05);
             border: 1px solid rgba(0, 212, 255, 0.2);
@@ -177,7 +174,6 @@
         }
         .panel-track-result.show { display: block; }
         
-        /* ORDER CARD - SMALLER SIZE */
         .order-item {
             background: rgba(0,0,0,0.4);
             border-radius: 14px;
@@ -220,7 +216,6 @@
         .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
         .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
         
-        /* INFO GRID - 2 COLUMNS smaller padding */
         .info-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -266,28 +261,7 @@
             font-size: 0.65rem;
             font-family: 'Space Grotesk', monospace;
         }
-        .screenshot-btn {
-            background: rgba(0,212,255,0.15);
-            border: 1px solid rgba(0,212,255,0.3);
-            padding: 5px 10px;
-            border-radius: 30px;
-            font-size: 0.6rem;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            color: var(--cyan);
-            transition: all 0.2s;
-            width: 100%;
-            justify-content: center;
-            margin-top: 6px;
-        }
-        .screenshot-btn:hover {
-            background: var(--cyan);
-            color: #030712;
-        }
         
-        /* Product Cards */
         .pack-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -381,7 +355,7 @@
         .empty-msg { text-align: center; color: var(--text-secondary); padding: 20px; }
         footer { margin-top: 40px; text-align: center; border-top: 1px solid var(--border-light); padding: 20px; font-size: 0.65rem; color: var(--text-secondary); }
         
-        /* Screenshot Modal */
+        /* Screenshot Modal - Simplified */
         .image-modal {
             position: fixed;
             top: 0;
@@ -483,7 +457,6 @@
     </div>
     
     <div class="pack-grid">
-        <!-- TIER V1 -->
         <div class="pack-card" style="border-color:#fbbf24;">
             <div class="featured-flag" style="background:linear-gradient(135deg,#fbbf24,#d97706);">🔥 BEST SELLER</div>
             <div class="pack-tier" style="color:#fbbf24;">TIER V1</div>
@@ -496,7 +469,6 @@
             <button class="buy-btn" data-plan="VIP LEVEL - 1" data-price="15000">ဝယ်ယူမည်</button>
         </div>
         
-        <!-- TIER V2 -->
         <div class="pack-card">
             <div class="featured-flag" style="background:linear-gradient(135deg,#00d4ff,#0891b2);">⭐ POPULAR</div>
             <div class="pack-tier" style="color:#00d4ff;">TIER V2</div>
@@ -509,7 +481,6 @@
             <button class="buy-btn" data-plan="VIP LEVEL - 2" data-price="20000">ဝယ်ယူမည်</button>
         </div>
         
-        <!-- TIER V3 -->
         <div class="pack-card" style="border-color:#22c55e;">
             <div class="featured-flag" style="background:linear-gradient(135deg,#22c55e,#15803d);">⭐ BEST VALUE</div>
             <div class="pack-tier" style="color:#22c55e;">TIER V3</div>
@@ -522,7 +493,6 @@
             <button class="buy-btn" data-plan="VIP LEVEL - 3" data-price="25000">ဝယ်ယူမည်</button>
         </div>
         
-        <!-- TIER V4 -->
         <div class="pack-card" style="border-color:#8b5cf6;">
             <div class="featured-flag" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">👑 TOP SELLER</div>
             <div class="pack-tier" style="color:#a78bfa;">TIER V4 (ULTRA)</div>
@@ -537,7 +507,6 @@
     </div>
 </div>
 
-<!-- My Orders Side Panel -->
 <div id="historyPanel" class="history-panel">
     <div class="history-header">
         <h3><i class="fas fa-list-ul"></i> ဝယ်ထားသမျှ အော်ဒါများ</h3>
@@ -580,7 +549,6 @@
     </div>
 </div>
 
-<!-- Screenshot Modal for User -->
 <div id="screenshotModal" class="image-modal" onclick="closeModal()">
     <div class="image-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -669,7 +637,7 @@
         }, 1000);
     }
 
-    // Open Screenshot - Show checking message for user
+    // Open Screenshot - Show checking message only
     function openScreenshot(url) {
         const modal = document.getElementById('screenshotModal');
         const img = document.getElementById('modalImage');
@@ -688,14 +656,10 @@
         }
         modal.classList.add('active');
         
+        // Change status to completed after 3 seconds (no extra message)
         setTimeout(() => {
             if (document.getElementById('screenshotModal').classList.contains('active')) {
                 statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> စစ်ဆေးပြီးပါပြီ။';
-                setTimeout(() => {
-                    if (document.getElementById('screenshotModal').classList.contains('active')) {
-                        statusSpan.innerHTML = '<i class="fas fa-image"></i> အထက်ပါပုံအား စစ်ဆေးပါ။';
-                    }
-                }, 2000);
             }
         }, 3000);
     }
@@ -738,7 +702,6 @@
                     <div style="font-size:0.7rem;">💰 ${order.price.toLocaleString()} KS</div>
                     <div style="font-size:0.6rem;">📅 ${dateStr}</div>
                     ${waitingMsg}
-                    ${order.slip_url ? `<div style="margin-top:6px;"><button class="screenshot-btn" onclick="openScreenshot('${order.slip_url}')" style="background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.3); padding:4px 10px; border-radius:20px; font-size:0.65rem; cursor:pointer; color:var(--cyan); width:auto; display:inline-flex;"><i class="fas fa-image"></i> View Slip</button></div>` : ''}
                 </div>`;
             }
             html += `</div>`;
@@ -831,7 +794,6 @@
                     </div>
                     ${waitingMsg}
                     ${countdownHtml}
-                    ${order.slip_url ? `<button class="screenshot-btn" onclick="openScreenshot('${order.slip_url}')"><i class="fas fa-image"></i> View Slip</button>` : ''}
                 </div>
             `;
         }
