@@ -42,21 +42,10 @@
                         radial-gradient(circle at 85% 70%, rgba(0, 212, 255, 0.1) 0%, transparent 60%);
             z-index: -2;
         }
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 10px);
-            pointer-events: none;
-            z-index: -1;
-        }
         
         .container { max-width: 1320px; margin: 0 auto; padding: 16px; position: relative; z-index: 2; }
         
-        /* Header - Responsive */
+        /* Header */
         .store-header {
             backdrop-filter: blur(20px);
             background: rgba(10, 12, 21, 0.6);
@@ -93,7 +82,6 @@
             font-size: 0.75rem;
             color: #c4b5fd;
             cursor: pointer;
-            transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -106,7 +94,7 @@
         @media (min-width: 768px) { .hero h1 { font-size: 2.5rem; } }
         .hero p { color: var(--text-secondary); font-size: 0.8rem; margin-top: 8px; }
         
-        /* Track Card - Responsive */
+        /* Track Card */
         .track-card {
             background: rgba(12, 18, 28, 0.7);
             backdrop-filter: blur(12px);
@@ -130,7 +118,7 @@
             color: white;
             font-size: 0.85rem;
         }
-        @media (min-width: 768px) { .track-input { padding: 14px 20px; font-size: 0.9rem; } }
+        @media (min-width: 768px) { .track-input { padding: 14px 20px; } }
         .track-input:focus { border-color: var(--cyan); outline: none; }
         .track-btn {
             background: linear-gradient(135deg, #06b6d4, #0891b2);
@@ -139,10 +127,9 @@
             border-radius: 60px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
             font-size: 0.85rem;
         }
-        @media (min-width: 768px) { .track-btn { padding: 14px 32px; font-size: 0.9rem; } }
+        @media (min-width: 768px) { .track-btn { padding: 14px 32px; } }
         .track-btn:hover { transform: scale(0.98); background: var(--violet); }
         .track-result {
             margin-top: 16px;
@@ -156,7 +143,7 @@
         .track-result.show { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        /* Product Cards Grid - Auto Responsive */
+        /* Product Cards - Auto Responsive Grid */
         .pack-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -172,12 +159,11 @@
             border: 1px solid rgba(255,255,255,0.05);
             border-radius: 1.5rem;
             padding: 1.2rem;
-            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            transition: all 0.3s;
             position: relative;
-            transform-style: preserve-3d;
         }
         @media (min-width: 768px) { .pack-card { padding: 1.5rem; } }
-        .pack-card:hover { transform: translateY(-5px); border-color: rgba(0,212,255,0.4); box-shadow: 0 15px 30px -10px rgba(0,0,0,0.5); }
+        .pack-card:hover { transform: translateY(-5px); border-color: rgba(0,212,255,0.4); }
         .featured-flag {
             position: absolute;
             top: -10px;
@@ -190,7 +176,7 @@
             color: white;
         }
         @media (min-width: 768px) { .featured-flag { padding: 5px 16px; font-size: 0.7rem; } }
-        .pack-tier { font-size: 0.7rem; text-transform: uppercase; color: var(--cyan); font-weight: 600; letter-spacing: 1px; }
+        .pack-tier { font-size: 0.7rem; text-transform: uppercase; color: var(--cyan); font-weight: 600; }
         @media (min-width: 768px) { .pack-tier { font-size: 0.8rem; } }
         .pack-price { font-family: 'Space Grotesk', monospace; font-size: 1.6rem; font-weight: 800; margin: 8px 0 12px; }
         @media (min-width: 768px) { .pack-price { font-size: 2rem; } }
@@ -198,7 +184,7 @@
         .feature-list { list-style: none; margin: 12px 0 20px; }
         .feature-list li { margin-bottom: 10px; font-size: 0.75rem; display: flex; align-items: center; gap: 8px; color: #cbd5e1; }
         @media (min-width: 768px) { .feature-list li { font-size: 0.85rem; } }
-        .feature-list li i { color: var(--cyan); width: 20px; font-size: 0.8rem; }
+        .feature-list li i { color: var(--cyan); width: 20px; }
         .buy-btn {
             width: 100%;
             padding: 10px 0;
@@ -208,21 +194,19 @@
             background: white;
             color: #0f172a;
             cursor: pointer;
-            transition: all 0.2s;
             font-size: 0.8rem;
         }
         @media (min-width: 768px) { .buy-btn { padding: 12px 0; font-size: 0.9rem; } }
         .buy-btn.violet { background: linear-gradient(135deg, var(--violet), #a855f7); color: white; }
         .buy-btn:hover { background: var(--cyan); transform: scale(0.98); color: #030712; }
         
-        /* Status Badge */
         .status-badge { display: inline-block; padding: 4px 10px; border-radius: 40px; font-size: 0.6rem; font-weight: 700; }
         @media (min-width: 768px) { .status-badge { padding: 4px 12px; font-size: 0.7rem; } }
         .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
         .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
         
-        /* My Orders Side Panel - Responsive */
+        /* My Orders Side Panel */
         .history-panel {
             position: fixed;
             top: 0;
@@ -310,7 +294,6 @@
             font-family: 'Space Grotesk', monospace;
         }
         
-        /* Modal - Responsive */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(3,7,18,0.94); backdrop-filter: blur(20px);
@@ -325,11 +308,14 @@
             width: 90%;
             max-width: 480px;
             padding: 1.2rem;
+            position: relative;
         }
         @media (min-width: 768px) { .modal-card { padding: 1.6rem; border-radius: 2rem; } }
-        .modal-close { position: absolute; right: 16px; top: 12px; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
+        .modal-close { position: absolute; right: 16px; top: 12px; font-size: 1.5rem; cursor: pointer; }
         .info-compact { background: rgba(0,0,0,0.45); border-radius: 1rem; padding: 12px; margin: 16px 0; }
         .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.08); }
+        .info-label { color: var(--text-secondary); font-size: 0.75rem; }
+        .info-value { font-weight: 600; background: rgba(6,182,212,0.12); padding: 4px 10px; border-radius: 40px; color: var(--cyan); font-size: 0.75rem; }
         .phone-copy { cursor: pointer; }
         .form-group { margin-bottom: 14px; }
         .form-group label { font-size: 0.7rem; display: block; margin-bottom: 5px; color: var(--text-secondary); }
@@ -405,7 +391,6 @@
     </div>
 </div>
 
-<!-- My Orders Side Panel -->
 <div id="historyPanel" class="history-panel">
     <div class="history-header">
         <h3><i class="fas fa-list-ul"></i> ဝယ်ထားသမျှ အော်ဒါများ</h3>
@@ -421,7 +406,7 @@
 <div id="paymentModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-close" id="closeModalBtn">&times;</div>
-        <div style="text-align:center; margin-bottom:6px;"><i class="fas fa-credit-card" style="font-size:2rem; color:var(--cyan);"></i></div>
+        <div style="text-align:center;"><i class="fas fa-credit-card" style="font-size:1.8rem; color:var(--cyan);"></i></div>
         <h3 style="font-family:'Space Grotesk'; text-align:center;">Payment Details</h3>
         <div class="info-compact">
             <div class="info-row"><span class="info-label">🏦 ငွေလွှဲနည်းလမ်း</span><span class="info-value">K-Pay / WavePay</span></div>
