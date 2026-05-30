@@ -547,7 +547,7 @@
         }, 1000);
     }
 
-    // Track Order Function - FIXED
+    // TRACK ORDER - FIXED
     async function trackOrder() {
         if (autoHideTimer) clearTimeout(autoHideTimer);
         const phone = document.getElementById('trackPhoneInput').value.trim();
@@ -561,11 +561,10 @@
         }
         
         try {
-            // Use the correct API endpoint for user order search
             const res = await fetch(`${API_BASE}/api/orders/${phone}`);
             const data = await res.json();
             
-            if (data.success === false || !data.orders || data.orders.length === 0) {
+            if (!data.success || !data.orders || data.orders.length === 0) {
                 resultDiv.innerHTML = `<div style="color:var(--text-secondary);">📭 "${phone}" အတွက် အော်ဒါမရှိပါ။</div>`;
                 resultDiv.classList.add('show');
                 autoHideResult();
@@ -620,12 +619,12 @@
         return res.json();
     }
 
-    // Load ALL orders (Admin endpoint)
+    // LOAD ALL ORDERS (Admin endpoint)
     async function loadAllOrders() {
         try {
             const res = await fetch(`${API_BASE}/api/admin/orders`);
             const data = await res.json();
-            if (data.orders && data.orders.length > 0) {
+            if (data.success && data.orders && data.orders.length > 0) {
                 renderMyOrders(data.orders);
             } else {
                 document.getElementById('historyList').innerHTML = `<div class="empty-msg">📭 အော်ဒါမရှိသေးပါ။</div>`;
@@ -636,7 +635,7 @@
         }
     }
 
-    // Search orders by phone - FIXED
+    // SEARCH ORDERS BY PHONE (User endpoint)
     async function searchOrdersByPhone(phone) {
         if (!phone) {
             loadAllOrders();
@@ -647,7 +646,7 @@
             const res = await fetch(`${API_BASE}/api/orders/${phone}`);
             const data = await res.json();
             
-            if (data.success === false || !data.orders || data.orders.length === 0) {
+            if (!data.success || !data.orders || data.orders.length === 0) {
                 document.getElementById('historyList').innerHTML = `<div class="empty-msg"><i class="fas fa-inbox"></i> "${phone}" အတွက် အော်ဒါမရှိပါ။</div>`;
                 return;
             }
@@ -676,7 +675,6 @@
             let countdownHtml = "";
             if (order.status === "Approved" && order.activated_at) {
                 countdownHtml = `<div class="countdown-timer" id="countdown-${order.id}"><i class="fas fa-calendar-check"></i> ကျန်ရက်: Calculating...</div>`;
-                // Start countdown for this order
                 setTimeout(() => startCountdown(order.id, order.activated_at), 100);
             }
             
@@ -797,7 +795,7 @@
         showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။"); 
     });
     
-    console.log("✅ App loaded - Track Order and Filter Orders should work with phone numbers");
+    console.log("✅ App loaded - Track Order and Filter Orders should work");
 </script>
 </body>
 </html>
