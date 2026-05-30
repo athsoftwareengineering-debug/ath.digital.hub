@@ -60,6 +60,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            margin-bottom: 1rem;
         }
         .stats {
             display: flex;
@@ -160,9 +161,7 @@
 
     function updateCountdownDisplay() {
         const timerElement = document.getElementById('countdownTimer');
-        if (timerElement) {
-            timerElement.innerText = `(${secondsLeft}s)`;
-        }
+        if (timerElement) timerElement.innerText = `(${secondsLeft}s)`;
     }
 
     function startCountdown() {
@@ -172,10 +171,7 @@
         countdownInterval = setInterval(() => {
             secondsLeft--;
             updateCountdownDisplay();
-            if (secondsLeft <= 0) {
-                secondsLeft = 30;
-                updateCountdownDisplay();
-            }
+            if (secondsLeft <= 0) secondsLeft = 30;
         }, 1000);
     }
 
@@ -189,15 +185,6 @@
                 updateCountdownDisplay();
             }
         }, 30000);
-    }
-
-    function manualRefresh() {
-        if (token === 'logged_in') {
-            loadOrders();
-            secondsLeft = 30;
-            updateCountdownDisplay();
-            showToast('🔄 Refreshed manually!');
-        }
     }
 
     async function login() {
@@ -227,6 +214,15 @@
         if (countdownInterval) clearInterval(countdownInterval);
         document.getElementById('loginBox').style.display = 'block';
         document.getElementById('adminContent').style.display = 'none';
+    }
+
+    function manualRefresh() {
+        if (token === 'logged_in') {
+            loadOrders();
+            secondsLeft = 30;
+            updateCountdownDisplay();
+            showToast('🔄 Refreshed manually!');
+        }
     }
 
     async function loadOrders() {
@@ -260,7 +256,7 @@
                 <td>${order.id}</td>
                 <td>${order.phone}</td>
                 <td>${order.plan}</td>
-                <td>${order.price.toLocaleString()} KS</td>
+                <td>${order.price.toLocaleString()} KS}</td>
                 <td><span class="${statusClass}">${order.status}</span></td>
                 <td>${dateStr}</td>
                 <td>
