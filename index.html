@@ -665,11 +665,13 @@
 
     function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
 
-    // TRACK YOUR ORDER - FIXED (no success check, just check orders array)
+    // TRACK YOUR ORDER - WITH DEBUG CONSOLE LOGS
     async function panelTrackOrder() {
         if (panelAutoHideTimer) clearTimeout(panelAutoHideTimer);
         const phone = document.getElementById('panelTrackPhoneInput').value.trim();
         const resultDiv = document.getElementById('panelTrackResult');
+        
+        console.log("🔍 Track Order - Phone:", phone);
         
         if (!phone) {
             resultDiv.innerHTML = `<div style="color:var(--rose); padding:8px;">⚠️ ဖုန်းနံပါတ် ထည့်ပါ။</div>`;
@@ -679,17 +681,23 @@
         }
         
         try {
-            const res = await fetch(`${API_BASE}/api/orders/${phone}`);
+            const url = `${API_BASE}/api/orders/${phone}`;
+            console.log("📡 Fetching URL:", url);
+            const res = await fetch(url);
+            console.log("📡 Response status:", res.status);
             const data = await res.json();
+            console.log("📦 Response data:", data);
             
-            // Backend returns { orders: [...] } directly, no success field
+            // Check if orders exist (data.orders array)
             if (!data.orders || data.orders.length === 0) {
+                console.log("❌ No orders found for phone:", phone);
                 resultDiv.innerHTML = `<div style="color:var(--text-secondary);">📭 "${phone}" အတွက် အော်ဒါမရှိပါ။</div>`;
                 resultDiv.classList.add('show');
                 panelAutoHideResult();
                 return;
             }
             
+            console.log("✅ Found", data.orders.length, "orders");
             let html = `<div style="text-align:left;">`;
             for (const order of data.orders) {
                 let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
@@ -716,7 +724,7 @@
             document.getElementById('panelTrackPhoneInput').value = '';
             panelAutoHideResult();
         } catch(e) {
-            console.error("Track order error:", e);
+            console.error("❌ Track order error:", e);
             resultDiv.innerHTML = `<div style="color:var(--rose);">Error: ${e.message}</div>`;
             resultDiv.classList.add('show');
             panelAutoHideResult();
@@ -854,7 +862,6 @@
     document.getElementById('myOrdersBtn').addEventListener('click', openMyOrders);
     document.getElementById('closeHistoryBtn').addEventListener('click', closeHistory);
     
-    // Track Your Order button
     document.getElementById('panelTrackBtn').addEventListener('click', panelTrackOrder);
     document.getElementById('panelTrackPhoneInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') panelTrackOrder(); });
     
@@ -863,7 +870,7 @@
     document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
     
-    console.log("✅ App loaded - Track Your Order fixed (removed success check)");
+    console.log("✅ App loaded - Track Your Order with debug console. Check F12 Console for details.");
 </script>
 </body>
 </html>
