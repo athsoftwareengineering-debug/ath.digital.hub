@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Admin Panel | ATH DIGITAL HUB | 3D Database</title>
+    <title>Admin Panel | ATH DIGITAL HUB</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
             --cyan: #00d4ff;
             --emerald: #10b981;
             --rose: #f43f5e;
-            --glass-edge: rgba(0, 212, 255, 0.25);
+            --amber: #f59e0b;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
         }
@@ -24,7 +24,7 @@
             color: var(--text-primary);
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
-            overflow-x: hidden;
+            padding: 12px;
         }
         body::before {
             content: '';
@@ -38,136 +38,259 @@
             z-index: -2;
         }
         
-        .container { max-width: 1600px; margin: 0 auto; padding: 16px; position: relative; z-index: 2; }
+        .container { max-width: 600px; margin: 0 auto; }
         
         /* Header */
         .header {
             backdrop-filter: blur(20px);
-            background: rgba(10, 12, 21, 0.6);
-            border: 1px solid var(--glass-edge);
+            background: rgba(10, 12, 21, 0.7);
+            border: 1px solid rgba(0,212,255,0.2);
             border-radius: 1.5rem;
-            padding: 0.8rem 1.2rem;
+            padding: 12px 16px;
+            margin-bottom: 16px;
             display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 1.5rem;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        @media (min-width: 768px) { .header { flex-direction: row; justify-content: space-between; align-items: center; padding: 1rem 2rem; } }
-        
-        h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; background: linear-gradient(135deg, #ffffff, var(--cyan), #8b5cf6); background-clip: text; -webkit-background-clip: text; color: transparent; }
-        @media (min-width: 768px) { h1 { font-size: 1.8rem; } }
-        
-        .header-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
-        .glass-btn {
-            background: rgba(0,212,255,0.1);
-            border: 1px solid rgba(0,212,255,0.3);
-            padding: 8px 16px;
-            border-radius: 60px;
-            cursor: pointer;
-            color: var(--cyan);
+        .header h1 {
+            font-size: 1.2rem;
+            font-family: 'Space Grotesk', sans-serif;
+            background: linear-gradient(135deg, #fff, var(--cyan));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
             display: flex;
             align-items: center;
             gap: 6px;
-            font-weight: 600;
-            font-size: 0.8rem;
-            transition: all 0.3s;
         }
-        .glass-btn:hover { background: var(--cyan); color: #030712; transform: translateY(-2px); }
-        .logout-btn { background: rgba(244,63,94,0.15); border-color: rgba(244,63,94,0.4); color: #fb7185; }
-        .sync-status { background: rgba(0,212,255,0.1); border-radius: 40px; padding: 5px 12px; font-size: 0.7rem; display: flex; align-items: center; gap: 6px; }
-        .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .sync-status {
+            background: rgba(0,212,255,0.15);
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         
-        /* Stats */
-        .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 12px; }
-        @media (min-width: 640px) { .stats-row { grid-template-columns: repeat(4, 1fr); } }
+        /* Stats Cards Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
         .stat-card {
-            background: linear-gradient(145deg, rgba(18,22,35,0.8), rgba(10,12,21,0.9));
+            background: linear-gradient(145deg, rgba(18,22,35,0.9), rgba(10,12,21,0.95));
+            backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 1rem;
-            padding: 0.8rem;
+            border-radius: 1.2rem;
+            padding: 12px;
+            text-align: center;
         }
-        .stat-number { font-size: 1.2rem; font-weight: 800; font-family: 'Space Grotesk', monospace; color: var(--cyan); }
-        @media (min-width: 768px) { .stat-number { font-size: 1.5rem; } }
-        .stat-label { font-size: 0.6rem; color: var(--text-secondary); margin-top: 4px; }
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 800;
+            font-family: 'Space Grotesk', monospace;
+            color: var(--cyan);
+        }
+        .stat-label {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
         .stat-number.profit { color: var(--emerald); }
-        .stat-number.cost { color: #fbbf24; }
+        .stat-number.cost { color: var(--amber); }
         
-        /* Filter */
+        /* Filter Bar */
         .filter-bar {
-            background: rgba(18, 22, 35, 0.7);
+            background: rgba(18, 22, 35, 0.8);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(0,212,255,0.15);
             border-radius: 1rem;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
+            padding: 12px;
+            margin-bottom: 16px;
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: space-between;
         }
-        @media (min-width: 768px) { .filter-bar { flex-direction: row; justify-content: space-between; align-items: center; } }
-        .filter-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            flex: 1;
+        }
         .filter-input {
             background: rgba(0,0,0,0.5);
             border: 1px solid #2d3a5e;
             border-radius: 40px;
             padding: 8px 12px;
             color: white;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
+            flex: 1;
             min-width: 100px;
         }
         .filter-btn {
-            background: rgba(0,212,255,0.12);
+            background: rgba(0,212,255,0.15);
             border: 1px solid rgba(0,212,255,0.3);
             padding: 8px 16px;
             border-radius: 40px;
             font-size: 0.7rem;
             cursor: pointer;
+            font-weight: 500;
         }
         .filter-btn:hover { background: var(--cyan); color: #030712; }
-        .filter-btn.reset { background: rgba(100,116,139,0.2); border-color: rgba(100,116,139,0.4); }
         
-        /* Table */
-        .orders-table {
-            background: rgba(18, 22, 35, 0.5);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 1rem;
-            overflow: hidden;
+        /* Orders List - Card Layout for Mobile */
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
         }
-        .orders-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.7rem; }
-        @media (min-width: 768px) { th, td { padding: 12px 12px; font-size: 0.8rem; } }
-        th { color: var(--cyan); font-weight: 600; }
-        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 40px; font-size: 0.6rem; font-weight: 700; }
+        .order-card {
+            background: linear-gradient(145deg, rgba(18,22,35,0.85), rgba(10,12,21,0.9));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,212,255,0.1);
+            border-radius: 1.2rem;
+            padding: 14px;
+            transition: all 0.2s;
+        }
+        .order-card:hover { border-color: rgba(0,212,255,0.3); transform: translateX(3px); }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .order-id {
+            font-family: monospace;
+            font-size: 0.7rem;
+            background: rgba(0,212,255,0.1);
+            padding: 3px 8px;
+            border-radius: 20px;
+            color: var(--cyan);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 700;
+        }
         .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
         .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
-        .screenshot-link {
-            color: var(--cyan);
-            cursor: pointer;
-            text-decoration: underline;
-            font-size: 0.65rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
+        
+        .order-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 10px;
         }
-        .screenshot-link:hover { color: #00d4ff; text-shadow: 0 0 5px rgba(0,212,255,0.5); }
-        .action-buttons { display: flex; gap: 4px; flex-wrap: wrap; }
+        .detail-item {
+            flex: 1;
+            min-width: 80px;
+        }
+        .detail-label {
+            font-size: 0.55rem;
+            color: #64748b;
+            margin-bottom: 2px;
+        }
+        .detail-value {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .detail-value.price { color: var(--emerald); }
+        .detail-value.cost { color: var(--amber); }
+        .detail-value.profit { color: var(--cyan); }
+        
+        .order-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            flex-wrap: wrap;
+        }
         .action-btn {
+            flex: 1;
             border: none;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.6rem;
+            padding: 8px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
             cursor: pointer;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         .action-btn.approve { background: #10b981; color: white; }
         .action-btn.reject { background: #f43f5e; color: white; }
         .action-btn.delete { background: #475569; color: white; }
+        .screenshot-btn {
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--cyan);
+        }
         
-        /* Screenshot Modal - Beautiful Popup */
+        /* Floating Action Buttons */
+        .fab-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+        }
+        .fab {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), #0891b2);
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,212,255,0.4);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .fab:hover { transform: scale(1.05); }
+        .fab.logout { background: linear-gradient(135deg, #f43f5e, #e11d48); box-shadow: 0 4px 15px rgba(244,63,94,0.4); }
+        
+        /* Screenshot Modal */
         .image-modal {
             position: fixed;
             top: 0;
@@ -176,13 +299,13 @@
             height: 100%;
             background: rgba(0,0,0,0.96);
             backdrop-filter: blur(20px);
-            z-index: 10000;
+            z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
             visibility: hidden;
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
         .image-modal.active {
             visibility: visible;
@@ -191,19 +314,15 @@
         .image-modal-content {
             max-width: 90%;
             max-height: 90%;
-            position: relative;
             background: rgba(18,22,35,0.95);
             border-radius: 24px;
             padding: 10px;
             border: 1px solid rgba(0,212,255,0.5);
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,212,255,0.2);
         }
         .image-modal-content img {
             max-width: 100%;
-            max-height: 80vh;
+            max-height: 70vh;
             border-radius: 16px;
-            display: block;
-            margin: 0 auto;
         }
         .modal-header {
             display: flex;
@@ -211,40 +330,20 @@
             align-items: center;
             padding: 8px 12px;
             border-bottom: 1px solid rgba(0,212,255,0.2);
-            margin-bottom: 10px;
-        }
-        .modal-header span {
-            font-size: 0.8rem;
-            color: var(--cyan);
-            font-family: 'Space Grotesk', monospace;
         }
         .close-modal {
             background: rgba(255,255,255,0.1);
             border: none;
             color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-        .close-modal:hover { background: var(--rose); transform: scale(1.1); }
-        .modal-footer {
-            padding: 10px 12px;
-            font-size: 0.65rem;
-            color: #64748b;
-            text-align: center;
-            border-top: 1px solid rgba(0,212,255,0.1);
-            margin-top: 10px;
+            cursor: pointer;
         }
         
         .login-box {
-            max-width: 400px;
-            margin: 100px auto;
+            max-width: 350px;
+            margin: 80px auto;
             background: linear-gradient(145deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
             backdrop-filter: blur(20px);
             border: 1px solid rgba(0,212,255,0.4);
@@ -254,7 +353,7 @@
         }
         .login-box input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 12px;
             margin: 12px 0;
             background: rgba(0,0,0,0.5);
             border: 1px solid #2d3a5e;
@@ -270,85 +369,87 @@
             font-weight: 700;
             cursor: pointer;
         }
-        .loading { text-align: center; padding: 2rem; color: var(--text-secondary); }
-        .last-update { font-size: 0.6rem; color: #64748b; text-align: center; padding: 0.8rem; }
-        .footer-note { text-align: center; margin-top: 1rem; font-size: 0.6rem; color: #475569; }
+        .loading { text-align: center; padding: 2rem; color: #64748b; }
+        .last-update {
+            font-size: 0.6rem;
+            color: #475569;
+            text-align: center;
+            padding: 12px;
+        }
     </style>
 </head>
 <body>
 <div id="app">
     <div class="container" id="adminContent" style="display: none;">
+        <!-- Header -->
         <div class="header">
-            <h1><i class="fas fa-cube"></i> 3D Database Admin</h1>
-            <div class="header-buttons">
-                <div class="sync-status"><span class="sync-dot"></span><span id="autoSyncTimer">Auto Sync: 30s</span></div>
-                <button class="glass-btn" onclick="manualRefresh()"><i class="fas fa-sync-alt"></i> Sync Now</button>
-                <button class="glass-btn" onclick="window.location.href='/'"><i class="fas fa-store"></i> Store</button>
-                <button class="glass-btn logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Exit</button>
+            <h1><i class="fas fa-crown"></i> ATH Admin</h1>
+            <div class="sync-status">
+                <span class="sync-dot"></span>
+                <span id="autoSyncTimer">Auto Sync: 30s</span>
             </div>
         </div>
         
-        <!-- Stats -->
-        <div class="stats-row">
-            <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label">Total Orders</div></div>
-            <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label">Pending</div></div>
-            <div class="stat-card"><div class="stat-number" id="approvedOrders">0</div><div class="stat-label">Approved</div></div>
-            <div class="stat-card"><div class="stat-number" id="rejectedOrders">0</div><div class="stat-label">Rejected</div></div>
-        </div>
-        <div class="stats-row">
-            <div class="stat-card"><div class="stat-number" id="totalRevenue">0</div><div class="stat-label">Revenue</div></div>
-            <div class="stat-card"><div class="stat-number cost" id="totalCost">0</div><div class="stat-label">Cost</div></div>
-            <div class="stat-card"><div class="stat-number profit" id="totalProfit">0</div><div class="stat-label">Profit</div></div>
-            <div class="stat-card"><div class="stat-number" id="avgProfit">0</div><div class="stat-label">Avg Profit</div></div>
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label"><i class="fas fa-shopping-cart"></i> Total</div></div>
+            <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label"><i class="fas fa-clock"></i> Pending</div></div>
+            <div class="stat-card"><div class="stat-number" id="approvedOrders">0</div><div class="stat-label"><i class="fas fa-check-circle"></i> Approved</div></div>
+            <div class="stat-card"><div class="stat-number" id="rejectedOrders">0</div><div class="stat-label"><i class="fas fa-times-circle"></i> Rejected</div></div>
+            <div class="stat-card"><div class="stat-number" id="totalRevenue">0</div><div class="stat-label"><i class="fas fa-coins"></i> Revenue</div></div>
+            <div class="stat-card"><div class="stat-number cost" id="totalCost">0</div><div class="stat-label"><i class="fas fa-boxes"></i> Cost</div></div>
+            <div class="stat-card"><div class="stat-number profit" id="totalProfit">0</div><div class="stat-label"><i class="fas fa-chart-line"></i> Profit</div></div>
+            <div class="stat-card"><div class="stat-number" id="avgProfit">0</div><div class="stat-label"><i class="fas fa-percent"></i> Avg</div></div>
         </div>
         
-        <!-- Filter -->
+        <!-- Filter Bar -->
         <div class="filter-bar">
             <div class="filter-group">
-                <input type="date" id="startDate" class="filter-input">
-                <input type="date" id="endDate" class="filter-input">
+                <input type="date" id="startDate" class="filter-input" placeholder="Start">
+                <input type="date" id="endDate" class="filter-input" placeholder="End">
                 <select id="statusFilter" class="filter-input">
-                    <option value="all">All Status</option>
+                    <option value="all">All</option>
                     <option value="Pending">Pending</option>
                     <option value="Approved">Approved</option>
                     <option value="Rejected">Rejected</option>
                 </select>
             </div>
-            <div class="filter-group">
-                <button class="filter-btn" onclick="applyFilters()">Apply Filter</button>
-                <button class="filter-btn reset" onclick="clearFilters()">Reset</button>
+            <div>
+                <button class="filter-btn" onclick="applyFilters()"><i class="fas fa-filter"></i> Filter</button>
+                <button class="filter-btn reset" onclick="clearFilters()" style="background:#334155;"><i class="fas fa-undo"></i></button>
             </div>
         </div>
         
-        <!-- Orders Table -->
-        <div class="orders-table">
-            <div class="orders-container">
-                <div id="ordersList"><div class="loading">Loading database...</div></div>
-            </div>
-            <div class="last-update" id="lastUpdate"></div>
+        <!-- Orders Cards List -->
+        <div class="orders-list" id="ordersList">
+            <div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading orders...</div>
         </div>
-        <div class="footer-note">🔒 Secure Console | Auto Sync 30s | Click "📷 View" to see payment screenshot</div>
+        <div class="last-update" id="lastUpdate"></div>
+    </div>
+    
+    <!-- Floating Action Buttons -->
+    <div class="fab-container" id="fabContainer" style="display: none;">
+        <button class="fab" onclick="manualRefresh()" title="Sync Now"><i class="fas fa-sync-alt"></i></button>
+        <button class="fab" onclick="window.location.href='/'" title="Go to Store"><i class="fas fa-store"></i></button>
+        <button class="fab logout" onclick="logout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
     </div>
     
     <div id="loginBox" class="login-box">
-        <i class="fas fa-lock" style="font-size: 2.5rem; color: var(--cyan); margin-bottom: 1rem;"></i>
+        <i class="fas fa-lock" style="font-size: 2rem; color: var(--cyan); margin-bottom: 1rem;"></i>
         <h2>Admin Access</h2>
-        <input type="password" id="adminPassword" placeholder="Enter Security Key">
-        <button class="login-btn" onclick="login()"><i class="fas fa-unlock-alt"></i> Authenticate</button>
+        <input type="password" id="adminPassword" placeholder="Enter Password">
+        <button class="login-btn" onclick="login()"><i class="fas fa-unlock-alt"></i> Login</button>
     </div>
 </div>
 
-<!-- Beautiful Screenshot Modal Popup -->
-<div id="screenshotModal" class="image-modal">
-    <div class="image-modal-content">
+<!-- Screenshot Modal -->
+<div id="screenshotModal" class="image-modal" onclick="closeModal()">
+    <div class="image-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
             <span><i class="fas fa-image"></i> Payment Screenshot</span>
             <button class="close-modal" onclick="closeModal()">&times;</button>
         </div>
-        <img id="modalImage" src="" alt="Payment Screenshot" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\' viewBox=\'0 0 400 300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%231a1a2e\'/%3E%3Ctext x=\'200\' y=\'150\' text-anchor=\'middle\' fill=\'%2364748b\' font-size=\'16\'%3EImage not found%3C/text%3E%3C/svg%3E'">
-        <div class="modal-footer">
-            <i class="fas fa-info-circle"></i> Click outside or press ✕ to close
-        </div>
+        <img id="modalImage" src="" alt="Screenshot">
     </div>
 </div>
 
@@ -384,22 +485,16 @@
 
     function stopAutoSync() { if (autoSyncInterval) clearInterval(autoSyncInterval); if (countdownInterval) clearInterval(countdownInterval); }
 
-    // Open Screenshot in Beautiful Popup
     function openScreenshot(url) {
         const modal = document.getElementById('screenshotModal');
         const img = document.getElementById('modalImage');
-        if (url && url !== 'null' && url !== '') {
-            let fullUrl = url;
-            if (url.startsWith('/')) {
-                fullUrl = API_BASE + url;
-            }
-            img.src = fullUrl;
+        if (url && url !== 'null') {
+            img.src = url.startsWith('/') ? API_BASE + url : url;
         } else {
-            img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="16"%3ENo Screenshot Available%3C/text%3E%3C/svg%3E';
+            img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E';
         }
         modal.classList.add('active');
     }
-
     function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
 
     async function login() {
@@ -410,23 +505,29 @@
             localStorage.setItem('adminToken', 'logged_in'); token = 'logged_in';
             document.getElementById('loginBox').style.display = 'none';
             document.getElementById('adminContent').style.display = 'block';
+            document.getElementById('fabContainer').style.display = 'flex';
             loadOrders(); startAutoSync();
-        } else { alert('Invalid Security Key'); }
+        } else { alert('Invalid Password'); }
     }
 
-    function logout() { stopAutoSync(); localStorage.removeItem('adminToken'); token = null; document.getElementById('loginBox').style.display = 'block'; document.getElementById('adminContent').style.display = 'none'; }
+    function logout() { stopAutoSync(); localStorage.removeItem('adminToken'); token = null; document.getElementById('loginBox').style.display = 'block'; document.getElementById('adminContent').style.display = 'none'; document.getElementById('fabContainer').style.display = 'none'; }
 
     async function loadOrders() {
         try {
             const res = await fetch(`${API_BASE}/api/admin/orders`);
             const data = await res.json();
-            if (data.orders) { allOrders = data.orders; renderOrders(allOrders); updateStats(allOrders); document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> Updated: ${new Date().toLocaleString()} | Total: ${allOrders.length}`; }
+            if (data.orders) { allOrders = data.orders; renderOrders(allOrders); updateStats(allOrders); document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | Total: ${allOrders.length}`; }
         } catch(e) { document.getElementById('ordersList').innerHTML = '<div class="loading">Connection Error</div>'; }
     }
 
     function updateStats(orders) {
-        const total = orders.length, pending = orders.filter(o => o.status === 'Pending'), approved = orders.filter(o => o.status === 'Approved'), rejected = orders.filter(o => o.status === 'Rejected');
-        const revenue = approved.reduce((s, o) => s + o.price, 0), cost = approved.reduce((s, o) => s + getCostPrice(o.plan), 0), profit = revenue - cost;
+        const total = orders.length;
+        const pending = orders.filter(o => o.status === 'Pending');
+        const approved = orders.filter(o => o.status === 'Approved');
+        const rejected = orders.filter(o => o.status === 'Rejected');
+        const revenue = approved.reduce((s, o) => s + o.price, 0);
+        const cost = approved.reduce((s, o) => s + getCostPrice(o.plan), 0);
+        const profit = revenue - cost;
         document.getElementById('totalOrders').innerHTML = total;
         document.getElementById('pendingOrders').innerHTML = pending.length;
         document.getElementById('approvedOrders').innerHTML = approved.length;
@@ -450,45 +551,73 @@
     function clearFilters() { document.getElementById('startDate').value = ''; document.getElementById('endDate').value = ''; document.getElementById('statusFilter').value = 'all'; renderOrders(allOrders); updateStats(allOrders); }
 
     function renderOrders(orders) {
-        if (!orders || orders.length === 0) { document.getElementById('ordersList').innerHTML = '<div class="loading">No orders found</div>'; return; }
-        let html = '<table><thead><tr><th>ID</th><th>Phone</th><th>Plan</th><th>Price</th><th>Cost</th><th>Profit</th><th>Status</th><th>Slip</th><th>Date</th><th>Actions</th></tr></thead><tbody>';
+        const container = document.getElementById('ordersList');
+        if (!orders || orders.length === 0) { container.innerHTML = '<div class="loading">No orders found</div>'; return; }
+        let html = '';
         for (const o of orders) {
             let statusClass = o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected');
-            html += `<tr>
-                <td style="font-family:monospace;">${o.id}</td>
-                <td>${o.phone}</td>
-                <td>${o.plan}</td>
-                <td>${o.price.toLocaleString()}</td>
-                <td style="color:#fbbf24;">${getCostPrice(o.plan).toLocaleString()}</td>
-                <td style="color:${getProfit(o.price, o.plan) >= 0 ? '#34d399' : '#fb7185'};">${getProfit(o.price, o.plan).toLocaleString()}</td>
-                <td><span class="status-badge ${statusClass}">${o.status}</span></td>
-                <td>${o.slip_url ? `<span class="screenshot-link" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> View</span>` : '<span style="color:#64748b;">—</span>'}</td>
-                <td style="font-size:0.7rem;">${new Date(o.created_at).toLocaleString()}</td>
-                <td class="action-buttons">${o.status === 'Pending' ? `<button class="action-btn approve" onclick="approveOrder(${o.id})"><i class="fas fa-check"></i></button><button class="action-btn reject" onclick="rejectOrder(${o.id})"><i class="fas fa-times"></i></button>` : ''}<button class="action-btn delete" onclick="deleteOrder(${o.id})"><i class="fas fa-trash"></i></button></td>
-            </tr>`;
+            let statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
+            html += `
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-id"><i class="fas fa-hashtag"></i> ${o.id}</span>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="order-details">
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-mobile-alt"></i> Phone</div>
+                            <div class="detail-value">${o.phone}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-tag"></i> Plan</div>
+                            <div class="detail-value" style="font-size:0.7rem;">${o.plan}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-coins"></i> Price</div>
+                            <div class="detail-value price">${o.price.toLocaleString()}K</div>
+                        </div>
+                    </div>
+                    <div class="order-details">
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-box"></i> Cost</div>
+                            <div class="detail-value cost">${getCostPrice(o.plan).toLocaleString()}K</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-chart-line"></i> Profit</div>
+                            <div class="detail-value profit">${getProfit(o.price, o.plan).toLocaleString()}K</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-calendar"></i> Date</div>
+                            <div class="detail-value" style="font-size:0.65rem;">${new Date(o.created_at).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    <div class="order-actions">
+                        ${o.slip_url ? `<button class="screenshot-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> View Slip</button>` : '<span style="font-size:0.6rem;color:#64748b;">No slip</span>'}
+                        ${o.status === 'Pending' ? `
+                            <button class="action-btn approve" onclick="approveOrder(${o.id})"><i class="fas fa-check"></i> Approve</button>
+                            <button class="action-btn reject" onclick="rejectOrder(${o.id})"><i class="fas fa-times"></i> Reject</button>
+                        ` : ''}
+                        <button class="action-btn delete" onclick="deleteOrder(${o.id})"><i class="fas fa-trash"></i> Delete</button>
+                    </div>
+                </div>
+            `;
         }
-        document.getElementById('ordersList').innerHTML = html + '</tbody></table>';
+        container.innerHTML = html;
     }
 
     async function approveOrder(id) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' }); if (res.ok) { showToast('✅ Approved'); loadOrders(); } else alert('Error'); }
     async function rejectOrder(id) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' }); if (res.ok) { showToast('❌ Rejected'); loadOrders(); } else alert('Error'); }
     async function deleteOrder(id) { if (confirm('Delete this order?')) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' }); if (res.ok) { showToast('🗑 Deleted'); loadOrders(); } else alert('Error'); } }
-    function manualRefresh() { loadOrders(); showToast('Synced'); secondsLeft = 30; updateCountdown(); }
-    function showToast(msg) { const t = document.createElement('div'); t.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#10b981;color:#030712;padding:10px 20px;border-radius:60px;font-weight:bold;z-index:9999'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
+    function manualRefresh() { loadOrders(); showToast('🔄 Synced'); secondsLeft = 30; updateCountdown(); }
+    function showToast(msg) { const t = document.createElement('div'); t.style.cssText = 'position:fixed;bottom:80px;right:20px;background:#10b981;color:#030712;padding:8px 16px;border-radius:60px;font-size:0.8rem;font-weight:bold;z-index:9999'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
 
-    // Close modal when clicking outside
-    document.getElementById('screenshotModal').addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
-    });
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeModal();
-    });
+    document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
 
-    window.approveOrder = approveOrder; window.rejectOrder = rejectOrder; window.deleteOrder = deleteOrder; window.logout = logout; window.manualRefresh = manualRefresh;
-    window.applyFilters = applyFilters; window.clearFilters = clearFilters; window.openScreenshot = openScreenshot; window.closeModal = closeModal;
+    window.approveOrder = approveOrder; window.rejectOrder = rejectOrder; window.deleteOrder = deleteOrder; window.logout = logout;
+    window.applyFilters = applyFilters; window.clearFilters = clearFilters; window.openScreenshot = openScreenshot; window.manualRefresh = manualRefresh;
 
-    if (token === 'logged_in') { document.getElementById('loginBox').style.display = 'none'; document.getElementById('adminContent').style.display = 'block'; loadOrders(); startAutoSync(); }
+    if (token === 'logged_in') { document.getElementById('loginBox').style.display = 'none'; document.getElementById('adminContent').style.display = 'block'; document.getElementById('fabContainer').style.display = 'flex'; loadOrders(); startAutoSync(); }
 </script>
 </body>
 </html>
