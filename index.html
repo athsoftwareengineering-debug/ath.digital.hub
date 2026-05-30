@@ -26,6 +26,8 @@
             color: var(--text-primary);
             font-family: 'Plus Jakarta Sans', sans-serif;
             min-height: 100vh;
+            background-image: radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.08) 0%, transparent 55%),
+                              radial-gradient(circle at 85% 70%, rgba(6,182,212,0.05) 0%, transparent 50%);
         }
         .container { max-width: 1280px; margin: 0 auto; padding: 24px 24px 0; }
         .store-header {
@@ -72,7 +74,8 @@
         .track-btn { background: var(--cyan); border: none; padding: 12px 28px; border-radius: 60px; font-weight: 700; cursor: pointer; }
         .track-btn:hover { background: var(--violet); transform: scale(0.98); }
         .track-result { margin-top: 1.2rem; padding: 1rem; border-radius: 24px; background: rgba(0,0,0,0.3); display: none; }
-        .track-result.show { display: block; }
+        .track-result.show { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .pack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 28px; margin: 48px 0 40px; }
         .pack-card {
             background: var(--card-bg); backdrop-filter: blur(8px); border: 1px solid var(--border-light);
@@ -86,12 +89,14 @@
         }
         .pack-tier { font-size: 0.8rem; text-transform: uppercase; color: var(--cyan); font-weight: 600; }
         .pack-price { font-size: 2.2rem; font-weight: 800; margin: 0.5rem 0 1rem; font-family: 'Space Grotesk', monospace; }
-        .feature-list { list-style: none; margin: 1rem 0 2rem; }
+        .pack-price small { font-size: 0.9rem; font-weight: 400; color: var(--text-secondary); }
+        .feature-list { list-style: none; margin: 1rem 0 2rem; flex-grow: 1; }
         .feature-list li { margin-bottom: 12px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; color: #cbd5e1; }
         .feature-list li::before { content: "⚡"; color: var(--cyan); }
         .buy-btn {
             width: 100%; padding: 12px 0; border: none; border-radius: 60px;
-            font-weight: 700; background: white; color: #0f172a; cursor: pointer;
+            font-weight: 700; background: white; color: #0f172a; font-family: inherit;
+            font-size: 0.9rem; cursor: pointer; transition: 0.2s;
         }
         .buy-btn.violet { background: var(--violet); color: white; }
         .buy-btn:hover { background: var(--cyan); transform: scale(0.98); }
@@ -110,18 +115,23 @@
             background: rgba(12,18,28,0.96); border: 1px solid rgba(6,182,212,0.45);
             border-radius: 36px; width: 90%; max-width: 480px; padding: 1.6rem 1.8rem; position: relative;
         }
-        .modal-close { position: absolute; right: 18px; top: 16px; font-size: 1.6rem; cursor: pointer; }
+        .modal-close { position: absolute; right: 18px; top: 16px; font-size: 1.6rem; cursor: pointer; color: var(--text-secondary); }
         .info-compact { background: rgba(0,0,0,0.45); border-radius: 24px; padding: 14px 18px; margin: 18px 0; }
         .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.06); }
         .info-label { color: var(--text-secondary); font-size: 0.8rem; }
-        .info-value { background: rgba(6,182,212,0.12); padding: 4px 12px; border-radius: 40px; color: var(--cyan); }
+        .info-value { font-weight: 600; background: rgba(6,182,212,0.12); padding: 4px 12px; border-radius: 40px; color: var(--cyan); }
         .phone-copy { cursor: pointer; }
         .form-group { margin-bottom: 16px; }
         .form-group label { font-size: 0.75rem; display: block; margin-bottom: 6px; color: var(--text-secondary); }
-        .form-control { width: 100%; background: rgba(0,0,0,0.55); border: 1px solid #2d3a5e; border-radius: 28px; padding: 10px 16px; color: white; }
-        .submit-btn { background: var(--emerald); width: 100%; padding: 12px; border-radius: 60px; font-weight: 800; cursor: pointer; }
+        .form-control { width: 100%; background: rgba(0,0,0,0.55); border: 1px solid #2d3a5e; border-radius: 28px; padding: 10px 16px; color: white; font-family: inherit; }
+        .form-control:focus { border-color: var(--cyan); outline: none; }
+        .submit-btn { background: var(--emerald); width: 100%; padding: 12px; border-radius: 60px; font-weight: 800; cursor: pointer; margin-top: 6px; }
         .footnote { font-size: 0.65rem; text-align: center; margin-top: 16px; color: #5b6e8c; }
-        .toast { position: fixed; top: -80px; right: 24px; background: var(--emerald); color: #030712; padding: 12px 24px; border-radius: 60px; font-weight: 700; z-index: 3000; transition: top 0.3s; }
+        .toast {
+            position: fixed; top: -80px; right: 24px; background: var(--emerald);
+            color: #030712; padding: 12px 24px; border-radius: 60px; font-weight: 700; z-index: 3000;
+            transition: top 0.3s;
+        }
         footer { margin-top: 60px; text-align: center; border-top: 1px solid var(--border-light); padding: 32px 20px; font-size: 0.75rem; color: var(--text-secondary); }
         @media (max-width: 600px) { .hero h1 { font-size: 1.9rem; } }
     </style>
@@ -131,6 +141,7 @@
 <div class="container">
     <div class="store-header">
         <div class="brand">⚡ ATH DIGITAL HUB</div>
+        <div style="font-size:0.75rem; background:rgba(6,182,212,0.15); padding:5px 12px; border-radius:40px;">MYTEL VIP Store</div>
     </div>
     <div class="hero">
         <h1>MYTEL DATA ELITE</h1>
@@ -154,8 +165,8 @@
 <div id="paymentModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-close" id="closeModalBtn">&times;</div>
-        <div style="text-align:center;">💳</div>
-        <h3>Payment Details</h3>
+        <div style="text-align:center; margin-bottom:6px;">💳</div>
+        <h3 style="font-family:'Space Grotesk'; text-align:center;">Payment Details</h3>
         <div class="info-compact">
             <div class="info-row"><span class="info-label">🏦 ငွေလွှဲနည်းလမ်း</span><span class="info-value">K-Pay / WavePay</span></div>
             <div class="info-row"><span class="info-label">👤 အကောင့်အမည်</span><span class="info-value">AUNG THU HTWE</span></div>
@@ -166,10 +177,10 @@
             <div class="form-group"><label>🧾 ငွေလွှဲပြေစာ (Screenshot)</label><input type="file" id="slipImage" class="form-control" accept="image/*" required></div>
             <button type="submit" class="submit-btn">✅ အော်ဒါတင်မည်</button>
         </form>
-        <div class="footnote">※ ဖုန်းနံပါတ်ကို နှိပ်၍ ကူးယူနိုင်ပါသည်။</div>
+        <div class="footnote">※ ဖုန်းနံပါတ်ကို နှိပ်၍ ကူးယူနိုင်ပါသည်။ အော်ဒါတင်ပြီးပါက Track Card ဖြင့် စစ်ဆေးနိုင်ပါသည်။</div>
     </div>
 </div>
-<footer>© 2026 <strong>ATH DIGITAL HUB</strong> — MYTEL VIP Store</footer>
+<footer><p>© 2026 <strong>ATH DIGITAL HUB</strong> — MYTEL VIP Store | Developed by AUNG THU HTWE</p></footer>
 <script>
     const API_BASE = window.location.origin;
     let selectedPlan = "", selectedPrice = 0;
@@ -178,7 +189,7 @@
     function showToast(msg, isError = false) {
         const toast = document.getElementById('globalToast');
         toast.style.backgroundColor = isError ? '#f43f5e' : '#10b981';
-        toast.innerHTML = msg;
+        toast.innerHTML = isError ? `<i class="fas fa-exclamation-triangle"></i> ${msg}` : `<i class="fas fa-check-circle"></i> ${msg}`;
         toast.style.top = "24px";
         setTimeout(() => toast.style.top = "-80px", 2800);
     }
@@ -188,7 +199,7 @@
         const phone = document.getElementById('trackPhoneInput').value.trim();
         const resultDiv = document.getElementById('trackResult');
         if (!phone) {
-            resultDiv.innerHTML = `<div style="color:var(--rose);">⚠️ ဖုန်းနံပါတ် ထည့်ပါ။</div>`;
+            resultDiv.innerHTML = `<div style="color:var(--rose); padding:0.5rem;">⚠️ ဖုန်းနံပါတ် ထည့်ပါ။</div>`;
             resultDiv.classList.add('show');
             autoHideResult();
             return;
@@ -200,6 +211,7 @@
                 resultDiv.innerHTML = `<div style="color:var(--text-secondary);">📭 ဤဖုန်းနံပါတ်အတွက် အော်ဒါမရှိပါ။</div>`;
                 resultDiv.classList.add('show');
                 autoHideResult();
+                document.getElementById('trackPhoneInput').value = '';
                 return;
             }
             let html = `<div style="text-align:left; max-height:300px; overflow-y:auto;">`;
@@ -209,10 +221,13 @@
                 if (order.status === "Rejected") { statusClass = "status-rejected"; statusText = "❌ ပယ်ဖျက်ခံရ"; }
                 const dateStr = new Date(order.created_at).toLocaleString();
                 html += `<div style="background:rgba(255,255,255,0.05); border-radius:20px; padding:12px; margin-bottom:10px;">
-                    <div style="display:flex; justify-content:space-between;"><strong style="color:var(--cyan);">${order.plan}</strong><span class="status-badge ${statusClass}">${statusText}</span></div>
-                    <div>💰 ${order.price.toLocaleString()} KS</div>
-                    <div style="font-size:0.7rem;">📅 ${dateStr}</div>
-                    ${order.status === "Pending" ? '<div style="font-size:0.7rem; color:#fbbf24;">🕒 အတည်ပြုချက်ကို စောင့်ဆိုင်းနေပါသည်။</div>' : ''}
+                    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+                        <strong style="color:var(--cyan);">${order.plan}</strong>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div style="font-size:0.8rem;">💰 ${order.price.toLocaleString()} KS</div>
+                    <div style="font-size:0.7rem; color:#6b7280;">📅 ${dateStr}</div>
+                    ${order.status === "Pending" ? '<div style="font-size:0.7rem; margin-top:6px; color:#fbbf24;">🕒 အတည်ပြုချက်ကို စောင့်ဆိုင်းနေပါသည်။</div>' : ''}
                 </div>`;
             }
             html += `</div>`;
@@ -267,11 +282,12 @@
     document.querySelectorAll('.buy-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             selectedPlan = btn.dataset.plan;
-            selectedPrice = btn.dataset.price;
+            selectedPrice = parseInt(btn.dataset.price);
             document.getElementById('paymentModal').classList.add('active');
         });
     });
     document.getElementById('closeModalBtn').addEventListener('click', () => document.getElementById('paymentModal').classList.remove('active'));
+    window.addEventListener('click', (e) => { if (e.target === document.getElementById('paymentModal')) document.getElementById('paymentModal').classList.remove('active'); });
     document.getElementById('trackBtn').addEventListener('click', trackOrder);
     document.getElementById('trackPhoneInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') trackOrder(); });
     document.getElementById('clickablePhone').addEventListener('click', () => { navigator.clipboard.writeText("09789999368"); showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။"); });
