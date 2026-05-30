@@ -29,6 +29,23 @@
             border-bottom: 2px solid rgba(6,182,212,0.3);
         }
         h1 { font-family: 'Space Grotesk', sans-serif; color: #06b6d4; }
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .refresh-btn {
+            background: rgba(6,182,212,0.15);
+            border: 1px solid rgba(6,182,212,0.4);
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            color: #06b6d4;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .refresh-btn:hover { background: #06b6d4; color: #030712; }
         .logout-btn {
             background: rgba(244,63,94,0.2);
             border: 1px solid rgba(244,63,94,0.4);
@@ -36,6 +53,13 @@
             border-radius: 40px;
             cursor: pointer;
             color: #fb7185;
+        }
+        .auto-refresh-status {
+            font-size: 0.7rem;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         .stats {
             display: flex;
@@ -91,6 +115,12 @@
             cursor: pointer;
         }
         .loading { text-align: center; padding: 2rem; color: #94a3b8; }
+        .last-update {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-top: 1rem;
+            text-align: center;
+        }
         @media (max-width: 768px) { th, td { font-size: 0.75rem; padding: 8px; } body { padding: 1rem; } }
     </style>
 </head>
@@ -99,13 +129,20 @@
     <div class="container" id="adminContent" style="display: none;">
         <div class="header">
             <h1><i class="fas fa-shield-alt"></i> Admin Panel - ATH DIGITAL HUB</h1>
-            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            <div class="header-buttons">
+                <button class="refresh-btn" onclick="manualRefresh()"><i class="fas fa-sync-alt"></i> Refresh Now</button>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+        <div class="auto-refresh-status">
+            <i class="fas fa-clock"></i> Auto-refresh every 30 seconds <span id="countdownTimer">(30s)</span>
         </div>
         <div class="stats" id="stats"></div>
         <div class="orders-table">
             <h3 style="margin-bottom: 1rem;"><i class="fas fa-list-ul"></i> All Orders</h3>
             <div id="ordersList"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading orders...</div></div>
         </div>
+        <div class="last-update" id="lastUpdate"></div>
     </div>
     <div id="loginBox" class="login-box">
         <i class="fas fa-lock" style="font-size: 3rem; color: #06b6d4;"></i>
@@ -117,6 +154,51 @@
 <script>
     const API_BASE = window.location.origin;
     let token = localStorage.getItem('adminToken');
+    let autoRefreshInterval = null;
+    let countdownInterval = null;
+    let secondsLeft = 30;
+
+    function updateCountdownDisplay() {
+        const timerElement = document.getElementById('countdownTimer');
+        if (timerElement) {
+            timerElement.innerText = `(${secondsLeft}s)`;
+        }
+    }
+
+    function startCountdown() {
+        if (countdownInterval) clearInterval(countdownInterval);
+        secondsLeft = 30;
+        updateCountdownDisplay();
+        countdownInterval = setInterval(() => {
+            secondsLeft--;
+            updateCountdownDisplay();
+            if (secondsLeft <= 0) {
+                secondsLeft = 30;
+                updateCountdownDisplay();
+            }
+        }, 1000);
+    }
+
+    function startAutoRefresh() {
+        if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+        startCountdown();
+        autoRefreshInterval = setInterval(() => {
+            if (token === 'logged_in' && document.getElementById('adminContent').style.display !== 'none') {
+                loadOrders();
+                secondsLeft = 30;
+                updateCountdownDisplay();
+            }
+        }, 30000);
+    }
+
+    function manualRefresh() {
+        if (token === 'logged_in') {
+            loadOrders();
+            secondsLeft = 30;
+            updateCountdownDisplay();
+            showToast('🔄 Refreshed manually!');
+        }
+    }
 
     async function login() {
         const password = document.getElementById('adminPassword').value;
@@ -132,6 +214,7 @@
             document.getElementById('loginBox').style.display = 'none';
             document.getElementById('adminContent').style.display = 'block';
             loadOrders();
+            startAutoRefresh();
         } else {
             alert('Invalid password!');
         }
@@ -140,6 +223,8 @@
     function logout() {
         localStorage.removeItem('adminToken');
         token = null;
+        if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+        if (countdownInterval) clearInterval(countdownInterval);
         document.getElementById('loginBox').style.display = 'block';
         document.getElementById('adminContent').style.display = 'none';
     }
@@ -151,6 +236,7 @@
             if (data.orders) {
                 renderOrders(data.orders);
                 updateStats(data.orders);
+                document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> Last updated: ${new Date().toLocaleString()}`;
             }
         } catch(e) {
             console.error(e);
@@ -204,13 +290,13 @@
 
     async function approveOrder(id) {
         const res = await fetch(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' });
-        if (res.ok) { showToast('Order approved!'); loadOrders(); }
+        if (res.ok) { showToast('✅ Order approved!'); loadOrders(); }
         else alert('Error approving order');
     }
 
     async function rejectOrder(id) {
         const res = await fetch(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' });
-        if (res.ok) { showToast('Order rejected'); loadOrders(); }
+        if (res.ok) { showToast('❌ Order rejected'); loadOrders(); }
         else alert('Error rejecting order');
     }
 
@@ -233,11 +319,13 @@
     window.approveOrder = approveOrder;
     window.rejectOrder = rejectOrder;
     window.logout = logout;
+    window.manualRefresh = manualRefresh;
 
     if (token === 'logged_in') {
         document.getElementById('loginBox').style.display = 'none';
         document.getElementById('adminContent').style.display = 'block';
         loadOrders();
+        startAutoRefresh();
     }
 </script>
 </body>
