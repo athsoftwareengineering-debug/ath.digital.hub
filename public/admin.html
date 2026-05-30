@@ -9,734 +9,228 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #0a0c15;
-      color: #fff;
-      overflow-x: hidden;
-    }
-
-    /* Animated Background */
-    .admin-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at 20% 30%, #0f1119, #0a0c15);
-      z-index: -2;
-    }
-
-    .admin-bg::before {
-      content: '';
-      position: absolute;
-      width: 200%;
-      height: 200%;
-      top: -50%;
-      left: -50%;
-      background: radial-gradient(circle, rgba(0, 200, 255, 0.05) 0%, transparent 60%);
-      animation: rotateBg 30s linear infinite;
-    }
-
-    @keyframes rotateBg {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    /* Glass Card */
-    .glass {
-      background: rgba(15, 25, 45, 0.6);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(0, 200, 255, 0.2);
-      border-radius: 1.5rem;
-      transition: all 0.3s ease;
-    }
-
-    .glass:hover {
-      border-color: rgba(0, 200, 255, 0.5);
-      box-shadow: 0 8px 32px rgba(0, 200, 255, 0.1);
-    }
-
-    /* Stat Cards */
-    .stat-card {
-      background: linear-gradient(135deg, rgba(0, 200, 255, 0.1), rgba(255, 105, 180, 0.05));
-      border-radius: 1.2rem;
-      padding: 1rem;
-      border-bottom: 3px solid #00ccff;
-      transition: all 0.3s;
-    }
-
-    .stat-card:hover {
-      transform: translateY(-3px);
-      border-bottom-color: #ff69b4;
-    }
-
-    /* Buttons */
-    .btn-gold {
-      background: linear-gradient(95deg, #eab308, #f59e0b);
-      transition: all 0.3s;
-    }
-
-    .btn-gold:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 20px rgba(245, 158, 11, 0.4);
-    }
-
-    .btn-cyan {
-      background: linear-gradient(95deg, #00ccff, #0099cc);
-      transition: all 0.3s;
-    }
-
-    .btn-cyan:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 20px rgba(0, 200, 255, 0.4);
-    }
-
-    /* Order Row */
-    .order-row {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 1rem;
-      padding: 1rem;
-      margin-bottom: 0.8rem;
-      border-left: 3px solid #00ccff;
-      transition: all 0.3s;
-    }
-
-    .order-row:hover {
-      transform: translateX(5px);
-      background: rgba(0, 200, 255, 0.08);
-      border-left-color: #ff69b4;
-    }
-
-    /* Badges */
-    .badge {
-      display: inline-block;
-      padding: 0.2rem 0.7rem;
-      border-radius: 2rem;
-      font-size: 0.7rem;
-      font-weight: 600;
-    }
-
-    .badge-pending {
-      background: #f9731620;
-      color: #f97316;
-      border: 1px solid #f97316;
-    }
-
-    .badge-paid {
-      background: #3b82f620;
-      color: #3b82f6;
-      border: 1px solid #3b82f6;
-    }
-
-    .badge-approved {
-      background: #22c55e20;
-      color: #22c55e;
-      border: 1px solid #22c55e;
-    }
-
-    .badge-rejected {
-      background: #ef444420;
-      color: #ef4444;
-      border: 1px solid #ef4444;
-    }
-
-    .badge-expired {
-      background: #6b728020;
-      color: #9ca3af;
-      border: 1px solid #6b7280;
-    }
-
-    /* Inputs */
-    input, select {
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(0, 200, 255, 0.3);
-      border-radius: 2rem;
-      padding: 0.7rem 1rem;
-      color: white;
-      font-size: 0.9rem;
-      outline: none;
-      transition: all 0.3s;
-    }
-
-    input:focus, select:focus {
-      border-color: #00ccff;
-      box-shadow: 0 0 15px rgba(0, 200, 255, 0.2);
-    }
-
-    /* Modal */
-    .modal-img {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.95);
-      backdrop-filter: blur(12px);
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-    }
-
-    .modal-img.show {
-      display: flex;
-      animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 5px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: #0f172a;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: #00ccff;
-      border-radius: 10px;
-    }
-
-    /* Animations */
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-
-    .loading {
-      animation: pulse 1.5s ease-in-out infinite;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #0a0c15; color: #fff; }
+    .glass { background: rgba(15,25,45,0.6); backdrop-filter: blur(12px); border: 1px solid rgba(0,200,255,0.2); border-radius: 1.5rem; }
+    .stat-card { background: linear-gradient(135deg, rgba(0,200,255,0.1), rgba(255,105,180,0.05)); border-radius: 1.2rem; padding: 1rem; border-bottom: 3px solid #00ccff; }
+    .btn-gold { background: linear-gradient(95deg, #eab308, #f59e0b); }
+    .order-row { background: rgba(0,0,0,0.3); border-radius: 1rem; padding: 1rem; margin-bottom: 0.8rem; border-left: 3px solid #00ccff; }
+    .badge { display: inline-block; padding: 0.2rem 0.7rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 600; }
+    .badge-pending { background: #f9731620; color: #f97316; border: 1px solid #f97316; }
+    .badge-paid { background: #3b82f620; color: #3b82f6; border: 1px solid #3b82f6; }
+    .badge-approved { background: #22c55e20; color: #22c55e; border: 1px solid #22c55e; }
+    .badge-rejected { background: #ef444420; color: #ef4444; border: 1px solid #ef4444; }
+    input, select { background: rgba(0,0,0,0.4); border: 1px solid rgba(0,200,255,0.3); border-radius: 2rem; padding: 0.7rem 1rem; color: white; }
+    .modal-img { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index:2000; }
+    .modal-img.show { display: flex; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #00ccff; border-radius: 10px; }
   </style>
 </head>
 <body>
 
-<div class="admin-bg"></div>
-
-<!-- Login Container -->
-<div id="loginContainer" class="flex items-center justify-center min-h-screen" style="display: flex;">
-  <div class="glass p-8 max-w-md w-full mx-4" style="animation: fadeIn 0.4s ease;">
-    <div class="text-center mb-6">
-      <div class="w-20 h-20 mx-auto bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-2xl">
-        <i class="fas fa-shield-alt text-4xl text-white"></i>
-      </div>
-      <h2 class="text-3xl font-black mt-4 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">ADMIN LOGIN</h2>
-      <p class="text-slate-400 text-sm mt-1">MYTEL Official Reseller Portal</p>
+<div id="loginContainer" class="flex items-center justify-center min-h-screen">
+  <div class="glass p-8 max-w-md w-full mx-4 text-center">
+    <div class="w-20 h-20 mx-auto bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center">
+      <i class="fas fa-shield-alt text-4xl text-white"></i>
     </div>
-    <div class="space-y-4">
-      <div class="relative">
-        <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400"></i>
-        <input type="password" id="adminPassword" placeholder="Enter Password" class="w-full pl-11">
-      </div>
-      <button onclick="login()" class="btn-gold w-full py-3 rounded-xl font-bold text-white transition-all">
-        <i class="fas fa-arrow-right-to-bracket"></i> Access Dashboard
-      </button>
-      <div id="loginError" class="text-red-400 text-sm text-center hidden bg-red-950/40 py-2 rounded-lg"></div>
-    </div>
-    <div class="text-center text-slate-500 text-xs mt-5">
-      <i class="fas fa-database"></i> Secured • ATH Digital Hub
+    <h2 class="text-3xl font-bold mt-4 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">ADMIN LOGIN</h2>
+    <div class="mt-6">
+      <input type="password" id="adminPassword" placeholder="Enter Password" class="w-full mb-4">
+      <button onclick="login()" class="btn-gold w-full py-3 rounded-xl font-bold text-white">Access Dashboard</button>
+      <div id="loginError" class="text-red-400 text-sm mt-2 hidden"></div>
     </div>
   </div>
 </div>
 
-<!-- Dashboard Container -->
-<div id="dashboardContainer" style="display: none;" class="container mx-auto px-4 py-6 max-w-7xl">
-  
-  <!-- Header -->
-  <div class="flex flex-wrap justify-between items-center mb-8 gap-4">
+<div id="dashboardContainer" style="display:none;" class="container mx-auto px-4 py-6 max-w-7xl">
+  <div class="flex justify-between items-center mb-8">
     <div class="flex items-center gap-4">
-      <div class="bg-gradient-to-br from-cyan-500 to-blue-600 p-3 rounded-xl shadow-xl">
-        <i class="fas fa-crown text-2xl text-white"></i>
-      </div>
-      <div>
-        <h1 class="text-2xl md:text-3xl font-black text-white">
-          <span class="text-cyan-400">ATH</span> Admin Panel
-        </h1>
-        <p class="text-xs text-cyan-400/80">
-          <i class="fas fa-check-circle"></i> Order Management System
-        </p>
-      </div>
+      <div class="bg-gradient-to-br from-cyan-500 to-blue-600 p-3 rounded-xl"><i class="fas fa-crown text-2xl"></i></div>
+      <div><h1 class="text-2xl font-bold"><span class="text-cyan-400">ATH</span> Admin Panel</h1></div>
     </div>
-    <div class="flex gap-3">
-      <button onclick="fetchOrders()" class="glass px-5 py-2.5 rounded-xl text-white hover:bg-cyan-500/10 transition-all">
-        <i class="fas fa-sync-alt"></i> Refresh
-      </button>
-      <button onclick="logout()" class="glass px-5 py-2.5 rounded-xl text-white hover:bg-red-800/40 transition-all">
-        <i class="fas fa-sign-out-alt"></i> Logout
-      </button>
-    </div>
+    <button onclick="logout()" class="glass px-5 py-2 rounded-xl">Logout</button>
   </div>
 
-  <!-- Stats Grid -->
-  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-    <div class="stat-card text-center">
-      <div class="text-slate-400 text-sm"><i class="fas fa-box"></i> Total</div>
-      <h3 id="statTotal" class="text-2xl font-bold text-white">0</h3>
-    </div>
-    <div class="stat-card text-center">
-      <div class="text-slate-400 text-sm"><i class="fas fa-clock"></i> Pending</div>
-      <h3 id="statPending" class="text-2xl font-bold text-amber-400">0</h3>
-    </div>
-    <div class="stat-card text-center">
-      <div class="text-slate-400 text-sm"><i class="fas fa-money-bill-wave"></i> Paid</div>
-      <h3 id="statPaid" class="text-2xl font-bold text-blue-400">0</h3>
-    </div>
-    <div class="stat-card text-center">
-      <div class="text-slate-400 text-sm"><i class="fas fa-check-circle"></i> Active</div>
-      <h3 id="statActive" class="text-2xl font-bold text-emerald-400">0</h3>
-    </div>
-    <div class="stat-card text-center">
-      <div class="text-slate-400 text-sm"><i class="fas fa-times-circle"></i> Rejected</div>
-      <h3 id="statRejected" class="text-2xl font-bold text-rose-400">0</h3>
-    </div>
-    <div class="stat-card text-center">
-      <div class="text-slate-400 text-sm"><i class="fas fa-dollar-sign"></i> Revenue</div>
-      <h3 id="statRevenue" class="text-2xl font-bold text-purple-400">0 KS</h3>
-    </div>
+  <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+    <div class="stat-card text-center"><div class="text-slate-400 text-sm">Total</div><h3 id="statTotal" class="text-2xl font-bold">0</h3></div>
+    <div class="stat-card text-center"><div class="text-slate-400 text-sm">Pending</div><h3 id="statPending" class="text-2xl font-bold text-amber-400">0</h3></div>
+    <div class="stat-card text-center"><div class="text-slate-400 text-sm">Paid</div><h3 id="statPaid" class="text-2xl font-bold text-blue-400">0</h3></div>
+    <div class="stat-card text-center"><div class="text-slate-400 text-sm">Active</div><h3 id="statActive" class="text-2xl font-bold text-emerald-400">0</h3></div>
+    <div class="stat-card text-center"><div class="text-slate-400 text-sm">Revenue</div><h3 id="statRevenue" class="text-2xl font-bold text-purple-400">0 KS</h3></div>
   </div>
 
-  <!-- Chart Row -->
-  <div class="grid lg:grid-cols-3 gap-6 mb-8">
-    <div class="lg:col-span-2 glass p-5 rounded-2xl">
-      <h3 class="font-bold text-cyan-400 mb-3">
-        <i class="fas fa-chart-line"></i> Order Analytics
-      </h3>
-      <canvas id="statusChart" height="180" style="max-height: 220px;"></canvas>
-    </div>
-    <div class="glass p-5 rounded-2xl">
-      <h3 class="font-bold text-cyan-400 mb-3">
-        <i class="fas fa-info-circle"></i> System Status
-      </h3>
-      <div class="space-y-3 text-sm">
-        <div class="flex justify-between items-center">
-          <span class="text-slate-400"><i class="fas fa-plug"></i> API Status:</span>
-          <span class="text-emerald-400"><i class="fas fa-circle" style="font-size: 8px;"></i> Connected</span>
-        </div>
-        <div class="flex justify-between items-center">
-          <span class="text-slate-400"><i class="fas fa-user-shield"></i> Admin Session:</span>
-          <span class="text-cyan-400">Active</span>
-        </div>
-        <div class="flex justify-between items-center">
-          <span class="text-slate-400"><i class="fas fa-clock"></i> Last Sync:</span>
-          <span id="lastSync" class="text-white font-mono">--:--:--</span>
-        </div>
-        <div class="flex justify-between items-center">
-          <span class="text-slate-400"><i class="fas fa-database"></i> Database:</span>
-          <span class="text-emerald-400">Memory</span>
-        </div>
-      </div>
-    </div>
+  <div class="glass p-5 mb-8 flex flex-wrap gap-4">
+    <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search by phone..." class="flex-1">
+    <select id="statusFilter" onchange="applyFilters()" class="w-48">
+      <option value="all">All Status</option>
+      <option value="pending_payment">Pending</option>
+      <option value="payment_received">Paid</option>
+      <option value="approved">Active</option>
+      <option value="rejected">Rejected</option>
+    </select>
+    <button onclick="fetchOrders()" class="btn-gold px-5 py-2 rounded-xl font-bold">Refresh</button>
   </div>
 
-  <!-- Search & Filters -->
-  <div class="glass p-5 mb-8 rounded-2xl">
-    <div class="flex flex-wrap gap-4 items-center">
-      <div class="relative flex-1 min-w-[200px]">
-        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400"></i>
-        <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search by phone number or order ID..." class="w-full pl-11">
-      </div>
-      <div class="w-48">
-        <select id="statusFilter" onchange="applyFilters()" class="w-full">
-          <option value="all">📋 All Status</option>
-          <option value="pending_payment">⏳ Pending</option>
-          <option value="payment_received">💰 Paid (To Verify)</option>
-          <option value="approved">✅ Active</option>
-          <option value="rejected">❌ Rejected</option>
-          <option value="expired">⌛ Expired</option>
-        </select>
-      </div>
-      <div class="bg-slate-800/40 px-4 py-2 rounded-xl text-sm text-slate-300">
-        <i class="far fa-file-alt"></i> <span id="resultCount">0</span> results
-      </div>
-    </div>
-  </div>
-
-  <!-- Orders Title -->
-  <div class="flex justify-between items-center mb-4">
-    <h2 class="text-xl font-bold text-cyan-400">
-      <i class="fas fa-tasks"></i> Order Management
-    </h2>
-    <span class="text-xs text-slate-500">
-      <i class="fas fa-mouse-pointer"></i> Click on screenshot to view
-    </span>
-  </div>
-
-  <!-- Orders Container -->
-  <div id="ordersContainer" class="space-y-3 pb-12"></div>
+  <div id="ordersContainer" class="space-y-3"></div>
 </div>
 
-<!-- Image Modal -->
 <div id="imageModal" class="modal-img" onclick="closeModal()">
-  <div class="relative max-w-3xl p-4" onclick="event.stopPropagation()">
-    <img id="modalImage" src="" class="max-w-full max-h-[80vh] rounded-2xl border-4 border-cyan-500 shadow-2xl">
-    <button onclick="closeModal()" class="absolute -top-3 -right-3 bg-black/80 rounded-full p-2 w-8 h-8 flex items-center justify-center text-white hover:bg-red-600 transition-all">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
+  <div onclick="event.stopPropagation()"><img id="modalImage" class="max-w-full max-h-[80vh] rounded-2xl border-4 border-cyan-500"><button onclick="closeModal()" class="absolute top-4 right-4 bg-black/80 rounded-full p-2">✕</button></div>
 </div>
 
-<script>
-  let adminToken = "";
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCN7GMpY6dqGzVlMevMZPG76guq3DvQPd8",
+    authDomain: "mytelordersystem.firebaseapp.com",
+    projectId: "mytelordersystem",
+    storageBucket: "mytelordersystem.firebasestorage.app",
+    messagingSenderId: "366519284419",
+    appId: "1:366519284419:web:0044583e2ef8aa7260a876"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  
   let allOrders = [];
-  let chartInstance = null;
-
-  // ✅ Admin password - Changed to 104194@ath
-  const ADMIN_PASSWORD = "104194@ath";
-
-  // Update last sync time
-  function updateLastSync() {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    document.getElementById('lastSync').innerText = timeStr;
-  }
-
-  // Show toast notification
-  function showToast(message, isError = false) {
-    Swal.fire({
-      icon: isError ? 'error' : 'success',
-      title: message,
-      toast: true,
-      timer: 2000,
-      showConfirmButton: false,
-      position: 'top-end',
-      background: '#1e293b',
-      color: '#fff'
-    });
-  }
-
-  // Login function
-  async function login() {
+  let ADMIN_PASSWORD = "104194@ath";
+  
+  window.login = () => {
     const pwd = document.getElementById('adminPassword').value;
-    if (!pwd) {
-      showToast("Please enter password", true);
-      return;
-    }
-    
     if (pwd !== ADMIN_PASSWORD) {
       document.getElementById('loginError').classList.remove('hidden');
-      document.getElementById('loginError').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Invalid password. Access denied.';
+      document.getElementById('loginError').innerText = 'Invalid password';
       return;
     }
-    
-    adminToken = pwd;
     document.getElementById('loginContainer').style.display = 'none';
     document.getElementById('dashboardContainer').style.display = 'block';
-    await fetchOrders();
-    showToast("Welcome to ATH Admin Panel!");
-  }
-
-  // Fetch orders from backend
-  async function fetchOrders() {
-    if (!adminToken) return;
-    
+    fetchOrders();
+  };
+  
+  window.fetchOrders = async () => {
     try {
-      const response = await fetch('/api/admin/orders', {
-        headers: { 'x-admin-auth': adminToken }
+      const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+      allOrders = [];
+      snapshot.forEach(doc => {
+        allOrders.push({ id: doc.id, ...doc.data() });
       });
-      const data = await response.json();
-      
-      if (data.success) {
-        allOrders = data.orders || [];
-        updateStats(data.stats);
-        updateChart(data.stats);
-        applyFilters();
-        updateLastSync();
-      } else if (data.message === 'Unauthorized') {
-        showToast("Session expired. Please login again.", true);
-        logout();
-      }
-    } catch (err) {
-      console.error("Fetch error:", err);
-      showToast("Failed to fetch orders. Check server connection.", true);
+      updateStats();
+      applyFilters();
+    } catch(err) {
+      console.error("Error fetching orders:", err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message });
     }
-  }
-
-  // Update statistics UI
-  function updateStats(stats) {
-    if (!stats) return;
-    document.getElementById('statTotal').innerText = stats.total || 0;
-    document.getElementById('statPending').innerText = stats.pending || 0;
-    document.getElementById('statPaid').innerText = stats.paid || 0;
-    document.getElementById('statActive').innerText = stats.approved || 0;
-    document.getElementById('statRejected').innerText = stats.rejected || 0;
-    document.getElementById('statRevenue').innerHTML = (stats.revenue || 0).toLocaleString() + ' KS';
-  }
-
-  // Update chart
-  function updateChart(stats) {
-    const ctx = document.getElementById('statusChart').getContext('2d');
-    if (chartInstance) chartInstance.destroy();
+  };
+  
+  function updateStats() {
+    const total = allOrders.length;
+    const pending = allOrders.filter(o => o.status === 'pending_payment').length;
+    const paid = allOrders.filter(o => o.status === 'payment_received').length;
+    const approved = allOrders.filter(o => o.status === 'approved').length;
+    const revenue = allOrders.filter(o => o.status === 'approved').reduce((sum, o) => sum + (o.price || 0), 0);
     
-    chartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['Pending', 'Paid', 'Active', 'Rejected', 'Expired'],
-        datasets: [{
-          label: 'Order Count',
-          data: [stats.pending || 0, stats.paid || 0, stats.approved || 0, stats.rejected || 0, stats.expired || 0],
-          backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#6b7280'],
-          borderRadius: 8,
-          borderSkipped: false
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { labels: { color: '#cbd5e1', font: { size: 11 } } },
-          tooltip: { backgroundColor: '#1e293b', titleColor: '#fff', bodyColor: '#cbd5e1' }
-        },
-        scales: {
-          y: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-          x: { ticks: { color: '#cbd5e1' }, grid: { display: false } }
-        }
-      }
-    });
+    document.getElementById('statTotal').innerText = total;
+    document.getElementById('statPending').innerText = pending;
+    document.getElementById('statPaid').innerText = paid;
+    document.getElementById('statActive').innerText = approved;
+    document.getElementById('statRevenue').innerHTML = revenue.toLocaleString() + ' KS';
   }
-
-  // Apply filters
-  function applyFilters() {
+  
+  function getStatusBadge(status) {
+    const map = {
+      'pending_payment': '<span class="badge badge-pending">⏳ Pending</span>',
+      'payment_received': '<span class="badge badge-paid">💰 Paid</span>',
+      'approved': '<span class="badge badge-approved">✅ Active</span>',
+      'rejected': '<span class="badge badge-rejected">❌ Rejected</span>'
+    };
+    return map[status] || '<span class="badge">Unknown</span>';
+  }
+  
+  window.applyFilters = () => {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const status = document.getElementById('statusFilter').value;
-    
-    let filtered = allOrders.filter(o => {
-      const matchSearch = (o.phone && o.phone.toLowerCase().includes(search)) || 
-                          (o.orderId && o.orderId.toLowerCase().includes(search)) ||
-                          (o.id && o.id.toString().includes(search));
-      const matchStatus = status === 'all' || o.status === status;
-      return matchSearch && matchStatus;
-    });
-    
-    document.getElementById('resultCount').innerText = filtered.length;
+    let filtered = allOrders.filter(o => o.phone?.toLowerCase().includes(search));
+    if (status !== 'all') filtered = filtered.filter(o => o.status === status);
     renderOrders(filtered);
-  }
-
-  // Get status badge HTML
-  function getStatusBadge(status) {
-    const badges = {
-      'pending_payment': '<span class="badge badge-pending"><i class="fas fa-clock"></i> ⏳ Pending</span>',
-      'payment_received': '<span class="badge badge-paid"><i class="fas fa-money-bill-wave"></i> 💰 Paid</span>',
-      'approved': '<span class="badge badge-approved"><i class="fas fa-check-circle"></i> ✅ Active</span>',
-      'rejected': '<span class="badge badge-rejected"><i class="fas fa-times-circle"></i> ❌ Rejected</span>',
-      'expired': '<span class="badge badge-expired"><i class="fas fa-hourglass-end"></i> ⌛ Expired</span>'
-    };
-    return badges[status] || '<span class="badge">📌 Unknown</span>';
-  }
-
-  // Render orders list
+  };
+  
   function renderOrders(orders) {
     const container = document.getElementById('ordersContainer');
-    
     if (!orders.length) {
-      container.innerHTML = `
-        <div class="glass text-center py-16 rounded-2xl">
-          <i class="fas fa-inbox text-5xl mb-3 opacity-50 text-slate-500"></i>
-          <p class="text-slate-400">No orders found</p>
-        </div>
-      `;
+      container.innerHTML = '<div class="glass text-center py-16">No orders found</div>';
       return;
     }
-    
     let html = '';
-    orders.forEach(order => {
-      const screenshotHtml = order.screenshotPath 
-        ? `<img src="${order.screenshotPath}" class="w-14 h-14 object-cover rounded-xl border-2 border-cyan-500 cursor-pointer hover:scale-105 transition-transform" onclick="showImage('${order.screenshotPath}')">` 
-        : `<div class="w-14 h-14 bg-slate-700/70 rounded-xl flex items-center justify-center"><i class="fas fa-receipt text-slate-400 text-xl"></i></div>`;
-      
-      const rejectReasonHtml = order.rejectReason 
-        ? `<div class="mt-2 text-xs bg-red-950/40 p-2 rounded-lg text-red-300"><i class="fas fa-ban mr-1"></i> ${escapeHtml(order.rejectReason)}</div>` 
-        : '';
-      
-      const expiryHtml = order.endDate 
-        ? `<div class="text-xs text-slate-400 mt-1"><i class="far fa-calendar-alt"></i> Expires: ${new Date(order.endDate).toLocaleDateString()}</div>` 
-        : '';
+    orders.forEach(o => {
+      const screenshotHtml = o.screenshotBase64 
+        ? `<img src="${o.screenshotBase64}" class="w-14 h-14 object-cover rounded-xl border-2 border-cyan-500 cursor-pointer" onclick="showImage('${o.screenshotBase64}')">`
+        : '<div class="w-14 h-14 bg-slate-700 rounded-xl flex items-center justify-center"><i class="fas fa-receipt"></i></div>';
       
       html += `
         <div class="order-row">
-          <div class="flex flex-wrap justify-between items-start gap-2">
-            <div class="flex items-center gap-3 flex-wrap">
-              <span class="text-xs bg-black/50 px-3 py-1.5 rounded-full font-mono border border-cyan-500/30">
-                <i class="fas fa-hashtag text-cyan-400"></i> ${order.orderId || order.id}
-              </span>
-              <span class="font-bold text-white"><i class="fas fa-gem text-cyan-400"></i> ${escapeHtml(order.packageName || 'VIP Package')}</span>
-              ${getStatusBadge(order.status)}
-            </div>
-            <span class="text-xs text-slate-400"><i class="far fa-calendar-alt"></i> ${new Date(order.createdAt).toLocaleString() || 'N/A'}</span>
+          <div class="flex justify-between flex-wrap gap-2">
+            <div><span class="text-xs bg-black/50 px-2 py-1 rounded-full">#${o.id?.slice(0,8)}</span> <span class="font-bold ml-2">${o.packageName}</span> ${getStatusBadge(o.status)}</div>
+            <span class="text-xs">${o.createdAt?.toDate?.().toLocaleString() || 'Just now'}</span>
           </div>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3 text-sm">
-            <div><i class="fas fa-phone-alt text-cyan-400 w-5"></i> <span class="text-slate-200">${escapeHtml(order.phone || 'N/A')}</span></div>
-            <div><i class="fas fa-money-bill-wave text-emerald-400"></i> <span class="font-bold text-emerald-300">${Number(order.price || 0).toLocaleString()} KS</span></div>
-            <div><i class="fas fa-user text-slate-400"></i> <span class="text-slate-300">${escapeHtml(order.userEmail || 'Guest')}</span></div>
+          <div class="grid grid-cols-2 mt-2 text-sm">
+            <div><i class="fas fa-phone"></i> ${o.phone}</div>
+            <div><i class="fas fa-money-bill-wave"></i> ${o.price?.toLocaleString()} KS</div>
           </div>
-          
-          ${order.note ? `<div class="mt-2 text-xs text-slate-400 bg-slate-800/30 p-2 rounded-lg"><i class="fas fa-pencil-alt mr-1"></i> ${escapeHtml(order.note)}</div>` : ''}
-          ${rejectReasonHtml}
-          ${expiryHtml}
-          
-          <div class="flex justify-between items-center mt-4 pt-3 border-t border-white/10">
-            <div class="flex gap-3 items-center">
-              ${screenshotHtml}
-              <span class="text-xs text-slate-400">payment proof</span>
-            </div>
+          ${o.note ? `<div class="text-xs text-slate-400 mt-1">📝 ${o.note}</div>` : ''}
+          <div class="flex justify-between mt-3 pt-2 border-t">
+            <div class="flex gap-2">${screenshotHtml}</div>
             <div class="flex gap-2">
-              ${order.status === 'payment_received' ? `
-                <button onclick="updateOrderStatus(${order.id}, 'approved')" class="bg-emerald-700 hover:bg-emerald-600 px-4 py-1.5 rounded-lg text-sm font-medium transition-all">
-                  <i class="fas fa-check-circle"></i> Approve
-                </button>
-                <button onclick="promptReject(${order.id})" class="bg-rose-700 hover:bg-rose-600 px-4 py-1.5 rounded-lg text-sm font-medium transition-all">
-                  <i class="fas fa-times-circle"></i> Reject
-                </button>
+              ${o.status === 'payment_received' ? `
+                <button onclick="updateStatus('${o.id}', 'approved')" class="bg-emerald-700 px-3 py-1 rounded-lg text-sm">Approve</button>
+                <button onclick="updateStatus('${o.id}', 'rejected')" class="bg-rose-700 px-3 py-1 rounded-lg text-sm">Reject</button>
               ` : ''}
-              <button onclick="deleteOrder(${order.id})" class="bg-slate-700 hover:bg-red-800 px-4 py-1.5 rounded-lg text-sm font-medium transition-all">
-                <i class="fas fa-trash-alt"></i> Delete
-              </button>
+              <button onclick="deleteOrder('${o.id}')" class="bg-slate-700 px-3 py-1 rounded-lg text-sm">Delete</button>
             </div>
           </div>
         </div>
       `;
     });
-    
     container.innerHTML = html;
   }
-
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
-  }
-
-  // Update order status
-  async function updateOrderStatus(orderId, newStatus, rejectReason = null) {
+  
+  window.updateStatus = async (orderId, newStatus) => {
     try {
-      const response = await fetch('/api/admin/update-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-auth': adminToken
-        },
-        body: JSON.stringify({ orderId, status: newStatus, rejectReason })
-      });
-      const data = await response.json();
-      
-      if (data.success) {
-        showToast(`Order #${orderId} has been ${newStatus}!`);
-        await fetchOrders();
-      } else {
-        showToast(data.message || 'Update failed', true);
-      }
-    } catch (err) {
-      console.error(err);
-      showToast('Network error', true);
+      await updateDoc(doc(db, "orders", orderId), { status: newStatus, updatedAt: new Date() });
+      Swal.fire({ icon: 'success', title: 'Updated', toast: true, timer: 1500 });
+      fetchOrders();
+    } catch(err) {
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message });
     }
-  }
-
-  // Prompt reject reason
-  async function promptReject(orderId) {
-    const { value: reason } = await Swal.fire({
-      title: 'Rejection Reason',
-      input: 'text',
-      inputLabel: 'ပယ်ဖျက်ရသည့် အကြောင်းရင်း',
-      inputPlaceholder: 'e.g., Payment proof mismatch',
-      background: '#1e293b',
-      color: '#fff',
-      confirmButtonColor: '#e11d48',
-      confirmButtonText: 'Reject Order',
-      showCancelButton: true
-    });
-    
-    if (reason !== undefined) {
-      await updateOrderStatus(orderId, 'rejected', reason || 'Verification failed');
+  };
+  
+  window.deleteOrder = async (orderId) => {
+    const confirm = await Swal.fire({ title: 'Delete?', icon: 'warning', showCancelButton: true });
+    if (confirm.isConfirmed) {
+      await deleteDoc(doc(db, "orders", orderId));
+      fetchOrders();
     }
-  }
-
-  // Delete order
-  async function deleteOrder(orderId) {
-    const result = await Swal.fire({
-      title: 'Delete Order?',
-      text: `Order #${orderId} will be permanently deleted`,
-      icon: 'warning',
-      showCancelButton: true,
-      background: '#1e293b',
-      color: '#fff',
-      confirmButtonColor: '#dc2626',
-      confirmButtonText: 'Yes, delete'
-    });
-    
-    if (result.isConfirmed) {
-      try {
-        const response = await fetch('/api/admin/delete-order', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-auth': adminToken
-          },
-          body: JSON.stringify({ orderId })
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-          showToast('Order deleted successfully');
-          await fetchOrders();
-        } else {
-          showToast(data.message || 'Delete failed', true);
-        }
-      } catch (err) {
-        showToast('Network error', true);
-      }
-    }
-  }
-
-  // Show image modal
-  function showImage(url) {
+  };
+  
+  window.showImage = (url) => {
     document.getElementById('modalImage').src = url;
     document.getElementById('imageModal').classList.add('show');
-  }
-
-  // Close modal
-  function closeModal() {
+  };
+  
+  window.closeModal = () => {
     document.getElementById('imageModal').classList.remove('show');
-  }
-
-  // Logout
-  function logout() {
-    adminToken = "";
+  };
+  
+  window.logout = () => {
     document.getElementById('dashboardContainer').style.display = 'none';
     document.getElementById('loginContainer').style.display = 'flex';
     document.getElementById('adminPassword').value = '';
-    document.getElementById('loginError').classList.add('hidden');
-  }
-
-  // Keyboard support for login (Enter key)
-  document.getElementById('adminPassword')?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') login();
-  });
-
-  // Expose functions globally
-  window.login = login;
-  window.fetchOrders = fetchOrders;
-  window.applyFilters = applyFilters;
-  window.updateOrderStatus = updateOrderStatus;
-  window.promptReject = promptReject;
-  window.deleteOrder = deleteOrder;
-  window.showImage = showImage;
-  window.closeModal = closeModal;
-  window.logout = logout;
+  };
 </script>
 </body>
 </html>
