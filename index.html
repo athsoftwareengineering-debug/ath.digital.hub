@@ -45,7 +45,6 @@
         
         .container { max-width: 1320px; margin: 0 auto; padding: 16px; position: relative; z-index: 2; }
         
-        /* Header */
         .store-header {
             backdrop-filter: blur(20px);
             background: rgba(10, 12, 21, 0.6);
@@ -94,7 +93,6 @@
         @media (min-width: 768px) { .hero h1 { font-size: 2.5rem; } }
         .hero p { color: var(--text-secondary); font-size: 0.8rem; margin-top: 8px; }
         
-        /* Track Card */
         .track-card {
             background: rgba(12, 18, 28, 0.7);
             backdrop-filter: blur(12px);
@@ -143,7 +141,6 @@
         .track-result.show { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        /* Product Cards - Auto Responsive Grid */
         .pack-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -206,7 +203,6 @@
         .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
         .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
         
-        /* My Orders Side Panel */
         .history-panel {
             position: fixed;
             top: 0;
@@ -236,36 +232,6 @@
         @media (min-width: 768px) { .history-header h3 { font-size: 1.3rem; } }
         .close-history { font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
         .close-history:hover { color: var(--rose); }
-        
-        .filter-bar {
-            background: rgba(0,0,0,0.4);
-            border-radius: 16px;
-            padding: 12px;
-            margin-bottom: 16px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .filter-input {
-            background: rgba(0,0,0,0.6);
-            border: 1px solid #334155;
-            border-radius: 40px;
-            padding: 8px 12px;
-            color: white;
-            font-size: 0.7rem;
-            flex: 1;
-            min-width: 100px;
-        }
-        @media (min-width: 768px) { .filter-input { padding: 10px 14px; font-size: 0.75rem; } }
-        .filter-btn {
-            background: rgba(0,212,255,0.15);
-            border: 1px solid rgba(0,212,255,0.3);
-            padding: 8px 16px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            cursor: pointer;
-        }
-        .filter-btn:hover { background: var(--cyan); color: #030712; }
         
         .order-item {
             background: rgba(0,0,0,0.4);
@@ -391,16 +357,18 @@
     </div>
 </div>
 
+<!-- My Orders Side Panel - Shows ALL Orders (Pending + Approved + Rejected) -->
 <div id="historyPanel" class="history-panel">
     <div class="history-header">
         <h3><i class="fas fa-list-ul"></i> ဝယ်ထားသမျှ အော်ဒါများ</h3>
         <span class="close-history" id="closeHistoryBtn">&times;</span>
     </div>
-    <div class="filter-bar">
-        <input type="tel" id="historyPhoneInput" class="filter-input" placeholder="📱 ဖုန်းနံပါတ်">
+    <div class="filter-bar" style="margin-bottom:16px;">
+        <input type="tel" id="historyPhoneInput" class="filter-input" placeholder="📱 ဖုန်းနံပါတ် (ထည့်ရန်မလို)">
         <button class="filter-btn" id="fetchHistoryBtn">ရှာမည်</button>
+        <button class="filter-btn" id="showAllBtn" style="background:rgba(16,185,129,0.2); border-color:rgba(16,185,129,0.4);">အကုန်ပြမည်</button>
     </div>
-    <div id="historyList"><div class="empty-msg"><i class="fas fa-info-circle"></i> ဖုန်းနံပါတ် ရိုက်ထည့်ပြီး ရှာမည် နှိပ်ပါ။</div></div>
+    <div id="historyList"><div class="empty-msg"><i class="fas fa-info-circle"></i> "အကုန်ပြမည်" နှိပ်ပါ။</div></div>
 </div>
 
 <div id="paymentModal" class="modal-overlay">
@@ -427,6 +395,7 @@
     const API_BASE = window.location.origin;
     let selectedPlan = "", selectedPrice = 0;
     let autoHideTimer = null;
+    let allOrdersCache = [];
 
     function showToast(msg, isError = false) {
         const toast = document.getElementById('globalToast');
@@ -516,6 +485,23 @@
         return res.json();
     }
 
+    // Load ALL orders (Admin endpoint)
+    async function loadAllOrders() {
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/orders`);
+            const data = await res.json();
+            if (data.orders) {
+                allOrdersCache = data.orders;
+                renderMyOrders(allOrdersCache);
+            } else {
+                document.getElementById('historyList').innerHTML = `<div class="empty-msg">📭 အော်ဒါမရှိသေးပါ။</div>`;
+            }
+        } catch(e) {
+            document.getElementById('historyList').innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`;
+        }
+    }
+
+    // Load orders by phone
     async function loadMyOrders(phone) {
         const container = document.getElementById('historyList');
         if (!phone) {
@@ -529,43 +515,49 @@
                 container.innerHTML = `<div class="empty-msg"><i class="fas fa-inbox"></i> ဤဖုန်းနံပါတ်အတွက် အော်ဒါမရှိသေးပါ။</div>`;
                 return;
             }
-            let html = "";
-            for (const order of data.orders) {
-                let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ", waitingMsg = "";
-                if (order.status === "Approved") { statusClass = "status-approved"; statusText = "✅ အတည်ပြုပြီး"; }
-                if (order.status === "Rejected") { statusClass = "status-rejected"; statusText = "❌ ပယ်ဖျက်ခံရ"; }
-                if (order.status === "Pending") waitingMsg = `<div class="waiting-badge">⏳ Admin အတည်ပြုချက်ကို စောင့်ဆိုင်းနေပါသည်။</div>`;
-                const dateStr = new Date(order.created_at).toLocaleString();
-                let countdownHtml = "";
-                if (order.status === "Approved" && order.activated_at) {
-                    countdownHtml = `<div class="countdown-timer"><i class="fas fa-calendar-check"></i> ကျန်ရက်: ${formatRemainingTime(order.activated_at)}</div>`;
-                }
-                html += `<div class="order-item">
-                    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:8px;">
-                        <strong style="color:var(--cyan);"><i class="fas fa-sim-card"></i> ${order.plan}</strong>
-                        <span class="status-badge ${statusClass}">${statusText}</span>
-                    </div>
-                    <div style="font-size:0.75rem;">💰 ${order.price.toLocaleString()} KS</div>
-                    <div style="font-size:0.65rem; color:#6b7280;">📅 ${dateStr}</div>
-                    <div style="font-size:0.65rem; margin-top:4px;"><i class="fas fa-mobile-alt"></i> ဖုန်းနံပါတ်: ${order.phone}</div>
-                    <div style="font-size:0.6rem; margin-top:4px;">🆔 Order ID: ${order.id}</div>
-                    ${waitingMsg}
-                    ${countdownHtml}
-                </div>`;
-            }
-            container.innerHTML = html;
+            renderMyOrders(data.orders);
         } catch(e) {
             container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`;
         }
     }
 
+    function renderMyOrders(orders) {
+        const container = document.getElementById('historyList');
+        if (!orders || orders.length === 0) {
+            container.innerHTML = `<div class="empty-msg">📭 အော်ဒါမရှိသေးပါ။</div>`;
+            return;
+        }
+        let html = "";
+        for (const order of orders) {
+            let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ", waitingMsg = "";
+            if (order.status === "Approved") { statusClass = "status-approved"; statusText = "✅ အတည်ပြုပြီး"; }
+            if (order.status === "Rejected") { statusClass = "status-rejected"; statusText = "❌ ပယ်ဖျက်ခံရ"; }
+            if (order.status === "Pending") waitingMsg = `<div class="waiting-badge">⏳ Admin အတည်ပြုချက်ကို စောင့်ဆိုင်းနေပါသည်။</div>`;
+            const dateStr = new Date(order.created_at).toLocaleString();
+            let countdownHtml = "";
+            if (order.status === "Approved" && order.activated_at) {
+                countdownHtml = `<div class="countdown-timer"><i class="fas fa-calendar-check"></i> ကျန်ရက်: ${formatRemainingTime(order.activated_at)}</div>`;
+            }
+            html += `<div class="order-item">
+                <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:8px;">
+                    <strong style="color:var(--cyan);"><i class="fas fa-sim-card"></i> ${order.plan}</strong>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+                <div style="font-size:0.75rem;">💰 ${order.price.toLocaleString()} KS</div>
+                <div style="font-size:0.65rem; color:#6b7280;">📅 ${dateStr}</div>
+                <div style="font-size:0.65rem; margin-top:4px;"><i class="fas fa-mobile-alt"></i> ဖုန်းနံပါတ်: ${order.phone}</div>
+                <div style="font-size:0.6rem; margin-top:4px;">🆔 Order ID: ${order.id}</div>
+                ${waitingMsg}
+                ${countdownHtml}
+            </div>`;
+        }
+        container.innerHTML = html;
+    }
+
     function openMyOrders() {
         document.getElementById('historyPanel').classList.add('open');
-        const phone = document.getElementById('customerPhone').value.trim() || document.getElementById('trackPhoneInput').value.trim();
-        if (phone) {
-            document.getElementById('historyPhoneInput').value = phone;
-            loadMyOrders(phone);
-        }
+        // Auto load all orders when panel opens
+        loadAllOrders();
     }
     function closeHistory() { document.getElementById('historyPanel').classList.remove('open'); }
 
@@ -582,6 +574,7 @@
             document.getElementById('orderForm').reset();
             document.getElementById('trackPhoneInput').value = phone;
             trackOrder();
+            loadAllOrders();
         } else {
             showToast(result.error || 'အော်ဒါတင်ရာတွင် အမှားရှိပါသည်', true);
         }
@@ -602,12 +595,21 @@
     document.getElementById('closeHistoryBtn').addEventListener('click', closeHistory);
     document.getElementById('fetchHistoryBtn').addEventListener('click', () => {
         const phone = document.getElementById('historyPhoneInput').value.trim();
-        loadMyOrders(phone);
+        if (phone) {
+            loadMyOrders(phone);
+        } else {
+            loadAllOrders();
+        }
+    });
+    document.getElementById('showAllBtn').addEventListener('click', () => {
+        document.getElementById('historyPhoneInput').value = '';
+        loadAllOrders();
     });
     document.getElementById('historyPhoneInput').addEventListener('keypress', (e) => {
         if(e.key === 'Enter') {
             const phone = document.getElementById('historyPhoneInput').value.trim();
-            loadMyOrders(phone);
+            if (phone) loadMyOrders(phone);
+            else loadAllOrders();
         }
     });
     document.getElementById('clickablePhone').addEventListener('click', () => { navigator.clipboard.writeText("09789999368"); showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။"); });
