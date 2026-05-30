@@ -665,7 +665,9 @@
 
     function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
 
-    // TRACK YOUR ORDER - WITH DEBUG CONSOLE LOGS
+    // ============================================
+    // TRACK ORDER - SIMPLE & RELIABLE
+    // ============================================
     async function panelTrackOrder() {
         if (panelAutoHideTimer) clearTimeout(panelAutoHideTimer);
         const phone = document.getElementById('panelTrackPhoneInput').value.trim();
@@ -681,39 +683,52 @@
         }
         
         try {
-            const url = `${API_BASE}/api/orders/${phone}`;
-            console.log("📡 Fetching URL:", url);
-            const res = await fetch(url);
-            console.log("📡 Response status:", res.status);
-            const data = await res.json();
+            const response = await fetch(`${API_BASE}/api/orders/${phone}`);
+            console.log("📡 Response status:", response.status);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
             console.log("📦 Response data:", data);
             
-            // Check if orders exist (data.orders array)
-            if (!data.orders || data.orders.length === 0) {
-                console.log("❌ No orders found for phone:", phone);
-                resultDiv.innerHTML = `<div style="color:var(--text-secondary);">📭 "${phone}" အတွက် အော်ဒါမရှိပါ။</div>`;
+            // Check if orders exist and is array
+            if (!data.orders || !Array.isArray(data.orders) || data.orders.length === 0) {
+                console.log("❌ No orders found");
+                resultDiv.innerHTML = `<div style="color:var(--text-secondary); padding:8px;">📭 "${phone}" အတွက် အော်ဒါမရှိပါ။</div>`;
                 resultDiv.classList.add('show');
                 panelAutoHideResult();
                 return;
             }
             
-            console.log("✅ Found", data.orders.length, "orders");
+            console.log(`✅ Found ${data.orders.length} orders`);
+            
+            // Build HTML for orders
             let html = `<div style="text-align:left;">`;
             for (const order of data.orders) {
                 let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
                 let waitingMsg = "";
-                if (order.status === "Approved") { statusClass = "status-approved"; statusText = "✅ အတည်ပြုပြီး"; }
-                if (order.status === "Rejected") { statusClass = "status-rejected"; statusText = "❌ ပယ်ဖျက်ခံရ"; }
-                if (order.status === "Pending") waitingMsg = `<div style="font-size:0.65rem; margin-top:6px; color:#fbbf24;">⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ</div>`;
+                if (order.status === "Approved") { 
+                    statusClass = "status-approved"; 
+                    statusText = "✅ အတည်ပြုပြီး"; 
+                }
+                if (order.status === "Rejected") { 
+                    statusClass = "status-rejected"; 
+                    statusText = "❌ ပယ်ဖျက်ခံရ"; 
+                }
+                if (order.status === "Pending") {
+                    waitingMsg = `<div style="font-size:0.65rem; margin-top:6px; color:#fbbf24;">⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ</div>`;
+                }
                 const dateStr = new Date(order.created_at).toLocaleString();
                 html += `
-                    <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:10px; margin-bottom:8px;">
-                        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+                    <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:10px; margin-bottom:8px; border:1px solid rgba(0,212,255,0.1);">
+                        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-bottom:5px;">
                             <strong style="color:var(--cyan);">${order.plan}</strong>
                             <span class="status-badge ${statusClass}">${statusText}</span>
                         </div>
-                        <div style="font-size:0.7rem;">💰 ${order.price.toLocaleString()} KS</div>
-                        <div style="font-size:0.6rem;">📅 ${dateStr}</div>
+                        <div style="font-size:0.75rem;">💰 ${order.price.toLocaleString()} KS</div>
+                        <div style="font-size:0.65rem; color:#6b7280;">📅 ${dateStr}</div>
                         ${waitingMsg}
                     </div>
                 `;
@@ -723,9 +738,10 @@
             resultDiv.classList.add('show');
             document.getElementById('panelTrackPhoneInput').value = '';
             panelAutoHideResult();
-        } catch(e) {
-            console.error("❌ Track order error:", e);
-            resultDiv.innerHTML = `<div style="color:var(--rose);">Error: ${e.message}</div>`;
+            
+        } catch(error) {
+            console.error("❌ Fetch error:", error);
+            resultDiv.innerHTML = `<div style="color:var(--rose); padding:8px;">❌ Connection error: ${error.message}</div>`;
             resultDiv.classList.add('show');
             panelAutoHideResult();
         }
@@ -870,7 +886,7 @@
     document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
     
-    console.log("✅ App loaded - Track Your Order with debug console. Check F12 Console for details.");
+    console.log("✅ Track Your Order - Simple reliable version. Check console for details.");
 </script>
 </body>
 </html>
