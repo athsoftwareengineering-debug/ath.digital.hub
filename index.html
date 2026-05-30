@@ -285,9 +285,7 @@
         }
         .search-btn-card.show-all:hover { background: var(--emerald); color: white; }
         
-        /* ========================================== */
-        /* ENHANCED ORDER CARDS - NEON GREEN GLOW */
-        /* ========================================== */
+        /* Enhanced Order Cards */
         .order-item {
             background: linear-gradient(145deg, rgba(18,22,35,0.9), rgba(10,12,21,0.95));
             border-radius: 20px;
@@ -298,13 +296,11 @@
             position: relative;
             overflow: hidden;
         }
-        /* Neon Green Glow Effect on Hover */
         .order-item:hover {
             border-color: rgba(16, 185, 129, 0.6);
             transform: translateX(5px);
             box-shadow: 0 0 15px rgba(16, 185, 129, 0.3), 0 5px 15px rgba(0,0,0,0.3);
         }
-        /* Subtle top border glow */
         .order-item::before {
             content: '';
             position: absolute;
@@ -316,9 +312,7 @@
             opacity: 0;
             transition: opacity 0.3s;
         }
-        .order-item:hover::before {
-            opacity: 1;
-        }
+        .order-item:hover::before { opacity: 1; }
         
         .order-header {
             display: flex;
@@ -373,9 +367,6 @@
             color: var(--text-primary);
         }
         .detail-value.price { color: var(--emerald); }
-        .detail-value.cost { color: var(--amber); }
-        .detail-value.profit { color: var(--cyan); }
-        
         .waiting-badge {
             background: rgba(245,158,11,0.15);
             padding: 8px 12px;
@@ -517,7 +508,7 @@
             <i class="fas fa-search"></i> Filter Orders
         </div>
         <div class="search-input-group">
-            <input type="tel" id="historyPhoneInput" class="search-input-field" placeholder="📱 ဖုန်းနံပါတ် (optional)">
+            <input type="tel" id="historyPhoneInput" class="search-input-field" placeholder="📱 ရှာလိုသော ဖုန်းနံပါတ် (09xxxxxxxxx)">
             <button class="search-btn-card" id="fetchHistoryBtn"><i class="fas fa-search"></i> ရှာမည်</button>
             <button class="search-btn-card show-all" id="showAllBtn"><i class="fas fa-list"></i> အကုန်ပြမည်</button>
         </div>
@@ -640,6 +631,7 @@
         return res.json();
     }
 
+    // Load ALL orders (Admin endpoint)
     async function loadAllOrders() {
         try {
             const res = await fetch(`${API_BASE}/api/admin/orders`);
@@ -655,7 +647,8 @@
         }
     }
 
-    async function loadMyOrders(phone) {
+    // Search orders by phone (User endpoint)
+    async function searchOrdersByPhone(phone) {
         const container = document.getElementById('historyList');
         if (!phone) {
             container.innerHTML = `<div class="empty-msg"><i class="fas fa-phone-slash"></i> ဖုန်းနံပါတ် ထည့်ပါ။</div>`;
@@ -665,7 +658,7 @@
             const res = await fetch(`${API_BASE}/api/orders/${phone}`);
             const data = await res.json();
             if (!data.orders || data.orders.length === 0) {
-                container.innerHTML = `<div class="empty-msg"><i class="fas fa-inbox"></i> ဤဖုန်းနံပါတ်အတွက် အော်ဒါမရှိသေးပါ။</div>`;
+                container.innerHTML = `<div class="empty-msg"><i class="fas fa-inbox"></i> "${phone}" အတွက် အော်ဒါမရှိပါ။</div>`;
                 return;
             }
             renderMyOrders(data.orders);
@@ -767,22 +760,32 @@
     document.getElementById('trackPhoneInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') trackOrder(); });
     document.getElementById('myOrdersBtn').addEventListener('click', openMyOrders);
     document.getElementById('closeHistoryBtn').addEventListener('click', closeHistory);
+    
+    // Search by phone button
     document.getElementById('fetchHistoryBtn').addEventListener('click', () => {
         const phone = document.getElementById('historyPhoneInput').value.trim();
-        if (phone) loadMyOrders(phone);
-        else loadAllOrders();
+        if (phone) {
+            searchOrdersByPhone(phone);
+        } else {
+            loadAllOrders();
+        }
     });
+    
+    // Show all orders button
     document.getElementById('showAllBtn').addEventListener('click', () => {
         document.getElementById('historyPhoneInput').value = '';
         loadAllOrders();
     });
+    
+    // Enter key support
     document.getElementById('historyPhoneInput').addEventListener('keypress', (e) => {
         if(e.key === 'Enter') {
             const phone = document.getElementById('historyPhoneInput').value.trim();
-            if (phone) loadMyOrders(phone);
+            if (phone) searchOrdersByPhone(phone);
             else loadAllOrders();
         }
     });
+    
     document.getElementById('clickablePhone').addEventListener('click', () => { navigator.clipboard.writeText("09789999368"); showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။"); });
 </script>
 </body>
