@@ -90,32 +90,33 @@
         }
         
         .pack-card {
-            background: linear-gradient(145deg, rgba(18,22,35,0.9), rgba(10,12,21,0.95));
+            background: linear-gradient(145deg, #11131e, #0c0e16);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(34, 197, 94, 0.2);
-            border-radius: 1.5rem;
-            padding: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: 1.5rem 1.2rem 1.2rem 1.2rem;
             transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
             position: relative;
             overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
         }
         
         .pack-card:hover {
             transform: translateY(-6px);
-            border-color: rgba(34, 197, 94, 0.5);
-            box-shadow: 0 0 20px rgba(34, 197, 94, 0.15);
+            border-color: rgba(0, 212, 255, 0.3);
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.4);
         }
         
         .featured-flag {
-            position: absolute;
-            top: -10px;
-            right: 16px;
-            padding: 4px 12px;
+            display: inline-block;
+            padding: 4px 14px;
             border-radius: 40px;
-            font-size: 0.6rem;
-            font-weight: 800;
+            font-size: 0.65rem;
+            font-weight: 700;
             color: white;
-            z-index: 1;
+            margin-bottom: 16px;
+            backdrop-filter: blur(4px);
+            width: fit-content;
         }
         @media (min-width: 768px) { .featured-flag { padding: 5px 16px; font-size: 0.7rem; } }
         
@@ -123,15 +124,17 @@
             font-size: 0.7rem; 
             text-transform: uppercase; 
             font-weight: 600; 
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
         }
         @media (min-width: 768px) { .pack-tier { font-size: 0.8rem; } }
         
         .pack-price { 
             font-family: 'Space Grotesk', monospace; 
             font-size: 1.6rem; 
-            font-weight: 800; 
+            font-weight: 700; 
             margin: 8px 0 12px;
+            letter-spacing: -0.5px;
         }
         @media (min-width: 768px) { .pack-price { font-size: 2rem; } }
         .pack-price small { font-size: 0.8rem; font-weight: 400; color: var(--text-secondary); }
@@ -142,43 +145,36 @@
             font-size: 0.75rem; 
             display: flex; 
             align-items: center; 
-            gap: 8px; 
+            gap: 10px; 
             color: #cbd5e1;
         }
         @media (min-width: 768px) { .feature-list li { font-size: 0.85rem; } }
         .feature-list li i { width: 20px; font-size: 0.8rem; }
-        .feature-list li i.gold { color: #fbbf24; }
-        .feature-list li i.purple { color: #a78bfa; }
-        .feature-list li i.green { color: #22c55e; }
-        .feature-list li i.cyan { color: var(--cyan); }
-        
-        .feature-list li .value-highlight {
-            font-weight: 700;
-            font-size: 0.85rem;
-        }
-        .feature-list li .value-highlight.gold { color: #fbbf24; }
-        .feature-list li .value-highlight.purple { color: #a78bfa; }
-        .feature-list li .value-highlight.green { color: #22c55e; }
-        .feature-list li .value-highlight.cyan { color: var(--cyan); }
         
         .buy-btn {
             width: 100%;
             padding: 10px 0;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 60px;
-            font-weight: 700;
-            background: white;
-            color: #0f172a;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
             cursor: pointer;
             font-size: 0.8rem;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        @media (min-width: 768px) { .buy-btn { padding: 12px 0; font-size: 0.9rem; } }
+        @media (min-width: 768px) { .buy-btn { padding: 12px 0; font-size: 0.85rem; } }
+        .buy-btn:hover { 
+            background: rgba(0, 212, 255, 0.12);
+            border-color: rgba(0, 212, 255, 0.3);
+            transform: scale(0.98);
+            color: var(--cyan);
+        }
         
-        .buy-btn.violet { background: linear-gradient(135deg, var(--violet), #a855f7); color: white; }
-        .buy-btn:hover { background: var(--cyan); transform: scale(0.98); color: #030712; }
-        
-        /* My Orders Panel */
         .history-panel {
             position: fixed;
             top: 0;
@@ -294,54 +290,55 @@
     
     <div class="pack-grid">
         <!-- TIER V1 -->
-        <div class="pack-card" style="border-color:#fbbf24;">
+        <div class="pack-card">
             <div class="featured-flag" style="background:linear-gradient(135deg,#fbbf24,#d97706);">🔥 BEST SELLER</div>
             <div class="pack-tier" style="color:#fbbf24;">TIER V1</div>
             <div class="pack-price">15,000 <small>MMK</small></div>
             <div class="feature-list">
-                <li><i class="fas fa-tachometer-alt gold"></i> <span class="value-highlight gold">22GB</span> Extreme Speed</li>
-                <li><i class="fas fa-phone-alt gold"></i> <span class="value-highlight gold">8,000</span> On-Net Mins</li>
-                <li><i class="fas fa-envelope gold"></i> <span class="value-highlight gold">5,000</span> SMS</li>
+                <li><i class="fas fa-tachometer-alt" style="color:#fbbf24;"></i> <span style="font-weight:600; color:#fbbf24;">22GB</span> Extreme Speed</li>
+                <li><i class="fas fa-phone-alt" style="color:#fbbf24;"></i> <span style="font-weight:600; color:#fbbf24;">8,000</span> On-Net Mins</li>
+                <li><i class="fas fa-envelope" style="color:#fbbf24;"></i> <span style="font-weight:600; color:#fbbf24;">5,000</span> SMS</li>
             </div>
-            <button class="buy-btn" data-plan="VIP LEVEL - 1" data-price="15000">ဝယ်ယူမည်</button>
+            <button class="buy-btn" data-plan="VIP LEVEL - 1" data-price="15000"><i class="fas fa-shopping-cart"></i> ဝယ်ယူမည်</button>
         </div>
         
-        <!-- TIER V2 -->
+        <!-- TIER V2 - NOW WITH POPULAR FLAG -->
         <div class="pack-card">
-            <div class="pack-tier" style="color:var(--cyan);">TIER V2</div>
+            <div class="featured-flag" style="background:linear-gradient(135deg,#00d4ff,#0891b2);">⭐ POPULAR</div>
+            <div class="pack-tier" style="color:#00d4ff;">TIER V2</div>
             <div class="pack-price">20,000 <small>MMK</small></div>
             <div class="feature-list">
-                <li><i class="fas fa-tachometer-alt cyan"></i> <span class="value-highlight cyan">40GB</span> Ultra Data</li>
-                <li><i class="fas fa-phone-alt cyan"></i> <span class="value-highlight cyan">250</span> On-Net Mins</li>
-                <li><i class="fas fa-globe cyan"></i> <span class="value-highlight cyan">25</span> Any Net Mins</li>
+                <li><i class="fas fa-tachometer-alt" style="color:#00d4ff;"></i> <span style="font-weight:600; color:#00d4ff;">40GB</span> Ultra Data</li>
+                <li><i class="fas fa-phone-alt" style="color:#00d4ff;"></i> <span style="font-weight:600; color:#00d4ff;">250</span> On-Net Mins</li>
+                <li><i class="fas fa-globe" style="color:#00d4ff;"></i> <span style="font-weight:600; color:#00d4ff;">25</span> Any Net Mins</li>
             </div>
-            <button class="buy-btn" data-plan="VIP LEVEL - 2" data-price="20000">ဝယ်ယူမည်</button>
+            <button class="buy-btn" data-plan="VIP LEVEL - 2" data-price="20000"><i class="fas fa-shopping-cart"></i> ဝယ်ယူမည်</button>
         </div>
         
         <!-- TIER V3 -->
-        <div class="pack-card" style="border-color:#22c55e;">
+        <div class="pack-card">
             <div class="featured-flag" style="background:linear-gradient(135deg,#22c55e,#15803d);">⭐ BEST VALUE</div>
             <div class="pack-tier" style="color:#22c55e;">TIER V3</div>
             <div class="pack-price">25,000 <small>MMK</small></div>
             <div class="feature-list">
-                <li><i class="fas fa-database green"></i> <span class="value-highlight green">40GB</span> High-Speed + Extra</li>
-                <li><i class="fas fa-phone-volume green"></i> <span class="value-highlight green">1,400</span> On-Net Mins</li>
-                <li><i class="fas fa-comment-dots green"></i> <span class="value-highlight green">8,000</span> SMS Unlimited</li>
+                <li><i class="fas fa-database" style="color:#22c55e;"></i> <span style="font-weight:600; color:#22c55e;">40GB</span> High-Speed + Extra</li>
+                <li><i class="fas fa-phone-volume" style="color:#22c55e;"></i> <span style="font-weight:600; color:#22c55e;">1,400</span> On-Net Mins</li>
+                <li><i class="fas fa-comment-dots" style="color:#22c55e;"></i> <span style="font-weight:600; color:#22c55e;">8,000</span> SMS Unlimited</li>
             </div>
-            <button class="buy-btn violet" data-plan="VIP LEVEL - 3" data-price="25000">ဝယ်ယူမည်</button>
+            <button class="buy-btn" data-plan="VIP LEVEL - 3" data-price="25000"><i class="fas fa-shopping-cart"></i> ဝယ်ယူမည်</button>
         </div>
         
         <!-- TIER V4 -->
-        <div class="pack-card" style="border-color:#8b5cf6;">
+        <div class="pack-card">
             <div class="featured-flag" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">👑 TOP SELLER</div>
             <div class="pack-tier" style="color:#a78bfa;">TIER V4 (ULTRA)</div>
             <div class="pack-price">30,000 <small>MMK</small></div>
             <div class="feature-list">
-                <li><i class="fas fa-cloud-upload-alt purple"></i> <span class="value-highlight purple">120GB</span> Gamer Data</li>
-                <li><i class="fas fa-infinity purple"></i> <span class="value-highlight purple">Unlimited</span> Streaming</li>
-                <li><i class="fas fa-headset purple"></i> <span class="value-highlight purple">Priority</span> Support</li>
+                <li><i class="fas fa-cloud-upload-alt" style="color:#a78bfa;"></i> <span style="font-weight:600; color:#a78bfa;">120GB</span> Gamer Data</li>
+                <li><i class="fas fa-infinity" style="color:#a78bfa;"></i> <span style="font-weight:600; color:#a78bfa;">Unlimited</span> Streaming</li>
+                <li><i class="fas fa-headset" style="color:#a78bfa;"></i> <span style="font-weight:600; color:#a78bfa;">Priority</span> Support</li>
             </div>
-            <button class="buy-btn" data-plan="VIP LEVEL - 4 (ULTRA)" data-price="30000">ဝယ်ယူမည်</button>
+            <button class="buy-btn" data-plan="VIP LEVEL - 4 (ULTRA)" data-price="30000"><i class="fas fa-shopping-cart"></i> ဝယ်ယူမည်</button>
         </div>
     </div>
 </div>
@@ -413,63 +410,6 @@
                 clearInterval(countdownIntervals[orderId]);
             }
         }, 1000);
-    }
-
-    async function trackOrder() {
-        if (autoHideTimer) clearTimeout(autoHideTimer);
-        const phone = document.getElementById('trackPhoneInput').value.trim();
-        const resultDiv = document.getElementById('trackResult');
-        if (!phone) {
-            resultDiv.innerHTML = `<div style="color:var(--rose);">⚠️ ဖုန်းနံပါတ် ထည့်ပါ။</div>`;
-            resultDiv.classList.add('show');
-            autoHideResult();
-            return;
-        }
-        try {
-            const res = await fetch(`${API_BASE}/api/orders/${phone}`);
-            const data = await res.json();
-            if (!data.orders || data.orders.length === 0) {
-                resultDiv.innerHTML = `<div style="color:var(--text-secondary);">📭 ဤဖုန်းနံပါတ်အတွက် အော်ဒါမရှိပါ။</div>`;
-                resultDiv.classList.add('show');
-                autoHideResult();
-                document.getElementById('trackPhoneInput').value = '';
-                return;
-            }
-            let html = `<div style="text-align:left;">`;
-            for (const order of data.orders) {
-                let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
-                if (order.status === "Approved") { statusClass = "status-approved"; statusText = "✅ အတည်ပြုပြီး"; }
-                if (order.status === "Rejected") { statusClass = "status-rejected"; statusText = "❌ ပယ်ဖျက်ခံရ"; }
-                const dateStr = new Date(order.created_at).toLocaleString();
-                html += `<div style="background:rgba(255,255,255,0.05); border-radius:16px; padding:12px; margin-bottom:10px;">
-                    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">
-                        <strong style="color:var(--cyan);">${order.plan}</strong>
-                        <span class="status-badge ${statusClass}">${statusText}</span>
-                    </div>
-                    <div style="font-size:0.75rem;">💰 ${order.price.toLocaleString()} KS</div>
-                    <div style="font-size:0.65rem; color:#6b7280;">📅 ${dateStr}</div>
-                    ${order.status === "Pending" ? '<div style="font-size:0.65rem; margin-top:6px; color:#fbbf24;">🕒 အတည်ပြုချက်ကို စောင့်ဆိုင်းနေပါသည်။</div>' : ''}
-                </div>`;
-            }
-            html += `</div>`;
-            resultDiv.innerHTML = html;
-            resultDiv.classList.add('show');
-            document.getElementById('trackPhoneInput').value = '';
-            autoHideResult();
-        } catch(e) {
-            resultDiv.innerHTML = `<div style="color:var(--rose);">Error: ${e.message}</div>`;
-            resultDiv.classList.add('show');
-            autoHideResult();
-        }
-    }
-
-    function autoHideResult() {
-        if (autoHideTimer) clearTimeout(autoHideTimer);
-        autoHideTimer = setTimeout(() => {
-            const resultDiv = document.getElementById('trackResult');
-            resultDiv.classList.remove('show');
-            resultDiv.innerHTML = '';
-        }, 5000);
     }
 
     async function addOrder(phone, plan, price, file) {
