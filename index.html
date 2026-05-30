@@ -177,12 +177,12 @@
         }
         .panel-track-result.show { display: block; }
         
-        /* ORDER CARD - IMPROVED ALIGNMENT */
+        /* ORDER CARD - SMALLER SIZE */
         .order-item {
             background: rgba(0,0,0,0.4);
-            border-radius: 16px;
-            padding: 14px;
-            margin-bottom: 12px;
+            border-radius: 14px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
             border: 1px solid rgba(255,255,255,0.05);
             transition: all 0.2s;
         }
@@ -196,52 +196,52 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
+            gap: 6px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .order-plan {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 700;
             color: var(--cyan);
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
         }
         .status-badge {
             display: inline-block;
-            padding: 4px 10px;
+            padding: 3px 8px;
             border-radius: 40px;
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             font-weight: 700;
         }
         .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
         .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
         
-        /* INFO GRID - 2 COLUMNS for better alignment */
+        /* INFO GRID - 2 COLUMNS smaller padding */
         .info-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 12px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
         .info-item {
             background: rgba(0,0,0,0.25);
-            border-radius: 12px;
-            padding: 8px 10px;
+            border-radius: 10px;
+            padding: 6px 8px;
         }
         .info-label {
-            font-size: 0.55rem;
+            font-size: 0.5rem;
             color: #64748b;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
         }
         .info-value {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             font-weight: 600;
             color: var(--text-primary);
             word-break: break-word;
@@ -250,37 +250,37 @@
         
         .waiting-badge {
             background: rgba(245,158,11,0.15);
-            padding: 8px 12px;
+            padding: 5px 10px;
             border-radius: 20px;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             color: #fbbf24;
-            margin-top: 8px;
+            margin-top: 6px;
             text-align: center;
         }
         .countdown-timer {
             background: rgba(0,212,255,0.08);
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 30px;
-            margin-top: 10px;
+            margin-top: 8px;
             text-align: center;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-family: 'Space Grotesk', monospace;
         }
         .screenshot-btn {
             background: rgba(0,212,255,0.15);
             border: 1px solid rgba(0,212,255,0.3);
-            padding: 6px 12px;
+            padding: 5px 10px;
             border-radius: 30px;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             color: var(--cyan);
             transition: all 0.2s;
             width: 100%;
             justify-content: center;
-            margin-top: 8px;
+            margin-top: 6px;
         }
         .screenshot-btn:hover {
             background: var(--cyan);
@@ -544,13 +544,11 @@
         <span class="close-history" id="closeHistoryBtn">&times;</span>
     </div>
     
-    <!-- Auto Refresh Status -->
     <div class="auto-refresh-status">
         <i class="fas fa-sync-alt"></i>
         <span id="autoRefreshTimer">Auto refresh: 30s</span>
     </div>
     
-    <!-- Track Order Card -->
     <div class="panel-track-card">
         <div class="panel-track-title"><i class="fas fa-search"></i> Track Your Order</div>
         <div class="panel-track-input-group">
@@ -582,7 +580,7 @@
     </div>
 </div>
 
-<!-- Screenshot Modal -->
+<!-- Screenshot Modal for User -->
 <div id="screenshotModal" class="image-modal" onclick="closeModal()">
     <div class="image-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -671,6 +669,7 @@
         }, 1000);
     }
 
+    // Open Screenshot - Show checking message for user
     function openScreenshot(url) {
         const modal = document.getElementById('screenshotModal');
         const img = document.getElementById('modalImage');
@@ -798,7 +797,7 @@
             let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ", waitingMsg = "";
             if (order.status === "Approved") { statusClass = "status-approved"; statusText = "✅ အတည်ပြုပြီး"; }
             if (order.status === "Rejected") { statusClass = "status-rejected"; statusText = "❌ ပယ်ဖျက်ခံရ"; }
-            if (order.status === "Pending") waitingMsg = `<div class="waiting-badge" style="background:rgba(245,158,11,0.15); padding:8px 12px; border-radius:20px; font-size:0.65rem; color:#fbbf24; margin-top:8px; text-align:center;">⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ</div>`;
+            if (order.status === "Pending") waitingMsg = `<div class="waiting-badge" style="background:rgba(245,158,11,0.15); padding:5px 10px; border-radius:20px; font-size:0.6rem; color:#fbbf24; margin-top:6px; text-align:center;">⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ</div>`;
             const dateStr = new Date(order.created_at).toLocaleString();
             let countdownHtml = "";
             if (order.status === "Approved" && order.activated_at) {
@@ -832,7 +831,7 @@
                     </div>
                     ${waitingMsg}
                     ${countdownHtml}
-                    ${order.slip_url ? `<button class="screenshot-btn" onclick="openScreenshot('${order.slip_url}')"><i class="fas fa-image"></i> View Payment Slip</button>` : ''}
+                    ${order.slip_url ? `<button class="screenshot-btn" onclick="openScreenshot('${order.slip_url}')"><i class="fas fa-image"></i> View Slip</button>` : ''}
                 </div>
             `;
         }
