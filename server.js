@@ -10,19 +10,26 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// ============================================
+// MIDDLEWARE
+// ============================================
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from root directory
 app.use(express.static(__dirname));
 
-// Ensure uploads directory exists
+// Serve uploads folder
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
 }
+app.use('/uploads', express.static('uploads'));
 
-// File upload configuration
+// ============================================
+// FILE UPLOAD CONFIGURATION
+// ============================================
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'uploads/');
@@ -34,7 +41,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const allowedTypes = /jpeg|jpg|png|gif/;
         const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -48,7 +55,26 @@ const upload = multer({
 });
 
 // ============================================
-// API Routes
+// STATIC HTML ROUTES (အရေးကြီးဆုံး)
+// ============================================
+
+// Home page - serve index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Index page
+app.get('/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Admin page
+app.get('/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+// ============================================
+// API ROUTES
 // ============================================
 
 // Health check
@@ -73,7 +99,7 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
         
         const orderId = Date.now();
         
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from('orders')
             .insert([{
                 id: orderId,
@@ -97,7 +123,7 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
     }
 });
 
-// Get orders by phone number (for users)
+// Get orders by phone number
 app.get('/api/orders/:phone', async (req, res) => {
     try {
         const { phone } = req.params;
@@ -117,7 +143,7 @@ app.get('/api/orders/:phone', async (req, res) => {
     }
 });
 
-// Get all orders (for admin)
+// Get all orders (admin)
 app.get('/api/admin/orders', async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
@@ -134,12 +160,12 @@ app.get('/api/admin/orders', async (req, res) => {
     }
 });
 
-// Approve order (admin)
+// Approve order
 app.put('/api/admin/orders/:id/approve', async (req, res) => {
     try {
         const { id } = req.params;
         
-        const { data, error } = await supabaseAdmin
+        const { error } = await supabaseAdmin
             .from('orders')
             .update({ 
                 status: 'Approved', 
@@ -156,12 +182,12 @@ app.put('/api/admin/orders/:id/approve', async (req, res) => {
     }
 });
 
-// Reject order (admin)
+// Reject order
 app.put('/api/admin/orders/:id/reject', async (req, res) => {
     try {
         const { id } = req.params;
         
-        const { data, error } = await supabaseAdmin
+        const { error } = await supabaseAdmin
             .from('orders')
             .update({ status: 'Rejected' })
             .eq('id', id);
@@ -175,12 +201,12 @@ app.put('/api/admin/orders/:id/reject', async (req, res) => {
     }
 });
 
-// Delete order (admin)
+// Delete order
 app.delete('/api/admin/orders/:id', async (req, res) => {
     try {
         const { id } = req.params;
         
-        const { data, error } = await supabaseAdmin
+        const { error } = await supabaseAdmin
             .from('orders')
             .delete()
             .eq('id', id);
@@ -194,7 +220,7 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
     }
 });
 
-// Admin login (simple password check)
+// Admin login
 app.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
     if (password === process.env.ADMIN_PASSWORD) {
@@ -204,10 +230,9 @@ app.post('/api/admin/login', (req, res) => {
     }
 });
 
-// Serve static files
-app.use('/uploads', express.static('uploads'));
-
-// Start server
+// ============================================
+// START SERVER
+// ============================================
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`📱 User Store: http://localhost:${PORT}/index.html`);
