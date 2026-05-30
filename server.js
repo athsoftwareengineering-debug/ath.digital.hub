@@ -10,9 +10,7 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ============================================
-// MIDDLEWARE
-// ============================================
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -25,9 +23,7 @@ if (!fs.existsSync(uploadsDir)) {
 }
 app.use('/uploads', express.static('uploads'));
 
-// ============================================
-// FILE UPLOAD CONFIGURATION
-// ============================================
+// File upload configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'uploads/');
@@ -52,9 +48,7 @@ const upload = multer({
     }
 });
 
-// ============================================
-// STATIC HTML ROUTES
-// ============================================
+// Static HTML routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -64,10 +58,6 @@ app.get('/index.html', (req, res) => {
 app.get('/admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
 });
-
-// ============================================
-// API ROUTES
-// ============================================
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -81,8 +71,10 @@ app.get('/api/orders/:phone', async (req, res) => {
     try {
         const { phone } = req.params;
         
+        console.log(`📞 API /api/orders/${phone} called`);
+        
         if (!phone) {
-            return res.status(400).json({ success: false, error: 'Phone number is required' });
+            return res.status(400).json({ error: 'Phone number is required' });
         }
         
         const { data, error } = await supabase
@@ -93,13 +85,16 @@ app.get('/api/orders/:phone', async (req, res) => {
         
         if (error) {
             console.error('Supabase error:', error);
-            return res.status(500).json({ success: false, error: error.message });
+            return res.status(500).json({ error: error.message });
         }
         
-        res.json({ success: true, orders: data || [] });
+        console.log(`✅ Found ${data ? data.length : 0} orders for ${phone}`);
+        // Return format that frontend expects
+        res.json({ orders: data || [] });
+        
     } catch (error) {
         console.error('Error fetching orders:', error);
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ error: error.message });
     }
 });
 
@@ -115,23 +110,25 @@ app.get('/api/admin/orders', async (req, res) => {
         
         if (error) {
             console.error('Supabase admin error:', error);
-            return res.status(500).json({ success: false, error: error.message });
+            return res.status(500).json({ error: error.message });
         }
         
-        res.json({ success: true, orders: data || [] });
+        res.json({ orders: data || [] });
     } catch (error) {
         console.error('Error fetching all orders:', error);
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ error: error.message });
     }
 });
 
 // ============================================
-// CREATE ORDER (with image upload)
+// CREATE ORDER
 // ============================================
 app.post('/api/orders', upload.single('slip'), async (req, res) => {
     try {
         const { phone, plan, price } = req.body;
         const slipFile = req.file;
+        
+        console.log(`📝 Creating order: phone=${phone}, plan=${plan}, price=${price}`);
         
         if (!phone || !plan || !price) {
             return res.status(400).json({ success: false, error: 'Missing required fields' });
@@ -160,6 +157,7 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
             return res.status(500).json({ success: false, error: error.message });
         }
         
+        console.log(`✅ Order created: ${orderId}`);
         res.json({ 
             success: true, 
             orderId: orderId,
