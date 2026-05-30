@@ -327,4 +327,192 @@
   // Submit order to backend
   window.submitOrder = async () => {
     if (!currentUser) return showToast("Please login first", true);
-    if (!
+    if (!selectedPlan) return showToast("Select a plan", true);
+    const phone = document.getElementById('orderPhone').value;
+    if (!/^(09|\+?959)\d{7,9}$/.test(phone)) return showToast("Valid phone number required", true);
+    const file = document.getElementById('screenshotInput').files[0];
+    if (!file) return showToast("Upload payment screenshot", true);
+    
+    showToast("Submitting order...");
+    
+    try {
+      // 1. Create order in backend
+      const orderRes = await fetch('/api/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          packageName: selectedPlan.name,
+          price: selectedPlan.price,
+          phone: phone,
+          note: document.getElementById('orderNote').value || '',
+          userId: currentUser.uid,
+          userEmail: currentUser.email,
+          userName: currentUser.displayName || currentUser.email.split('@')[0]
+        })
+      });
+      const orderData = await orderRes.json();
+      if (!orderData.success) throw new Error(orderData.message);
+      
+      // 2. Upload screenshot
+      const formData = new FormData();
+      formData.append('orderId', orderData.orderId);
+      formData.append('screenshot', file);
+      formData.append('note', document.getElementById('orderNote').value);
+      
+      const paymentRes = await fetch('/api/submit-payment', {
+        method: 'POST',
+        body: formData
+      });
+      const paymentData = await paymentRes.json();
+      
+      if (paymentData.success) {
+        showToast("✅ Order submitted! Admin will verify.");
+        cancelOrder();
+      } else {
+        throw new Error(paymentData.message);
+      }
+    } catch(err) {
+      showToast(err.message, true);
+    }
+  };
+
+  // Track orders from backend
+  window.trackOrders = async () => {
+    const phone = document.getElementById('trackPhone').value;
+    if (!phone) return showToast("Enter phone number", true);
+    const resultDiv = document.getElementById('trackResult');
+    resultDiv.innerHTML = '<div style="text-align:center;"><i class="fas fa-spinner fa-pulse"></i> Loading...</div>';
+    try {
+      const res = await fetch(`/api/track?phone=${encodeURIComponent(phone)}`);
+      const data = await res.json();
+      if (!data.orders || data.orders.length === 0) {
+        resultDiv.innerHTML = '<div style="text-align:center;padding:1rem;">No orders found.</div>';
+        return;
+      }
+      let html = '';
+      data.orders.forEach(o => {
+        let statusClass = 'status-pending', statusText = '⏳ Pending';
+        if (o.status === 'payment_received') { statusClass = 'status-paid'; statusText = '💰 Payment Received'; }
+        else if (o.status === 'approved') { statusClass = 'status-approved'; statusText = '✅ Active'; }
+        html += `<div class="order-card"><div style="display:flex;justify-content:space-between;"><b>${o.packageName}</b><span class="status-badge ${statusClass}">${statusText}</span></div><div>💰 ${o.price?.toLocaleString()} KS</div><div style="font-size:0.65rem;">📅 ${new Date(o.createdAt).toLocaleDateString()}</div></div>`;
+      });
+      resultDiv.innerHTML = html;
+    } catch(err) { resultDiv.innerHTML = `<div style="color:red;">${err.message}</div>`; }
+  };
+
+  // Tab switching
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const tabId = tab.getAttribute('data-tab');
+      document.querySelectorAll('#profileTab, #plansTab, #trackTab, #settingsTab').forEach(c => c.classList.add('hidden'));
+      document.getElementById(`${tabId}Tab`).classList.remove('hidden');
+    });
+  });
+
+  // Auth functions
+  window.handleRegister = async () => {
+    const name = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value;
+    const pass = document.getElementById('regPassword').value;
+    const phone = document.getElementById('regPhone').value;
+    if (!name || !email || !pass) return showToast("Fill all fields", true);
+    if (pass.length < 6) return showToast("Password min 6 characters", true);
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+      await setDoc(doc(db, "users", userCred.user.uid), {
+        name, email, phone: phone || "", address: "", createdAt: new Date().toISOString()
+      });
+      showToast("Account created! Please login.");
+      document.getElementById('switchAuthText').click();
+    } catch(e) { showToast(e.message, true); }
+  };
+
+  window.loginWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const userRef = doc(db, "users", result.user.uid);
+      if (!(await getDoc(userRef)).exists()) {
+        await setDoc(userRef, {
+          name: result.user.displayName || result.user.email.split('@')[0],
+          email: result.user.email,
+          phone: "", address: "", createdAt: new Date().toISOString()
+        });
+      }
+      showToast("Google login successful!");
+    } catch(e) { showToast(e.message, true); }
+  };
+
+  window.handleEmailLogin = async () => {
+    const email = document.getElementById('loginEmail').value;
+    const pass = document.getElementById('loginPassword').value;
+    if (!email || !pass) return showToast("Enter email & password", true);
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+      showToast("Login successful!");
+    } catch(e) { showToast(e.message, true); }
+  };
+
+  window.logout = async () => { await signOut(auth); showToast("Logged out"); };
+
+  window.updateProfile = async () => {
+    if (!currentUser) return;
+    await setDoc(doc(db, "users", currentUser.uid), {
+      phone: document.getElementById('profilePhone').value,
+      address: document.getElementById('profileAddress').value
+    }, { merge: true });
+    showToast("Profile updated!");
+    loadProfile();
+  };
+
+  window.changePassword = async () => {
+    if (!currentUser) return;
+    const newPass = document.getElementById('newPassword').value;
+    const confirmPass = document.getElementById('confirmPassword').value;
+    if (!newPass || newPass.length < 6) return showToast("Password min 6 chars", true);
+    if (newPass !== confirmPass) return showToast("Passwords do not match", true);
+    try {
+      await updatePassword(currentUser, newPass);
+      showToast("Password changed!");
+      document.getElementById('newPassword').value = '';
+      document.getElementById('confirmPassword').value = '';
+    } catch(e) { showToast(e.message, true); }
+  };
+
+  async function loadProfile() {
+    if (!currentUser) return;
+    const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+    const data = userDoc.data() || {};
+    document.getElementById('profileName').value = data.name || '';
+    document.getElementById('profilePhone').value = data.phone || '';
+    document.getElementById('profileAddress').value = data.address || '';
+    document.getElementById('userNameDisplay').innerText = (data.name || currentUser.email).split(' ')[0];
+    document.getElementById('userEmailDisplay').innerText = currentUser.email;
+    document.getElementById('userAvatar').innerHTML = ((data.name || currentUser.email).charAt(0)).toUpperCase();
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if (user) {
+      document.getElementById('loginSection').classList.add('hidden');
+      document.getElementById('dashboardSection').classList.remove('hidden');
+      await loadProfile();
+      renderPlans();
+    } else {
+      document.getElementById('loginSection').classList.remove('hidden');
+      document.getElementById('dashboardSection').classList.add('hidden');
+      selectedPlan = null;
+    }
+  });
+
+  let isLoginMode = true;
+  document.getElementById('switchAuthText').addEventListener('click', () => {
+    isLoginMode = !isLoginMode;
+    document.getElementById('loginForm').classList.toggle('hidden', !isLoginMode);
+    document.getElementById('registerForm').classList.toggle('hidden', isLoginMode);
+    document.getElementById('switchAuthText').innerHTML = isLoginMode ? "Don't have account? <span style='color:#00ccff;'>Register</span>" : "Already have account? <span style='color:#00ccff;'>Sign In</span>";
+  });
+</script>
+</body>
+</html>
