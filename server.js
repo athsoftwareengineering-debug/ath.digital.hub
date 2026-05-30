@@ -1,219 +1,215 @@
+// server.js - Express Server
 const express = require('express');
 const path = require('path');
+const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
+const { supabase, supabaseAdmin } = require('./database');
 require('dotenv').config();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(helmet({ contentSecurityPolicy: false }));
-app.disable('x-powered-by');
-app.use(morgan('combined'));
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(__dirname));
 
-// Static folders
-const publicDir = path.join(__dirname, 'public');
-if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
-app.use(express.static(publicDir));
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
+}
 
-const uploadDir = path.join(__dirname, 'temp_uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-app.use('/temp_uploads', express.static(uploadDir));
-
-// Multer setup
+// File upload configuration
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + '.jpg')
-});
-const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
-
-// Admin password
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '104194@ath';
-
-// In-memory storage
-let orders = [];
-let orderIdCounter = 1;
-
-// ============ PUBLIC API ============
-
-// Create order
-app.post('/api/order', (req, res) => {
-  const { packageName, price, phone, note, userId, userEmail, userName } = req.body;
-  
-  if (!packageName || !phone) {
-    return res.status(400).json({ success: false, message: 'Missing required fields' });
-  }
-  
-  const newOrder = {
-    id: orderIdCounter++,
-    orderId: 'ORD' + Date.now(),
-    packageName,
-    price: price || 0,
-    phone,
-    note: note || '',
-    userId: userId || '',
-    userEmail: userEmail || '',
-    userName: userName || '',
-    status: 'pending_payment',
-    screenshotPath: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  
-  orders.unshift(newOrder);
-  console.log('✅ Order created:', newOrder.orderId, 'Phone:', phone);
-  
-  res.json({ success: true, orderId: newOrder.orderId });
-});
-
-// Submit payment with screenshot
-app.post('/api/submit-payment', upload.single('screenshot'), (req, res) => {
-  const { orderId, note } = req.body;
-  
-  if (!orderId) {
-    return res.status(400).json({ success: false, message: 'Order ID required' });
-  }
-  
-  if (!req.file) {
-    return res.status(400).json({ success: false, message: 'Screenshot required' });
-  }
-  
-  const order = orders.find(o => o.orderId === orderId);
-  if (!order) {
-    return res.status(404).json({ success: false, message: 'Order not found' });
-  }
-  
-  order.screenshotPath = `/temp_uploads/${req.file.filename}`;
-  order.status = 'payment_received';
-  if (note) order.note = note;
-  order.updatedAt = new Date().toISOString();
-  
-  console.log('💰 Payment received for:', order.orderId, 'Phone:', order.phone);
-  
-  res.json({ success: true, message: 'Payment submitted successfully' });
-});
-
-// Track orders by phone
-app.get('/api/track', (req, res) => {
-  const phone = req.query.phone;
-  if (!phone) return res.json({ success: true, orders: [] });
-  
-  const userOrders = orders.filter(o => o.phone === phone);
-  res.json({ success: true, orders: userOrders });
-});
-
-// Get user's own orders
-app.get('/api/my-orders', (req, res) => {
-  const userId = req.query.userId;
-  if (!userId) return res.json({ success: true, orders: [] });
-  
-  const userOrders = orders.filter(o => o.userId === userId);
-  res.json({ success: true, orders: userOrders });
-});
-
-// ============ ADMIN API ============
-
-// Admin login
-app.post('/api/admin/login', (req, res) => {
-  const { password } = req.body;
-  if (password === ADMIN_PASSWORD) {
-    res.json({ success: true, token: 'admin-token' });
-  } else {
-    res.status(401).json({ success: false, message: 'Invalid password' });
-  }
-});
-
-// Get all orders (admin)
-app.get('/api/admin/orders', (req, res) => {
-  const token = req.headers['x-admin-auth'];
-  if (token !== 'admin-token') {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
-  }
-  
-  const stats = {
-    total: orders.length,
-    pending: orders.filter(o => o.status === 'pending_payment').length,
-    paid: orders.filter(o => o.status === 'payment_received').length,
-    approved: orders.filter(o => o.status === 'approved').length,
-    rejected: orders.filter(o => o.status === 'rejected').length,
-    expired: orders.filter(o => o.status === 'expired').length,
-    revenue: orders.filter(o => o.status === 'approved').reduce((sum, o) => sum + (o.price || 0), 0)
-  };
-  
-  res.json({ success: true, orders, stats });
-});
-
-// Update order status
-app.post('/api/admin/update-order', (req, res) => {
-  const token = req.headers['x-admin-auth'];
-  if (token !== 'admin-token') {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
-  }
-  
-  const { orderId, status, rejectReason } = req.body;
-  const order = orders.find(o => o.id === orderId);
-  
-  if (order) {
-    order.status = status;
-    if (rejectReason) order.rejectReason = rejectReason;
-    if (status === 'approved') {
-      order.startDate = new Date().toISOString();
-      order.endDate = new Date(Date.now() + 30 * 86400000).toISOString();
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
+        cb(null, uniqueName);
     }
-    order.updatedAt = new Date().toISOString();
-    console.log(`📦 Order #${orderId} status updated to: ${status}`);
-  }
-  
-  res.json({ success: true });
+});
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = /jpeg|jpg|png|gif/;
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedTypes.test(file.mimetype);
+        if (mimetype && extname) {
+            return cb(null, true);
+        } else {
+            cb(new Error('Only images are allowed'));
+        }
+    }
 });
 
-// Delete order
-app.post('/api/admin/delete-order', (req, res) => {
-  const token = req.headers['x-admin-auth'];
-  if (token !== 'admin-token') {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
-  }
-  
-  const { orderId } = req.body;
-  const order = orders.find(o => o.id === orderId);
-  
-  if (order && order.screenshotPath) {
-    const filePath = path.join(__dirname, order.screenshotPath);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-  }
-  
-  orders = orders.filter(o => o.id !== orderId);
-  console.log(`🗑️ Order #${orderId} deleted`);
-  
-  res.json({ success: true });
+// ============================================
+// API Routes
+// ============================================
+
+// Health check
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ============ FRONTEND ROUTES ============
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(publicDir, 'admin.html'));
+// Create new order (with image upload)
+app.post('/api/orders', upload.single('slip'), async (req, res) => {
+    try {
+        const { phone, plan, price } = req.body;
+        const slipFile = req.file;
+        
+        if (!phone || !plan || !price) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+        
+        let slipUrl = null;
+        if (slipFile) {
+            slipUrl = `/uploads/${slipFile.filename}`;
+        }
+        
+        const orderId = Date.now();
+        
+        const { data, error } = await supabase
+            .from('orders')
+            .insert([{
+                id: orderId,
+                phone: phone,
+                plan: plan,
+                price: parseInt(price),
+                status: 'Pending',
+                slip_url: slipUrl
+            }]);
+        
+        if (error) throw error;
+        
+        res.json({ 
+            success: true, 
+            orderId: orderId,
+            message: 'Order created successfully'
+        });
+    } catch (error) {
+        console.error('Error creating order:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(publicDir, 'index.html'));
+// Get orders by phone number (for users)
+app.get('/api/orders/:phone', async (req, res) => {
+    try {
+        const { phone } = req.params;
+        
+        const { data, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('phone', phone)
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        res.json({ success: true, orders: data });
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// ============ START SERVER ============
-const PORT = process.env.PORT || 10000;
+// Get all orders (for admin)
+app.get('/api/admin/orders', async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        res.json({ success: true, orders: data });
+    } catch (error) {
+        console.error('Error fetching all orders:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Approve order (admin)
+app.put('/api/admin/orders/:id/approve', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const { data, error } = await supabaseAdmin
+            .from('orders')
+            .update({ 
+                status: 'Approved', 
+                activated_at: new Date().toISOString() 
+            })
+            .eq('id', id);
+        
+        if (error) throw error;
+        
+        res.json({ success: true, message: 'Order approved successfully' });
+    } catch (error) {
+        console.error('Error approving order:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Reject order (admin)
+app.put('/api/admin/orders/:id/reject', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const { data, error } = await supabaseAdmin
+            .from('orders')
+            .update({ status: 'Rejected' })
+            .eq('id', id);
+        
+        if (error) throw error;
+        
+        res.json({ success: true, message: 'Order rejected successfully' });
+    } catch (error) {
+        console.error('Error rejecting order:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete order (admin)
+app.delete('/api/admin/orders/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const { data, error } = await supabaseAdmin
+            .from('orders')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+        
+        res.json({ success: true, message: 'Order deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting order:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Admin login (simple password check)
+app.post('/api/admin/login', (req, res) => {
+    const { password } = req.body;
+    if (password === process.env.ADMIN_PASSWORD) {
+        res.json({ success: true, message: 'Login successful' });
+    } else {
+        res.status(401).json({ success: false, message: 'Invalid password' });
+    }
+});
+
+// Serve static files
+app.use('/uploads', express.static('uploads'));
+
+// Start server
 app.listen(PORT, () => {
-  console.log(`
-╔══════════════════════════════════════════════════════╗
-║     🚀 MYTEL DATA SERVICE - SERVER STARTED          ║
-╠══════════════════════════════════════════════════════╣
-║  📱 User Dashboard: http://localhost:${PORT}/         ║
-║  🔧 Admin Panel:    http://localhost:${PORT}/admin    ║
-║  🔑 Admin Password: ${ADMIN_PASSWORD}                  ║
-║  💾 Storage:        In-Memory (temp_uploads/)        ║
-╚══════════════════════════════════════════════════════╝
-  `);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`📱 User Store: http://localhost:${PORT}/index.html`);
+    console.log(`👨‍💼 Admin Panel: http://localhost:${PORT}/admin.html`);
 });
