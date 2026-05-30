@@ -22,6 +22,8 @@
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
             --glass-edge: rgba(0, 212, 255, 0.25);
+            --neon-green: #22c55e;
+            --neon-glow: rgba(34, 197, 94, 0.4);
         }
         body {
             background: var(--bg-deep);
@@ -93,24 +95,66 @@
         @media (min-width: 768px) { .hero h1 { font-size: 2.5rem; } }
         .hero p { color: var(--text-secondary); font-size: 0.8rem; margin-top: 8px; }
         
-        /* TRACK CARD REMOVED */
-        
+        /* ENHANCED PRODUCT CARDS - NEON GREEN GLOW */
         .pack-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 16px;
+            gap: 20px;
             margin: 32px 0 40px;
         }
+        
         .pack-card {
-            background: linear-gradient(145deg, rgba(18,22,35,0.85), rgba(10,12,21,0.9));
+            background: linear-gradient(145deg, rgba(18,22,35,0.9), rgba(10,12,21,0.95));
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(34, 197, 94, 0.2);
             border-radius: 1.5rem;
             padding: 1.2rem;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
             position: relative;
+            overflow: hidden;
         }
-        .pack-card:hover { transform: translateY(-5px); border-color: rgba(0,212,255,0.4); }
+        
+        /* Neon Green Glow Effect on Hover */
+        .pack-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(34, 197, 94, 0.7);
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3), 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+        
+        /* Top Border Neon Light */
+        .pack-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .pack-card:hover::before {
+            opacity: 1;
+        }
+        
+        /* Left Border Glow */
+        .pack-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20%;
+            bottom: 20%;
+            width: 2px;
+            background: linear-gradient(180deg, transparent, var(--neon-green), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .pack-card:hover::after {
+            opacity: 0.6;
+        }
+        
         .featured-flag {
             position: absolute;
             top: -10px;
@@ -121,33 +165,82 @@
             font-size: 0.6rem;
             font-weight: 800;
             color: white;
+            box-shadow: 0 0 10px rgba(139,92,246,0.5);
+            z-index: 1;
         }
-        .pack-tier { font-size: 0.7rem; text-transform: uppercase; color: var(--cyan); font-weight: 600; }
-        .pack-price { font-family: 'Space Grotesk', monospace; font-size: 1.6rem; font-weight: 800; margin: 8px 0 12px; }
+        @media (min-width: 768px) { .featured-flag { padding: 5px 16px; font-size: 0.7rem; } }
+        
+        .pack-tier { 
+            font-size: 0.7rem; 
+            text-transform: uppercase; 
+            color: var(--neon-green); 
+            font-weight: 600; 
+            letter-spacing: 1px;
+        }
+        @media (min-width: 768px) { .pack-tier { font-size: 0.8rem; } }
+        
+        .pack-price { 
+            font-family: 'Space Grotesk', monospace; 
+            font-size: 1.6rem; 
+            font-weight: 800; 
+            margin: 8px 0 12px;
+            color: var(--text-primary);
+        }
+        @media (min-width: 768px) { .pack-price { font-size: 2rem; } }
         .pack-price small { font-size: 0.8rem; font-weight: 400; color: var(--text-secondary); }
+        
         .feature-list { list-style: none; margin: 12px 0 20px; }
-        .feature-list li { margin-bottom: 10px; font-size: 0.75rem; display: flex; align-items: center; gap: 8px; color: #cbd5e1; }
-        .feature-list li i { color: var(--cyan); width: 20px; }
+        .feature-list li { 
+            margin-bottom: 10px; 
+            font-size: 0.75rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            color: #cbd5e1;
+        }
+        @media (min-width: 768px) { .feature-list li { font-size: 0.85rem; } }
+        .feature-list li i { color: var(--neon-green); width: 20px; font-size: 0.8rem; }
+        
         .buy-btn {
             width: 100%;
             padding: 10px 0;
             border: none;
             border-radius: 60px;
             font-weight: 700;
-            background: white;
+            background: linear-gradient(135deg, #ffffff, #e2e8f0);
             color: #0f172a;
             cursor: pointer;
             font-size: 0.8rem;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 1;
         }
-        .buy-btn.violet { background: linear-gradient(135deg, var(--violet), #a855f7); color: white; }
-        .buy-btn:hover { background: var(--cyan); transform: scale(0.98); color: #030712; }
+        @media (min-width: 768px) { .buy-btn { padding: 12px 0; font-size: 0.9rem; } }
+        
+        .buy-btn.violet { 
+            background: linear-gradient(135deg, #8b5cf6, #a855f7); 
+            color: white; 
+            box-shadow: 0 4px 15px rgba(139,92,246,0.3);
+        }
+        
+        .buy-btn:hover { 
+            background: linear-gradient(135deg, var(--neon-green), #15803d); 
+            transform: scale(0.98); 
+            color: white;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+        }
+        
+        .buy-btn.violet:hover {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            box-shadow: 0 0 15px rgba(139,92,246,0.5);
+        }
         
         .status-badge { display: inline-block; padding: 4px 10px; border-radius: 40px; font-size: 0.6rem; font-weight: 700; }
         .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
         .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
         
-        /* My Orders Panel - Without Search */
+        /* My Orders Panel */
         .history-panel {
             position: fixed;
             top: 0;
@@ -175,8 +268,6 @@
         .history-header h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; color: var(--cyan); }
         .close-history { font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
         .close-history:hover { color: var(--rose); }
-        
-        /* Filter Card REMOVED - No search input */
         
         .order-item {
             background: linear-gradient(145deg, rgba(18,22,35,0.9), rgba(10,12,21,0.95));
@@ -338,8 +429,6 @@
         <p>မြန်ဆန်သော Data & Voice Plan များ — VIP အတွေ့အကြုံ</p>
     </div>
     
-    <!-- TRACK CARD REMOVED -->
-    
     <div class="pack-grid">
         <div class="pack-card">
             <div class="pack-tier">TIER V1</div>
@@ -353,9 +442,9 @@
             <div class="feature-list"><div><i class="fas fa-tachometer-alt"></i> 40GB Ultra Data</div><div><i class="fas fa-phone-alt"></i> 250 On-Net Mins</div><div><i class="fas fa-globe"></i> 25 Any Net Mins</div></div>
             <button class="buy-btn" data-plan="VIP LEVEL - 2" data-price="20000">ဝယ်ယူမည်</button>
         </div>
-        <div class="pack-card" style="border-color:#8b5cf6;">
+        <div class="pack-card" style="border-color:rgba(34,197,94,0.3);">
             <div class="featured-flag">HOT 🔥 BEST VALUE</div>
-            <div class="pack-tier" style="color:#c4b5fd;">TIER V3</div>
+            <div class="pack-tier" style="color:#22c55e;">TIER V3</div>
             <div class="pack-price">25,000 <small>MMK</small></div>
             <div class="feature-list"><div><i class="fas fa-database"></i> 40GB High-Speed + Extra</div><div><i class="fas fa-phone-volume"></i> 1,400 On-Net Mins</div><div><i class="fas fa-comment-dots"></i> 8,000 SMS Unlimited</div></div>
             <button class="buy-btn violet" data-plan="VIP LEVEL - 3" data-price="25000">ဝယ်ယူမည်</button>
@@ -369,7 +458,7 @@
     </div>
 </div>
 
-<!-- My Orders Side Panel (No Search - Shows All Orders) -->
+<!-- My Orders Side Panel -->
 <div id="historyPanel" class="history-panel">
     <div class="history-header">
         <h3><i class="fas fa-list-ul"></i> ဝယ်ထားသမျှ အော်ဒါများ</h3>
@@ -447,7 +536,6 @@
         return res.json();
     }
 
-    // LOAD ALL ORDERS (Admin endpoint)
     async function loadAllOrders() {
         try {
             const res = await fetch(`${API_BASE}/api/admin/orders`);
@@ -531,7 +619,6 @@
         document.getElementById('historyPanel').classList.remove('open');
     }
 
-    // Form submit
     document.getElementById('orderForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const phone = document.getElementById('customerPhone').value.trim();
@@ -549,7 +636,6 @@
         }
     });
 
-    // Buy buttons
     document.querySelectorAll('.buy-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             selectedPlan = btn.dataset.plan;
@@ -558,21 +644,18 @@
         });
     });
     
-    // Modal close
     document.getElementById('closeModalBtn').addEventListener('click', () => document.getElementById('paymentModal').classList.remove('active'));
     window.addEventListener('click', (e) => { if (e.target === document.getElementById('paymentModal')) document.getElementById('paymentModal').classList.remove('active'); });
     
-    // My Orders panel
     document.getElementById('myOrdersBtn').addEventListener('click', openMyOrders);
     document.getElementById('closeHistoryBtn').addEventListener('click', closeHistory);
     
-    // Copy phone
     document.getElementById('clickablePhone').addEventListener('click', () => { 
         navigator.clipboard.writeText("09789999368"); 
         showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။"); 
     });
     
-    console.log("✅ App loaded - Track Order and Filter Orders removed");
+    console.log("✅ App loaded - Product Cards with Neon Green Glow");
 </script>
 </body>
 </html>
