@@ -82,7 +82,7 @@
         @media (min-width: 768px) { .hero h1 { font-size: 2.5rem; } }
         .hero p { color: var(--text-secondary); font-size: 0.8rem; margin-top: 8px; }
         
-        /* My Orders Panel with Track Order at Top */
+        /* My Orders Panel */
         .history-panel {
             position: fixed;
             top: 0;
@@ -110,6 +110,19 @@
         .history-header h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; color: var(--cyan); }
         .close-history { font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
         .close-history:hover { color: var(--rose); }
+        
+        /* Auto Refresh Status */
+        .auto-refresh-status {
+            background: rgba(0,212,255,0.08);
+            border-radius: 40px;
+            padding: 5px 12px;
+            font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+            justify-content: center;
+        }
         
         /* Track Order Card inside Panel */
         .panel-track-card {
@@ -164,29 +177,211 @@
         }
         .panel-track-result.show { display: block; }
         
+        /* ORDER CARD - IMPROVED ALIGNMENT */
         .order-item {
             background: rgba(0,0,0,0.4);
             border-radius: 16px;
-            padding: 12px;
+            padding: 14px;
             margin-bottom: 12px;
             border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.2s;
+        }
+        .order-item:hover {
+            border-color: rgba(0,212,255,0.2);
+            transform: translateX(3px);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .order-plan {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--cyan);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 700;
+        }
+        .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
+        .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        
+        /* INFO GRID - 2 COLUMNS for better alignment */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .info-item {
+            background: rgba(0,0,0,0.25);
+            border-radius: 12px;
+            padding: 8px 10px;
+        }
+        .info-label {
+            font-size: 0.55rem;
+            color: #64748b;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .info-value {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+        .info-value.price { color: var(--emerald); }
+        
+        .waiting-badge {
+            background: rgba(245,158,11,0.15);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            color: #fbbf24;
+            margin-top: 8px;
+            text-align: center;
         }
         .countdown-timer {
             background: rgba(0,212,255,0.08);
-            padding: 6px 12px;
+            padding: 8px 12px;
             border-radius: 30px;
             margin-top: 10px;
             text-align: center;
             font-size: 0.7rem;
             font-family: 'Space Grotesk', monospace;
         }
+        .screenshot-btn {
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--cyan);
+            transition: all 0.2s;
+            width: 100%;
+            justify-content: center;
+            margin-top: 8px;
+        }
+        .screenshot-btn:hover {
+            background: var(--cyan);
+            color: #030712;
+        }
         
-        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 40px; font-size: 0.6rem; font-weight: 700; }
-        .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
-        .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
-        .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        /* Product Cards */
+        .pack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 32px 0 40px;
+        }
+        .pack-card {
+            background: linear-gradient(145deg, #11131e, #0c0e16);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 24px;
+            padding: 1.2rem;
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .pack-card:hover { transform: translateY(-6px); border-color: rgba(34, 197, 94, 0.5); box-shadow: 0 0 20px rgba(34, 197, 94, 0.15); }
+        .featured-flag {
+            position: absolute;
+            top: -10px;
+            right: 16px;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: white;
+            z-index: 1;
+        }
+        .pack-tier { font-size: 0.7rem; text-transform: uppercase; font-weight: 600; letter-spacing: 1px; }
+        .pack-price { font-family: 'Space Grotesk', monospace; font-size: 1.6rem; font-weight: 800; margin: 8px 0 12px; }
+        .feature-list { list-style: none; margin: 12px 0 20px; }
+        .feature-list li { margin-bottom: 10px; font-size: 0.75rem; display: flex; align-items: center; gap: 8px; color: #cbd5e1; }
+        .feature-list li i { width: 20px; font-size: 0.8rem; }
+        .buy-btn {
+            width: 100%;
+            padding: 10px 0;
+            border: none;
+            border-radius: 60px;
+            font-weight: 700;
+            background: white;
+            color: #0f172a;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        .buy-btn:hover { background: var(--cyan); transform: scale(0.98); color: #030712; }
         
-        /* Screenshot Modal for User */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(3,7,18,0.94); backdrop-filter: blur(20px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: 0.25s; z-index: 2000;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-card {
+            background: linear-gradient(145deg, rgba(18,22,35,0.98), rgba(10,12,21,0.98));
+            border: 1px solid rgba(0,212,255,0.5);
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 480px;
+            padding: 1.2rem;
+            position: relative;
+        }
+        .modal-close { position: absolute; right: 16px; top: 12px; font-size: 1.5rem; cursor: pointer; }
+        .info-compact { background: rgba(0,0,0,0.45); border-radius: 1rem; padding: 12px; margin: 16px 0; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.08); }
+        .info-label { color: var(--text-secondary); font-size: 0.75rem; }
+        .info-value { font-weight: 600; background: rgba(6,182,212,0.12); padding: 4px 10px; border-radius: 40px; color: var(--cyan); font-size: 0.75rem; }
+        .phone-copy { cursor: pointer; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { font-size: 0.7rem; display: block; margin-bottom: 5px; color: var(--text-secondary); }
+        .form-control {
+            width: 100%;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid #2d3a5e;
+            border-radius: 60px;
+            padding: 10px 16px;
+            color: white;
+            font-size: 0.85rem;
+        }
+        .submit-btn { background: var(--emerald); width: 100%; padding: 12px; border-radius: 60px; font-weight: 800; cursor: pointer; margin-top: 6px; }
+        .footnote { font-size: 0.6rem; text-align: center; margin-top: 12px; color: #5b6e8c; }
+        .toast {
+            position: fixed; top: -80px; right: 16px;
+            background: var(--emerald); color: #030712;
+            padding: 12px 20px; border-radius: 60px;
+            font-weight: 700; z-index: 3000;
+            transition: top 0.3s;
+            font-size: 0.8rem;
+        }
+        .empty-msg { text-align: center; color: var(--text-secondary); padding: 20px; }
+        footer { margin-top: 40px; text-align: center; border-top: 1px solid var(--border-light); padding: 20px; font-size: 0.65rem; color: var(--text-secondary); }
+        
+        /* Screenshot Modal */
         .image-modal {
             position: fixed;
             top: 0;
@@ -273,99 +468,6 @@
             border-top: 1px solid rgba(0,212,255,0.1);
             margin-top: 10px;
         }
-        
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(3,7,18,0.94); backdrop-filter: blur(20px);
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; visibility: hidden; transition: 0.25s; z-index: 2000;
-        }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-card {
-            background: linear-gradient(145deg, rgba(18,22,35,0.98), rgba(10,12,21,0.98));
-            border: 1px solid rgba(0,212,255,0.5);
-            border-radius: 1.5rem;
-            width: 90%;
-            max-width: 480px;
-            padding: 1.2rem;
-            position: relative;
-        }
-        .modal-close { position: absolute; right: 16px; top: 12px; font-size: 1.5rem; cursor: pointer; }
-        .info-compact { background: rgba(0,0,0,0.45); border-radius: 1rem; padding: 12px; margin: 16px 0; }
-        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.08); }
-        .info-label { color: var(--text-secondary); font-size: 0.75rem; }
-        .info-value { font-weight: 600; background: rgba(6,182,212,0.12); padding: 4px 10px; border-radius: 40px; color: var(--cyan); font-size: 0.75rem; }
-        .phone-copy { cursor: pointer; }
-        .form-group { margin-bottom: 14px; }
-        .form-group label { font-size: 0.7rem; display: block; margin-bottom: 5px; color: var(--text-secondary); }
-        .form-control {
-            width: 100%;
-            background: rgba(0,0,0,0.55);
-            border: 1px solid #2d3a5e;
-            border-radius: 60px;
-            padding: 10px 16px;
-            color: white;
-            font-size: 0.85rem;
-        }
-        .submit-btn { background: var(--emerald); width: 100%; padding: 12px; border-radius: 60px; font-weight: 800; cursor: pointer; margin-top: 6px; }
-        .footnote { font-size: 0.6rem; text-align: center; margin-top: 12px; color: #5b6e8c; }
-        .toast {
-            position: fixed; top: -80px; right: 16px;
-            background: var(--emerald); color: #030712;
-            padding: 12px 20px; border-radius: 60px;
-            font-weight: 700; z-index: 3000;
-            transition: top 0.3s;
-            font-size: 0.8rem;
-        }
-        .empty-msg { text-align: center; color: var(--text-secondary); padding: 20px; }
-        footer { margin-top: 40px; text-align: center; border-top: 1px solid var(--border-light); padding: 20px; font-size: 0.65rem; color: var(--text-secondary); }
-        
-        .pack-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin: 32px 0 40px;
-        }
-        .pack-card {
-            background: linear-gradient(145deg, #11131e, #0c0e16);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(34, 197, 94, 0.2);
-            border-radius: 24px;
-            padding: 1.2rem;
-            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            position: relative;
-            overflow: hidden;
-        }
-        .pack-card:hover { transform: translateY(-6px); border-color: rgba(34, 197, 94, 0.5); box-shadow: 0 0 20px rgba(34, 197, 94, 0.15); }
-        .featured-flag {
-            position: absolute;
-            top: -10px;
-            right: 16px;
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 0.6rem;
-            font-weight: 800;
-            color: white;
-            z-index: 1;
-        }
-        .pack-tier { font-size: 0.7rem; text-transform: uppercase; font-weight: 600; letter-spacing: 1px; }
-        .pack-price { font-family: 'Space Grotesk', monospace; font-size: 1.6rem; font-weight: 800; margin: 8px 0 12px; }
-        .feature-list { list-style: none; margin: 12px 0 20px; }
-        .feature-list li { margin-bottom: 10px; font-size: 0.75rem; display: flex; align-items: center; gap: 8px; color: #cbd5e1; }
-        .feature-list li i { width: 20px; font-size: 0.8rem; }
-        .buy-btn {
-            width: 100%;
-            padding: 10px 0;
-            border: none;
-            border-radius: 60px;
-            font-weight: 700;
-            background: white;
-            color: #0f172a;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.2s;
-        }
-        .buy-btn:hover { background: var(--cyan); transform: scale(0.98); color: #030712; }
     </style>
 </head>
 <body>
@@ -435,14 +537,20 @@
     </div>
 </div>
 
-<!-- My Orders Side Panel with Track Order at Top -->
+<!-- My Orders Side Panel -->
 <div id="historyPanel" class="history-panel">
     <div class="history-header">
         <h3><i class="fas fa-list-ul"></i> ဝယ်ထားသမျှ အော်ဒါများ</h3>
         <span class="close-history" id="closeHistoryBtn">&times;</span>
     </div>
     
-    <!-- Track Order Card inside Panel -->
+    <!-- Auto Refresh Status -->
+    <div class="auto-refresh-status">
+        <i class="fas fa-sync-alt"></i>
+        <span id="autoRefreshTimer">Auto refresh: 30s</span>
+    </div>
+    
+    <!-- Track Order Card -->
     <div class="panel-track-card">
         <div class="panel-track-title"><i class="fas fa-search"></i> Track Your Order</div>
         <div class="panel-track-input-group">
@@ -474,7 +582,7 @@
     </div>
 </div>
 
-<!-- Screenshot Modal for User (with Checking Message) -->
+<!-- Screenshot Modal -->
 <div id="screenshotModal" class="image-modal" onclick="closeModal()">
     <div class="image-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -496,6 +604,38 @@
     let selectedPlan = "", selectedPrice = 0;
     let panelAutoHideTimer = null;
     let countdownIntervals = {};
+    let autoRefreshInterval = null;
+    let refreshCountdownInterval = null;
+    let refreshSecondsLeft = 30;
+
+    function updateRefreshTimer() {
+        const timerEl = document.getElementById('autoRefreshTimer');
+        if (timerEl) timerEl.innerHTML = `Auto refresh: ${refreshSecondsLeft}s`;
+    }
+
+    function startAutoRefresh() {
+        if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+        if (refreshCountdownInterval) clearInterval(refreshCountdownInterval);
+        refreshSecondsLeft = 30;
+        updateRefreshTimer();
+        refreshCountdownInterval = setInterval(() => {
+            refreshSecondsLeft--;
+            if (refreshSecondsLeft < 0) refreshSecondsLeft = 30;
+            updateRefreshTimer();
+        }, 1000);
+        autoRefreshInterval = setInterval(() => {
+            if (document.getElementById('historyPanel').classList.contains('open')) {
+                loadAllOrders();
+                refreshSecondsLeft = 30;
+                updateRefreshTimer();
+            }
+        }, 30000);
+    }
+
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+        if (refreshCountdownInterval) clearInterval(refreshCountdownInterval);
+    }
 
     function showToast(msg, isError = false) {
         const toast = document.getElementById('globalToast');
@@ -531,13 +671,11 @@
         }, 1000);
     }
 
-    // Open Screenshot for User with checking message
     function openScreenshot(url) {
         const modal = document.getElementById('screenshotModal');
         const img = document.getElementById('modalImage');
         const statusSpan = document.getElementById('checkingStatus');
         
-        // Show checking status message for user
         statusSpan.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> လူကြီးမင်း၏ အကောင့်နံပါတ်အား စစ်ဆေးပေးနေပါသည်။';
         
         if (url && url !== 'null' && url !== '') {
@@ -551,7 +689,6 @@
         }
         modal.classList.add('active');
         
-        // Change status after 3 seconds
         setTimeout(() => {
             if (document.getElementById('screenshotModal').classList.contains('active')) {
                 statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> စစ်ဆေးပြီးပါပြီ။';
@@ -566,7 +703,6 @@
 
     function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
 
-    // Panel Track Order Function
     async function panelTrackOrder() {
         if (panelAutoHideTimer) clearTimeout(panelAutoHideTimer);
         const phone = document.getElementById('panelTrackPhoneInput').value.trim();
@@ -603,7 +739,7 @@
                     <div style="font-size:0.7rem;">💰 ${order.price.toLocaleString()} KS</div>
                     <div style="font-size:0.6rem;">📅 ${dateStr}</div>
                     ${waitingMsg}
-                    ${order.slip_url ? `<div style="margin-top:6px;"><button class="screenshot-btn" onclick="openScreenshot('${order.slip_url}')" style="background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.3); padding:4px 10px; border-radius:20px; font-size:0.65rem; cursor:pointer; color:var(--cyan);"><i class="fas fa-image"></i> View Slip</button></div>` : ''}
+                    ${order.slip_url ? `<div style="margin-top:6px;"><button class="screenshot-btn" onclick="openScreenshot('${order.slip_url}')" style="background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.3); padding:4px 10px; border-radius:20px; font-size:0.65rem; cursor:pointer; color:var(--cyan); width:auto; display:inline-flex;"><i class="fas fa-image"></i> View Slip</button></div>` : ''}
                 </div>`;
             }
             html += `</div>`;
@@ -662,26 +798,41 @@
             let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ", waitingMsg = "";
             if (order.status === "Approved") { statusClass = "status-approved"; statusText = "✅ အတည်ပြုပြီး"; }
             if (order.status === "Rejected") { statusClass = "status-rejected"; statusText = "❌ ပယ်ဖျက်ခံရ"; }
-            if (order.status === "Pending") waitingMsg = `<div class="waiting-badge" style="background:rgba(245,158,11,0.15); padding:6px 12px; border-radius:20px; font-size:0.65rem; color:#fbbf24; margin-top:8px; text-align:center;">⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ</div>`;
+            if (order.status === "Pending") waitingMsg = `<div class="waiting-badge" style="background:rgba(245,158,11,0.15); padding:8px 12px; border-radius:20px; font-size:0.65rem; color:#fbbf24; margin-top:8px; text-align:center;">⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ</div>`;
             const dateStr = new Date(order.created_at).toLocaleString();
             let countdownHtml = "";
             if (order.status === "Approved" && order.activated_at) {
                 countdownHtml = `<div class="countdown-timer" id="countdown-${order.id}"><i class="fas fa-calendar-check"></i> ကျန်ရက်: Calculating...</div>`;
                 setTimeout(() => startCountdown(order.id, order.activated_at), 100);
             }
+            
             html += `
                 <div class="order-item">
-                    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; margin-bottom:8px;">
-                        <strong style="color:var(--cyan);"><i class="fas fa-sim-card"></i> ${order.plan}</strong>
+                    <div class="order-header">
+                        <span class="order-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
                         <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
-                    <div style="font-size:0.75rem;">💰 ${order.price.toLocaleString()} KS</div>
-                    <div style="font-size:0.65rem; color:#6b7280;">📅 ${dateStr}</div>
-                    <div style="font-size:0.65rem; margin-top:4px;"><i class="fas fa-mobile-alt"></i> ဖုန်းနံပါတ်: ${order.phone}</div>
-                    <div style="font-size:0.6rem; margin-top:4px;">🆔 Order ID: ${order.id}</div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label"><i class="fas fa-mobile-alt"></i> Phone</div>
+                            <div class="info-value">${order.phone}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label"><i class="fas fa-coins"></i> Amount</div>
+                            <div class="info-value price">${order.price.toLocaleString()} KS</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label"><i class="fas fa-calendar"></i> Date</div>
+                            <div class="info-value" style="font-size:0.7rem;">${new Date(order.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label"><i class="fas fa-barcode"></i> Order ID</div>
+                            <div class="info-value" style="font-size:0.65rem; font-family:monospace;">${order.id}</div>
+                        </div>
+                    </div>
                     ${waitingMsg}
                     ${countdownHtml}
-                    ${order.slip_url ? `<div style="margin-top:8px;"><button class="screenshot-btn" onclick="openScreenshot('${order.slip_url}')" style="background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.3); padding:5px 12px; border-radius:20px; font-size:0.65rem; cursor:pointer; color:var(--cyan);"><i class="fas fa-image"></i> View Slip</button></div>` : ''}
+                    ${order.slip_url ? `<button class="screenshot-btn" onclick="openScreenshot('${order.slip_url}')"><i class="fas fa-image"></i> View Payment Slip</button>` : ''}
                 </div>
             `;
         }
@@ -691,11 +842,16 @@
     function openMyOrders() {
         document.getElementById('historyPanel').classList.add('open');
         loadAllOrders();
+        startAutoRefresh();
         document.getElementById('panelTrackResult').classList.remove('show');
         document.getElementById('panelTrackResult').innerHTML = '';
         document.getElementById('panelTrackPhoneInput').value = '';
     }
-    function closeHistory() { document.getElementById('historyPanel').classList.remove('open'); }
+    
+    function closeHistory() { 
+        document.getElementById('historyPanel').classList.remove('open');
+        stopAutoRefresh();
+    }
 
     document.getElementById('orderForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -708,7 +864,9 @@
             showToast(`✅ အော်ဒါအောင်မြင်ပါသည်။ Order ID: ${result.orderId}`);
             document.getElementById('paymentModal').classList.remove('active');
             document.getElementById('orderForm').reset();
-            loadAllOrders();
+            if (document.getElementById('historyPanel').classList.contains('open')) {
+                loadAllOrders();
+            }
         } else {
             showToast(result.error || 'အော်ဒါတင်ရာတွင် အမှားရှိပါသည်', true);
         }
