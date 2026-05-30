@@ -175,16 +175,18 @@
         .panel-track-result.show { display: block; }
         
         .order-item {
-            background: rgba(0,0,0,0.4);
+            background: linear-gradient(135deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
             border-radius: 14px;
             padding: 10px 12px;
             margin-bottom: 10px;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.2s;
+            border: 1px solid rgba(0,212,255,0.15);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
         .order-item:hover {
-            border-color: rgba(0,212,255,0.2);
+            border-color: rgba(0,212,255,0.4);
             transform: translateX(3px);
+            box-shadow: 0 4px 15px rgba(0,212,255,0.15), 0 2px 8px rgba(0,0,0,0.3);
         }
         
         .order-header {
@@ -195,7 +197,7 @@
             gap: 6px;
             margin-bottom: 8px;
             padding-bottom: 6px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(0,212,255,0.1);
         }
         .order-plan {
             font-size: 0.75rem;
@@ -355,7 +357,6 @@
         .empty-msg { text-align: center; color: var(--text-secondary); padding: 20px; }
         footer { margin-top: 40px; text-align: center; border-top: 1px solid var(--border-light); padding: 20px; font-size: 0.65rem; color: var(--text-secondary); }
         
-        /* Screenshot Modal - Simplified */
         .image-modal {
             position: fixed;
             top: 0;
@@ -637,7 +638,6 @@
         }, 1000);
     }
 
-    // Open Screenshot - Show checking message only
     function openScreenshot(url) {
         const modal = document.getElementById('screenshotModal');
         const img = document.getElementById('modalImage');
@@ -656,7 +656,6 @@
         }
         modal.classList.add('active');
         
-        // Change status to completed after 3 seconds (no extra message)
         setTimeout(() => {
             if (document.getElementById('screenshotModal').classList.contains('active')) {
                 statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> စစ်ဆေးပြီးပါပြီ။';
@@ -697,12 +696,17 @@
                 if (order.status === "Rejected") { statusClass = "status-rejected"; statusText = "❌ ပယ်ဖျက်ခံရ"; }
                 if (order.status === "Pending") waitingMsg = `<div style="font-size:0.65rem; margin-top:6px; color:#fbbf24;">⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ</div>`;
                 const dateStr = new Date(order.created_at).toLocaleString();
-                html += `<div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:10px; margin-bottom:8px;">
-                    <div style="display:flex; justify-content:space-between;"><strong style="color:var(--cyan);">${order.plan}</strong><span class="status-badge ${statusClass}">${statusText}</span></div>
-                    <div style="font-size:0.7rem;">💰 ${order.price.toLocaleString()} KS</div>
-                    <div style="font-size:0.6rem;">📅 ${dateStr}</div>
-                    ${waitingMsg}
-                </div>`;
+                html += `
+                    <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:10px; margin-bottom:8px;">
+                        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+                            <strong style="color:var(--cyan);">${order.plan}</strong>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+                        <div style="font-size:0.7rem;">💰 ${order.price.toLocaleString()} KS</div>
+                        <div style="font-size:0.6rem;">📅 ${dateStr}</div>
+                        ${waitingMsg}
+                    </div>
+                `;
             }
             html += `</div>`;
             resultDiv.innerHTML = html;
@@ -710,6 +714,7 @@
             document.getElementById('panelTrackPhoneInput').value = '';
             panelAutoHideResult();
         } catch(e) {
+            console.error("Track order error:", e);
             resultDiv.innerHTML = `<div style="color:var(--rose);">Error: ${e.message}</div>`;
             resultDiv.classList.add('show');
             panelAutoHideResult();
