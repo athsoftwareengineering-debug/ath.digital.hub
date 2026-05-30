@@ -352,7 +352,7 @@
         .fab:hover { transform: scale(1.05); }
         .fab.logout { background: linear-gradient(135deg, #f43f5e, #e11d48); box-shadow: 0 4px 15px rgba(244,63,94,0.4); }
         
-        /* Screenshot Modal */
+        /* Screenshot Modal with Checking Status */
         .image-modal {
             position: fixed;
             top: 0;
@@ -392,6 +392,16 @@
             align-items: center;
             padding: 8px 12px;
             border-bottom: 1px solid rgba(0,212,255,0.2);
+        }
+        .checking-status {
+            background: rgba(0,212,255,0.1);
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         .close-modal {
             background: rgba(255,255,255,0.1);
@@ -520,14 +530,18 @@
     </div>
 </div>
 
-<!-- Screenshot Modal -->
+<!-- Screenshot Modal with Checking Status Message -->
 <div id="screenshotModal" class="image-modal" onclick="closeModal()">
     <div class="image-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
             <span><i class="fas fa-image"></i> Payment Screenshot</span>
+            <span id="checkingStatus" class="checking-status"><i class="fas fa-spinner fa-pulse"></i> လူကြီးမင်း၏ အကောင့်နံပါတ်အား စစ်ဆေးပေးနေပါသည်။</span>
             <button class="close-modal" onclick="closeModal()">&times;</button>
         </div>
-        <img id="modalImage" src="" alt="Screenshot">
+        <img id="modalImage" src="" alt="Screenshot" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\' viewBox=\'0 0 400 300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%231a1a2e\'/%3E%3Ctext x=\'200\' y=\'150\' text-anchor=\'middle\' fill=\'%2364748b\' font-size=\'16\'%3ENo Screenshot%3C/text%3E%3C/svg%3E'">
+        <div class="modal-footer">
+            <i class="fas fa-info-circle"></i> Click outside or press ✕ to close
+        </div>
     </div>
 </div>
 
@@ -604,16 +618,35 @@
 
     function stopAutoSync() { if (autoSyncInterval) clearInterval(autoSyncInterval); if (countdownInterval) clearInterval(countdownInterval); }
 
+    // Open Screenshot with dynamic checking status message
     function openScreenshot(url) {
         const modal = document.getElementById('screenshotModal');
         const img = document.getElementById('modalImage');
+        const statusSpan = document.getElementById('checkingStatus');
+        
+        // Show checking status message
+        statusSpan.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> လူကြီးမင်း၏ အကောင့်နံပါတ်အား စစ်ဆေးပေးနေပါသည်။';
+        
         if (url && url !== 'null') {
             img.src = url.startsWith('/') ? API_BASE + url : url;
         } else {
             img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E';
         }
         modal.classList.add('active');
+        
+        // Change status after 3 seconds to completed
+        setTimeout(() => {
+            if (document.getElementById('screenshotModal').classList.contains('active')) {
+                statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> စစ်ဆေးပြီးပါပြီ။';
+                setTimeout(() => {
+                    if (document.getElementById('screenshotModal').classList.contains('active')) {
+                        statusSpan.innerHTML = '<i class="fas fa-image"></i> အထက်ပါပုံအား စစ်ဆေးပါ။';
+                    }
+                }, 2000);
+            }
+        }, 3000);
     }
+    
     function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
 
     async function login() {
@@ -679,10 +712,10 @@
         updateStats(filtered);
         
         // Update search result message
-        const searchMsg = document.getElementById('searchResultMsg');
         if (currentSearchPhone) {
             const resultCount = filtered.length;
-            if (!document.getElementById('searchResultMsg')) {
+            const existingMsg = document.getElementById('searchResultMsg');
+            if (!existingMsg) {
                 const msgDiv = document.createElement('div');
                 msgDiv.id = 'searchResultMsg';
                 msgDiv.className = 'search-result-badge';
@@ -692,9 +725,8 @@
             }
             document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Phone: ${currentSearchPhone} | Found: ${resultCount} order(s)`;
         } else {
-            if (document.getElementById('searchResultMsg')) {
-                document.getElementById('searchResultMsg').remove();
-            }
+            const existingMsg = document.getElementById('searchResultMsg');
+            if (existingMsg) existingMsg.remove();
         }
     }
 
