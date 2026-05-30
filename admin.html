@@ -149,7 +149,11 @@
             cursor: pointer;
             text-decoration: underline;
             font-size: 0.65rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
+        .screenshot-link:hover { color: #00d4ff; text-shadow: 0 0 5px rgba(0,212,255,0.5); }
         .action-buttons { display: flex; gap: 4px; flex-wrap: wrap; }
         .action-btn {
             border: none;
@@ -163,22 +167,22 @@
         .action-btn.reject { background: #f43f5e; color: white; }
         .action-btn.delete { background: #475569; color: white; }
         
-        /* Screenshot Modal - Fixed */
+        /* Screenshot Modal - Beautiful Popup */
         .image-modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(15px);
-            z-index: 9999;
+            background: rgba(0,0,0,0.96);
+            backdrop-filter: blur(20px);
+            z-index: 10000;
             display: flex;
             align-items: center;
             justify-content: center;
             visibility: hidden;
             opacity: 0;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
         .image-modal.active {
             visibility: visible;
@@ -188,30 +192,55 @@
             max-width: 90%;
             max-height: 90%;
             position: relative;
+            background: rgba(18,22,35,0.95);
+            border-radius: 24px;
+            padding: 10px;
+            border: 1px solid rgba(0,212,255,0.5);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,212,255,0.2);
         }
         .image-modal-content img {
             max-width: 100%;
-            max-height: 85vh;
-            border-radius: 20px;
-            border: 2px solid rgba(0,212,255,0.5);
-            box-shadow: 0 0 50px rgba(0,212,255,0.3);
+            max-height: 80vh;
+            border-radius: 16px;
+            display: block;
+            margin: 0 auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(0,212,255,0.2);
+            margin-bottom: 10px;
+        }
+        .modal-header span {
+            font-size: 0.8rem;
+            color: var(--cyan);
+            font-family: 'Space Grotesk', monospace;
         }
         .close-modal {
-            position: absolute;
-            top: -40px;
-            right: -10px;
-            font-size: 2rem;
-            cursor: pointer;
+            background: rgba(255,255,255,0.1);
+            border: none;
             color: white;
-            background: rgba(0,0,0,0.5);
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s;
         }
-        .close-modal:hover { color: var(--rose); }
+        .close-modal:hover { background: var(--rose); transform: scale(1.1); }
+        .modal-footer {
+            padding: 10px 12px;
+            font-size: 0.65rem;
+            color: #64748b;
+            text-align: center;
+            border-top: 1px solid rgba(0,212,255,0.1);
+            margin-top: 10px;
+        }
         
         .login-box {
             max-width: 400px;
@@ -298,7 +327,7 @@
             </div>
             <div class="last-update" id="lastUpdate"></div>
         </div>
-        <div class="footer-note">🔒 Secure Console | Auto Sync 30s | Click "View" to see payment screenshot</div>
+        <div class="footer-note">🔒 Secure Console | Auto Sync 30s | Click "📷 View" to see payment screenshot</div>
     </div>
     
     <div id="loginBox" class="login-box">
@@ -309,11 +338,17 @@
     </div>
 </div>
 
-<!-- Screenshot Modal -->
-<div id="screenshotModal" class="image-modal" onclick="closeModal()">
-    <div class="image-modal-content" onclick="event.stopPropagation()">
-        <span class="close-modal" onclick="closeModal()">&times;</span>
-        <img id="modalImage" src="" alt="Payment Screenshot">
+<!-- Beautiful Screenshot Modal Popup -->
+<div id="screenshotModal" class="image-modal">
+    <div class="image-modal-content">
+        <div class="modal-header">
+            <span><i class="fas fa-image"></i> Payment Screenshot</span>
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        <img id="modalImage" src="" alt="Payment Screenshot" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\' viewBox=\'0 0 400 300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%231a1a2e\'/%3E%3Ctext x=\'200\' y=\'150\' text-anchor=\'middle\' fill=\'%2364748b\' font-size=\'16\'%3EImage not found%3C/text%3E%3C/svg%3E'">
+        <div class="modal-footer">
+            <i class="fas fa-info-circle"></i> Click outside or press ✕ to close
+        </div>
     </div>
 </div>
 
@@ -349,13 +384,18 @@
 
     function stopAutoSync() { if (autoSyncInterval) clearInterval(autoSyncInterval); if (countdownInterval) clearInterval(countdownInterval); }
 
+    // Open Screenshot in Beautiful Popup
     function openScreenshot(url) {
         const modal = document.getElementById('screenshotModal');
         const img = document.getElementById('modalImage');
         if (url && url !== 'null' && url !== '') {
-            img.src = API_BASE + url;
+            let fullUrl = url;
+            if (url.startsWith('/')) {
+                fullUrl = API_BASE + url;
+            }
+            img.src = fullUrl;
         } else {
-            img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="16"%3ENo Screenshot%3C/text%3E%3C/svg%3E';
+            img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="16"%3ENo Screenshot Available%3C/text%3E%3C/svg%3E';
         }
         modal.classList.add('active');
     }
@@ -414,11 +454,18 @@
         let html = '<table><thead><tr><th>ID</th><th>Phone</th><th>Plan</th><th>Price</th><th>Cost</th><th>Profit</th><th>Status</th><th>Slip</th><th>Date</th><th>Actions</th></tr></thead><tbody>';
         for (const o of orders) {
             let statusClass = o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected');
-            html += `<tr><td>${o.id}</td><td>${o.phone}</td><td>${o.plan}</td><td>${o.price.toLocaleString()}</td><td style="color:#fbbf24;">${getCostPrice(o.plan).toLocaleString()}</td><td style="color:${getProfit(o.price, o.plan) >= 0 ? '#34d399' : '#fb7185'};">${getProfit(o.price, o.plan).toLocaleString()}</td>
-            <td><span class="status-badge ${statusClass}">${o.status}</span></td>
-            <td>${o.slip_url ? `<span class="screenshot-link" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> View</span>` : '<span style="color:#64748b;">—</span>'}</td>
-            <td>${new Date(o.created_at).toLocaleString()}</td>
-            <td class="action-buttons">${o.status === 'Pending' ? `<button class="action-btn approve" onclick="approveOrder(${o.id})"><i class="fas fa-check"></i></button><button class="action-btn reject" onclick="rejectOrder(${o.id})"><i class="fas fa-times"></i></button>` : ''}<button class="action-btn delete" onclick="deleteOrder(${o.id})"><i class="fas fa-trash"></i></button></td></tr>`;
+            html += `<tr>
+                <td style="font-family:monospace;">${o.id}</td>
+                <td>${o.phone}</td>
+                <td>${o.plan}</td>
+                <td>${o.price.toLocaleString()}</td>
+                <td style="color:#fbbf24;">${getCostPrice(o.plan).toLocaleString()}</td>
+                <td style="color:${getProfit(o.price, o.plan) >= 0 ? '#34d399' : '#fb7185'};">${getProfit(o.price, o.plan).toLocaleString()}</td>
+                <td><span class="status-badge ${statusClass}">${o.status}</span></td>
+                <td>${o.slip_url ? `<span class="screenshot-link" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> View</span>` : '<span style="color:#64748b;">—</span>'}</td>
+                <td style="font-size:0.7rem;">${new Date(o.created_at).toLocaleString()}</td>
+                <td class="action-buttons">${o.status === 'Pending' ? `<button class="action-btn approve" onclick="approveOrder(${o.id})"><i class="fas fa-check"></i></button><button class="action-btn reject" onclick="rejectOrder(${o.id})"><i class="fas fa-times"></i></button>` : ''}<button class="action-btn delete" onclick="deleteOrder(${o.id})"><i class="fas fa-trash"></i></button></td>
+            </tr>`;
         }
         document.getElementById('ordersList').innerHTML = html + '</tbody></table>';
     }
@@ -428,6 +475,15 @@
     async function deleteOrder(id) { if (confirm('Delete this order?')) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' }); if (res.ok) { showToast('🗑 Deleted'); loadOrders(); } else alert('Error'); } }
     function manualRefresh() { loadOrders(); showToast('Synced'); secondsLeft = 30; updateCountdown(); }
     function showToast(msg) { const t = document.createElement('div'); t.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#10b981;color:#030712;padding:10px 20px;border-radius:60px;font-weight:bold;z-index:9999'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
+
+    // Close modal when clicking outside
+    document.getElementById('screenshotModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeModal();
+    });
 
     window.approveOrder = approveOrder; window.rejectOrder = rejectOrder; window.deleteOrder = deleteOrder; window.logout = logout; window.manualRefresh = manualRefresh;
     window.applyFilters = applyFilters; window.clearFilters = clearFilters; window.openScreenshot = openScreenshot; window.closeModal = closeModal;
