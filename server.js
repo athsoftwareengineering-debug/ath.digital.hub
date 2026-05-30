@@ -1,4 +1,3 @@
-require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
@@ -6,10 +5,11 @@ const fs = require('fs');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+require('dotenv').config();
 
 const app = express();
 
-// Security
+// Middleware
 app.use(helmet({ contentSecurityPolicy: false }));
 app.disable('x-powered-by');
 app.use(morgan('combined'));
@@ -33,65 +33,93 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
-// ✅ Admin password changed to 104194@ath
-const ADMIN_PASSWORD = '104194@ath';
+// Admin password
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '104194@ath';
 
-// In-memory orders
+// In-memory storage
 let orders = [];
 let orderIdCounter = 1;
 
-// API Routes
+// ============ PUBLIC API ============
+
+// Create order
 app.post('/api/order', (req, res) => {
   const { packageName, price, phone, note, userId, userEmail, userName } = req.body;
+  
+  if (!packageName || !phone) {
+    return res.status(400).json({ success: false, message: 'Missing required fields' });
+  }
+  
   const newOrder = {
     id: orderIdCounter++,
     orderId: 'ORD' + Date.now(),
     packageName,
-    price,
+    price: price || 0,
     phone,
     note: note || '',
     userId: userId || '',
     userEmail: userEmail || '',
     userName: userName || '',
     status: 'pending_payment',
+    screenshotPath: null,
     createdAt: new Date().toISOString(),
-    screenshotPath: null
+    updatedAt: new Date().toISOString()
   };
+  
   orders.unshift(newOrder);
-  console.log('✅ Order created:', newOrder.orderId);
+  console.log('✅ Order created:', newOrder.orderId, 'Phone:', phone);
+  
   res.json({ success: true, orderId: newOrder.orderId });
 });
 
+// Submit payment with screenshot
 app.post('/api/submit-payment', upload.single('screenshot'), (req, res) => {
   const { orderId, note } = req.body;
+  
+  if (!orderId) {
+    return res.status(400).json({ success: false, message: 'Order ID required' });
+  }
+  
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'Screenshot required' });
+  }
+  
   const order = orders.find(o => o.orderId === orderId);
-  if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-  if (!req.file) return res.status(400).json({ success: false, message: 'Screenshot required' });
+  if (!order) {
+    return res.status(404).json({ success: false, message: 'Order not found' });
+  }
   
   order.screenshotPath = `/temp_uploads/${req.file.filename}`;
   order.status = 'payment_received';
   if (note) order.note = note;
   order.updatedAt = new Date().toISOString();
   
-  console.log('💰 Payment received for:', order.orderId);
-  res.json({ success: true });
+  console.log('💰 Payment received for:', order.orderId, 'Phone:', order.phone);
+  
+  res.json({ success: true, message: 'Payment submitted successfully' });
 });
 
+// Track orders by phone
 app.get('/api/track', (req, res) => {
   const phone = req.query.phone;
   if (!phone) return res.json({ success: true, orders: [] });
+  
   const userOrders = orders.filter(o => o.phone === phone);
   res.json({ success: true, orders: userOrders });
 });
 
+// Get user's own orders
 app.get('/api/my-orders', (req, res) => {
   const userId = req.query.userId;
   if (!userId) return res.json({ success: true, orders: [] });
+  
   const userOrders = orders.filter(o => o.userId === userId);
   res.json({ success: true, orders: userOrders });
 });
 
-// Admin API with new password
+// ============ ADMIN API ============
+
+// Admin login
 app.post('/api/admin/login', (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_PASSWORD) {
@@ -101,9 +129,12 @@ app.post('/api/admin/login', (req, res) => {
   }
 });
 
+// Get all orders (admin)
 app.get('/api/admin/orders', (req, res) => {
   const token = req.headers['x-admin-auth'];
-  if (token !== 'admin-token') return res.status(401).json({ success: false });
+  if (token !== 'admin-token') {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
   
   const stats = {
     total: orders.length,
@@ -114,15 +145,20 @@ app.get('/api/admin/orders', (req, res) => {
     expired: orders.filter(o => o.status === 'expired').length,
     revenue: orders.filter(o => o.status === 'approved').reduce((sum, o) => sum + (o.price || 0), 0)
   };
+  
   res.json({ success: true, orders, stats });
 });
 
+// Update order status
 app.post('/api/admin/update-order', (req, res) => {
   const token = req.headers['x-admin-auth'];
-  if (token !== 'admin-token') return res.status(401).json({ success: false });
+  if (token !== 'admin-token') {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
   
   const { orderId, status, rejectReason } = req.body;
   const order = orders.find(o => o.id === orderId);
+  
   if (order) {
     order.status = status;
     if (rejectReason) order.rejectReason = rejectReason;
@@ -131,21 +167,34 @@ app.post('/api/admin/update-order', (req, res) => {
       order.endDate = new Date(Date.now() + 30 * 86400000).toISOString();
     }
     order.updatedAt = new Date().toISOString();
-    console.log(`📦 Order #${orderId} status: ${status}`);
+    console.log(`📦 Order #${orderId} status updated to: ${status}`);
   }
+  
   res.json({ success: true });
 });
 
+// Delete order
 app.post('/api/admin/delete-order', (req, res) => {
   const token = req.headers['x-admin-auth'];
-  if (token !== 'admin-token') return res.status(401).json({ success: false });
+  if (token !== 'admin-token') {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
   
   const { orderId } = req.body;
+  const order = orders.find(o => o.id === orderId);
+  
+  if (order && order.screenshotPath) {
+    const filePath = path.join(__dirname, order.screenshotPath);
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  }
+  
   orders = orders.filter(o => o.id !== orderId);
+  console.log(`🗑️ Order #${orderId} deleted`);
+  
   res.json({ success: true });
 });
 
-// Serve frontend
+// ============ FRONTEND ROUTES ============
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(publicDir, 'admin.html'));
 });
@@ -154,10 +203,17 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(publicDir, 'index.html'));
 });
 
+// ============ START SERVER ============
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📱 User Dashboard: http://localhost:${PORT}/`);
-  console.log(`🔧 Admin Panel: http://localhost:${PORT}/admin`);
-  console.log(`🔑 Admin Password: 104194@ath`);
+  console.log(`
+╔══════════════════════════════════════════════════════╗
+║     🚀 MYTEL DATA SERVICE - SERVER STARTED          ║
+╠══════════════════════════════════════════════════════╣
+║  📱 User Dashboard: http://localhost:${PORT}/         ║
+║  🔧 Admin Panel:    http://localhost:${PORT}/admin    ║
+║  🔑 Admin Password: ${ADMIN_PASSWORD}                  ║
+║  💾 Storage:        In-Memory (temp_uploads/)        ║
+╚══════════════════════════════════════════════════════╝
+  `);
 });
