@@ -18,6 +18,7 @@
             --emerald: #10b981;
             --rose: #f43f5e;
             --amber: #f59e0b;
+            --gold: #fbbf24;
             --border-light: rgba(255, 255, 255, 0.08);
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
@@ -95,7 +96,7 @@
         @media (min-width: 768px) { .hero h1 { font-size: 2.5rem; } }
         .hero p { color: var(--text-secondary); font-size: 0.8rem; margin-top: 8px; }
         
-        /* ENHANCED PRODUCT CARDS - NEON GREEN GLOW */
+        /* PRODUCT CARDS */
         .pack-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -114,14 +115,35 @@
             overflow: hidden;
         }
         
-        /* Neon Green Glow Effect on Hover */
-        .pack-card:hover {
-            transform: translateY(-6px);
-            border-color: rgba(34, 197, 94, 0.7);
-            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3), 0 10px 30px -10px rgba(0,0,0,0.5);
+        /* Best Seller Card - Gold Border + Glow */
+        .pack-card.best-seller {
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            background: linear-gradient(145deg, rgba(30, 25, 20, 0.9), rgba(20, 18, 15, 0.95));
+        }
+        .pack-card.best-seller:hover {
+            border-color: rgba(251, 191, 36, 0.8);
+            box-shadow: 0 0 25px rgba(251, 191, 36, 0.3);
+        }
+        .pack-card.best-seller::before {
+            background: linear-gradient(90deg, transparent, #fbbf24, transparent);
         }
         
-        /* Top Border Neon Light */
+        /* Top Seller Card - Purple Border + Glow */
+        .pack-card.top-seller {
+            border: 1px solid rgba(139, 92, 246, 0.4);
+        }
+        .pack-card.top-seller:hover {
+            border-color: rgba(139, 92, 246, 0.8);
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.3);
+        }
+        .pack-card.top-seller::before {
+            background: linear-gradient(90deg, transparent, #8b5cf6, transparent);
+        }
+        
+        .pack-card:hover {
+            transform: translateY(-6px);
+        }
+        
         .pack-card::before {
             content: '';
             position: absolute;
@@ -129,7 +151,6 @@
             left: 0;
             width: 100%;
             height: 2px;
-            background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
             opacity: 0;
             transition: opacity 0.3s;
         }
@@ -138,45 +159,45 @@
             opacity: 1;
         }
         
-        /* Left Border Glow */
-        .pack-card::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 20%;
-            bottom: 20%;
-            width: 2px;
-            background: linear-gradient(180deg, transparent, var(--neon-green), transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .pack-card:hover::after {
-            opacity: 0.6;
-        }
-        
+        /* Flags */
         .featured-flag {
             position: absolute;
             top: -10px;
             right: 16px;
-            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
             padding: 4px 12px;
             border-radius: 40px;
             font-size: 0.6rem;
             font-weight: 800;
             color: white;
-            box-shadow: 0 0 10px rgba(139,92,246,0.5);
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
             z-index: 1;
         }
+        .featured-flag.best-seller-flag {
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            box-shadow: 0 0 12px rgba(251,191,36,0.5);
+        }
+        .featured-flag.top-seller-flag {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            box-shadow: 0 0 12px rgba(139,92,246,0.5);
+        }
+        .featured-flag.value-flag {
+            background: linear-gradient(135deg, #22c55e, #15803d);
+            box-shadow: 0 0 12px rgba(34,197,94,0.4);
+        }
+        
         @media (min-width: 768px) { .featured-flag { padding: 5px 16px; font-size: 0.7rem; } }
         
         .pack-tier { 
             font-size: 0.7rem; 
             text-transform: uppercase; 
-            color: var(--neon-green); 
             font-weight: 600; 
             letter-spacing: 1px;
         }
+        .pack-tier.cyan { color: var(--cyan); }
+        .pack-tier.gold { color: #fbbf24; }
+        .pack-tier.purple { color: #a78bfa; }
+        .pack-tier.green { color: #22c55e; }
+        
         @media (min-width: 768px) { .pack-tier { font-size: 0.8rem; } }
         
         .pack-price { 
@@ -199,7 +220,11 @@
             color: #cbd5e1;
         }
         @media (min-width: 768px) { .feature-list li { font-size: 0.85rem; } }
-        .feature-list li i { color: var(--neon-green); width: 20px; font-size: 0.8rem; }
+        .feature-list li i { width: 20px; font-size: 0.8rem; }
+        .feature-list li i.gold { color: #fbbf24; }
+        .feature-list li i.purple { color: #a78bfa; }
+        .feature-list li i.green { color: #22c55e; }
+        .feature-list li i.cyan { color: var(--cyan); }
         
         .buy-btn {
             width: 100%;
@@ -217,22 +242,25 @@
         }
         @media (min-width: 768px) { .buy-btn { padding: 12px 0; font-size: 0.9rem; } }
         
-        .buy-btn.violet { 
-            background: linear-gradient(135deg, #8b5cf6, #a855f7); 
-            color: white; 
+        .buy-btn.gold-btn { 
+            background: linear-gradient(135deg, #fbbf24, #d97706); 
+            color: white;
+            box-shadow: 0 4px 15px rgba(251,191,36,0.3);
+        }
+        .buy-btn.purple-btn { 
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9); 
+            color: white;
             box-shadow: 0 4px 15px rgba(139,92,246,0.3);
+        }
+        .buy-btn.green-btn { 
+            background: linear-gradient(135deg, #22c55e, #15803d); 
+            color: white;
+            box-shadow: 0 4px 15px rgba(34,197,94,0.3);
         }
         
         .buy-btn:hover { 
-            background: linear-gradient(135deg, var(--neon-green), #15803d); 
             transform: scale(0.98); 
-            color: white;
-            box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
-        }
-        
-        .buy-btn.violet:hover {
-            background: linear-gradient(135deg, #a855f7, #7c3aed);
-            box-shadow: 0 0 15px rgba(139,92,246,0.5);
+            filter: brightness(1.1);
         }
         
         .status-badge { display: inline-block; padding: 4px 10px; border-radius: 40px; font-size: 0.6rem; font-weight: 700; }
@@ -430,30 +458,55 @@
     </div>
     
     <div class="pack-grid">
-        <div class="pack-card">
-            <div class="pack-tier">TIER V1</div>
+        <!-- TIER V1 - BEST SELLER (15000) -->
+        <div class="pack-card best-seller">
+            <div class="featured-flag best-seller-flag">🔥 BEST SELLER</div>
+            <div class="pack-tier gold">TIER V1</div>
             <div class="pack-price">15,000 <small>MMK</small></div>
-            <div class="feature-list"><div><i class="fas fa-tachometer-alt"></i> 22GB Extreme Speed</div><div><i class="fas fa-phone-alt"></i> 8,000 On-Net Mins</div><div><i class="fas fa-envelope"></i> 5,000 SMS</div></div>
-            <button class="buy-btn" data-plan="VIP LEVEL - 1" data-price="15000">ဝယ်ယူမည်</button>
+            <div class="feature-list">
+                <div><i class="fas fa-tachometer-alt gold"></i> 22GB Extreme Speed</div>
+                <div><i class="fas fa-phone-alt gold"></i> 8,000 On-Net Mins</div>
+                <div><i class="fas fa-envelope gold"></i> 5,000 SMS</div>
+            </div>
+            <button class="buy-btn gold-btn" data-plan="VIP LEVEL - 1" data-price="15000">ဝယ်ယူမည်</button>
         </div>
+        
+        <!-- TIER V2 -->
         <div class="pack-card">
-            <div class="pack-tier">TIER V2</div>
+            <div class="pack-tier cyan">TIER V2</div>
             <div class="pack-price">20,000 <small>MMK</small></div>
-            <div class="feature-list"><div><i class="fas fa-tachometer-alt"></i> 40GB Ultra Data</div><div><i class="fas fa-phone-alt"></i> 250 On-Net Mins</div><div><i class="fas fa-globe"></i> 25 Any Net Mins</div></div>
+            <div class="feature-list">
+                <div><i class="fas fa-tachometer-alt cyan"></i> 40GB Ultra Data</div>
+                <div><i class="fas fa-phone-alt cyan"></i> 250 On-Net Mins</div>
+                <div><i class="fas fa-globe cyan"></i> 25 Any Net Mins</div>
+            </div>
             <button class="buy-btn" data-plan="VIP LEVEL - 2" data-price="20000">ဝယ်ယူမည်</button>
         </div>
+        
+        <!-- TIER V3 - BEST VALUE -->
         <div class="pack-card" style="border-color:rgba(34,197,94,0.3);">
-            <div class="featured-flag">HOT 🔥 BEST VALUE</div>
-            <div class="pack-tier" style="color:#22c55e;">TIER V3</div>
+            <div class="featured-flag value-flag">⭐ BEST VALUE</div>
+            <div class="pack-tier green">TIER V3</div>
             <div class="pack-price">25,000 <small>MMK</small></div>
-            <div class="feature-list"><div><i class="fas fa-database"></i> 40GB High-Speed + Extra</div><div><i class="fas fa-phone-volume"></i> 1,400 On-Net Mins</div><div><i class="fas fa-comment-dots"></i> 8,000 SMS Unlimited</div></div>
-            <button class="buy-btn violet" data-plan="VIP LEVEL - 3" data-price="25000">ဝယ်ယူမည်</button>
+            <div class="feature-list">
+                <div><i class="fas fa-database green"></i> 40GB High-Speed + Extra</div>
+                <div><i class="fas fa-phone-volume green"></i> 1,400 On-Net Mins</div>
+                <div><i class="fas fa-comment-dots green"></i> 8,000 SMS Unlimited</div>
+            </div>
+            <button class="buy-btn green-btn" data-plan="VIP LEVEL - 3" data-price="25000">ဝယ်ယူမည်</button>
         </div>
-        <div class="pack-card">
-            <div class="pack-tier">TIER V4 (ULTRA)</div>
+        
+        <!-- TIER V4 - TOP SELLER (30000) -->
+        <div class="pack-card top-seller">
+            <div class="featured-flag top-seller-flag">👑 TOP SELLER</div>
+            <div class="pack-tier purple">TIER V4 (ULTRA)</div>
             <div class="pack-price">30,000 <small>MMK</small></div>
-            <div class="feature-list"><div><i class="fas fa-cloud-upload-alt"></i> 120GB Gamer Data</div><div><i class="fas fa-infinity"></i> Unlimited Streaming</div><div><i class="fas fa-headset"></i> Priority Support</div></div>
-            <button class="buy-btn" data-plan="VIP LEVEL - 4 (ULTRA)" data-price="30000">ဝယ်ယူမည်</button>
+            <div class="feature-list">
+                <div><i class="fas fa-cloud-upload-alt purple"></i> 120GB Gamer Data</div>
+                <div><i class="fas fa-infinity purple"></i> Unlimited Streaming</div>
+                <div><i class="fas fa-headset purple"></i> Priority Support</div>
+            </div>
+            <button class="buy-btn purple-btn" data-plan="VIP LEVEL - 4 (ULTRA)" data-price="30000">ဝယ်ယူမည်</button>
         </div>
     </div>
 </div>
@@ -546,7 +599,6 @@
                 document.getElementById('historyList').innerHTML = `<div class="empty-msg">📭 အော်ဒါမရှိသေးပါ။</div>`;
             }
         } catch(e) {
-            console.error("Load all orders error:", e);
             document.getElementById('historyList').innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`;
         }
     }
@@ -654,8 +706,6 @@
         navigator.clipboard.writeText("09789999368"); 
         showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။"); 
     });
-    
-    console.log("✅ App loaded - Product Cards with Neon Green Glow");
 </script>
 </body>
 </html>
