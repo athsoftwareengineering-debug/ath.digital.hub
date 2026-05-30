@@ -547,27 +547,31 @@
         }, 1000);
     }
 
-    // Track Order Function
+    // Track Order Function - FIXED
     async function trackOrder() {
         if (autoHideTimer) clearTimeout(autoHideTimer);
         const phone = document.getElementById('trackPhoneInput').value.trim();
         const resultDiv = document.getElementById('trackResult');
+        
         if (!phone) {
             resultDiv.innerHTML = `<div style="color:var(--rose); padding:8px;">⚠️ ဖုန်းနံပါတ် ထည့်ပါ။</div>`;
             resultDiv.classList.add('show');
             autoHideResult();
             return;
         }
+        
         try {
+            // Use the correct API endpoint for user order search
             const res = await fetch(`${API_BASE}/api/orders/${phone}`);
             const data = await res.json();
-            if (!data.orders || data.orders.length === 0) {
+            
+            if (data.success === false || !data.orders || data.orders.length === 0) {
                 resultDiv.innerHTML = `<div style="color:var(--text-secondary);">📭 "${phone}" အတွက် အော်ဒါမရှိပါ။</div>`;
                 resultDiv.classList.add('show');
                 autoHideResult();
-                document.getElementById('trackPhoneInput').value = '';
                 return;
             }
+            
             let html = `<div style="text-align:left;">`;
             for (const order of data.orders) {
                 let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
@@ -590,6 +594,7 @@
             document.getElementById('trackPhoneInput').value = '';
             autoHideResult();
         } catch(e) {
+            console.error("Track order error:", e);
             resultDiv.innerHTML = `<div style="color:var(--rose);">Error: ${e.message}</div>`;
             resultDiv.classList.add('show');
             autoHideResult();
@@ -615,36 +620,40 @@
         return res.json();
     }
 
-    // Load ALL orders
+    // Load ALL orders (Admin endpoint)
     async function loadAllOrders() {
         try {
             const res = await fetch(`${API_BASE}/api/admin/orders`);
             const data = await res.json();
-            if (data.orders) {
+            if (data.orders && data.orders.length > 0) {
                 renderMyOrders(data.orders);
             } else {
                 document.getElementById('historyList').innerHTML = `<div class="empty-msg">📭 အော်ဒါမရှိသေးပါ။</div>`;
             }
         } catch(e) {
+            console.error("Load all orders error:", e);
             document.getElementById('historyList').innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`;
         }
     }
 
-    // Search orders by phone
+    // Search orders by phone - FIXED
     async function searchOrdersByPhone(phone) {
         if (!phone) {
             loadAllOrders();
             return;
         }
+        
         try {
             const res = await fetch(`${API_BASE}/api/orders/${phone}`);
             const data = await res.json();
-            if (!data.orders || data.orders.length === 0) {
+            
+            if (data.success === false || !data.orders || data.orders.length === 0) {
                 document.getElementById('historyList').innerHTML = `<div class="empty-msg"><i class="fas fa-inbox"></i> "${phone}" အတွက် အော်ဒါမရှိပါ။</div>`;
                 return;
             }
             renderMyOrders(data.orders);
         } catch(e) {
+            console.error("Search by phone error:", e);
             document.getElementById('historyList').innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`;
         }
     }
@@ -655,17 +664,22 @@
             container.innerHTML = `<div class="empty-msg">📭 အော်ဒါမရှိသေးပါ။</div>`;
             return;
         }
+        
         let html = "";
         for (const order of orders) {
             let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ", waitingMsg = "";
             if (order.status === "Approved") { statusClass = "status-approved"; statusText = "✅ အတည်ပြုပြီး"; }
             if (order.status === "Rejected") { statusClass = "status-rejected"; statusText = "❌ ပယ်ဖျက်ခံရ"; }
             if (order.status === "Pending") waitingMsg = `<div class="waiting-badge"><i class="fas fa-clock"></i> Admin အတည်ပြုချက်ကို စောင့်ဆိုင်းနေပါသည်။</div>`;
+            
             const dateStr = new Date(order.created_at).toLocaleString();
             let countdownHtml = "";
             if (order.status === "Approved" && order.activated_at) {
                 countdownHtml = `<div class="countdown-timer" id="countdown-${order.id}"><i class="fas fa-calendar-check"></i> ကျန်ရက်: Calculating...</div>`;
+                // Start countdown for this order
+                setTimeout(() => startCountdown(order.id, order.activated_at), 100);
             }
+            
             html += `
                 <div class="order-item">
                     <div class="order-header">
@@ -702,21 +716,18 @@
             `;
         }
         container.innerHTML = html;
-        
-        // Start countdown timers for approved orders
-        for (const order of orders) {
-            if (order.status === "Approved" && order.activated_at) {
-                startCountdown(order.id, order.activated_at);
-            }
-        }
     }
 
     function openMyOrders() {
         document.getElementById('historyPanel').classList.add('open');
         loadAllOrders();
     }
-    function closeHistory() { document.getElementById('historyPanel').classList.remove('open'); }
+    
+    function closeHistory() { 
+        document.getElementById('historyPanel').classList.remove('open');
+    }
 
+    // Form submit
     document.getElementById('orderForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const phone = document.getElementById('customerPhone').value.trim();
@@ -736,6 +747,7 @@
         }
     });
 
+    // Buy buttons
     document.querySelectorAll('.buy-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             selectedPlan = btn.dataset.plan;
@@ -743,27 +755,34 @@
             document.getElementById('paymentModal').classList.add('active');
         });
     });
+    
+    // Modal close
     document.getElementById('closeModalBtn').addEventListener('click', () => document.getElementById('paymentModal').classList.remove('active'));
     window.addEventListener('click', (e) => { if (e.target === document.getElementById('paymentModal')) document.getElementById('paymentModal').classList.remove('active'); });
+    
+    // Track button
     document.getElementById('trackBtn').addEventListener('click', trackOrder);
     document.getElementById('trackPhoneInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') trackOrder(); });
+    
+    // My Orders panel
     document.getElementById('myOrdersBtn').addEventListener('click', openMyOrders);
     document.getElementById('closeHistoryBtn').addEventListener('click', closeHistory);
     
-    // Search button
+    // Filter buttons
     document.getElementById('fetchHistoryBtn').addEventListener('click', () => {
         const phone = document.getElementById('historyPhoneInput').value.trim();
-        if (phone) searchOrdersByPhone(phone);
-        else loadAllOrders();
+        if (phone) {
+            searchOrdersByPhone(phone);
+        } else {
+            loadAllOrders();
+        }
     });
     
-    // Show all button
     document.getElementById('showAllBtn').addEventListener('click', () => {
         document.getElementById('historyPhoneInput').value = '';
         loadAllOrders();
     });
     
-    // Enter key
     document.getElementById('historyPhoneInput').addEventListener('keypress', (e) => {
         if(e.key === 'Enter') {
             const phone = document.getElementById('historyPhoneInput').value.trim();
@@ -772,7 +791,13 @@
         }
     });
     
-    document.getElementById('clickablePhone').addEventListener('click', () => { navigator.clipboard.writeText("09789999368"); showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။"); });
+    // Copy phone
+    document.getElementById('clickablePhone').addEventListener('click', () => { 
+        navigator.clipboard.writeText("09789999368"); 
+        showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။"); 
+    });
+    
+    console.log("✅ App loaded - Track Order and Filter Orders should work with phone numbers");
 </script>
 </body>
 </html>
