@@ -118,18 +118,19 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             justify-content: center;
         }
         
-        .panel-track-card {
+        /* Search Section */
+        .search-section {
             background: rgba(0, 212, 255, 0.05);
             border: 1px solid rgba(0, 212, 255, 0.2);
             border-radius: 1rem;
             padding: 14px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
-        .panel-track-title {
+        .search-title {
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--cyan);
@@ -138,12 +139,12 @@
             align-items: center;
             gap: 6px;
         }
-        .panel-track-input-group {
+        .search-input-group {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
-        .panel-track-input {
+        .search-input {
             flex: 1;
             background: rgba(0,0,0,0.5);
             border: 1px solid #2d3a5e;
@@ -152,8 +153,8 @@
             color: white;
             font-size: 0.8rem;
         }
-        .panel-track-input:focus { border-color: var(--cyan); outline: none; }
-        .panel-track-btn {
+        .search-input:focus { border-color: var(--cyan); outline: none; }
+        .search-btn {
             background: linear-gradient(135deg, #06b6d4, #0891b2);
             border: none;
             padding: 10px 20px;
@@ -162,61 +163,71 @@
             cursor: pointer;
             font-size: 0.75rem;
         }
-        .panel-track-btn:hover { transform: scale(0.98); background: var(--violet); }
-        .panel-track-result {
-            margin-top: 12px;
-            padding: 10px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 12px;
-            display: none;
-            max-height: 350px;
-            overflow-y: auto;
+        .search-btn:hover { transform: scale(0.98); }
+        .clear-search-btn {
+            background: #334155;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.7rem;
         }
-        .panel-track-result.show { display: block; }
-        
-        .recent-phones-section {
-            margin-top: 12px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(0,212,255,0.15);
-        }
-        .recent-title {
+        .search-hint {
             font-size: 0.6rem;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
+            color: #64748b;
+            margin-top: 8px;
+            text-align: center;
         }
-        .recent-buttons {
+        
+        /* Cards Section */
+        .orders-card {
+            background: rgba(0, 212, 255, 0.03);
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            border-radius: 1rem;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .card-header {
+            background: rgba(0, 212, 255, 0.08);
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            font-weight: 600;
+            font-size: 0.8rem;
             display: flex;
-            flex-wrap: wrap;
+            align-items: center;
             gap: 8px;
         }
-        .recent-phone-btn {
-            background: rgba(0,212,255,0.15);
-            border: 1px solid rgba(0,212,255,0.3);
-            padding: 5px 12px;
-            border-radius: 40px;
-            font-size: 0.65rem;
-            cursor: pointer;
-            color: var(--cyan);
-            transition: all 0.2s;
+        .card-header i { color: var(--cyan); }
+        .card-content {
+            padding: 12px;
+            max-height: 400px;
+            overflow-y: auto;
         }
-        .recent-phone-btn:hover {
-            background: var(--cyan);
-            color: #030712;
+        .empty-msg {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 30px;
+            font-size: 0.75rem;
         }
         
+        /* Order Item */
         .order-item {
             background: linear-gradient(135deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
-            border-radius: 14px;
+            border-radius: 12px;
             padding: 10px 12px;
             margin-bottom: 10px;
-            border: 1px solid rgba(0,212,255,0.15);
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            border: 1px solid rgba(0,212,255,0.1);
+            transition: all 0.2s ease;
         }
         .order-item:hover {
-            border-color: rgba(0,212,255,0.4);
+            border-color: rgba(0,212,255,0.3);
             transform: translateX(3px);
-            box-shadow: 0 4px 15px rgba(0,212,255,0.15), 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .order-item.highlight {
+            border-color: var(--cyan);
+            background: rgba(0,212,255,0.1);
+            box-shadow: 0 0 10px rgba(0,212,255,0.2);
         }
         
         .order-header {
@@ -227,7 +238,7 @@
             gap: 6px;
             margin-bottom: 8px;
             padding-bottom: 6px;
-            border-bottom: 1px solid rgba(0,212,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .order-plan {
             font-size: 0.75rem;
@@ -274,7 +285,7 @@
             word-break: break-word;
         }
         .info-value.price { color: var(--emerald); }
-        .info-value.masked-phone { font-family: monospace; color: var(--amber); }
+        .info-value.masked { font-family: monospace; color: var(--amber); }
         .copy-id {
             cursor: pointer;
             margin-left: 5px;
@@ -302,6 +313,20 @@
             font-family: 'Space Grotesk', monospace;
         }
         
+        .view-slip-btn {
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 5px 10px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            cursor: pointer;
+            margin-top: 8px;
+            width: 100%;
+            color: var(--cyan);
+        }
+        .view-slip-btn:hover { background: var(--cyan); color: #030712; }
+        
+        /* Pack Cards */
         .pack-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -349,6 +374,7 @@
         }
         .buy-btn:hover { background: var(--cyan); transform: scale(0.98); color: #030712; }
         
+        /* Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(3,7,18,0.94); backdrop-filter: blur(20px);
@@ -392,9 +418,9 @@
             transition: top 0.3s;
             font-size: 0.8rem;
         }
-        .empty-msg { text-align: center; color: var(--text-secondary); padding: 20px; }
         footer { margin-top: 40px; text-align: center; border-top: 1px solid var(--border-light); padding: 20px; font-size: 0.65rem; color: var(--text-secondary); }
         
+        /* Image Modal */
         .image-modal {
             position: fixed;
             top: 0;
@@ -432,7 +458,7 @@
             display: block;
             margin: 0 auto;
         }
-        .modal-header {
+        .img-modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -440,7 +466,7 @@
             border-bottom: 1px solid rgba(0,212,255,0.2);
             margin-bottom: 10px;
         }
-        .modal-header span {
+        .img-modal-header span {
             font-size: 0.8rem;
             color: var(--cyan);
             font-family: 'Space Grotesk', monospace;
@@ -448,17 +474,7 @@
             align-items: center;
             gap: 8px;
         }
-        .checking-status {
-            background: rgba(0,212,255,0.1);
-            padding: 5px 12px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            color: #fbbf24;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .close-modal {
+        .close-img-modal {
             background: rgba(255,255,255,0.1);
             border: none;
             color: white;
@@ -470,23 +486,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
         }
-        .close-modal:hover { background: var(--rose); transform: scale(1.1); }
-        .modal-footer {
+        .close-img-modal:hover { background: var(--rose); }
+        .img-modal-footer {
             padding: 10px 12px;
             font-size: 0.65rem;
             color: #64748b;
             text-align: center;
             border-top: 1px solid rgba(0,212,255,0.1);
             margin-top: 10px;
-        }
-        
-        .info-hint {
-            font-size: 0.6rem;
-            color: #64748b;
-            margin-top: 8px;
-            text-align: center;
         }
     </style>
 </head>
@@ -555,30 +563,8 @@
 
 <div id="historyPanel" class="history-panel">
     <div class="history-header">
-        <h3><i class="fas fa-list-ul"></i> ကျွန်ုပ်၏ အော်ဒါများ</h3>
+        <h3><i class="fas fa-list-ul"></i> အော်ဒါများ</h3>
         <span class="close-history" id="closeHistoryBtn">&times;</span>
-    </div>
-    
-    <!-- Phone Number Input Section -->
-    <div class="panel-track-card">
-        <div class="panel-track-title"><i class="fas fa-phone-alt"></i> ကြည့်ရှုလိုသော ဖုန်းနံပါတ် ထည့်ပါ</div>
-        <div class="panel-track-input-group">
-            <input type="tel" id="viewPhoneInput" class="panel-track-input" placeholder="📱 ဖုန်းနံပါတ် (09xxxxxxxxx)">
-            <button id="viewOrdersBtn" class="panel-track-btn" style="background: linear-gradient(135deg, #10b981, #059669);">
-                <i class="fas fa-eye"></i> ကြည့်မည်
-            </button>
-        </div>
-        
-        <!-- Recent Phones History -->
-        <div class="recent-phones-section" id="recentPhonesSection" style="display: none;">
-            <div class="recent-title"><i class="fas fa-history"></i> နောက်ဆုံးသုံးခဲ့သော နံပါတ်များ</div>
-            <div class="recent-buttons" id="recentPhonesContainer"></div>
-        </div>
-        
-        <div class="info-hint">
-            💡 သင့်ကိုယ်ပိုင်အော်ဒါကြည့်ရန် သင့်ဖုန်းနံပါတ်ထည့်ပါ။<br>
-            အခြားသူအတွက်ဝယ်ပေးထားပါက ထိုသူ၏နံပါတ်ဖြင့် ကြည့်ပါ။
-        </div>
     </div>
     
     <div class="auto-refresh-status">
@@ -586,20 +572,36 @@
         <span id="autoRefreshTimer">Auto refresh: 30s</span>
     </div>
     
-    <!-- Track Other Order Section (with masked phone display) -->
-    <div class="panel-track-card">
-        <div class="panel-track-title"><i class="fas fa-search"></i> အခြားသူ၏အော်ဒါကို ရှာမည်</div>
-        <div class="panel-track-input-group">
-            <input type="tel" id="trackPhoneInput" class="panel-track-input" placeholder="📱 ဖုန်းနံပါတ် (09xxxxxxxxx)">
-            <button id="trackBtn" class="panel-track-btn">🔎 ရှာမည်</button>
+    <!-- Search Section -->
+    <div class="search-section">
+        <div class="search-title"><i class="fas fa-search"></i> ဖုန်းနံပါတ်ဖြင့် ရှာဖွေရန်</div>
+        <div class="search-input-group">
+            <input type="tel" id="searchPhoneInput" class="search-input" placeholder="📱 09xxxxxxxxx">
+            <button id="searchBtn" class="search-btn"><i class="fas fa-search"></i> ရှာမည်</button>
+            <button id="clearSearchBtn" class="clear-search-btn"><i class="fas fa-times"></i> ရှင်းမည်</button>
         </div>
-        <div id="trackResult" class="panel-track-result"></div>
-        <div class="info-hint" style="margin-top: 8px;">
-            ※ အခြားသူ၏ဖုန်းနံပါတ်ကို ရှာပါက နံပါတ်တစ်စိတ်တစ်ပိုင်းသာ ပြသပါမည်။
+        <div class="search-hint">💡 မည်သည့်ဖုန်းနံပါတ်မဆို ရှာနိုင်ပါသည်။ ရှာတွေ့ပါက အဝါရောင် Highlight ပြပါမည်။</div>
+    </div>
+    
+    <!-- My Orders Card (Live - My own orders) -->
+    <div class="orders-card">
+        <div class="card-header">
+            <i class="fas fa-user-circle"></i> ကျွန်ုပ်၏ အော်ဒါများ (Live)
+        </div>
+        <div class="card-content" id="myOrdersContainer">
+            <div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading...</div>
         </div>
     </div>
     
-    <div id="ordersListContainer"><div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading orders...</div></div>
+    <!-- All Orders Card (Live - Everyone's orders with masked phone) -->
+    <div class="orders-card">
+        <div class="card-header">
+            <i class="fas fa-globe"></i> အခြားသူများ၏ အော်ဒါများ (Live)
+        </div>
+        <div class="card-content" id="allOrdersContainer">
+            <div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading...</div>
+        </div>
+    </div>
 </div>
 
 <div id="paymentModal" class="modal-overlay">
@@ -621,15 +623,14 @@
     </div>
 </div>
 
-<div id="screenshotModal" class="image-modal" onclick="closeModal()">
+<div id="screenshotModal" class="image-modal" onclick="closeImageModal()">
     <div class="image-modal-content" onclick="event.stopPropagation()">
-        <div class="modal-header">
+        <div class="img-modal-header">
             <span><i class="fas fa-image"></i> Payment Screenshot</span>
-            <span id="checkingStatus" class="checking-status"><i class="fas fa-spinner fa-pulse"></i> စစ်ဆေးနေပါသည်...</span>
-            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <button class="close-img-modal" onclick="closeImageModal()">&times;</button>
         </div>
-        <img id="modalImage" src="" alt="Screenshot" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\' viewBox=\'0 0 400 300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%231a1a2e\'/%3E%3Ctext x=\'200\' y=\'150\' text-anchor=\'middle\' fill=\'%2364748b\' font-size=\'16\'%3ENo Screenshot%3C/text%3E%3C/svg%3E'">
-        <div class="modal-footer">
+        <img id="modalImage" src="" alt="Screenshot">
+        <div class="img-modal-footer">
             <i class="fas fa-info-circle"></i> Click outside or press ✕ to close
         </div>
     </div>
@@ -641,12 +642,13 @@
     // ==================== CONFIGURATION ====================
     const API_BASE = window.location.origin;
     let selectedPlan = "", selectedPrice = 0;
-    let trackAutoHideTimer = null;
-    let countdownIntervals = {};
+    let allOrdersData = [];
+    let myPhone = localStorage.getItem('myOrderPhone') || '';
+    let currentSearchPhone = '';
     let autoRefreshInterval = null;
     let refreshCountdownInterval = null;
     let refreshSecondsLeft = 30;
-    let currentViewingPhone = "";
+    let countdownIntervals = {};
     
     // ==================== HELPER FUNCTIONS ====================
     function showToast(msg, isError = false) {
@@ -668,7 +670,7 @@
     }
     
     function formatRemainingTime(activatedAt) {
-        if (!activatedAt) return "N/A";
+        if (!activatedAt) return null;
         const endDate = new Date(activatedAt).getTime() + (30 * 24 * 60 * 60 * 1000);
         const remaining = endDate - Date.now();
         if (remaining <= 0) return "Expired";
@@ -680,19 +682,16 @@
     
     function startCountdown(orderId, activatedAt) {
         if (countdownIntervals[orderId]) clearInterval(countdownIntervals[orderId]);
-        
-        function updateTimer() {
+        const updateTimer = () => {
             const elem = document.getElementById(`countdown-${orderId}`);
             if (!elem) {
                 clearInterval(countdownIntervals[orderId]);
                 return;
             }
             const remaining = formatRemainingTime(activatedAt);
-            elem.innerHTML = `<i class="fas fa-calendar-check"></i> ကျန်ရက်: ${remaining}`;
-            if (remaining === "Expired") {
-                clearInterval(countdownIntervals[orderId]);
-            }
-        }
+            elem.innerHTML = `<i class="fas fa-calendar-check"></i> ကျန်ရက်: ${remaining || 'N/A'}`;
+            if (remaining === "Expired") clearInterval(countdownIntervals[orderId]);
+        };
         updateTimer();
         countdownIntervals[orderId] = setInterval(updateTimer, 1000);
     }
@@ -705,10 +704,6 @@
     function openScreenshot(url) {
         const modal = document.getElementById('screenshotModal');
         const img = document.getElementById('modalImage');
-        const statusSpan = document.getElementById('checkingStatus');
-        
-        statusSpan.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> စစ်ဆေးနေပါသည်...';
-        
         if (url && url !== 'null' && url !== '') {
             let fullUrl = url.startsWith('/') ? API_BASE + url : url;
             img.src = fullUrl;
@@ -716,229 +711,181 @@
             img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Screenshot%3C/text%3E%3C/svg%3E';
         }
         modal.classList.add('active');
-        
-        setTimeout(() => {
-            if (document.getElementById('screenshotModal').classList.contains('active')) {
-                statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> စစ်ဆေးပြီးပါပြီ။';
-            }
-        }, 3000);
     }
     
-    function closeModal() {
+    function closeImageModal() {
         document.getElementById('screenshotModal').classList.remove('active');
     }
     
-    // ==================== RECENT PHONES MANAGEMENT ====================
-    let recentPhones = JSON.parse(localStorage.getItem('recentPhones') || '[]');
-    
-    function addToRecentPhones(phone) {
-        if (!phone || phone.length < 8) return;
-        recentPhones = recentPhones.filter(p => p !== phone);
-        recentPhones.unshift(phone);
-        recentPhones = recentPhones.slice(0, 5);
-        localStorage.setItem('recentPhones', JSON.stringify(recentPhones));
-        updateRecentPhonesUI();
-    }
-    
-    function updateRecentPhonesUI() {
-        const section = document.getElementById('recentPhonesSection');
-        const container = document.getElementById('recentPhonesContainer');
-        
-        if (recentPhones.length > 0) {
-            section.style.display = 'block';
-            container.innerHTML = recentPhones.map(phone => `
-                <button class="recent-phone-btn" onclick="selectRecentPhone('${phone}')">
-                    ${maskPhoneNumber(phone)}
-                </button>
-            `).join('');
-        } else {
-            section.style.display = 'none';
+    // Save my phone after order
+    function saveMyPhone(phone) {
+        if (phone && phone.length >= 8) {
+            myPhone = phone;
+            localStorage.setItem('myOrderPhone', phone);
         }
     }
     
-    window.selectRecentPhone = function(phone) {
-        document.getElementById('viewPhoneInput').value = phone;
-        viewMyOrders();
+    // ==================== RENDER FUNCTIONS ====================
+    function renderMyOrders() {
+        const container = document.getElementById('myOrdersContainer');
+        if (!myPhone) {
+            container.innerHTML = `<div class="empty-msg">
+                <i class="fas fa-info-circle"></i><br>
+                သင့်အော်ဒါများကို ကြည့်ရန် အော်ဒါတစ်ခုခု အရင်တင်ပါ။
+            </div>`;
+            return;
+        }
+        
+        const myOrders = allOrdersData.filter(order => order.phone === myPhone);
+        
+        if (myOrders.length === 0) {
+            container.innerHTML = `<div class="empty-msg">📭 ${maskPhoneNumber(myPhone)} အတွက် အော်ဒါမရှိသေးပါ။</div>`;
+            return;
+        }
+        
+        container.innerHTML = myOrders.map(order => renderOrderItem(order, true, order.phone === currentSearchPhone)).join('');
+        
+        // Start countdowns for approved orders
+        myOrders.forEach(order => {
+            if (order.status === 'Approved' && order.activated_at) {
+                startCountdown(order.id, order.activated_at);
+            }
+        });
     }
     
-    // ==================== VIEW MY ORDERS (BY PHONE) ====================
-    async function viewMyOrders() {
-        const phone = document.getElementById('viewPhoneInput').value.trim();
+    function renderAllOrders() {
+        const container = document.getElementById('allOrdersContainer');
         
+        // Filter out own orders and apply search if any
+        let filteredOrders = allOrdersData.filter(order => order.phone !== myPhone);
+        
+        if (currentSearchPhone) {
+            filteredOrders = filteredOrders.filter(order => order.phone === currentSearchPhone);
+        }
+        
+        if (filteredOrders.length === 0) {
+            let message = '📭 အော်ဒါမရှိသေးပါ။';
+            if (currentSearchPhone) {
+                message = `📭 "${maskPhoneNumber(currentSearchPhone)}" အတွက် အော်ဒါမရှိပါ။`;
+            }
+            container.innerHTML = `<div class="empty-msg">${message}</div>`;
+            return;
+        }
+        
+        container.innerHTML = filteredOrders.map(order => renderOrderItem(order, false, order.phone === currentSearchPhone)).join('');
+        
+        // Start countdowns for approved orders
+        filteredOrders.forEach(order => {
+            if (order.status === 'Approved' && order.activated_at) {
+                startCountdown(order.id, order.activated_at);
+            }
+        });
+    }
+    
+    function renderOrderItem(order, showFullPhone, isHighlighted) {
+        let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
+        let waitingMsg = "";
+        
+        if (order.status === "Approved") { 
+            statusClass = "status-approved"; 
+            statusText = "✅ အတည်ပြုပြီး"; 
+        }
+        if (order.status === "Rejected") { 
+            statusClass = "status-rejected"; 
+            statusText = "❌ ပယ်ဖျက်ခံရ"; 
+        }
+        if (order.status === "Pending") {
+            waitingMsg = `<div class="waiting-badge">⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ</div>`;
+        }
+        
+        const displayPhone = showFullPhone ? order.phone : maskPhoneNumber(order.phone);
+        const dateStr = new Date(order.created_at).toLocaleString();
+        const highlightClass = isHighlighted ? 'highlight' : '';
+        
+        let countdownHtml = "";
+        if (order.status === "Approved" && order.activated_at) {
+            const remaining = formatRemainingTime(order.activated_at);
+            countdownHtml = `<div class="countdown-timer" id="countdown-${order.id}"><i class="fas fa-calendar-check"></i> ကျန်ရက်: ${remaining || 'Calculating...'}</div>`;
+        }
+        
+        let slipButton = '';
+        if (order.slip_url && order.slip_url !== 'null') {
+            slipButton = `<button class="view-slip-btn" onclick="openScreenshot('${order.slip_url}')"><i class="fas fa-image"></i> ပြေစာကြည့်ရန်</button>`;
+        }
+        
+        return `
+            <div class="order-item ${highlightClass}">
+                <div class="order-header">
+                    <span class="order-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-mobile-alt"></i> Phone</div>
+                        <div class="info-value">${displayPhone}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-coins"></i> Amount</div>
+                        <div class="info-value price">${order.price.toLocaleString()} KS</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-calendar"></i> Date</div>
+                        <div class="info-value" style="font-size:0.7rem;">${new Date(order.created_at).toLocaleDateString()}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-barcode"></i> Order ID <span class="copy-id" onclick="copyOrderId('${order.id}')">📋</span></div>
+                        <div class="info-value" style="font-size:0.65rem; font-family:monospace;">${order.id}</div>
+                    </div>
+                </div>
+                ${waitingMsg}
+                ${countdownHtml}
+                ${slipButton}
+            </div>
+        `;
+    }
+    
+    // ==================== LOAD DATA ====================
+    async function loadAllData() {
+        try {
+            const response = await fetch(`${API_BASE}/api/admin/orders`);
+            const data = await response.json();
+            if (data.orders) {
+                allOrdersData = data.orders;
+                renderMyOrders();
+                renderAllOrders();
+            }
+        } catch(e) {
+            console.error("Load data error:", e);
+            document.getElementById('myOrdersContainer').innerHTML = `<div class="empty-msg">Connection Error: ${e.message}</div>`;
+            document.getElementById('allOrdersContainer').innerHTML = `<div class="empty-msg">Connection Error: ${e.message}</div>`;
+        }
+    }
+    
+    // ==================== SEARCH FUNCTIONS ====================
+    function searchByPhone() {
+        const phone = document.getElementById('searchPhoneInput').value.trim();
         if (!phone) {
             showToast("⚠️ ဖုန်းနံပါတ် ထည့်ပါ", true);
             return;
         }
-        
         if (phone.length < 8) {
             showToast("⚠️ ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ", true);
             return;
         }
+        currentSearchPhone = phone;
+        renderAllOrders(); // Re-render all orders with search filter
+        showToast(`🔍 ${maskPhoneNumber(phone)} အတွက် ရှာဖွေနေပါသည်...`);
         
-        currentViewingPhone = phone;
-        addToRecentPhones(phone);
-        
-        const container = document.getElementById('ordersListContainer');
-        container.innerHTML = '<div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading orders...</div>';
-        
-        try {
-            const response = await fetch(`${API_BASE}/api/orders/${phone}`);
-            const data = await response.json();
-            
-            if (data.orders && data.orders.length > 0) {
-                renderOrdersList(data.orders, container, true);
-            } else {
-                container.innerHTML = `<div class="empty-msg">📭 ${maskPhoneNumber(phone)} အတွက် အော်ဒါမရှိသေးပါ။</div>`;
-            }
-        } catch(e) {
-            console.error("View orders error:", e);
-            container.innerHTML = `<div class="empty-msg">Error: ${e.message}</div>`;
-        }
+        // Also highlight in my orders if matches
+        renderMyOrders();
     }
     
-    // ==================== TRACK OTHER ORDER (WITH MASKED PHONE) ====================
-    async function trackOtherOrder() {
-        if (trackAutoHideTimer) clearTimeout(trackAutoHideTimer);
-        const phone = document.getElementById('trackPhoneInput').value.trim();
-        const resultDiv = document.getElementById('trackResult');
-        
-        if (!phone) {
-            resultDiv.innerHTML = `<div style="color:var(--rose); padding:8px;">⚠️ ဖုန်းနံပါတ် ထည့်ပါ။</div>`;
-            resultDiv.classList.add('show');
-            autoHideTrackResult();
-            return;
-        }
-        
-        try {
-            const response = await fetch(`${API_BASE}/api/orders/${phone}`);
-            const data = await response.json();
-            const orders = data.orders || [];
-            
-            if (orders.length === 0) {
-                resultDiv.innerHTML = `<div style="color:var(--text-secondary); padding:8px;">📭 "${maskPhoneNumber(phone)}" အတွက် အော်ဒါမရှိပါ။</div>`;
-                resultDiv.classList.add('show');
-                autoHideTrackResult();
-                return;
-            }
-            
-            let html = `<div style="text-align:left;"><small style="color:var(--text-secondary); display:block; margin-bottom:8px;">🔍 ${maskPhoneNumber(phone)} အတွက် တွေ့ရှိရသော အော်ဒါများ:</small>`;
-            for (const order of orders) {
-                let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
-                let waitingMsg = "";
-                if (order.status === "Approved") { 
-                    statusClass = "status-approved"; 
-                    statusText = "✅ အတည်ပြုပြီး"; 
-                }
-                if (order.status === "Rejected") { 
-                    statusClass = "status-rejected"; 
-                    statusText = "❌ ပယ်ဖျက်ခံရ"; 
-                }
-                if (order.status === "Pending") {
-                    waitingMsg = `<div style="font-size:0.65rem; margin-top:6px; color:#fbbf24;">⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ</div>`;
-                }
-                const dateStr = new Date(order.created_at).toLocaleString();
-                html += `
-                    <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:10px; margin-bottom:8px; border:1px solid rgba(0,212,255,0.1);">
-                        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-bottom:5px;">
-                            <strong style="color:var(--cyan);">${order.plan}</strong>
-                            <span class="status-badge ${statusClass}">${statusText}</span>
-                        </div>
-                        <div style="font-size:0.7rem; margin-bottom:4px;">
-                            📞 ${maskPhoneNumber(order.phone)}
-                        </div>
-                        <div style="font-size:0.75rem;">💰 ${order.price.toLocaleString()} KS</div>
-                        <div style="font-size:0.65rem; color:#6b7280;">📅 ${dateStr}</div>
-                        ${waitingMsg}
-                    </div>
-                `;
-            }
-            html += `</div>`;
-            resultDiv.innerHTML = html;
-            resultDiv.classList.add('show');
-            document.getElementById('trackPhoneInput').value = '';
-            autoHideTrackResult();
-            
-        } catch(error) {
-            console.error("Track error:", error);
-            resultDiv.innerHTML = `<div style="color:var(--rose); padding:8px;">❌ Connection error: ${error.message}</div>`;
-            resultDiv.classList.add('show');
-            autoHideTrackResult();
-        }
-    }
-    
-    function autoHideTrackResult() {
-        if (trackAutoHideTimer) clearTimeout(trackAutoHideTimer);
-        trackAutoHideTimer = setTimeout(() => {
-            const resultDiv = document.getElementById('trackResult');
-            resultDiv.classList.remove('show');
-            resultDiv.innerHTML = '';
-        }, 15000);
-    }
-    
-    // ==================== RENDER ORDERS LIST ====================
-    function renderOrdersList(orders, container, showFullPhone = true) {
-        if (!orders || orders.length === 0) {
-            container.innerHTML = `<div class="empty-msg">📭 အော်ဒါမရှိသေးပါ။</div>`;
-            return;
-        }
-        
-        let html = "";
-        for (const order of orders) {
-            let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ", waitingMsg = "";
-            if (order.status === "Approved") { 
-                statusClass = "status-approved"; 
-                statusText = "✅ အတည်ပြုပြီး"; 
-            }
-            if (order.status === "Rejected") { 
-                statusClass = "status-rejected"; 
-                statusText = "❌ ပယ်ဖျက်ခံရ"; 
-            }
-            if (order.status === "Pending") {
-                waitingMsg = `<div class="waiting-badge">⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ</div>`;
-            }
-            
-            const dateStr = new Date(order.created_at).toLocaleString();
-            const displayPhone = showFullPhone ? order.phone : maskPhoneNumber(order.phone);
-            const phoneClass = showFullPhone ? "info-value" : "info-value masked-phone";
-            
-            let countdownHtml = "";
-            if (order.status === "Approved" && order.activated_at) {
-                countdownHtml = `<div class="countdown-timer" id="countdown-${order.id}"><i class="fas fa-calendar-check"></i> ကျန်ရက်: Calculating...</div>`;
-                setTimeout(() => startCountdown(order.id, order.activated_at), 100);
-            }
-            
-            html += `
-                <div class="order-item">
-                    <div class="order-header">
-                        <span class="order-plan">
-                            <i class="fas fa-sim-card"></i> ${order.plan}
-                        </span>
-                        <span class="status-badge ${statusClass}">${statusText}</span>
-                    </div>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label"><i class="fas fa-mobile-alt"></i> Phone</div>
-                            <div class="${phoneClass}">${displayPhone}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label"><i class="fas fa-coins"></i> Amount</div>
-                            <div class="info-value price">${order.price.toLocaleString()} KS</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label"><i class="fas fa-calendar"></i> Date</div>
-                            <div class="info-value" style="font-size:0.7rem;">${new Date(order.created_at).toLocaleDateString()}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label"><i class="fas fa-barcode"></i> Order ID <span class="copy-id" onclick="copyOrderId('${order.id}')">📋</span></div>
-                            <div class="info-value" style="font-size:0.65rem; font-family:monospace;">${order.id}</div>
-                        </div>
-                    </div>
-                    ${waitingMsg}
-                    ${countdownHtml}
-                </div>
-            `;
-        }
-        container.innerHTML = html;
+    function clearSearch() {
+        currentSearchPhone = '';
+        document.getElementById('searchPhoneInput').value = '';
+        renderAllOrders();
+        renderMyOrders();
+        showToast("🔍 ရှာဖွေမှု ရှင်းလင်းပြီးပါပြီ။");
     }
     
     // ==================== ORDER SUBMISSION ====================
@@ -969,8 +916,8 @@
             updateRefreshTimer();
         }, 1000);
         autoRefreshInterval = setInterval(() => {
-            if (document.getElementById('historyPanel').classList.contains('open') && currentViewingPhone) {
-                viewMyOrders();
+            if (document.getElementById('historyPanel').classList.contains('open')) {
+                loadAllData();
                 refreshSecondsLeft = 30;
                 updateRefreshTimer();
             }
@@ -982,29 +929,12 @@
         if (refreshCountdownInterval) clearInterval(refreshCountdownInterval);
     }
     
-    // ==================== OPEN/CLOSE PANEL ====================
+    // ==================== PANEL CONTROL ====================
     function openMyOrders() {
         document.getElementById('historyPanel').classList.add('open');
-        updateRecentPhonesUI();
-        
-        if (recentPhones.length > 0 && !currentViewingPhone) {
-            document.getElementById('viewPhoneInput').value = recentPhones[0];
-            viewMyOrders();
-        } else if (currentViewingPhone) {
-            document.getElementById('viewPhoneInput').value = currentViewingPhone;
-            viewMyOrders();
-        } else {
-            document.getElementById('ordersListContainer').innerHTML = `<div class="empty-msg">
-                <i class="fas fa-phone-alt" style="font-size: 1.5rem; margin-bottom: 10px;"></i><br>
-                သင့်အော်ဒါများကို ကြည့်ရန် အပေါ်ရှိ ဖုန်းနံပါတ်ကွက်တွင် <br>
-                သင့်ဖုန်းနံပါတ် ထည့်ပြီး "ကြည့်မည်" ကိုနှိပ်ပါ။
-            </div>`;
-        }
-        
+        loadAllData();
         startAutoRefresh();
-        document.getElementById('trackResult').classList.remove('show');
-        document.getElementById('trackResult').innerHTML = '';
-        document.getElementById('trackPhoneInput').value = '';
+        clearSearch();
     }
     
     function closeHistory() {
@@ -1025,12 +955,11 @@
         
         if (result.success) {
             showToast(`✅ အော်ဒါအောင်မြင်ပါသည်။ Order ID: ${result.orderId}`);
-            addToRecentPhones(phone);
-            document.getElementById('viewPhoneInput').value = phone;
+            saveMyPhone(phone);
             document.getElementById('paymentModal').classList.remove('active');
             document.getElementById('orderForm').reset();
             if (document.getElementById('historyPanel').classList.contains('open')) {
-                viewMyOrders();
+                loadAllData();
             }
         } else {
             showToast(result.error || 'အော်ဒါတင်ရာတွင် အမှားရှိပါသည်', true);
@@ -1051,28 +980,28 @@
     document.getElementById('myOrdersBtn').addEventListener('click', openMyOrders);
     document.getElementById('closeHistoryBtn').addEventListener('click', closeHistory);
     
-    document.getElementById('viewOrdersBtn').addEventListener('click', viewMyOrders);
-    document.getElementById('viewPhoneInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') viewMyOrders(); });
-    
-    document.getElementById('trackBtn').addEventListener('click', trackOtherOrder);
-    document.getElementById('trackPhoneInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') trackOtherOrder(); });
+    document.getElementById('searchBtn').addEventListener('click', searchByPhone);
+    document.getElementById('clearSearchBtn').addEventListener('click', clearSearch);
+    document.getElementById('searchPhoneInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') searchByPhone(); });
     
     document.getElementById('clickablePhone').addEventListener('click', () => { 
         navigator.clipboard.writeText("09789999368"); 
         showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။"); 
     });
     
-    document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+    document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeImageModal(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeImageModal(); });
     
     // Make functions global for onclick
     window.copyOrderId = copyOrderId;
     window.openScreenshot = openScreenshot;
-    window.selectRecentPhone = selectRecentPhone;
+    window.closeImageModal = closeImageModal;
     
-    // Initial UI update
-    updateRecentPhonesUI();
-    console.log("✅ ATH DIGITAL HUB - Fully loaded with all features!");
+    // Initial load if myPhone exists
+    if (myPhone) {
+        console.log("✅ Loaded with saved phone:", maskPhoneNumber(myPhone));
+    }
+    console.log("✅ ATH DIGITAL HUB - Fully loaded with Live Orders!");
 </script>
 </body>
 </html>
