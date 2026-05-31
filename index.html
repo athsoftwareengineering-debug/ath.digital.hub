@@ -871,7 +871,7 @@
             <div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> <span class="loading-feed-text">Loading feed...</span></div>
         </div>
         <div class="status-bar">
-            <span class="status-badge-sm"><span class="status-dot"></span> <span class="live-update-text">စက္ကန့် 30 တိုင်း အသစ်ပြန်တင်မည်</span></span>
+            <span class="status-badge-sm"><span class="status-dot"></span> <span class="live-update-text">အလိုအလျောက် အသစ်ပြန်တင်မည်: 30s</span></span>
         </div>
     </div>
 </div>
@@ -926,7 +926,7 @@
             searchHint: '💡 မည်သည့်ဖုန်းနံပါတ်မဆို ရှာနိုင်ပါသည်။ ရှာတွေ့ပါက အဝါရောင် Highlight ပြပါမည်။',
             myOrdersHeader: 'ကျွန်ုပ်၏ အော်ဒါများ',
             liveFeedHeader: 'အခြားသူများ၏ အော်ဒါများ',
-            liveUpdate: 'စက္ကန့် 30 တိုင်း အသစ်ပြန်တင်မည်',
+            liveUpdate: 'အလိုအလျောက် အသစ်ပြန်တင်မည်: 30s',
             loading: 'Loading...',
             loadingFeed: 'Loading feed...',
             noOrders: '📭 အော်ဒါမရှိသေးပါ။<br>ပထမဆုံးအော်ဒါအတွက် စောင့်ဆိုင်းနေပါသည်...',
@@ -985,7 +985,7 @@
             searchHint: '💡 Search any phone number. Found orders will be highlighted in yellow.',
             myOrdersHeader: 'My Orders',
             liveFeedHeader: 'Live Orders Feed',
-            liveUpdate: 'Live updates every 30s',
+            liveUpdate: 'Auto refresh: 30s',
             loading: 'Loading...',
             loadingFeed: 'Loading feed...',
             noOrders: '📭 No orders yet<br>Waiting for first order...',
@@ -1193,12 +1193,12 @@
         }
     }
     
-    // ==================== STACK FUNCTIONS - TOP TO BOTTOM FLOW ====================
-    // ✅ CORRECT: Move first item (top) to bottom - creates downward flow
+    // ==================== STACK FUNCTIONS ====================
+    // ✅ CORRECT: New orders go to TOP, then rotate DOWN every 10 seconds
     function rotateStack() {
         if (stackOrders.length <= 1) return;
         const firstItem = stackOrders.shift();   // Remove from top
-        stackOrders.push(firstItem);              // Add to bottom
+        stackOrders.push(firstItem);              // Add to bottom (downward flow)
         renderStack();
     }
     
@@ -1213,6 +1213,7 @@
             return;
         }
         
+        // Sort by created_at (newest first)
         const sortedOrders = [...otherOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         const ordersHash = JSON.stringify(sortedOrders.map(o => ({ id: o.id, status: o.status })));
         
@@ -1223,9 +1224,25 @@
         const newOrdersList = sortedOrders.filter(o => !currentQueueIds.includes(o.id));
         
         if (newOrdersList.length > 0) {
-            // NEW ORDERS GO TO THE TOP (front of array)
+            // ✅ NEW ORDERS GO TO THE TOP (front of array)
             stackOrders = [...newOrdersList, ...stackOrders];
             if (stackOrders.length > 30) stackOrders = stackOrders.slice(0, 30);
+            
+            // Show notification
+            const container = document.getElementById('stackContainer');
+            if (container) {
+                const tempDiv = document.createElement('div');
+                tempDiv.className = 'stack-item new-order';
+                tempDiv.style.marginBottom = '10px';
+                tempDiv.style.textAlign = 'center';
+                tempDiv.style.padding = '10px';
+                tempDiv.innerHTML = `
+                    <div><i class="fas fa-bell" style="color: var(--cyan); font-size: 1rem;"></i></div>
+                    <div style="font-size: 0.7rem; margin-top: 5px;">🆕 အော်ဒါအသစ် ${newOrdersList.length} ခုရောက်ရှိလာပါသည်!</div>
+                `;
+                container.prepend(tempDiv);
+                setTimeout(() => tempDiv.remove(), 3000);
+            }
         } else {
             const updatedStack = [];
             for (const order of sortedOrders) {
@@ -1594,9 +1611,12 @@
     if (myPhone) {
         console.log("✅ Loaded with saved phone:", maskPhoneNumber(myPhone));
     }
-    console.log("✅ ATH DIGITAL HUB - TOP TO BOTTOM FLOW (CORRECTED)");
-    console.log("✅ Top card moves to bottom every 10 seconds (downward flow)");
-    console.log("✅ Search highlight works on both My Orders and Live Feed");
+    console.log("✅ ATH DIGITAL HUB - FULLY FUNCTIONAL");
+    console.log("✅ New orders: appear at TOP");
+    console.log("✅ Rotation: TOP card moves to BOTTOM every 10 seconds (downward flow)");
+    console.log("✅ Search highlight: yellow glow + auto scroll");
+    console.log("✅ Language switcher: Myanmar/English");
+    console.log("✅ Live badge: red blinking");
 </script>
 </body>
 </html>
