@@ -216,31 +216,37 @@
         }
         .card-content {
             padding: 12px;
-            min-height: 300px;
+            max-height: 500px;
+            overflow-y: auto;
         }
         
-        /* Slider Item */
-        .slider-container {
-            position: relative;
+        /* Vertical Stack Container */
+        .stack-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        .slider-item {
+        
+        /* Stack Item */
+        .stack-item {
             background: linear-gradient(135deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
             border-radius: 12px;
-            padding: 14px;
+            padding: 12px;
             border-left: 3px solid var(--violet);
-            animation: slideIn 0.4s ease;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.3s ease;
         }
-        @keyframes slideIn {
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(-15px);
+                transform: translateY(-10px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        .slider-item.new-order {
+        .stack-item.new-order {
             border-left-color: var(--cyan);
             background: rgba(0,212,255,0.08);
         }
@@ -261,7 +267,7 @@
             100% { opacity: 1; }
         }
         
-        .slider-header {
+        .stack-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -269,41 +275,41 @@
             gap: 8px;
             margin-bottom: 8px;
         }
-        .slider-plan {
-            font-size: 0.8rem;
+        .stack-plan {
+            font-size: 0.75rem;
             font-weight: 700;
             color: var(--cyan);
         }
-        .slider-status {
+        .stack-status {
             display: inline-block;
             padding: 3px 10px;
             border-radius: 40px;
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             font-weight: 600;
         }
-        .slider-status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
-        .slider-status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
-        .slider-status.rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        .stack-status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .stack-status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
+        .stack-status.rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
         
-        .slider-details {
+        .stack-details {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
         }
-        .slider-phone {
-            font-size: 0.7rem;
+        .stack-phone {
+            font-size: 0.65rem;
             font-family: monospace;
             color: var(--amber);
         }
-        .slider-price {
-            font-size: 0.75rem;
+        .stack-price {
+            font-size: 0.7rem;
             font-weight: 600;
             color: var(--emerald);
         }
         
-        .slider-indicator {
+        .stack-indicator {
             text-align: center;
             margin-top: 12px;
             font-size: 0.55rem;
@@ -651,6 +657,14 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
+        
+        .rotate-icon {
+            animation: rotate 1s linear infinite;
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -750,13 +764,13 @@
         <div class="card-header">
             <i class="fas fa-globe"></i> အခြားသူများ၏ အော်ဒါများ 
             <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span>
-            <span class="priority-badge"><i class="fas fa-bolt"></i> PRIORITY</span>
+            <span class="priority-badge"><i class="fas fa-arrow-down"></i> STACK SLIDER</span>
         </div>
-        <div class="card-content slider-container" id="sliderContainer">
-            <div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading slider...</div>
+        <div class="card-content stack-container" id="stackContainer">
+            <div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading stack...</div>
         </div>
-        <div class="slider-indicator" id="sliderIndicator">
-            <i class="fas fa-arrow-down"></i> လှုပ်ရှားနေပါသည် <i class="fas fa-arrow-down"></i>
+        <div class="stack-indicator" id="stackIndicator">
+            <i class="fas fa-arrow-down rotate-icon"></i> လှုပ်ရှားနေပါသည် (၁၀ စက္ကန့်တစ်ခါ) <i class="fas fa-arrow-down rotate-icon"></i>
         </div>
     </div>
 </div>
@@ -807,33 +821,14 @@
     let refreshSecondsLeft = 30;
     let countdownIntervals = {};
     
-    // Priority Slider variables
-    let sliderQueue = [];
-    let currentSliderIndex = 0;
-    let sliderInterval = null;
+    // Vertical Stack Slider variables
+    let stackOrders = [];           // Current orders in stack
+    let rotateInterval = null;
     let lastOrdersHash = '';
-    const SLIDER_SPEED = 7000;      // 7 seconds per item
-    const MAX_QUEUE_SIZE = 30;
+    const ROTATE_INTERVAL = 10000;  // 10 seconds per rotation
     
-    // Track which orders are "new" (within last 2 minutes)
-    let newOrderIds = new Set();
-    const NEW_ORDER_TIMEOUT = 2 * 60 * 1000; // 2 minutes
-    
-    function markAsNew(orderId, createdAt) {
-        const orderTime = new Date(createdAt).getTime();
-        const now = Date.now();
-        if (now - orderTime < NEW_ORDER_TIMEOUT) {
-            newOrderIds.add(orderId);
-            // Auto remove after timeout
-            setTimeout(() => {
-                newOrderIds.delete(orderId);
-                // Refresh display if this order is currently showing
-                if (sliderQueue[currentSliderIndex]?.id === orderId) {
-                    renderSliderItem();
-                }
-            }, NEW_ORDER_TIMEOUT - (now - orderTime));
-        }
-    }
+    // NEW badge timeout (2 minutes)
+    const NEW_ORDER_TIMEOUT = 2 * 60 * 1000;
     
     function isNewOrder(order) {
         const orderTime = new Date(order.created_at).getTime();
@@ -932,45 +927,56 @@
         }
     }
     
-    // ==================== PRIORITY SLIDER FUNCTIONS ====================
+    // ==================== VERTICAL STACK SLIDER FUNCTIONS ====================
     
-    function updateSliderQueue(newOrders) {
+    // Rotate stack: move first item to the end
+    function rotateStack() {
+        if (stackOrders.length <= 1) return;
+        
+        const firstItem = stackOrders.shift();
+        stackOrders.push(firstItem);
+        renderStack();
+    }
+    
+    // Update stack with new orders (new orders go to FRONT)
+    function updateStack(newOrders) {
         const otherOrders = newOrders.filter(order => order.phone !== myPhone);
         
         if (otherOrders.length === 0) {
-            if (sliderQueue.length > 0) {
-                sliderQueue = [];
-                renderSliderItem();
+            if (stackOrders.length > 0) {
+                stackOrders = [];
+                renderStack();
             }
             return;
         }
         
+        // Sort by created_at (newest first)
         const sortedOrders = [...otherOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        
         const ordersHash = JSON.stringify(sortedOrders.map(o => ({ id: o.id, status: o.status })));
         
-        if (ordersHash === lastOrdersHash && sliderQueue.length > 0) {
+        if (ordersHash === lastOrdersHash && stackOrders.length > 0) {
             return;
         }
         lastOrdersHash = ordersHash;
         
-        const currentQueueIds = sliderQueue.map(o => o.id);
+        const currentQueueIds = stackOrders.map(o => o.id);
         const newOrdersList = sortedOrders.filter(o => !currentQueueIds.includes(o.id));
         
         if (newOrdersList.length > 0) {
-            console.log(`🆕 Found ${newOrdersList.length} new order(s), adding to front`);
-            sliderQueue = [...newOrdersList, ...sliderQueue];
+            console.log(`🆕 Found ${newOrdersList.length} new order(s), adding to front of stack`);
+            stackOrders = [...newOrdersList, ...stackOrders];
             
-            if (sliderQueue.length > MAX_QUEUE_SIZE) {
-                sliderQueue = sliderQueue.slice(0, MAX_QUEUE_SIZE);
+            // Limit stack size to 30
+            if (stackOrders.length > 30) {
+                stackOrders = stackOrders.slice(0, 30);
             }
             
-            currentSliderIndex = 0;
-            
             // Show notification
-            const container = document.getElementById('sliderContainer');
+            const container = document.getElementById('stackContainer');
             if (container) {
                 const tempDiv = document.createElement('div');
-                tempDiv.className = 'slider-item new-order';
+                tempDiv.className = 'stack-item new-order';
                 tempDiv.style.marginBottom = '10px';
                 tempDiv.style.textAlign = 'center';
                 tempDiv.style.padding = '10px';
@@ -979,35 +985,33 @@
                     <div style="font-size: 0.7rem; margin-top: 5px;">အော်ဒါအသစ် ${newOrdersList.length} ခုရောက်ရှိလာပါသည်!</div>
                 `;
                 container.prepend(tempDiv);
-                setTimeout(() => tempDiv.remove(), 2000);
+                setTimeout(() => tempDiv.remove(), 3000);
             }
         } else {
-            const updatedQueue = [];
+            // No new orders, just update existing ones (status may have changed)
+            const updatedStack = [];
             for (const order of sortedOrders) {
                 if (currentQueueIds.includes(order.id)) {
-                    updatedQueue.push(order);
+                    updatedStack.push(order);
                 }
             }
-            for (const oldOrder of sliderQueue) {
-                if (!updatedQueue.find(o => o.id === oldOrder.id)) {
-                    updatedQueue.push(oldOrder);
+            for (const oldOrder of stackOrders) {
+                if (!updatedStack.find(o => o.id === oldOrder.id)) {
+                    updatedStack.push(oldOrder);
                 }
             }
-            sliderQueue = updatedQueue.slice(0, MAX_QUEUE_SIZE);
+            stackOrders = updatedStack.slice(0, 30);
         }
         
-        if (sliderQueue.length > 0 && currentSliderIndex >= sliderQueue.length) {
-            currentSliderIndex = 0;
-        }
-        
-        renderSliderItem();
+        renderStack();
     }
     
-    function renderSliderItem() {
-        const container = document.getElementById('sliderContainer');
-        const indicator = document.getElementById('sliderIndicator');
+    // Render full stack (all orders visible)
+    function renderStack() {
+        const container = document.getElementById('stackContainer');
+        const indicator = document.getElementById('stackIndicator');
         
-        if (sliderQueue.length === 0) {
+        if (stackOrders.length === 0) {
             container.innerHTML = `<div class="empty-msg">📭 အခြားသူများ၏ အော်ဒါမရှိသေးပါ။<br>စောင့်ဆိုင်းနေပါသည်...</div>`;
             if (indicator) indicator.style.opacity = '0.3';
             return;
@@ -1015,65 +1019,60 @@
         
         if (indicator) {
             indicator.style.opacity = '1';
-            indicator.innerHTML = `<i class="fas fa-arrow-down"></i> ${currentSliderIndex + 1} / ${sliderQueue.length} <i class="fas fa-arrow-down"></i>`;
+            indicator.innerHTML = `<i class="fas fa-arrow-down rotate-icon"></i> စုစုပေါင်း ${stackOrders.length} ကဒ် (၁၀ စက္ကန့်တစ်ခါ အပေါ်ဆုံးကဒ် အောက်ဆုံးသို့ရွေ့မည်) <i class="fas fa-arrow-down rotate-icon"></i>`;
         }
         
-        const order = sliderQueue[currentSliderIndex];
-        if (!order) return;
+        let html = '<div class="stack-container">';
         
-        const isNew = isNewOrder(order);
-        
-        let statusClass = "pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
-        if (order.status === "Approved") { 
-            statusClass = "approved"; 
-            statusText = "✅ အတည်ပြုပြီး";
-        }
-        if (order.status === "Rejected") { 
-            statusClass = "rejected"; 
-            statusText = "❌ ပယ်ဖျက်ခံရ";
-        }
-        
-        const maskedPhone = maskPhoneNumber(order.phone);
-        const priceFormatted = order.price.toLocaleString();
-        
-        const newBadgeHtml = isNew ? `<div class="new-badge"><i class="fas fa-fire"></i> NEW</div>` : '';
-        
-        container.innerHTML = `
-            <div class="slider-item ${isNew ? 'new-order' : ''}">
-                ${newBadgeHtml}
-                <div class="slider-header">
-                    <span class="slider-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
-                    <span class="slider-status ${statusClass}">${statusText}</span>
-                </div>
-                <div class="slider-details">
-                    <span class="slider-phone"><i class="fas fa-mobile-alt"></i> ${maskedPhone}</span>
-                    <span class="slider-price"><i class="fas fa-coins"></i> ${priceFormatted} KS</span>
-                </div>
-            </div>
-        `;
-    }
-    
-    function nextSliderItem() {
-        if (sliderQueue.length === 0) return;
-        currentSliderIndex++;
-        if (currentSliderIndex >= sliderQueue.length) {
-            currentSliderIndex = 0;
-        }
-        renderSliderItem();
-    }
-    
-    function startSlider() {
-        if (sliderInterval) clearInterval(sliderInterval);
-        sliderInterval = setInterval(() => {
-            if (document.getElementById('historyPanel').classList.contains('open')) {
-                nextSliderItem();
+        for (let i = 0; i < stackOrders.length; i++) {
+            const order = stackOrders[i];
+            const isNew = isNewOrder(order);
+            
+            let statusClass = "pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
+            if (order.status === "Approved") { 
+                statusClass = "approved"; 
+                statusText = "✅ အတည်ပြုပြီး";
             }
-        }, SLIDER_SPEED);
+            if (order.status === "Rejected") { 
+                statusClass = "rejected"; 
+                statusText = "❌ ပယ်ဖျက်ခံရ";
+            }
+            
+            const maskedPhone = maskPhoneNumber(order.phone);
+            const priceFormatted = order.price.toLocaleString();
+            const newBadgeHtml = isNew ? `<div class="new-badge"><i class="fas fa-fire"></i> NEW</div>` : '';
+            
+            html += `
+                <div class="stack-item ${isNew ? 'new-order' : ''}">
+                    ${newBadgeHtml}
+                    <div class="stack-header">
+                        <span class="stack-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
+                        <span class="stack-status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="stack-details">
+                        <span class="stack-phone"><i class="fas fa-mobile-alt"></i> ${maskedPhone}</span>
+                        <span class="stack-price"><i class="fas fa-coins"></i> ${priceFormatted} KS</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        html += `</div>`;
+        container.innerHTML = html;
     }
     
-    function stopSlider() {
-        if (sliderInterval) clearInterval(sliderInterval);
-        sliderInterval = null;
+    function startStackRotation() {
+        if (rotateInterval) clearInterval(rotateInterval);
+        rotateInterval = setInterval(() => {
+            if (document.getElementById('historyPanel').classList.contains('open')) {
+                rotateStack();
+            }
+        }, ROTATE_INTERVAL);
+    }
+    
+    function stopStackRotation() {
+        if (rotateInterval) clearInterval(rotateInterval);
+        rotateInterval = null;
     }
     
     // ==================== RENDER MY ORDERS ====================
@@ -1202,12 +1201,12 @@
             if (data.orders) {
                 allOrdersData = data.orders;
                 renderMyOrders();
-                updateSliderQueue(allOrdersData);
+                updateStack(allOrdersData);
             }
         } catch(e) {
             console.error("Load data error:", e);
             document.getElementById('myOrdersContainer').innerHTML = `<div class="empty-msg">Connection Error: ${e.message}</div>`;
-            document.getElementById('sliderContainer').innerHTML = `<div class="empty-msg">Connection Error: ${e.message}</div>`;
+            document.getElementById('stackContainer').innerHTML = `<div class="empty-msg">Connection Error: ${e.message}</div>`;
         }
     }
     
@@ -1280,14 +1279,14 @@
         document.getElementById('historyPanel').classList.add('open');
         loadAllData();
         startAutoRefresh();
-        startSlider();
+        startStackRotation();
         clearSearch();
     }
     
     function closeHistory() {
         document.getElementById('historyPanel').classList.remove('open');
         stopAutoRefresh();
-        stopSlider();
+        stopStackRotation();
     }
     
     // ==================== EVENT LISTENERS ====================
@@ -1347,10 +1346,11 @@
     if (myPhone) {
         console.log("✅ Loaded with saved phone:", maskPhoneNumber(myPhone));
     }
-    console.log("✅ ATH DIGITAL HUB - PRIORITY SLIDER WITH NEW BADGE!");
-    console.log("✅ New orders show 🔥 NEW badge for 2 minutes!");
-    console.log("✅ No time/date displayed on slider!");
-    console.log("✅ Slider rotates every 7 seconds!");
+    console.log("✅ ATH DIGITAL HUB - VERTICAL STACK SLIDER MODE!");
+    console.log("✅ All orders visible in stack!");
+    console.log("✅ Top order moves to bottom every 10 seconds!");
+    console.log("✅ New orders added to top of stack immediately!");
+    console.log("✅ 🔥 NEW badge shows for 2 minutes!");
 </script>
 </body>
 </html>
