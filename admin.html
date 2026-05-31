@@ -82,6 +82,7 @@
         }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         
+        /* Tab Bar */
         .tab-bar {
             display: flex;
             gap: 10px;
@@ -109,6 +110,7 @@
             box-shadow: 0 0 10px rgba(0,212,255,0.3);
         }
         
+        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -141,6 +143,7 @@
         .stat-number.profit { color: var(--emerald); }
         .stat-number.cost { color: var(--amber); }
         
+        /* Search Bar - Works for both tabs */
         .search-bar {
             background: rgba(18, 22, 35, 0.8);
             backdrop-filter: blur(12px);
@@ -185,6 +188,7 @@
             cursor: pointer;
         }
         
+        /* Filter Bar */
         .filter-bar {
             background: rgba(18, 22, 35, 0.8);
             backdrop-filter: blur(12px);
@@ -224,6 +228,7 @@
         }
         .filter-btn:hover { background: var(--cyan); color: #030712; }
         
+        /* Orders List */
         .orders-list {
             display: flex;
             flex-direction: column;
@@ -241,7 +246,7 @@
         .order-card:hover { border-color: rgba(0,212,255,0.3); transform: translateX(3px); }
         
         /* Search Highlight Effect */
-        .order-card.search-highlight {
+        .order-card.search-highlight, .user-card.search-highlight {
             border: 2px solid #fbbf24;
             background: rgba(251, 191, 36, 0.15);
             box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
@@ -368,6 +373,7 @@
             color: var(--cyan);
         }
         
+        /* Users List */
         .users-list {
             display: flex;
             flex-direction: column;
@@ -559,6 +565,7 @@
             <div class="stat-card"><div class="stat-number" id="avgProfit">0</div><div class="stat-label"><i class="fas fa-percent"></i> Avg</div></div>
         </div>
         
+        <!-- Search Bar - Works for both Orders and Users -->
         <div class="search-bar">
             <input type="tel" id="searchPhoneInput" class="search-input" placeholder="🔍 Search by phone number (09xxxxxxxxx)">
             <button class="search-btn" onclick="searchByPhone()"><i class="fas fa-search"></i> Search</button>
@@ -817,8 +824,12 @@
             if (user.blocked) { statusClass = 'blocked'; statusText = '🔴 Blocked'; }
             else if (user.suspect_flag) { statusClass = 'suspect'; statusText = '🟡 Suspect'; }
             
+            // Check if this user should be highlighted
+            const isHighlighted = currentSearchPhone && user.phone === currentSearchPhone;
+            const highlightClass = isHighlighted ? 'search-highlight' : '';
+            
             html += `
-                <div class="user-card">
+                <div class="user-card ${highlightClass}">
                     <div class="user-header">
                         <span class="user-phone" onclick="copyToClipboard('${user.phone}')">📞 ${maskPhone(user.phone)} 📋</span>
                         <span class="user-status ${statusClass}">${statusText}</span>
@@ -841,22 +852,28 @@
     }
 
     function applyFiltersAndSearch() {
-        let filtered = [...allOrders];
+        let filteredOrders = [...allOrders];
+        let filteredUsers = [...userStats];
         
+        // Apply phone search for both orders and users
         if (currentSearchPhone) {
-            filtered = filtered.filter(o => o.phone === currentSearchPhone);
+            filteredOrders = filteredOrders.filter(o => o.phone === currentSearchPhone);
+            filteredUsers = filteredUsers.filter(u => u.phone === currentSearchPhone);
         }
         
+        // Apply status filter (only for orders)
         const status = document.getElementById('statusFilter').value;
-        if (status !== 'all') filtered = filtered.filter(o => o.status === status);
+        if (status !== 'all') filteredOrders = filteredOrders.filter(o => o.status === status);
         
+        // Apply date filters (only for orders)
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
-        if (startDate) { const start = new Date(startDate); start.setHours(0,0,0,0); filtered = filtered.filter(o => new Date(o.created_at) >= start); }
-        if (endDate) { const end = new Date(endDate); end.setHours(23,59,59,999); filtered = filtered.filter(o => new Date(o.created_at) <= end); }
+        if (startDate) { const start = new Date(startDate); start.setHours(0,0,0,0); filteredOrders = filteredOrders.filter(o => new Date(o.created_at) >= start); }
+        if (endDate) { const end = new Date(endDate); end.setHours(23,59,59,999); filteredOrders = filteredOrders.filter(o => new Date(o.created_at) <= end); }
         
-        renderOrders(filtered);
-        updateStats(filtered);
+        renderOrders(filteredOrders);
+        renderUsersTabWithFilter(filteredUsers);
+        updateStats(filteredOrders);
         
         if (currentSearchPhone) {
             if (!document.getElementById('searchResultMsg')) {
@@ -867,12 +884,65 @@
                 msgDiv.style.justifyContent = 'center';
                 document.querySelector('.filter-bar').after(msgDiv);
             }
-            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Phone: ${currentSearchPhone} | Found: ${filtered.length} order(s)`;
+            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Phone: ${currentSearchPhone} | Orders: ${filteredOrders.length} | Users: ${filteredUsers.length}`;
         } else {
             if (document.getElementById('searchResultMsg')) {
                 document.getElementById('searchResultMsg').remove();
             }
         }
+        
+        // Auto scroll to highlighted card
+        setTimeout(() => {
+            const highlighted = document.querySelector('.order-card.search-highlight, .user-card.search-highlight');
+            if (highlighted) {
+                highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+    }
+    
+    function renderUsersTabWithFilter(filteredUsers) {
+        const container = document.getElementById('usersList');
+        if (!filteredUsers.length) {
+            container.innerHTML = '<div class="loading">No users found</div>';
+            return;
+        }
+        
+        let html = '';
+        for (const user of filteredUsers) {
+            const rejectRate = user.order_count > 0 ? ((user.reject_count / user.order_count) * 100).toFixed(0) : 0;
+            let rateClass = '';
+            if (rejectRate >= 50) rateClass = 'high';
+            else if (rejectRate >= 30) rateClass = 'medium';
+            
+            let statusClass = 'normal';
+            let statusText = '🟢 Normal';
+            if (user.blocked) { statusClass = 'blocked'; statusText = '🔴 Blocked'; }
+            else if (user.suspect_flag) { statusClass = 'suspect'; statusText = '🟡 Suspect'; }
+            
+            const isHighlighted = currentSearchPhone && user.phone === currentSearchPhone;
+            const highlightClass = isHighlighted ? 'search-highlight' : '';
+            
+            html += `
+                <div class="user-card ${highlightClass}">
+                    <div class="user-header">
+                        <span class="user-phone" onclick="copyToClipboard('${user.phone}')">📞 ${maskPhone(user.phone)} 📋</span>
+                        <span class="user-status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="user-stats">
+                        <div class="user-stat"><div class="user-stat-value">${user.order_count || 0}</div><div class="user-stat-label">Orders</div></div>
+                        <div class="user-stat"><div class="user-stat-value ${rejectRate >= 50 ? 'high' : (rejectRate >= 30 ? 'medium' : '')}">${user.reject_count || 0}</div><div class="user-stat-label">Rejected</div></div>
+                        <div class="user-stat"><div class="user-stat-value reject-rate ${rateClass}">${rejectRate}%</div><div class="user-stat-label">Reject Rate</div></div>
+                    </div>
+                    <div class="user-actions">
+                        ${!user.blocked ? `<button class="user-action-btn block" onclick="blockUser('${user.phone}', true)">🔴 Block</button>` : `<button class="user-action-btn unblock" onclick="blockUser('${user.phone}', false)">🟢 Unblock</button>`}
+                        <button class="user-action-btn delete-user" onclick="deleteUser('${user.phone}')">❌ Delete User</button>
+                        <button class="user-action-btn delete-orders" onclick="deleteAllOrders('${user.phone}')">🗑 Delete All Orders</button>
+                        ${user.suspect_flag ? `<button class="user-action-btn clear" onclick="clearSuspectFlag('${user.phone}')">✓ Clear Flag</button>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
     }
 
     function searchByPhone() {
@@ -883,13 +953,6 @@
         }
         currentSearchPhone = phone;
         applyFiltersAndSearch();
-        // Auto scroll to highlighted card
-        setTimeout(() => {
-            const highlighted = document.querySelector('.order-card.search-highlight');
-            if (highlighted) {
-                highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 100);
     }
     
     function clearSearch() {
@@ -918,7 +981,6 @@
             let statusClass = o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected');
             let statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
             
-            // Check if this order should be highlighted
             const isHighlighted = currentSearchPhone && o.phone === currentSearchPhone;
             const highlightClass = isHighlighted ? 'search-highlight' : '';
             
@@ -994,6 +1056,7 @@
     function manualRefresh() { loadAllData(); showToast('🔄 Synced'); secondsLeft = 30; updateCountdown(); }
     function showToast(msg) { const t = document.createElement('div'); t.style.cssText = 'position:fixed;bottom:80px;right:20px;background:#10b981;color:#030712;padding:8px 16px;border-radius:60px;font-size:0.8rem;font-weight:bold;z-index:9999'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
 
+    // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1006,7 +1069,7 @@
             } else {
                 document.getElementById('ordersTab').classList.add('hidden');
                 document.getElementById('usersTab').classList.remove('hidden');
-                loadUserStats();
+                applyFiltersAndSearch(); // Refresh with current search
             }
         });
     });
