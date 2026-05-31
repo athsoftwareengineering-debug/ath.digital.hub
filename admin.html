@@ -38,7 +38,7 @@
             z-index: -2;
         }
         
-        .container { max-width: 800px; margin: 0 auto; }
+        .container { max-width: 600px; margin: 0 auto; }
         
         /* Header */
         .header {
@@ -83,7 +83,7 @@
         }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         
-        /* Tab Bar */
+        /* Tab Bar - NEW */
         .tab-bar {
             display: flex;
             gap: 10px;
@@ -114,71 +114,35 @@
         /* Stats Cards Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
             margin-bottom: 16px;
         }
         .stat-card {
             background: linear-gradient(145deg, rgba(18,22,35,0.9), rgba(10,12,21,0.95));
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 1rem;
-            padding: 10px;
+            border-radius: 1.2rem;
+            padding: 12px;
             text-align: center;
         }
         .stat-number {
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             font-weight: 800;
             font-family: 'Space Grotesk', monospace;
             color: var(--cyan);
         }
         .stat-label {
-            font-size: 0.55rem;
+            font-size: 0.6rem;
             color: var(--text-secondary);
-            margin-top: 3px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
         .stat-number.profit { color: var(--emerald); }
-        
-        /* Filter Bar */
-        .filter-bar {
-            background: rgba(18, 22, 35, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(0,212,255,0.15);
-            border-radius: 1rem;
-            padding: 12px;
-            margin-bottom: 16px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: space-between;
-        }
-        .filter-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            flex: 1;
-        }
-        .filter-input {
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #2d3a5e;
-            border-radius: 40px;
-            padding: 8px 12px;
-            color: white;
-            font-size: 0.7rem;
-            flex: 1;
-            min-width: 100px;
-        }
-        .filter-input:focus { border-color: var(--cyan); outline: none; }
-        .filter-btn {
-            background: rgba(0,212,255,0.15);
-            border: 1px solid rgba(0,212,255,0.3);
-            padding: 8px 16px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        .filter-btn:hover { background: var(--cyan); color: #030712; }
+        .stat-number.cost { color: var(--amber); }
         
         /* Search Bar */
         .search-bar {
@@ -225,7 +189,47 @@
             cursor: pointer;
         }
         
-        /* Orders Cards List - Card Layout for Mobile */
+        /* Filter Bar */
+        .filter-bar {
+            background: rgba(18, 22, 35, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0,212,255,0.15);
+            border-radius: 1rem;
+            padding: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: space-between;
+        }
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            flex: 1;
+        }
+        .filter-input {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 40px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 0.7rem;
+            flex: 1;
+            min-width: 100px;
+        }
+        .filter-btn {
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .filter-btn:hover { background: var(--cyan); color: #030712; }
+        
+        /* Orders List - Card Layout */
         .orders-list {
             display: flex;
             flex-direction: column;
@@ -271,26 +275,45 @@
         .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
         .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
         
-        .order-row {
+        .order-details {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 8px;
+            gap: 12px;
+            margin-bottom: 10px;
         }
-        .order-label {
-            font-size: 0.6rem;
+        .detail-item {
+            flex: 1;
+            min-width: 80px;
+        }
+        .detail-label {
+            font-size: 0.55rem;
             color: #64748b;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            margin-bottom: 2px;
         }
-        .order-value {
+        .detail-value {
             font-size: 0.8rem;
             font-weight: 600;
         }
-        .order-value.price { color: var(--emerald); }
+        .detail-value.price { color: var(--emerald); }
+        .detail-value.cost { color: var(--amber); }
+        .detail-value.profit { color: var(--cyan); }
+        
+        /* Countdown Timer Style */
+        .countdown-box {
+            background: rgba(0,212,255,0.08);
+            border-radius: 40px;
+            padding: 6px 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            font-family: 'Space Grotesk', monospace;
+            border: 1px solid rgba(0,212,255,0.2);
+        }
+        .countdown-box i { color: var(--cyan); }
+        .countdown-timer { font-weight: 700; color: var(--cyan); letter-spacing: 1px; }
         
         .order-actions {
             display: flex;
@@ -323,13 +346,13 @@
             border-radius: 40px;
             font-size: 0.7rem;
             cursor: pointer;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             gap: 6px;
             color: var(--cyan);
         }
         
-        /* Users Cards List */
+        /* Users List - Card Layout NEW */
         .users-list {
             display: flex;
             flex-direction: column;
@@ -342,7 +365,9 @@
             border: 1px solid rgba(0,212,255,0.1);
             border-radius: 1.2rem;
             padding: 14px;
+            transition: all 0.2s;
         }
+        .user-card:hover { border-color: rgba(0,212,255,0.3); }
         .user-header {
             display: flex;
             justify-content: space-between;
@@ -366,20 +391,16 @@
         .user-status.suspect { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .user-status.blocked { background: rgba(244,63,94,0.2); color: #fb7185; }
         .user-status.normal { background: rgba(16,185,129,0.2); color: #34d399; }
-        
         .user-stats {
             display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
+            justify-content: space-around;
             margin-bottom: 10px;
         }
         .user-stat {
             text-align: center;
-            flex: 1;
         }
         .user-stat-value {
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 700;
         }
         .user-stat-label {
@@ -388,7 +409,6 @@
         }
         .reject-rate.high { color: var(--rose); }
         .reject-rate.medium { color: var(--amber); }
-        
         .user-actions {
             display: flex;
             gap: 8px;
@@ -398,46 +418,19 @@
         }
         .user-action-btn {
             flex: 1;
-            padding: 6px;
-            border-radius: 40px;
-            font-size: 0.65rem;
-            cursor: pointer;
-            font-weight: 500;
             border: none;
+            padding: 8px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-weight: 600;
         }
         .user-action-btn.block { background: rgba(244,63,94,0.2); color: #fb7185; }
         .user-action-btn.unblock { background: rgba(16,185,129,0.2); color: #34d399; }
         .user-action-btn.clear { background: rgba(0,212,255,0.15); color: var(--cyan); }
         
-        /* Bottom Status Bar */
-        .bottom-status {
-            background: rgba(18,22,35,0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(0,212,255,0.15);
-            border-radius: 1rem;
-            padding: 8px 12px;
-            margin-top: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            font-size: 0.6rem;
-            color: #64748b;
-        }
-        .live-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #f43f5e;
-            animation: liveBlink 1s step-end infinite;
-            display: inline-block;
-            margin-right: 4px;
-        }
-        @keyframes liveBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
+        /* Hidden class for tabs */
+        .hidden { display: none; }
         
         /* Floating Action Buttons */
         .fab-container {
@@ -546,11 +539,13 @@
             font-weight: 700;
             cursor: pointer;
         }
-        
         .loading { text-align: center; padding: 2rem; color: #64748b; }
-        .empty-msg { text-align: center; padding: 2rem; color: #64748b; }
-        .hidden { display: none; }
-        
+        .last-update {
+            font-size: 0.6rem;
+            color: #475569;
+            text-align: center;
+            padding: 12px;
+        }
         .search-result-badge {
             background: rgba(0,212,255,0.1);
             border-radius: 40px;
@@ -559,7 +554,6 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            margin-bottom: 12px;
         }
     </style>
 </head>
@@ -583,13 +577,17 @@
         
         <!-- Stats Cards -->
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label">Total</div></div>
-            <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label">Pending</div></div>
-            <div class="stat-card"><div class="stat-number" id="approvedOrders">0</div><div class="stat-label">Approved</div></div>
-            <div class="stat-card"><div class="stat-number profit" id="totalProfit">0</div><div class="stat-label">Profit (K)</div></div>
+            <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label"><i class="fas fa-shopping-cart"></i> Total</div></div>
+            <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label"><i class="fas fa-clock"></i> Pending</div></div>
+            <div class="stat-card"><div class="stat-number" id="approvedOrders">0</div><div class="stat-label"><i class="fas fa-check-circle"></i> Approved</div></div>
+            <div class="stat-card"><div class="stat-number" id="rejectedOrders">0</div><div class="stat-label"><i class="fas fa-times-circle"></i> Rejected</div></div>
+            <div class="stat-card"><div class="stat-number" id="totalRevenue">0</div><div class="stat-label"><i class="fas fa-coins"></i> Revenue</div></div>
+            <div class="stat-card"><div class="stat-number cost" id="totalCost">0</div><div class="stat-label"><i class="fas fa-boxes"></i> Cost</div></div>
+            <div class="stat-card"><div class="stat-number profit" id="totalProfit">0</div><div class="stat-label"><i class="fas fa-chart-line"></i> Profit</div></div>
+            <div class="stat-card"><div class="stat-number" id="avgProfit">0</div><div class="stat-label"><i class="fas fa-percent"></i> Avg</div></div>
         </div>
         
-        <!-- Search Bar -->
+        <!-- Search by Phone -->
         <div class="search-bar">
             <input type="tel" id="searchPhoneInput" class="search-input" placeholder="🔍 Search by phone number (09xxxxxxxxx)">
             <button class="search-btn" onclick="searchByPhone()"><i class="fas fa-search"></i> Search</button>
@@ -614,26 +612,21 @@
             </div>
         </div>
         
-        <!-- Orders Tab - Card Layout -->
+        <!-- Orders Tab -->
         <div id="ordersTab">
             <div class="orders-list" id="ordersList">
                 <div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading orders...</div>
             </div>
         </div>
         
-        <!-- Users Tab -->
+        <!-- Users Tab (NEW) -->
         <div id="usersTab" class="hidden">
             <div class="users-list" id="usersList">
                 <div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading users...</div>
             </div>
         </div>
         
-        <!-- Bottom Status Bar -->
-        <div class="bottom-status">
-            <span><span class="live-dot"></span> LIVE</span>
-            <span><i class="fas fa-sync-alt"></i> 30s auto sync</span>
-            <span id="orderCountSpan"><i class="fas fa-shopping-cart"></i> 0 orders</span>
-        </div>
+        <div class="last-update" id="lastUpdate"></div>
     </div>
     
     <!-- Floating Action Buttons -->
@@ -669,24 +662,90 @@
     let userStats = [];
     let autoSyncInterval = null, countdownInterval = null;
     let secondsLeft = 30;
+    let activeCountdowns = {};
     let currentSearchPhone = "";
     let currentTab = "orders";
-    
+
     const costPriceMap = {
         "VIP LEVEL - 1": 14500,
         "VIP LEVEL - 2": 19500,
         "VIP LEVEL - 3": 24500,
         "VIP LEVEL - 4 (ULTRA)": 29000
     };
-    
+
     function getCostPrice(plan) { return costPriceMap[plan] || 0; }
     function getProfit(price, plan) { return price - getCostPrice(plan); }
-    
     function maskPhone(phone) {
         if (!phone || phone.length < 8) return phone || '';
         return phone.substring(0, 5) + '***' + phone.substring(phone.length - 3);
     }
     
+    // Calculate remaining days for approved order (30 days from activated_at)
+    function getRemainingTime(activatedAt) {
+        if (!activatedAt) return null;
+        const now = Date.now();
+        const endDate = new Date(activatedAt).getTime() + (30 * 24 * 60 * 60 * 1000);
+        const remaining = endDate - now;
+        if (remaining <= 0) return "Expired";
+        const days = Math.floor(remaining / (24 * 60 * 60 * 1000));
+        const hours = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+        const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+        const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+        return { days, hours, minutes, seconds, remaining };
+    }
+    
+    function formatCountdown(activatedAt) {
+        const time = getRemainingTime(activatedAt);
+        if (!time) return null;
+        if (time === "Expired") return "Expired";
+        return `${time.days}d ${time.hours}h ${time.minutes}m ${time.seconds}s`;
+    }
+
+    function startCountdownForOrder(orderId, activatedAt) {
+        if (activeCountdowns[orderId]) clearInterval(activeCountdowns[orderId]);
+        activeCountdowns[orderId] = setInterval(() => {
+            const elem = document.getElementById(`countdown-${orderId}`);
+            if (elem) {
+                const formatted = formatCountdown(activatedAt);
+                if (formatted === "Expired") {
+                    elem.innerHTML = `<i class="fas fa-calendar-times"></i> <span style="color:#f43f5e;">Expired</span>`;
+                    clearInterval(activeCountdowns[orderId]);
+                } else {
+                    elem.innerHTML = `<i class="fas fa-hourglass-half"></i> <span class="countdown-timer">${formatted}</span>`;
+                }
+            } else {
+                clearInterval(activeCountdowns[orderId]);
+            }
+        }, 1000);
+    }
+
+    function updateCountdown() {
+        const el = document.getElementById('autoSyncTimer');
+        if (el) el.innerHTML = `Auto Sync: ${secondsLeft}s`;
+    }
+
+    function startAutoSync() {
+        if (autoSyncInterval) clearInterval(autoSyncInterval);
+        if (countdownInterval) clearInterval(countdownInterval);
+        secondsLeft = 30; updateCountdown();
+        countdownInterval = setInterval(() => { secondsLeft--; if (secondsLeft < 0) secondsLeft = 30; updateCountdown(); }, 1000);
+        autoSyncInterval = setInterval(() => { if (token === 'logged_in') { loadAllData(); secondsLeft = 30; updateCountdown(); } }, 30000);
+    }
+
+    function stopAutoSync() { if (autoSyncInterval) clearInterval(autoSyncInterval); if (countdownInterval) clearInterval(countdownInterval); }
+
+    function openScreenshot(url) {
+        const modal = document.getElementById('screenshotModal');
+        const img = document.getElementById('modalImage');
+        if (url && url !== 'null') {
+            img.src = url.startsWith('/') ? API_BASE + url : url;
+        } else {
+            img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E';
+        }
+        modal.classList.add('active');
+    }
+    function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
+
     async function login() {
         const password = document.getElementById('adminPassword').value;
         const res = await fetch(`${API_BASE}/api/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
@@ -699,22 +758,22 @@
             loadAllData(); startAutoSync();
         } else { alert('Invalid Password'); }
     }
-    
-    function logout() { stopAutoSync(); localStorage.removeItem('adminToken'); token = null; location.reload(); }
-    
+
+    function logout() { stopAutoSync(); localStorage.removeItem('adminToken'); token = null; document.getElementById('loginBox').style.display = 'block'; document.getElementById('adminContent').style.display = 'none'; document.getElementById('fabContainer').style.display = 'none'; }
+
     async function loadAllData() {
         await loadOrders();
         await loadUserStats();
     }
-    
+
     async function loadOrders() {
         try {
             const res = await fetch(`${API_BASE}/api/admin/orders`);
             const data = await res.json();
-            if (data.orders) { allOrders = data.orders; applyFiltersAndRender(); }
+            if (data.orders) { allOrders = data.orders; applyFiltersAndSearch(); document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | Total: ${allOrders.length}`; }
         } catch(e) { document.getElementById('ordersList').innerHTML = '<div class="loading">Connection Error</div>'; }
     }
-    
+
     async function loadUserStats() {
         try {
             const res = await fetch(`${API_BASE}/api/admin/user-stats`);
@@ -722,7 +781,7 @@
             if (data.stats) { userStats = data.stats; renderUsersTab(); }
         } catch(e) { console.error('Error loading user stats:', e); }
     }
-    
+
     async function blockUser(phone, block) {
         const res = await fetch(`${API_BASE}/api/admin/user-block`, { 
             method: 'POST', 
@@ -732,7 +791,7 @@
         if (res.ok) { loadUserStats(); showToast(block ? '✅ User blocked' : '✅ User unblocked'); }
         else alert('Error');
     }
-    
+
     async function clearSuspectFlag(phone) {
         const res = await fetch(`${API_BASE}/api/admin/clear-suspect`, { 
             method: 'POST', 
@@ -742,24 +801,29 @@
         if (res.ok) { loadUserStats(); showToast('✅ Suspect flag cleared'); }
         else alert('Error');
     }
-    
+
     function updateStats(orders) {
         const total = orders.length;
         const pending = orders.filter(o => o.status === 'Pending');
         const approved = orders.filter(o => o.status === 'Approved');
-        const profit = approved.reduce((s, o) => s + getProfit(o.price, o.plan), 0);
-        
+        const rejected = orders.filter(o => o.status === 'Rejected');
+        const revenue = approved.reduce((s, o) => s + o.price, 0);
+        const cost = approved.reduce((s, o) => s + getCostPrice(o.plan), 0);
+        const profit = revenue - cost;
         document.getElementById('totalOrders').innerHTML = total;
         document.getElementById('pendingOrders').innerHTML = pending.length;
         document.getElementById('approvedOrders').innerHTML = approved.length;
-        document.getElementById('totalProfit').innerHTML = profit.toLocaleString();
-        document.getElementById('orderCountSpan').innerHTML = `<i class="fas fa-shopping-cart"></i> ${total} orders`;
+        document.getElementById('rejectedOrders').innerHTML = rejected.length;
+        document.getElementById('totalRevenue').innerHTML = revenue.toLocaleString() + 'K';
+        document.getElementById('totalCost').innerHTML = cost.toLocaleString() + 'K';
+        document.getElementById('totalProfit').innerHTML = profit.toLocaleString() + 'K';
+        document.getElementById('avgProfit').innerHTML = (approved.length ? Math.round(profit / approved.length) : 0).toLocaleString() + 'K';
     }
-    
+
     function renderUsersTab() {
         const container = document.getElementById('usersList');
         if (!userStats.length) {
-            container.innerHTML = '<div class="empty-msg">No user data available</div>';
+            container.innerHTML = '<div class="loading">No user data available</div>';
             return;
         }
         
@@ -804,17 +868,20 @@
         }
         container.innerHTML = html;
     }
-    
-    function applyFiltersAndRender() {
+
+    function applyFiltersAndSearch() {
         let filtered = [...allOrders];
         
+        // Apply phone search
         if (currentSearchPhone) {
             filtered = filtered.filter(o => o.phone === currentSearchPhone);
         }
         
+        // Apply status filter
         const status = document.getElementById('statusFilter').value;
         if (status !== 'all') filtered = filtered.filter(o => o.status === status);
         
+        // Apply date filters
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
         if (startDate) { const start = new Date(startDate); start.setHours(0,0,0,0); filtered = filtered.filter(o => new Date(o.created_at) >= start); }
@@ -823,33 +890,74 @@
         renderOrders(filtered);
         updateStats(filtered);
         
+        // Update search result message
+        const searchMsg = document.getElementById('searchResultMsg');
         if (currentSearchPhone) {
+            const resultCount = filtered.length;
             if (!document.getElementById('searchResultMsg')) {
                 const msgDiv = document.createElement('div');
                 msgDiv.id = 'searchResultMsg';
                 msgDiv.className = 'search-result-badge';
                 msgDiv.style.marginBottom = '12px';
+                msgDiv.style.justifyContent = 'center';
                 document.querySelector('.filter-bar').after(msgDiv);
             }
-            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Phone: ${maskPhone(currentSearchPhone)} | Found: ${filtered.length} order(s)`;
+            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Phone: ${currentSearchPhone} | Found: ${resultCount} order(s)`;
         } else {
             if (document.getElementById('searchResultMsg')) {
                 document.getElementById('searchResultMsg').remove();
             }
         }
     }
+
+    function searchByPhone() {
+        const phone = document.getElementById('searchPhoneInput').value.trim();
+        if (!phone) {
+            alert('Please enter a phone number');
+            return;
+        }
+        currentSearchPhone = phone;
+        applyFiltersAndSearch();
+    }
     
+    function clearSearch() {
+        currentSearchPhone = "";
+        document.getElementById('searchPhoneInput').value = "";
+        applyFiltersAndSearch();
+    }
+
+    function applyFilters() {
+        applyFiltersAndSearch();
+    }
+    
+    function clearFilters() {
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        document.getElementById('statusFilter').value = 'all';
+        applyFiltersAndSearch();
+    }
+
     function renderOrders(orders) {
         const container = document.getElementById('ordersList');
         if (!orders || orders.length === 0) { 
             container.innerHTML = '<div class="loading">No orders found</div>'; 
             return; 
         }
-        
         let html = '';
         for (const o of orders) {
             let statusClass = o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected');
             let statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
+            
+            let countdownHtml = '';
+            if (o.status === 'Approved' && o.activated_at) {
+                const initialCountdown = formatCountdown(o.activated_at);
+                countdownHtml = `
+                    <div class="countdown-box" id="countdown-${o.id}">
+                        <i class="fas fa-hourglass-half"></i>
+                        <span class="countdown-timer">${initialCountdown || 'Calculating...'}</span>
+                    </div>
+                `;
+            }
             
             html += `
                 <div class="order-card">
@@ -857,28 +965,37 @@
                         <span class="order-id"><i class="fas fa-hashtag"></i> ${o.id}</span>
                         <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
-                    <div class="order-row">
-                        <span class="order-label"><i class="fas fa-mobile-alt"></i> Phone</span>
-                        <span class="order-value">${maskPhone(o.phone)}</span>
+                    <div class="order-details">
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-mobile-alt"></i> Phone</div>
+                            <div class="detail-value">${o.phone}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-tag"></i> Plan</div>
+                            <div class="detail-value" style="font-size:0.7rem;">${o.plan}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-coins"></i> Price</div>
+                            <div class="detail-value price">${o.price.toLocaleString()}K</div>
+                        </div>
                     </div>
-                    <div class="order-row">
-                        <span class="order-label"><i class="fas fa-tag"></i> Plan</span>
-                        <span class="order-value">${o.plan}</span>
+                    <div class="order-details">
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-box"></i> Cost</div>
+                            <div class="detail-value cost">${getCostPrice(o.plan).toLocaleString()}K</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-chart-line"></i> Profit</div>
+                            <div class="detail-value profit">${getProfit(o.price, o.plan).toLocaleString()}K</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-calendar"></i> Date</div>
+                            <div class="detail-value" style="font-size:0.65rem;">${new Date(o.created_at).toLocaleDateString()}</div>
+                        </div>
                     </div>
-                    <div class="order-row">
-                        <span class="order-label"><i class="fas fa-coins"></i> Price</span>
-                        <span class="order-value price">${o.price.toLocaleString()} KS</span>
-                    </div>
-                    <div class="order-row">
-                        <span class="order-label"><i class="fas fa-calendar"></i> Date</span>
-                        <span class="order-value" style="font-size:0.7rem;">${new Date(o.created_at).toLocaleString()}</span>
-                    </div>
-                    <div class="order-row">
-                        <span class="order-label"><i class="fas fa-chart-line"></i> Profit</span>
-                        <span class="order-value price">${getProfit(o.price, o.plan).toLocaleString()} KS</span>
-                    </div>
+                    ${countdownHtml}
                     <div class="order-actions">
-                        ${o.slip_url ? `<button class="screenshot-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> Slip</button>` : '<span style="font-size:0.6rem;color:#64748b;">No slip</span>'}
+                        ${o.slip_url ? `<button class="screenshot-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> View Slip</button>` : '<span style="font-size:0.6rem;color:#64748b;">No slip</span>'}
                         ${o.status === 'Pending' ? `
                             <button class="action-btn approve" onclick="approveOrder(${o.id})"><i class="fas fa-check"></i> Approve</button>
                             <button class="action-btn reject" onclick="rejectOrder(${o.id})"><i class="fas fa-times"></i> Reject</button>
@@ -889,51 +1006,20 @@
             `;
         }
         container.innerHTML = html;
-    }
-    
-    function searchByPhone() {
-        const phone = document.getElementById('searchPhoneInput').value.trim();
-        if (!phone) {
-            alert('Please enter a phone number');
-            return;
+        
+        for (const o of orders) {
+            if (o.status === 'Approved' && o.activated_at) {
+                startCountdownForOrder(o.id, o.activated_at);
+            }
         }
-        currentSearchPhone = phone;
-        applyFiltersAndRender();
     }
-    
-    function clearSearch() {
-        currentSearchPhone = "";
-        document.getElementById('searchPhoneInput').value = "";
-        applyFiltersAndRender();
-    }
-    
-    function applyFilters() { applyFiltersAndRender(); }
-    function clearFilters() {
-        document.getElementById('startDate').value = '';
-        document.getElementById('endDate').value = '';
-        document.getElementById('statusFilter').value = 'all';
-        applyFiltersAndRender();
-    }
-    
+
     async function approveOrder(id) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' }); if (res.ok) { showToast('✅ Approved'); loadOrders(); } else alert('Error'); }
     async function rejectOrder(id) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' }); if (res.ok) { showToast('❌ Rejected'); loadOrders(); loadUserStats(); } else alert('Error'); }
     async function deleteOrder(id) { if (confirm('Delete this order?')) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' }); if (res.ok) { showToast('🗑 Deleted'); loadOrders(); } else alert('Error'); } }
-    
-    function openScreenshot(url) { const modal = document.getElementById('screenshotModal'); const img = document.getElementById('modalImage'); img.src = url.startsWith('/') ? API_BASE + url : url; modal.classList.add('active'); }
-    function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
     function manualRefresh() { loadAllData(); showToast('🔄 Synced'); secondsLeft = 30; updateCountdown(); }
     function showToast(msg) { const t = document.createElement('div'); t.style.cssText = 'position:fixed;bottom:80px;right:20px;background:#10b981;color:#030712;padding:8px 16px;border-radius:60px;font-size:0.8rem;font-weight:bold;z-index:9999'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
-    
-    function startAutoSync() {
-        if (autoSyncInterval) clearInterval(autoSyncInterval);
-        if (countdownInterval) clearInterval(countdownInterval);
-        secondsLeft = 30; updateCountdown();
-        countdownInterval = setInterval(() => { secondsLeft--; if (secondsLeft < 0) secondsLeft = 30; updateCountdown(); }, 1000);
-        autoSyncInterval = setInterval(() => { if (token === 'logged_in') { loadAllData(); secondsLeft = 30; updateCountdown(); } }, 30000);
-    }
-    function stopAutoSync() { if (autoSyncInterval) clearInterval(autoSyncInterval); if (countdownInterval) clearInterval(countdownInterval); }
-    function updateCountdown() { const el = document.getElementById('autoSyncTimer'); if (el) el.innerHTML = `Auto Sync: ${secondsLeft}s`; }
-    
+
     // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -943,7 +1029,7 @@
             if (currentTab === 'orders') {
                 document.getElementById('ordersTab').classList.remove('hidden');
                 document.getElementById('usersTab').classList.add('hidden');
-                applyFiltersAndRender();
+                applyFiltersAndSearch();
             } else {
                 document.getElementById('ordersTab').classList.add('hidden');
                 document.getElementById('usersTab').classList.remove('hidden');
@@ -951,16 +1037,16 @@
             }
         });
     });
-    
+
     document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
     document.getElementById('searchPhoneInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') searchByPhone(); });
-    
+
     window.approveOrder = approveOrder; window.rejectOrder = rejectOrder; window.deleteOrder = deleteOrder; window.logout = logout;
     window.applyFilters = applyFilters; window.clearFilters = clearFilters; window.openScreenshot = openScreenshot; window.manualRefresh = manualRefresh;
     window.searchByPhone = searchByPhone; window.clearSearch = clearSearch;
     window.blockUser = blockUser; window.clearSuspectFlag = clearSuspectFlag;
-    
+
     if (token === 'logged_in') { document.getElementById('loginBox').style.display = 'none'; document.getElementById('adminContent').style.display = 'block'; document.getElementById('fabContainer').style.display = 'flex'; loadAllData(); startAutoSync(); }
 </script>
 </body>
