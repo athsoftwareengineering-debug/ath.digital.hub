@@ -166,6 +166,47 @@ function checkRateLimit(phone) {
     return true;
 }
 
+// ==================== AUTO CLEANUP FUNCTION ====================
+async function autoCleanupOldOrders() {
+    try {
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        
+        const { data: ordersToDelete } = await supabaseAdmin
+            .from('orders')
+            .select('slip_url')
+            .in('status', ['Pending', 'Rejected'])
+            .lt('created_at', thirtyDaysAgo);
+        
+        if (ordersToDelete && ordersToDelete.length > 0) {
+            for (const order of ordersToDelete) {
+                if (order.slip_url) {
+                    const filePath = path.join(__dirname, order.slip_url);
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                    }
+                }
+            }
+        }
+        
+        const { data, error } = await supabaseAdmin
+            .from('orders')
+            .delete()
+            .in('status', ['Pending', 'Rejected'])
+            .lt('created_at', thirtyDaysAgo);
+        
+        if (error) {
+            console.error('Auto cleanup error:', error);
+        } else {
+            console.log(`✅ Auto cleanup completed at ${new Date().toISOString()} - Deleted ${ordersToDelete?.length || 0} old orders`);
+        }
+    } catch (e) {
+        console.error('Auto cleanup failed:', e);
+    }
+}
+
+setInterval(autoCleanupOldOrders, 24 * 60 * 60 * 1000);
+setTimeout(autoCleanupOldOrders, 5000);
+
 // ==================== STATIC HTML ROUTES ====================
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
@@ -292,7 +333,6 @@ app.post('/api/admin/clear-suspect', async (req, res) => {
     }
 });
 
-// NEW: Delete user from stats
 app.post('/api/admin/user-delete', async (req, res) => {
     try {
         const { phone } = req.body;
@@ -317,7 +357,6 @@ app.post('/api/admin/user-delete', async (req, res) => {
     }
 });
 
-// NEW: Delete all orders for a user
 app.post('/api/admin/user-delete-orders', async (req, res) => {
     try {
         const { phone } = req.body;
@@ -326,13 +365,11 @@ app.post('/api/admin/user-delete-orders', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Phone required' });
         }
         
-        // Get all orders to delete files
         const { data: orders } = await supabaseAdmin
             .from('orders')
             .select('slip_url')
             .eq('phone', phone);
         
-        // Delete uploaded files
         if (orders && orders.length > 0) {
             for (const order of orders) {
                 if (order.slip_url) {
@@ -344,7 +381,6 @@ app.post('/api/admin/user-delete-orders', async (req, res) => {
             }
         }
         
-        // Delete orders from database
         const { error } = await supabaseAdmin
             .from('orders')
             .delete()
@@ -361,6 +397,44 @@ app.post('/api/admin/user-delete-orders', async (req, res) => {
     }
 });
 
+app.post('/api/admin/cleanup-old', async (req, res) => {
+    try {
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        
+        const { data: ordersToDelete } = await supabaseAdmin
+            .from('orders')
+            .select('slip_url')
+            .in('status', ['Pending', 'Rejected'])
+            .lt('created_at', thirtyDaysAgo);
+        
+        if (ordersToDelete && ordersToDelete.length > 0) {
+            for (const order of ordersToDelete) {
+                if (order.slip_url) {
+                    const filePath = path.join(__dirname, order.slip_url);
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                    }
+                }
+            }
+        }
+        
+        const { data, error } = await supabaseAdmin
+            .from('orders')
+            .delete()
+            .in('status', ['Pending', 'Rejected'])
+            .lt('created_at', thirtyDaysAgo);
+        
+        if (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        res.json({ success: true, message: `Deleted ${ordersToDelete?.length || 0} old orders` });
+    } catch (error) {
+        console.error('Error during manual cleanup:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // ==================== CREATE ORDER ====================
 app.post('/api/orders', upload.single('slip'), async (req, res) => {
     try {
@@ -373,18 +447,15 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
             return res.status(400).json({ success: false, error: 'Missing required fields' });
         }
         
-        // 1. Check if phone is blocked
         const blocked = await isPhoneBlocked(phone);
         if (blocked) {
             return res.status(403).json({ success: false, error: 'This phone number has been blocked. Contact admin for support.' });
         }
         
-        // 2. Check rate limit
         if (!checkRateLimit(phone)) {
             return res.status(429).json({ success: false, error: 'Too many orders. Please wait a moment.' });
         }
         
-        // 3. Check duplicate order
         const duplicate = await isDuplicateOrder(phone, plan);
         if (duplicate) {
             return res.status(409).json({ success: false, error: 'Duplicate order detected. Please wait 5 minutes.' });
@@ -398,7 +469,6 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
             const fileBuffer = fs.readFileSync(slipFile.path);
             imageHash = calculateImageHash(fileBuffer);
             
-            // 4. Check duplicate image
             const duplicateImage = await isDuplicateImage(imageHash);
             if (duplicateImage) {
                 fs.unlinkSync(slipFile.path);
@@ -529,4 +599,5 @@ app.listen(PORT, () => {
     console.log(`📱 User Store: http://localhost:${PORT}/index.html`);
     console.log(`👨‍💼 Admin Panel: http://localhost:${PORT}/admin.html`);
     console.log(`📁 Uploads folder: ${uploadsDir}`);
+    console.log(`🗑️ Auto cleanup: Pending/Rejected orders older than 30 days will be deleted daily`);
 });
