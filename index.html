@@ -1193,11 +1193,12 @@
         }
     }
     
-    // ==================== STACK FUNCTIONS ====================
+    // ==================== STACK FUNCTIONS - TOP TO BOTTOM FLOW ====================
+    // ✅ CORRECT: Move first item (top) to bottom - creates downward flow
     function rotateStack() {
         if (stackOrders.length <= 1) return;
-        const firstItem = stackOrders.shift();
-        stackOrders.push(firstItem);
+        const firstItem = stackOrders.shift();   // Remove from top
+        stackOrders.push(firstItem);              // Add to bottom
         renderStack();
     }
     
@@ -1222,6 +1223,7 @@
         const newOrdersList = sortedOrders.filter(o => !currentQueueIds.includes(o.id));
         
         if (newOrdersList.length > 0) {
+            // NEW ORDERS GO TO THE TOP (front of array)
             stackOrders = [...newOrdersList, ...stackOrders];
             if (stackOrders.length > 30) stackOrders = stackOrders.slice(0, 30);
         } else {
@@ -1444,13 +1446,11 @@
         
         currentSearchPhone = phone;
         
-        // Update both displays with highlight
         renderMyOrders();
         renderStack();
         
         showToast(`${t.searching} ${maskPhoneNumber(phone)}`);
         
-        // Scroll to highlighted element
         setTimeout(() => {
             const highlighted = document.querySelector('.search-highlight, .order-item.highlight');
             if (highlighted) {
@@ -1594,8 +1594,9 @@
     if (myPhone) {
         console.log("✅ Loaded with saved phone:", maskPhoneNumber(myPhone));
     }
-    console.log("✅ ATH DIGITAL HUB - Fully Functional with Search Highlight!");
-    console.log("✅ Search any phone number - matching orders will glow in bright yellow!");
+    console.log("✅ ATH DIGITAL HUB - TOP TO BOTTOM FLOW (CORRECTED)");
+    console.log("✅ Top card moves to bottom every 10 seconds (downward flow)");
+    console.log("✅ Search highlight works on both My Orders and Live Feed");
 </script>
 </body>
 </html>
