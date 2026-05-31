@@ -40,7 +40,6 @@
         
         .container { max-width: 600px; margin: 0 auto; }
         
-        /* Header */
         .header {
             backdrop-filter: blur(20px);
             background: rgba(10, 12, 21, 0.7);
@@ -83,7 +82,6 @@
         }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         
-        /* Tab Bar - NEW */
         .tab-bar {
             display: flex;
             gap: 10px;
@@ -111,7 +109,6 @@
             box-shadow: 0 0 10px rgba(0,212,255,0.3);
         }
         
-        /* Stats Cards Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -144,7 +141,6 @@
         .stat-number.profit { color: var(--emerald); }
         .stat-number.cost { color: var(--amber); }
         
-        /* Search Bar */
         .search-bar {
             background: rgba(18, 22, 35, 0.8);
             backdrop-filter: blur(12px);
@@ -189,7 +185,6 @@
             cursor: pointer;
         }
         
-        /* Filter Bar */
         .filter-bar {
             background: rgba(18, 22, 35, 0.8);
             backdrop-filter: blur(12px);
@@ -229,7 +224,6 @@
         }
         .filter-btn:hover { background: var(--cyan); color: #030712; }
         
-        /* Orders List - Card Layout */
         .orders-list {
             display: flex;
             flex-direction: column;
@@ -298,7 +292,6 @@
         .detail-value.cost { color: var(--amber); }
         .detail-value.profit { color: var(--cyan); }
         
-        /* Countdown Timer Style */
         .countdown-box {
             background: rgba(0,212,255,0.08);
             border-radius: 40px;
@@ -352,7 +345,6 @@
             color: var(--cyan);
         }
         
-        /* Users List - Card Layout NEW */
         .users-list {
             display: flex;
             flex-direction: column;
@@ -415,6 +407,7 @@
             margin-top: 10px;
             padding-top: 10px;
             border-top: 1px solid rgba(255,255,255,0.05);
+            flex-wrap: wrap;
         }
         .user-action-btn {
             flex: 1;
@@ -427,12 +420,12 @@
         }
         .user-action-btn.block { background: rgba(244,63,94,0.2); color: #fb7185; }
         .user-action-btn.unblock { background: rgba(16,185,129,0.2); color: #34d399; }
+        .user-action-btn.delete-user { background: rgba(244,63,94,0.2); color: #fb7185; }
+        .user-action-btn.delete-orders { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .user-action-btn.clear { background: rgba(0,212,255,0.15); color: var(--cyan); }
         
-        /* Hidden class for tabs */
         .hidden { display: none; }
         
-        /* Floating Action Buttons */
         .fab-container {
             position: fixed;
             bottom: 20px;
@@ -460,7 +453,6 @@
         .fab:hover { transform: scale(1.05); }
         .fab.logout { background: linear-gradient(135deg, #f43f5e, #e11d48); box-shadow: 0 4px 15px rgba(244,63,94,0.4); }
         
-        /* Screenshot Modal */
         .image-modal {
             position: fixed;
             top: 0;
@@ -560,7 +552,6 @@
 <body>
 <div id="app">
     <div class="container" id="adminContent" style="display: none;">
-        <!-- Header -->
         <div class="header">
             <h1><i class="fas fa-crown"></i> ATH Admin</h1>
             <div class="sync-status">
@@ -569,13 +560,11 @@
             </div>
         </div>
         
-        <!-- Tab Bar -->
         <div class="tab-bar">
             <button class="tab-btn active" data-tab="orders"><i class="fas fa-list-ul"></i> Orders</button>
             <button class="tab-btn" data-tab="users"><i class="fas fa-users"></i> Users</button>
         </div>
         
-        <!-- Stats Cards -->
         <div class="stats-grid">
             <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label"><i class="fas fa-shopping-cart"></i> Total</div></div>
             <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label"><i class="fas fa-clock"></i> Pending</div></div>
@@ -587,14 +576,12 @@
             <div class="stat-card"><div class="stat-number" id="avgProfit">0</div><div class="stat-label"><i class="fas fa-percent"></i> Avg</div></div>
         </div>
         
-        <!-- Search by Phone -->
         <div class="search-bar">
             <input type="tel" id="searchPhoneInput" class="search-input" placeholder="🔍 Search by phone number (09xxxxxxxxx)">
             <button class="search-btn" onclick="searchByPhone()"><i class="fas fa-search"></i> Search</button>
             <button class="clear-search" onclick="clearSearch()"><i class="fas fa-times"></i> Clear</button>
         </div>
         
-        <!-- Filter Bar -->
         <div class="filter-bar">
             <div class="filter-group">
                 <input type="date" id="startDate" class="filter-input" placeholder="Start">
@@ -612,14 +599,12 @@
             </div>
         </div>
         
-        <!-- Orders Tab -->
         <div id="ordersTab">
             <div class="orders-list" id="ordersList">
                 <div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading orders...</div>
             </div>
         </div>
         
-        <!-- Users Tab (NEW) -->
         <div id="usersTab" class="hidden">
             <div class="users-list" id="usersList">
                 <div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading users...</div>
@@ -629,7 +614,6 @@
         <div class="last-update" id="lastUpdate"></div>
     </div>
     
-    <!-- Floating Action Buttons -->
     <div class="fab-container" id="fabContainer" style="display: none;">
         <button class="fab" onclick="manualRefresh()" title="Sync Now"><i class="fas fa-sync-alt"></i></button>
         <button class="fab" onclick="window.location.href='/'" title="Go to Store"><i class="fas fa-store"></i></button>
@@ -644,7 +628,6 @@
     </div>
 </div>
 
-<!-- Screenshot Modal -->
 <div id="screenshotModal" class="image-modal" onclick="closeModal()">
     <div class="image-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -680,7 +663,6 @@
         return phone.substring(0, 5) + '***' + phone.substring(phone.length - 3);
     }
     
-    // Calculate remaining days for approved order (30 days from activated_at)
     function getRemainingTime(activatedAt) {
         if (!activatedAt) return null;
         const now = Date.now();
@@ -802,6 +784,30 @@
         else alert('Error');
     }
 
+    async function deleteUser(phone) {
+        if (confirm(`⚠️ Are you sure you want to delete user ${maskPhone(phone)}?\nThis will remove the user from stats. Orders will remain.`)) {
+            const res = await fetch(`${API_BASE}/api/admin/user-delete`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone })
+            });
+            if (res.ok) { loadUserStats(); showToast('✅ User deleted from stats'); }
+            else alert('Error');
+        }
+    }
+
+    async function deleteAllOrders(phone) {
+        if (confirm(`⚠️ Are you sure you want to delete ALL orders for ${maskPhone(phone)}?\nThis action cannot be undone!`)) {
+            const res = await fetch(`${API_BASE}/api/admin/user-delete-orders`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone })
+            });
+            if (res.ok) { loadAllData(); showToast('✅ All orders deleted'); }
+            else alert('Error');
+        }
+    }
+
     function updateStats(orders) {
         const total = orders.length;
         const pending = orders.filter(o => o.status === 'Pending');
@@ -860,8 +866,13 @@
                         </div>
                     </div>
                     <div class="user-actions">
-                        ${!user.blocked ? `<button class="user-action-btn block" onclick="blockUser('${user.phone}', true)"><i class="fas fa-ban"></i> Block</button>` : `<button class="user-action-btn unblock" onclick="blockUser('${user.phone}', false)"><i class="fas fa-check"></i> Unblock</button>`}
-                        ${user.suspect_flag ? `<button class="user-action-btn clear" onclick="clearSuspectFlag('${user.phone}')"><i class="fas fa-flag"></i> Clear Flag</button>` : ''}
+                        ${!user.blocked ? 
+                            `<button class="user-action-btn block" onclick="blockUser('${user.phone}', true)">🔴 Block</button>` : 
+                            `<button class="user-action-btn unblock" onclick="blockUser('${user.phone}', false)">🟢 Unblock</button>`
+                        }
+                        <button class="user-action-btn delete-user" onclick="deleteUser('${user.phone}')">❌ Delete User</button>
+                        <button class="user-action-btn delete-orders" onclick="deleteAllOrders('${user.phone}')">🗑 Delete All Orders</button>
+                        ${user.suspect_flag ? `<button class="user-action-btn clear" onclick="clearSuspectFlag('${user.phone}')">✓ Clear Flag</button>` : ''}
                     </div>
                 </div>
             `;
@@ -872,16 +883,13 @@
     function applyFiltersAndSearch() {
         let filtered = [...allOrders];
         
-        // Apply phone search
         if (currentSearchPhone) {
             filtered = filtered.filter(o => o.phone === currentSearchPhone);
         }
         
-        // Apply status filter
         const status = document.getElementById('statusFilter').value;
         if (status !== 'all') filtered = filtered.filter(o => o.status === status);
         
-        // Apply date filters
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
         if (startDate) { const start = new Date(startDate); start.setHours(0,0,0,0); filtered = filtered.filter(o => new Date(o.created_at) >= start); }
@@ -890,10 +898,7 @@
         renderOrders(filtered);
         updateStats(filtered);
         
-        // Update search result message
-        const searchMsg = document.getElementById('searchResultMsg');
         if (currentSearchPhone) {
-            const resultCount = filtered.length;
             if (!document.getElementById('searchResultMsg')) {
                 const msgDiv = document.createElement('div');
                 msgDiv.id = 'searchResultMsg';
@@ -902,7 +907,7 @@
                 msgDiv.style.justifyContent = 'center';
                 document.querySelector('.filter-bar').after(msgDiv);
             }
-            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Phone: ${currentSearchPhone} | Found: ${resultCount} order(s)`;
+            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Phone: ${currentSearchPhone} | Found: ${filtered.length} order(s)`;
         } else {
             if (document.getElementById('searchResultMsg')) {
                 document.getElementById('searchResultMsg').remove();
@@ -1020,7 +1025,6 @@
     function manualRefresh() { loadAllData(); showToast('🔄 Synced'); secondsLeft = 30; updateCountdown(); }
     function showToast(msg) { const t = document.createElement('div'); t.style.cssText = 'position:fixed;bottom:80px;right:20px;background:#10b981;color:#030712;padding:8px 16px;border-radius:60px;font-size:0.8rem;font-weight:bold;z-index:9999'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
 
-    // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1046,6 +1050,7 @@
     window.applyFilters = applyFilters; window.clearFilters = clearFilters; window.openScreenshot = openScreenshot; window.manualRefresh = manualRefresh;
     window.searchByPhone = searchByPhone; window.clearSearch = clearSearch;
     window.blockUser = blockUser; window.clearSuspectFlag = clearSuspectFlag;
+    window.deleteUser = deleteUser; window.deleteAllOrders = deleteAllOrders;
 
     if (token === 'logged_in') { document.getElementById('loginBox').style.display = 'none'; document.getElementById('adminContent').style.display = 'block'; document.getElementById('fabContainer').style.display = 'flex'; loadAllData(); startAutoSync(); }
 </script>
