@@ -82,7 +82,6 @@
         }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         
-        /* Tab Bar */
         .tab-bar {
             display: flex;
             gap: 10px;
@@ -110,7 +109,6 @@
             box-shadow: 0 0 10px rgba(0,212,255,0.3);
         }
         
-        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -143,7 +141,6 @@
         .stat-number.profit { color: var(--emerald); }
         .stat-number.cost { color: var(--amber); }
         
-        /* Search Bar - Works for both tabs */
         .search-bar {
             background: rgba(18, 22, 35, 0.8);
             backdrop-filter: blur(12px);
@@ -188,7 +185,6 @@
             cursor: pointer;
         }
         
-        /* Filter Bar */
         .filter-bar {
             background: rgba(18, 22, 35, 0.8);
             backdrop-filter: blur(12px);
@@ -200,6 +196,7 @@
             flex-wrap: wrap;
             gap: 8px;
             justify-content: space-between;
+            align-items: center;
         }
         .filter-group {
             display: flex;
@@ -227,8 +224,13 @@
             font-weight: 500;
         }
         .filter-btn:hover { background: var(--cyan); color: #030712; }
+        .cleanup-btn {
+            background: rgba(244,63,94,0.2);
+            border: 1px solid rgba(244,63,94,0.3);
+            color: #fb7185;
+        }
+        .cleanup-btn:hover { background: #f43f5e; color: white; }
         
-        /* Orders List */
         .orders-list {
             display: flex;
             flex-direction: column;
@@ -245,8 +247,7 @@
         }
         .order-card:hover { border-color: rgba(0,212,255,0.3); transform: translateX(3px); }
         
-        /* Search Highlight Effect */
-        .order-card.search-highlight, .user-card.search-highlight {
+        .order-card.search-highlight {
             border: 2px solid #fbbf24;
             background: rgba(251, 191, 36, 0.15);
             box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
@@ -316,9 +317,7 @@
             gap: 6px;
             transition: all 0.2s;
         }
-        .clickable-phone:hover {
-            color: var(--cyan);
-        }
+        .clickable-phone:hover { color: var(--cyan); }
         
         .countdown-box {
             background: rgba(0,212,255,0.08);
@@ -373,7 +372,6 @@
             color: var(--cyan);
         }
         
-        /* Users List */
         .users-list {
             display: flex;
             flex-direction: column;
@@ -565,7 +563,6 @@
             <div class="stat-card"><div class="stat-number" id="avgProfit">0</div><div class="stat-label"><i class="fas fa-percent"></i> Avg</div></div>
         </div>
         
-        <!-- Search Bar - Works for both Orders and Users -->
         <div class="search-bar">
             <input type="tel" id="searchPhoneInput" class="search-input" placeholder="🔍 Search by phone number (09xxxxxxxxx)">
             <button class="search-btn" onclick="searchByPhone()"><i class="fas fa-search"></i> Search</button>
@@ -583,7 +580,10 @@
                     <option value="Rejected">Rejected</option>
                 </select>
             </div>
-            <div>
+            <div style="display: flex; gap: 8px;">
+                <button class="filter-btn cleanup-btn" onclick="manualCleanup()">
+                    <i class="fas fa-trash-alt"></i> Delete Old (30+ days)
+                </button>
                 <button class="filter-btn" onclick="applyFilters()"><i class="fas fa-filter"></i> Filter</button>
                 <button class="filter-btn reset" onclick="clearFilters()" style="background:#334155;"><i class="fas fa-undo"></i></button>
             </div>
@@ -786,6 +786,19 @@
             else alert('Error');
         }
     }
+    
+    async function manualCleanup() {
+        if (confirm('⚠️ Are you sure you want to delete ALL Pending/Rejected orders older than 30 days?\n\nThis action cannot be undone!')) {
+            const res = await fetch(`${API_BASE}/api/admin/cleanup-old`, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`✅ ${data.message}`);
+                loadAllData();
+            } else {
+                showToast('❌ Cleanup failed: ' + data.error, true);
+            }
+        }
+    }
 
     function updateStats(orders) {
         const total = orders.length;
@@ -824,7 +837,6 @@
             if (user.blocked) { statusClass = 'blocked'; statusText = '🔴 Blocked'; }
             else if (user.suspect_flag) { statusClass = 'suspect'; statusText = '🟡 Suspect'; }
             
-            // Check if this user should be highlighted
             const isHighlighted = currentSearchPhone && user.phone === currentSearchPhone;
             const highlightClass = isHighlighted ? 'search-highlight' : '';
             
@@ -852,28 +864,22 @@
     }
 
     function applyFiltersAndSearch() {
-        let filteredOrders = [...allOrders];
-        let filteredUsers = [...userStats];
+        let filtered = [...allOrders];
         
-        // Apply phone search for both orders and users
         if (currentSearchPhone) {
-            filteredOrders = filteredOrders.filter(o => o.phone === currentSearchPhone);
-            filteredUsers = filteredUsers.filter(u => u.phone === currentSearchPhone);
+            filtered = filtered.filter(o => o.phone === currentSearchPhone);
         }
         
-        // Apply status filter (only for orders)
         const status = document.getElementById('statusFilter').value;
-        if (status !== 'all') filteredOrders = filteredOrders.filter(o => o.status === status);
+        if (status !== 'all') filtered = filtered.filter(o => o.status === status);
         
-        // Apply date filters (only for orders)
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
-        if (startDate) { const start = new Date(startDate); start.setHours(0,0,0,0); filteredOrders = filteredOrders.filter(o => new Date(o.created_at) >= start); }
-        if (endDate) { const end = new Date(endDate); end.setHours(23,59,59,999); filteredOrders = filteredOrders.filter(o => new Date(o.created_at) <= end); }
+        if (startDate) { const start = new Date(startDate); start.setHours(0,0,0,0); filtered = filtered.filter(o => new Date(o.created_at) >= start); }
+        if (endDate) { const end = new Date(endDate); end.setHours(23,59,59,999); filtered = filtered.filter(o => new Date(o.created_at) <= end); }
         
-        renderOrders(filteredOrders);
-        renderUsersTabWithFilter(filteredUsers);
-        updateStats(filteredOrders);
+        renderOrders(filtered);
+        updateStats(filtered);
         
         if (currentSearchPhone) {
             if (!document.getElementById('searchResultMsg')) {
@@ -884,65 +890,12 @@
                 msgDiv.style.justifyContent = 'center';
                 document.querySelector('.filter-bar').after(msgDiv);
             }
-            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Phone: ${currentSearchPhone} | Orders: ${filteredOrders.length} | Users: ${filteredUsers.length}`;
+            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Phone: ${currentSearchPhone} | Found: ${filtered.length} order(s)`;
         } else {
             if (document.getElementById('searchResultMsg')) {
                 document.getElementById('searchResultMsg').remove();
             }
         }
-        
-        // Auto scroll to highlighted card
-        setTimeout(() => {
-            const highlighted = document.querySelector('.order-card.search-highlight, .user-card.search-highlight');
-            if (highlighted) {
-                highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 100);
-    }
-    
-    function renderUsersTabWithFilter(filteredUsers) {
-        const container = document.getElementById('usersList');
-        if (!filteredUsers.length) {
-            container.innerHTML = '<div class="loading">No users found</div>';
-            return;
-        }
-        
-        let html = '';
-        for (const user of filteredUsers) {
-            const rejectRate = user.order_count > 0 ? ((user.reject_count / user.order_count) * 100).toFixed(0) : 0;
-            let rateClass = '';
-            if (rejectRate >= 50) rateClass = 'high';
-            else if (rejectRate >= 30) rateClass = 'medium';
-            
-            let statusClass = 'normal';
-            let statusText = '🟢 Normal';
-            if (user.blocked) { statusClass = 'blocked'; statusText = '🔴 Blocked'; }
-            else if (user.suspect_flag) { statusClass = 'suspect'; statusText = '🟡 Suspect'; }
-            
-            const isHighlighted = currentSearchPhone && user.phone === currentSearchPhone;
-            const highlightClass = isHighlighted ? 'search-highlight' : '';
-            
-            html += `
-                <div class="user-card ${highlightClass}">
-                    <div class="user-header">
-                        <span class="user-phone" onclick="copyToClipboard('${user.phone}')">📞 ${maskPhone(user.phone)} 📋</span>
-                        <span class="user-status ${statusClass}">${statusText}</span>
-                    </div>
-                    <div class="user-stats">
-                        <div class="user-stat"><div class="user-stat-value">${user.order_count || 0}</div><div class="user-stat-label">Orders</div></div>
-                        <div class="user-stat"><div class="user-stat-value ${rejectRate >= 50 ? 'high' : (rejectRate >= 30 ? 'medium' : '')}">${user.reject_count || 0}</div><div class="user-stat-label">Rejected</div></div>
-                        <div class="user-stat"><div class="user-stat-value reject-rate ${rateClass}">${rejectRate}%</div><div class="user-stat-label">Reject Rate</div></div>
-                    </div>
-                    <div class="user-actions">
-                        ${!user.blocked ? `<button class="user-action-btn block" onclick="blockUser('${user.phone}', true)">🔴 Block</button>` : `<button class="user-action-btn unblock" onclick="blockUser('${user.phone}', false)">🟢 Unblock</button>`}
-                        <button class="user-action-btn delete-user" onclick="deleteUser('${user.phone}')">❌ Delete User</button>
-                        <button class="user-action-btn delete-orders" onclick="deleteAllOrders('${user.phone}')">🗑 Delete All Orders</button>
-                        ${user.suspect_flag ? `<button class="user-action-btn clear" onclick="clearSuspectFlag('${user.phone}')">✓ Clear Flag</button>` : ''}
-                    </div>
-                </div>
-            `;
-        }
-        container.innerHTML = html;
     }
 
     function searchByPhone() {
@@ -953,6 +906,12 @@
         }
         currentSearchPhone = phone;
         applyFiltersAndSearch();
+        setTimeout(() => {
+            const highlighted = document.querySelector('.order-card.search-highlight, .user-card.search-highlight');
+            if (highlighted) {
+                highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
     }
     
     function clearSearch() {
@@ -1054,9 +1013,14 @@
     async function rejectOrder(id) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' }); if (res.ok) { showToast('❌ Rejected'); loadOrders(); loadUserStats(); } else alert('Error'); }
     async function deleteOrder(id) { if (confirm('Delete this order?')) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' }); if (res.ok) { showToast('🗑 Deleted'); loadOrders(); } else alert('Error'); } }
     function manualRefresh() { loadAllData(); showToast('🔄 Synced'); secondsLeft = 30; updateCountdown(); }
-    function showToast(msg) { const t = document.createElement('div'); t.style.cssText = 'position:fixed;bottom:80px;right:20px;background:#10b981;color:#030712;padding:8px 16px;border-radius:60px;font-size:0.8rem;font-weight:bold;z-index:9999'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
+    function showToast(msg, isError = false) { 
+        const toast = document.createElement('div'); 
+        toast.style.cssText = `position:fixed;bottom:80px;right:20px;background:${isError ? '#f43f5e' : '#10b981'};color:#030712;padding:8px 16px;border-radius:60px;font-size:0.8rem;font-weight:bold;z-index:9999`; 
+        toast.innerHTML = isError ? `❌ ${msg}` : `✅ ${msg}`; 
+        document.body.appendChild(toast); 
+        setTimeout(() => toast.remove(), 2000); 
+    }
 
-    // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1069,7 +1033,7 @@
             } else {
                 document.getElementById('ordersTab').classList.add('hidden');
                 document.getElementById('usersTab').classList.remove('hidden');
-                applyFiltersAndSearch(); // Refresh with current search
+                loadUserStats();
             }
         });
     });
@@ -1084,6 +1048,7 @@
     window.blockUser = blockUser; window.clearSuspectFlag = clearSuspectFlag;
     window.deleteUser = deleteUser; window.deleteAllOrders = deleteAllOrders;
     window.copyToClipboard = copyToClipboard;
+    window.manualCleanup = manualCleanup;
 
     if (token === 'logged_in') { document.getElementById('loginBox').style.display = 'none'; document.getElementById('adminContent').style.display = 'block'; document.getElementById('fabContainer').style.display = 'flex'; loadAllData(); startAutoSync(); }
 </script>
