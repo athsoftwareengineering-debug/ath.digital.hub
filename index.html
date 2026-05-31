@@ -122,7 +122,6 @@
             justify-content: center;
         }
         
-        /* Search Section */
         .search-section {
             background: rgba(0, 212, 255, 0.05);
             border: 1px solid rgba(0, 212, 255, 0.2);
@@ -182,7 +181,6 @@
             text-align: center;
         }
         
-        /* Cards Section */
         .orders-card {
             border-radius: 1rem;
             margin-bottom: 20px;
@@ -214,44 +212,53 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
         }
         .card-content {
             padding: 12px;
             min-height: 300px;
         }
         
-        /* Priority Slider Container */
+        /* Slider Item */
         .slider-container {
             position: relative;
-            overflow: hidden;
         }
         .slider-item {
             background: linear-gradient(135deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
             border-radius: 12px;
-            padding: 12px;
+            padding: 14px;
             border-left: 3px solid var(--violet);
-            animation: slideIn 0.3s ease;
-            margin-bottom: 0;
-        }
-        .slider-item.new-order {
-            border-left-color: var(--cyan);
-            background: rgba(0,212,255,0.1);
-            animation: pulse 0.5s ease;
+            animation: slideIn 0.4s ease;
         }
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateY(-20px);
+                transform: translateY(-15px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+        .slider-item.new-order {
+            border-left-color: var(--cyan);
+            background: rgba(0,212,255,0.08);
+        }
+        .new-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+            color: white;
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 40px;
+            margin-bottom: 8px;
+            animation: pulse 1s infinite;
+        }
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(0,212,255,0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(0,212,255,0); }
-            100% { box-shadow: 0 0 0 0 rgba(0,212,255,0); }
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
         }
         
         .slider-header {
@@ -259,22 +266,20 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 8px;
             margin-bottom: 8px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .slider-plan {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 700;
             color: var(--cyan);
         }
         .slider-status {
             display: inline-block;
-            padding: 3px 8px;
+            padding: 3px 10px;
             border-radius: 40px;
-            font-size: 0.55rem;
-            font-weight: 700;
+            font-size: 0.6rem;
+            font-weight: 600;
         }
         .slider-status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .slider-status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
@@ -286,7 +291,6 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
-            margin-bottom: 6px;
         }
         .slider-phone {
             font-size: 0.7rem;
@@ -294,11 +298,14 @@
             color: var(--amber);
         }
         .slider-price {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--emerald);
         }
-        .slider-time {
+        
+        .slider-indicator {
+            text-align: center;
+            margin-top: 12px;
             font-size: 0.55rem;
             color: #64748b;
         }
@@ -310,7 +317,7 @@
             font-size: 0.75rem;
         }
         
-        /* Order Item for My Orders */
+        /* My Orders Item */
         .order-item {
             background: linear-gradient(135deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
             border-radius: 12px;
@@ -454,7 +461,6 @@
         }
         .view-slip-btn:hover { background: var(--cyan); color: #030712; }
         
-        /* Pack Cards */
         .pack-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -502,7 +508,6 @@
         }
         .buy-btn:hover { background: var(--cyan); transform: scale(0.98); color: #030712; }
         
-        /* Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(3,7,18,0.94); backdrop-filter: blur(20px);
@@ -548,7 +553,6 @@
         }
         footer { margin-top: 40px; text-align: center; border-top: 1px solid var(--border-light); padding: 20px; font-size: 0.65rem; color: var(--text-secondary); }
         
-        /* Image Modal */
         .image-modal {
             position: fixed;
             top: 0;
@@ -647,13 +651,6 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
-        
-        .slider-indicator {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 0.55rem;
-            color: #64748b;
-        }
     </style>
 </head>
 <body>
@@ -730,7 +727,6 @@
         <span id="autoRefreshTimer">Auto refresh: 30s</span>
     </div>
     
-    <!-- Search Section -->
     <div class="search-section">
         <div class="search-title"><i class="fas fa-search"></i> ဖုန်းနံပါတ်ဖြင့် ရှာဖွေရန်</div>
         <div class="search-input-group">
@@ -741,7 +737,6 @@
         <div class="search-hint">💡 မည်သည့်ဖုန်းနံပါတ်မဆို ရှာနိုင်ပါသည်။ ရှာတွေ့ပါက အဝါရောင် Highlight ပြပါမည်။</div>
     </div>
     
-    <!-- My Orders Card -->
     <div class="orders-card my-orders">
         <div class="card-header">
             <i class="fas fa-user-circle"></i> ကျွန်ုပ်၏ အော်ဒါများ
@@ -751,14 +746,13 @@
         </div>
     </div>
     
-    <!-- Others Orders Card - PRIORITY SLIDER (New comes first, then old slides) -->
     <div class="orders-card others-orders">
         <div class="card-header">
             <i class="fas fa-globe"></i> အခြားသူများ၏ အော်ဒါများ 
             <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span>
             <span class="priority-badge"><i class="fas fa-bolt"></i> PRIORITY</span>
         </div>
-        <div class="card-content" id="sliderContainer">
+        <div class="card-content slider-container" id="sliderContainer">
             <div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading slider...</div>
         </div>
         <div class="slider-indicator" id="sliderIndicator">
@@ -814,13 +808,37 @@
     let countdownIntervals = {};
     
     // Priority Slider variables
-    let sliderQueue = [];           // Queue of orders to display (new first)
+    let sliderQueue = [];
     let currentSliderIndex = 0;
     let sliderInterval = null;
-    let isNewOrderPending = false;
     let lastOrdersHash = '';
-    const SLIDER_SPEED = 5000;      // 5 seconds per item
+    const SLIDER_SPEED = 7000;      // 7 seconds per item
     const MAX_QUEUE_SIZE = 30;
+    
+    // Track which orders are "new" (within last 2 minutes)
+    let newOrderIds = new Set();
+    const NEW_ORDER_TIMEOUT = 2 * 60 * 1000; // 2 minutes
+    
+    function markAsNew(orderId, createdAt) {
+        const orderTime = new Date(createdAt).getTime();
+        const now = Date.now();
+        if (now - orderTime < NEW_ORDER_TIMEOUT) {
+            newOrderIds.add(orderId);
+            // Auto remove after timeout
+            setTimeout(() => {
+                newOrderIds.delete(orderId);
+                // Refresh display if this order is currently showing
+                if (sliderQueue[currentSliderIndex]?.id === orderId) {
+                    renderSliderItem();
+                }
+            }, NEW_ORDER_TIMEOUT - (now - orderTime));
+        }
+    }
+    
+    function isNewOrder(order) {
+        const orderTime = new Date(order.created_at).getTime();
+        return (Date.now() - orderTime) < NEW_ORDER_TIMEOUT;
+    }
     
     // ==================== HELPER FUNCTIONS ====================
     function showToast(msg, isError = false) {
@@ -863,20 +881,6 @@
         const hours = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
         const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
         return `${days}d ${hours}h ${minutes}m`;
-    }
-    
-    function formatTimeAgo(dateString) {
-        const date = new Date(dateString);
-        const now = new Date();
-        const seconds = Math.floor((now - date) / 1000);
-        
-        if (seconds < 5) return "အခုလေးတင်";
-        if (seconds < 60) return `${seconds} စက္ကန့်အကြာက`;
-        const minutes = Math.floor(seconds / 60);
-        if (minutes < 60) return `${minutes} မိနစ်အကြာက`;
-        const hours = Math.floor(minutes / 60);
-        if (hours < 24) return `${hours} နာရီအကြာက`;
-        return `${Math.floor(hours / 24)} ရက်အကြာက`;
     }
     
     function startCountdown(orderId, activatedAt) {
@@ -930,9 +934,7 @@
     
     // ==================== PRIORITY SLIDER FUNCTIONS ====================
     
-    // Update slider queue with new orders (new orders go to FRONT of queue)
     function updateSliderQueue(newOrders) {
-        // Filter out own orders
         const otherOrders = newOrders.filter(order => order.phone !== myPhone);
         
         if (otherOrders.length === 0) {
@@ -943,61 +945,49 @@
             return;
         }
         
-        // Sort by created_at (newest first)
         const sortedOrders = [...otherOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        
-        // Create hash to detect changes
-        const ordersHash = JSON.stringify(sortedOrders.map(o => ({ id: o.id, status: o.status, updated_at: o.updated_at })));
+        const ordersHash = JSON.stringify(sortedOrders.map(o => ({ id: o.id, status: o.status })));
         
         if (ordersHash === lastOrdersHash && sliderQueue.length > 0) {
-            return; // No changes
+            return;
         }
         lastOrdersHash = ordersHash;
         
-        // Get current queue order IDs for comparison
         const currentQueueIds = sliderQueue.map(o => o.id);
-        
-        // Find new orders (not in current queue)
         const newOrdersList = sortedOrders.filter(o => !currentQueueIds.includes(o.id));
         
         if (newOrdersList.length > 0) {
-            // New orders found - add them to the FRONT of queue
-            console.log(`🆕 Found ${newOrdersList.length} new order(s), adding to front of queue`);
+            console.log(`🆕 Found ${newOrdersList.length} new order(s), adding to front`);
             sliderQueue = [...newOrdersList, ...sliderQueue];
             
-            // Limit queue size
             if (sliderQueue.length > MAX_QUEUE_SIZE) {
                 sliderQueue = sliderQueue.slice(0, MAX_QUEUE_SIZE);
             }
             
-            // Reset index to show new order immediately
             currentSliderIndex = 0;
             
-            // Show notification on slider
+            // Show notification
             const container = document.getElementById('sliderContainer');
             if (container) {
                 const tempDiv = document.createElement('div');
                 tempDiv.className = 'slider-item new-order';
-                tempDiv.style.position = 'relative';
                 tempDiv.style.marginBottom = '10px';
+                tempDiv.style.textAlign = 'center';
+                tempDiv.style.padding = '10px';
                 tempDiv.innerHTML = `
-                    <div style="text-align: center; padding: 10px;">
-                        <i class="fas fa-bell" style="color: var(--cyan); font-size: 1.2rem;"></i>
-                        <div style="font-size: 0.7rem; margin-top: 5px;">အော်ဒါအသစ် ${newOrdersList.length} ခုရောက်ရှိလာပါသည်!</div>
-                    </div>
+                    <div><i class="fas fa-bell" style="color: var(--cyan); font-size: 1rem;"></i></div>
+                    <div style="font-size: 0.7rem; margin-top: 5px;">အော်ဒါအသစ် ${newOrdersList.length} ခုရောက်ရှိလာပါသည်!</div>
                 `;
                 container.prepend(tempDiv);
                 setTimeout(() => tempDiv.remove(), 2000);
             }
         } else {
-            // No new orders, just update existing orders (status might have changed)
             const updatedQueue = [];
             for (const order of sortedOrders) {
                 if (currentQueueIds.includes(order.id)) {
                     updatedQueue.push(order);
                 }
             }
-            // Add any remaining from old queue that still exist
             for (const oldOrder of sliderQueue) {
                 if (!updatedQueue.find(o => o.id === oldOrder.id)) {
                     updatedQueue.push(oldOrder);
@@ -1006,7 +996,6 @@
             sliderQueue = updatedQueue.slice(0, MAX_QUEUE_SIZE);
         }
         
-        // Ensure we have items to show
         if (sliderQueue.length > 0 && currentSliderIndex >= sliderQueue.length) {
             currentSliderIndex = 0;
         }
@@ -1014,7 +1003,6 @@
         renderSliderItem();
     }
     
-    // Render current slider item
     function renderSliderItem() {
         const container = document.getElementById('sliderContainer');
         const indicator = document.getElementById('sliderIndicator');
@@ -1025,42 +1013,34 @@
             return;
         }
         
-        if (indicator) indicator.style.opacity = '1';
+        if (indicator) {
+            indicator.style.opacity = '1';
+            indicator.innerHTML = `<i class="fas fa-arrow-down"></i> ${currentSliderIndex + 1} / ${sliderQueue.length} <i class="fas fa-arrow-down"></i>`;
+        }
         
         const order = sliderQueue[currentSliderIndex];
         if (!order) return;
         
-        let statusClass = "pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
-        let statusIcon = "🕐";
+        const isNew = isNewOrder(order);
         
+        let statusClass = "pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
         if (order.status === "Approved") { 
             statusClass = "approved"; 
             statusText = "✅ အတည်ပြုပြီး";
-            statusIcon = "✅";
         }
         if (order.status === "Rejected") { 
             statusClass = "rejected"; 
             statusText = "❌ ပယ်ဖျက်ခံရ";
-            statusIcon = "❌";
         }
         
         const maskedPhone = maskPhoneNumber(order.phone);
-        const timeAgo = formatTimeAgo(order.created_at);
         const priceFormatted = order.price.toLocaleString();
-        const isNew = currentSliderIndex === 0 && sliderQueue.length > 1 && sliderQueue[0].created_at !== sliderQueue[1]?.created_at;
         
-        // Determine action text
-        let actionText = "";
-        if (order.status === "Pending") {
-            actionText = `🆕 ${maskedPhone} မှ <strong>${order.plan}</strong> (${priceFormatted} KS) ဝယ်ယူခဲ့ပါသည်`;
-        } else if (order.status === "Approved") {
-            actionText = `✅ ${maskedPhone} မှ <strong>${order.plan}</strong> အတည်ပြုပြီးပါပြီ`;
-        } else {
-            actionText = `❌ ${maskedPhone} မှ <strong>${order.plan}</strong> ပယ်ဖျက်ခံရပါသည်`;
-        }
+        const newBadgeHtml = isNew ? `<div class="new-badge"><i class="fas fa-fire"></i> NEW</div>` : '';
         
         container.innerHTML = `
             <div class="slider-item ${isNew ? 'new-order' : ''}">
+                ${newBadgeHtml}
                 <div class="slider-header">
                     <span class="slider-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
                     <span class="slider-status ${statusClass}">${statusText}</span>
@@ -1069,30 +1049,19 @@
                     <span class="slider-phone"><i class="fas fa-mobile-alt"></i> ${maskedPhone}</span>
                     <span class="slider-price"><i class="fas fa-coins"></i> ${priceFormatted} KS</span>
                 </div>
-                <div class="slider-time">
-                    <i class="far fa-clock"></i> ${timeAgo}
-                </div>
             </div>
         `;
-        
-        // Update indicator text
-        if (indicator) {
-            indicator.innerHTML = `<i class="fas fa-arrow-down"></i> ${currentSliderIndex + 1} / ${sliderQueue.length} <i class="fas fa-arrow-down"></i>`;
-        }
     }
     
-    // Move to next slider item
     function nextSliderItem() {
         if (sliderQueue.length === 0) return;
-        
         currentSliderIndex++;
         if (currentSliderIndex >= sliderQueue.length) {
-            currentSliderIndex = 0; // Loop back to start
+            currentSliderIndex = 0;
         }
         renderSliderItem();
     }
     
-    // Start slider interval
     function startSlider() {
         if (sliderInterval) clearInterval(sliderInterval);
         sliderInterval = setInterval(() => {
@@ -1126,8 +1095,8 @@
         
         const displayPhone = showFullPhone ? order.phone : maskPhoneNumber(order.phone);
         const highlightClass = isHighlighted ? 'highlight' : '';
-        
         const startDate = formatDate(order.created_at);
+        
         let expiredDateHtml = '';
         let countdownHtml = '';
         
@@ -1371,18 +1340,17 @@
     document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeImageModal(); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeImageModal(); });
     
-    // Make functions global for onclick
     window.copyOrderId = copyOrderId;
     window.openScreenshot = openScreenshot;
     window.closeImageModal = closeImageModal;
     
-    // Initial load
     if (myPhone) {
         console.log("✅ Loaded with saved phone:", maskPhoneNumber(myPhone));
     }
-    console.log("✅ ATH DIGITAL HUB - PRIORITY SLIDER MODE ACTIVE!");
-    console.log("✅ New orders appear at front of queue immediately!");
-    console.log("✅ Old orders rotate every 5 seconds!");
+    console.log("✅ ATH DIGITAL HUB - PRIORITY SLIDER WITH NEW BADGE!");
+    console.log("✅ New orders show 🔥 NEW badge for 2 minutes!");
+    console.log("✅ No time/date displayed on slider!");
+    console.log("✅ Slider rotates every 7 seconds!");
 </script>
 </body>
 </html>
