@@ -386,8 +386,20 @@
             font-size: 0.85rem;
         }
         .form-control:focus { border-color: var(--cyan); outline: none; }
-        .submit-btn { background: var(--emerald); width: 100%; padding: 12px; border-radius: 60px; font-weight: 800; cursor: pointer; margin-top: 6px; color: #030712; }
-        .submit-btn:hover { transform: translateY(-2px); }
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 60px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 6px;
+            background: var(--emerald);
+            color: #030712;
+            transition: all 0.2s;
+            border: none;
+        }
+        .submit-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.05); }
+        .submit-btn:disabled { cursor: not-allowed; opacity: 0.6; }
         .footnote { font-size: 0.6rem; text-align: center; margin-top: 12px; color: #5b6e8c; }
         .toast {
             position: fixed; top: -80px; right: 16px;
@@ -601,7 +613,9 @@
         <form id="orderForm" enctype="multipart/form-data">
             <div class="form-group"><label id="phoneLabel">📱 ဖုန်းနံပါတ် *</label><input type="tel" id="customerPhone" class="form-control" placeholder="09XXXXXXXXX" required></div>
             <div class="form-group"><label id="slipLabel">🧾 ငွေလွှဲပြေစာ</label><input type="file" id="slipImage" class="form-control" accept="image/*" required></div>
-            <button type="submit" class="submit-btn"><span id="submitBtnText">✅ အော်ဒါတင်မည်</span></button>
+            <button type="submit" class="submit-btn" id="submitOrderBtn">
+                <span id="submitBtnText">✅ အော်ဒါတင်မည်</span>
+            </button>
         </form>
         <div class="footnote" id="footnoteText">※ ဖုန်းနံပါတ်ကို နှိပ်၍ ကူးယူနိုင်ပါသည်။</div>
     </div>
@@ -887,19 +901,51 @@
         autoRefreshInterval=setInterval(()=>{if(document.getElementById('historyPanel').classList.contains('open')){loadData();refreshSec=30;}},30000);
     }
     
-    document.getElementById('orderForm').addEventListener('submit',async(e)=>{
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        let phone=document.getElementById('customerPhone').value.trim(),file=document.getElementById('slipImage').files[0],t=translations[currentLang];
-        if(!phone){showToast(t.searchPrompt,true);return;}
-        if(!file){showToast("📎 ငွေလွှဲပြေစာ ထည့်ပါ",true);return;}
-        let res=await addOrder(phone,selectedPlan,selectedPrice,file);
-        if(res.success){
-            showToast(`${t.orderSuccess}${res.orderId}`);
-            myPhone=phone;localStorage.setItem('myOrderPhone',phone);
+        
+        const submitBtn = document.getElementById('submitOrderBtn');
+        const btnText = document.getElementById('submitBtnText');
+        const phone = document.getElementById('customerPhone').value.trim();
+        const file = document.getElementById('slipImage').files[0];
+        const t = translations[currentLang];
+        
+        if (!phone) { showToast(t.searchPrompt, true); return; }
+        if (!file) { showToast("📎 ငွေလွှဲပြေစာ ထည့်ပါ", true); return; }
+        
+        // Disable button and show loading state
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
+        btnText.innerHTML = '⏳ အော်ဒါတင်နေပါသည်...';
+        
+        const result = await addOrder(phone, selectedPlan, selectedPrice, file);
+        
+        if (result.success) {
+            btnText.innerHTML = '✅ အော်ဒါအောင်မြင်ပါပြီ';
+            showToast(`${t.orderSuccess}${result.orderId}`);
+            myPhone = phone;
+            localStorage.setItem('myOrderPhone', phone);
             document.getElementById('paymentModal').classList.remove('active');
             document.getElementById('orderForm').reset();
-            if(document.getElementById('historyPanel').classList.contains('open'))loadData();
-        }else showToast(t.orderError,true);
+            if (document.getElementById('historyPanel').classList.contains('open')) loadData();
+            
+            // Reset button after 2 seconds
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                btnText.innerHTML = t.submitBtn;
+            }, 2000);
+        } else {
+            btnText.innerHTML = '❌ ' + t.orderError;
+            showToast(t.orderError, true);
+            
+            // Reset button after 2 seconds
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                btnText.innerHTML = t.submitBtn;
+            }, 2000);
+        }
     });
     
     document.querySelectorAll('.buy-btn').forEach(btn=>btn.addEventListener('click',()=>{selectedPlan=btn.dataset.plan;selectedPrice=parseInt(btn.dataset.price);document.getElementById('paymentModal').classList.add('active');}));
