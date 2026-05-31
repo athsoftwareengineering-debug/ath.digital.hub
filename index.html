@@ -1194,11 +1194,11 @@
     }
     
     // ==================== STACK FUNCTIONS ====================
-    // ✅ CORRECT: New orders go to TOP, then rotate DOWN every 10 seconds
+    // ✅ Option B: Move LAST item (bottom) to FIRST (top) - Upward flow
     function rotateStack() {
         if (stackOrders.length <= 1) return;
-        const firstItem = stackOrders.shift();   // Remove from top
-        stackOrders.push(firstItem);              // Add to bottom (downward flow)
+        const lastItem = stackOrders.pop();        // Remove from bottom
+        stackOrders.unshift(lastItem);             // Add to top
         renderStack();
     }
     
@@ -1224,7 +1224,7 @@
         const newOrdersList = sortedOrders.filter(o => !currentQueueIds.includes(o.id));
         
         if (newOrdersList.length > 0) {
-            // ✅ NEW ORDERS GO TO THE TOP (front of array)
+            // NEW ORDERS GO TO THE TOP (front of array)
             stackOrders = [...newOrdersList, ...stackOrders];
             if (stackOrders.length > 30) stackOrders = stackOrders.slice(0, 30);
             
@@ -1611,9 +1611,9 @@
     if (myPhone) {
         console.log("✅ Loaded with saved phone:", maskPhoneNumber(myPhone));
     }
-    console.log("✅ ATH DIGITAL HUB - FULLY FUNCTIONAL");
+    console.log("✅ ATH DIGITAL HUB - FULLY FUNCTIONAL (Option B)");
     console.log("✅ New orders: appear at TOP");
-    console.log("✅ Rotation: TOP card moves to BOTTOM every 10 seconds (downward flow)");
+    console.log("✅ Rotation: BOTTOM card moves to TOP every 10 seconds (upward flow)");
     console.log("✅ Search highlight: yellow glow + auto scroll");
     console.log("✅ Language switcher: Myanmar/English");
     console.log("✅ Live badge: red blinking");
