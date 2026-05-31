@@ -240,6 +240,19 @@
         }
         .order-card:hover { border-color: rgba(0,212,255,0.3); transform: translateX(3px); }
         
+        /* Search Highlight Effect */
+        .order-card.search-highlight {
+            border: 2px solid #fbbf24;
+            background: rgba(251, 191, 36, 0.15);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+            animation: glowPulse 0.5s ease-in-out;
+        }
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 0px rgba(251,191,36,0); }
+            50% { box-shadow: 0 0 25px rgba(251,191,36,0.8); }
+            100% { box-shadow: 0 0 20px rgba(251,191,36,0.5); }
+        }
+        
         .order-header {
             display: flex;
             justify-content: space-between;
@@ -291,7 +304,6 @@
         .detail-value.price { color: var(--emerald); }
         .detail-value.cost { color: var(--amber); }
         .detail-value.profit { color: var(--cyan); }
-        /* Clickable phone number style */
         .clickable-phone {
             cursor: pointer;
             display: inline-flex;
@@ -634,7 +646,6 @@
         return phone.substring(0, 5) + '***' + phone.substring(phone.length - 3);
     }
     
-    // Copy to clipboard function
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text);
         showToast(` ${text} copied!`);
@@ -872,6 +883,13 @@
         }
         currentSearchPhone = phone;
         applyFiltersAndSearch();
+        // Auto scroll to highlighted card
+        setTimeout(() => {
+            const highlighted = document.querySelector('.order-card.search-highlight');
+            if (highlighted) {
+                highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
     }
     
     function clearSearch() {
@@ -900,6 +918,10 @@
             let statusClass = o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected');
             let statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
             
+            // Check if this order should be highlighted
+            const isHighlighted = currentSearchPhone && o.phone === currentSearchPhone;
+            const highlightClass = isHighlighted ? 'search-highlight' : '';
+            
             let countdownHtml = '';
             if (o.status === 'Approved' && o.activated_at) {
                 const initialCountdown = formatCountdown(o.activated_at);
@@ -912,7 +934,7 @@
             }
             
             html += `
-                <div class="order-card">
+                <div class="order-card ${highlightClass}">
                     <div class="order-header">
                         <span class="order-id"><i class="fas fa-hashtag"></i> ${o.id}</span>
                         <span class="status-badge ${statusClass}">${statusText}</span>
@@ -972,7 +994,6 @@
     function manualRefresh() { loadAllData(); showToast('🔄 Synced'); secondsLeft = 30; updateCountdown(); }
     function showToast(msg) { const t = document.createElement('div'); t.style.cssText = 'position:fixed;bottom:80px;right:20px;background:#10b981;color:#030712;padding:8px 16px;border-radius:60px;font-size:0.8rem;font-weight:bold;z-index:9999'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
 
-    // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
