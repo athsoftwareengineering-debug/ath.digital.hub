@@ -298,7 +298,7 @@
         .date-value.start { color: var(--cyan); }
         .date-value.expired { color: var(--amber); }
         .waiting-badge { background: rgba(245,158,11,0.15); padding: 5px 10px; border-radius: 20px; font-size: 0.6rem; color: #fbbf24; margin-top: 6px; text-align: center; }
-        .countdown-timer { background: rgba(0,212,255,0.08); padding: 6px 10px; border-radius: 30px; margin-top: 8px; text-align: center; font-size: 0.65rem; }
+        .countdown-timer { background: rgba(0,212,255,0.08); padding: 6px 10px; border-radius: 30px; margin-top: 8px; text-align: center; font-size: 0.65rem; font-family: monospace; }
         .view-slip-btn {
             background: rgba(0,212,255,0.15);
             border: 1px solid rgba(0,212,255,0.3);
@@ -410,7 +410,6 @@
             font-size: 0.8rem;
         }
         
-        /* Footer Styles */
         footer {
             margin-top: 40px;
             text-align: center;
@@ -665,11 +664,17 @@
     const maskPhone = (p) => p && p.length >= 8 ? p.substring(0,5)+'***'+p.substring(p.length-3) : p;
     const formatDate = (d) => d ? new Date(d).toISOString().split('T')[0] : 'N/A';
     const expiredDate = (act) => act ? new Date(new Date(act).getTime()+30*86400000).toISOString().split('T')[0] : null;
+    
+    // remainingTime with seconds
     const remainingTime = (act) => {
         if (!act) return null;
-        let remain = new Date(act).getTime()+30*86400000-Date.now();
+        let remain = new Date(act).getTime() + 30*86400000 - Date.now();
         if (remain <= 0) return "Expired";
-        return `${Math.floor(remain/86400000)}d ${Math.floor((remain%86400000)/3600000)}h ${Math.floor((remain%3600000)/60000)}m`;
+        const days = Math.floor(remain / 86400000);
+        const hours = Math.floor((remain % 86400000) / 3600000);
+        const minutes = Math.floor((remain % 3600000) / 60000);
+        const seconds = Math.floor((remain % 60000) / 1000);
+        return `${days}d ${hours}h ${minutes}m ${seconds}s`;
     };
     
     const translations = {
@@ -913,7 +918,6 @@
         if (!phone) { showToast(t.searchPrompt, true); return; }
         if (!file) { showToast("📎 ငွေလွှဲပြေစာ ထည့်ပါ", true); return; }
         
-        // Disable button and show loading state
         submitBtn.disabled = true;
         submitBtn.style.opacity = '0.6';
         btnText.innerHTML = '⏳ အော်ဒါတင်နေပါသည်...';
@@ -929,7 +933,6 @@
             document.getElementById('orderForm').reset();
             if (document.getElementById('historyPanel').classList.contains('open')) loadData();
             
-            // Reset button after 2 seconds
             setTimeout(() => {
                 submitBtn.disabled = false;
                 submitBtn.style.opacity = '1';
@@ -939,7 +942,6 @@
             btnText.innerHTML = '❌ ' + t.orderError;
             showToast(t.orderError, true);
             
-            // Reset button after 2 seconds
             setTimeout(() => {
                 submitBtn.disabled = false;
                 submitBtn.style.opacity = '1';
