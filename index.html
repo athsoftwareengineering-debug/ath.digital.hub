@@ -250,17 +250,7 @@
         .stack-details { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
         .stack-phone { font-size: 0.7rem; font-family: monospace; color: var(--amber); }
         .stack-price { font-size: 0.75rem; font-weight: 600; color: var(--emerald); }
-        /* NEW: Countdown for Live Feed */
-        .feed-countdown {
-            font-size: 0.6rem;
-            color: var(--cyan);
-            margin-top: 6px;
-            padding-top: 6px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .feed-countdown { font-size: 0.6rem; color: var(--cyan); margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 6px; }
         .feed-countdown i { font-size: 0.55rem; }
         .feed-countdown.expired { color: var(--rose); }
         
@@ -298,7 +288,17 @@
         .date-value.expired { color: var(--amber); }
         .waiting-badge { background: rgba(245,158,11,0.15); padding: 5px 10px; border-radius: 20px; font-size: 0.6rem; color: #fbbf24; margin-top: 6px; text-align: center; }
         .countdown-timer { background: rgba(0,212,255,0.08); padding: 6px 10px; border-radius: 30px; margin-top: 8px; text-align: center; font-size: 0.65rem; }
-        .view-slip-btn { background: rgba(0,212,255,0.15); border: 1px solid rgba(0,212,255,0.3); padding: 6px 10px; border-radius: 40px; font-size: 0.65rem; cursor: pointer; margin-top: 8px; width: 100%; color: var(--cyan); }
+        .view-slip-btn {
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            cursor: pointer;
+            color: var(--cyan);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
         .view-slip-btn:hover { background: var(--cyan); color: #030712; }
         
         .pack-grid {
@@ -689,7 +689,7 @@
     }
     
     function copyOrderId(id){navigator.clipboard.writeText(id);showToast(`📋 Order ID: ${id} copied`);}
-    function openScreenshot(url){let modal=document.getElementById('screenshotModal'),img=document.getElementById('modalImage');img.src=(url&&url!=='null')?(url.startsWith('/')?API_BASE+url:url):'data:image/svg+xml,...';modal.classList.add('active');}
+    function openScreenshot(url){let modal=document.getElementById('screenshotModal'),img=document.getElementById('modalImage');img.src=(url&&url!=='null')?(url.startsWith('/')?API_BASE+url:url):'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Screenshot%3C/text%3E%3C/svg%3E';modal.classList.add('active');}
     function closeImageModal(){document.getElementById('screenshotModal').classList.remove('active');}
     function showToast(msg,err){let toast=document.getElementById('globalToast');toast.style.backgroundColor=err?'#f43f5e':'#10b981';toast.innerHTML=err?`⚠️ ${msg}`:`✅ ${msg}`;toast.style.top="20px";setTimeout(()=>toast.style.top="-80px",2800);}
     
@@ -708,8 +708,34 @@
         }else{
             dateHtml=`<div class="date-row"><div class="date-box"><div class="date-label">${t.orderDate}</div><div class="date-value start">${formatDate(o.created_at)}</div></div><div class="date-box"><div class="date-label">${t.status}</div><div class="date-value" style="color:var(--amber);">${o.status==='Pending'?t.pending:(o.status==='Rejected'?t.rejected:'N/A')}</div></div></div>`;
         }
-        let slipBtn=(showSlip&&o.slip_url&&o.slip_url!=='null')?`<button class="view-slip-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> ${t.viewReceipt}</button>`:'';
-        return `<div class="order-item ${isHighlight?'highlight':''}"><div class="order-header"><span class="order-plan"><i class="fas fa-sim-card"></i> ${o.plan}</span><span class="status-badge ${statClass}">${statText}</span></div><div class="info-grid"><div class="info-item"><div class="info-label">${t.phone}</div><div class="info-value">${showFull?o.phone:maskPhone(o.phone)}</div></div><div class="info-item"><div class="info-label">${t.amount}</div><div class="info-value price">${o.price.toLocaleString()} KS</div></div><div class="info-item"><div class="info-label">${t.orderId} <span class="copy-id" onclick="copyOrderId('${o.id}')">📋</span></div><div class="info-value" style="font-size:0.65rem;">${o.id}</div></div></div>${dateHtml}${waitMsg}${cdHtml}${slipBtn}</div>`;
+        let slipBtn = (showSlip && o.slip_url && o.slip_url !== 'null') ? `<button class="view-slip-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> ${t.viewReceipt}</button>` : '';
+        
+        return `<div class="order-item ${isHighlight?'highlight':''}">
+            <div class="order-header">
+                <span class="order-plan"><i class="fas fa-sim-card"></i> ${o.plan}</span>
+                <span class="status-badge ${statClass}">${statText}</span>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">${t.phone}</div>
+                    <div class="info-value">${showFull?o.phone:maskPhone(o.phone)}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">${t.amount}</div>
+                    <div class="info-value price">${o.price.toLocaleString()} KS</div>
+                </div>
+                <div class="info-item" style="grid-column: span 2;">
+                    <div class="info-label">${t.orderId} <span class="copy-id" onclick="copyOrderId('${o.id}')">📋</span></div>
+                    <div class="info-value" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <span style="font-family: monospace;">${o.id}</span>
+                        ${slipBtn}
+                    </div>
+                </div>
+            </div>
+            ${dateHtml}
+            ${waitMsg}
+            ${cdHtml}
+        </div>`;
     }
     
     function renderMyOrders(){
@@ -731,7 +757,6 @@
             let statClass="pending",statText=t.pending;
             if(order.status==="Approved"){statClass="approved";statText=t.approved;}
             if(order.status==="Rejected"){statClass="rejected";statText=t.rejected;}
-            // NEW: Countdown for live feed approved orders
             let countdownHtml='';
             if(order.status==='Approved'&&order.activated_at){
                 const remain=remainingTime(order.activated_at);
