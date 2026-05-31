@@ -291,6 +291,17 @@
         .detail-value.price { color: var(--emerald); }
         .detail-value.cost { color: var(--amber); }
         .detail-value.profit { color: var(--cyan); }
+        /* Clickable phone number style */
+        .clickable-phone {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .clickable-phone:hover {
+            color: var(--cyan);
+        }
         
         .countdown-box {
             background: rgba(0,212,255,0.08);
@@ -374,7 +385,12 @@
             font-family: monospace;
             font-size: 0.8rem;
             font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
+        .user-phone:hover { color: var(--cyan); }
         .user-status {
             font-size: 0.6rem;
             padding: 3px 8px;
@@ -383,32 +399,13 @@
         .user-status.suspect { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .user-status.blocked { background: rgba(244,63,94,0.2); color: #fb7185; }
         .user-status.normal { background: rgba(16,185,129,0.2); color: #34d399; }
-        .user-stats {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 10px;
-        }
-        .user-stat {
-            text-align: center;
-        }
-        .user-stat-value {
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-        .user-stat-label {
-            font-size: 0.55rem;
-            color: #64748b;
-        }
+        .user-stats { display: flex; justify-content: space-around; margin-bottom: 10px; }
+        .user-stat { text-align: center; }
+        .user-stat-value { font-size: 1.1rem; font-weight: 700; }
+        .user-stat-label { font-size: 0.55rem; color: #64748b; }
         .reject-rate.high { color: var(--rose); }
         .reject-rate.medium { color: var(--amber); }
-        .user-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            flex-wrap: wrap;
-        }
+        .user-actions { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap; }
         .user-action-btn {
             flex: 1;
             border: none;
@@ -469,10 +466,7 @@
             opacity: 0;
             transition: all 0.3s;
         }
-        .image-modal.active {
-            visibility: visible;
-            opacity: 1;
-        }
+        .image-modal.active { visibility: visible; opacity: 1; }
         .image-modal-content {
             max-width: 90%;
             max-height: 90%;
@@ -481,27 +475,9 @@
             padding: 10px;
             border: 1px solid rgba(0,212,255,0.5);
         }
-        .image-modal-content img {
-            max-width: 100%;
-            max-height: 70vh;
-            border-radius: 16px;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            border-bottom: 1px solid rgba(0,212,255,0.2);
-        }
-        .close-modal {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-        }
+        .image-modal-content img { max-width: 100%; max-height: 70vh; border-radius: 16px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid rgba(0,212,255,0.2); }
+        .close-modal { background: rgba(255,255,255,0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
         
         .login-box {
             max-width: 350px;
@@ -532,12 +508,7 @@
             cursor: pointer;
         }
         .loading { text-align: center; padding: 2rem; color: #64748b; }
-        .last-update {
-            font-size: 0.6rem;
-            color: #475569;
-            text-align: center;
-            padding: 12px;
-        }
+        .last-update { font-size: 0.6rem; color: #475569; text-align: center; padding: 12px; }
         .search-result-badge {
             background: rgba(0,212,255,0.1);
             border-radius: 40px;
@@ -663,6 +634,12 @@
         return phone.substring(0, 5) + '***' + phone.substring(phone.length - 3);
     }
     
+    // Copy to clipboard function
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text);
+        showToast(`📞 ${text} copied!`);
+    }
+    
     function getRemainingTime(activatedAt) {
         if (!activatedAt) return null;
         const now = Date.now();
@@ -765,32 +742,20 @@
     }
 
     async function blockUser(phone, block) {
-        const res = await fetch(`${API_BASE}/api/admin/user-block`, { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone, block })
-        });
+        const res = await fetch(`${API_BASE}/api/admin/user-block`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone, block }) });
         if (res.ok) { loadUserStats(); showToast(block ? '✅ User blocked' : '✅ User unblocked'); }
         else alert('Error');
     }
 
     async function clearSuspectFlag(phone) {
-        const res = await fetch(`${API_BASE}/api/admin/clear-suspect`, { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone })
-        });
+        const res = await fetch(`${API_BASE}/api/admin/clear-suspect`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) });
         if (res.ok) { loadUserStats(); showToast('✅ Suspect flag cleared'); }
         else alert('Error');
     }
 
     async function deleteUser(phone) {
         if (confirm(`⚠️ Are you sure you want to delete user ${maskPhone(phone)}?\nThis will remove the user from stats. Orders will remain.`)) {
-            const res = await fetch(`${API_BASE}/api/admin/user-delete`, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone })
-            });
+            const res = await fetch(`${API_BASE}/api/admin/user-delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) });
             if (res.ok) { loadUserStats(); showToast('✅ User deleted from stats'); }
             else alert('Error');
         }
@@ -798,11 +763,7 @@
 
     async function deleteAllOrders(phone) {
         if (confirm(`⚠️ Are you sure you want to delete ALL orders for ${maskPhone(phone)}?\nThis action cannot be undone!`)) {
-            const res = await fetch(`${API_BASE}/api/admin/user-delete-orders`, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone })
-            });
+            const res = await fetch(`${API_BASE}/api/admin/user-delete-orders`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) });
             if (res.ok) { loadAllData(); showToast('✅ All orders deleted'); }
             else alert('Error');
         }
@@ -848,28 +809,16 @@
             html += `
                 <div class="user-card">
                     <div class="user-header">
-                        <span class="user-phone">📞 ${maskPhone(user.phone)}</span>
+                        <span class="user-phone" onclick="copyToClipboard('${user.phone}')">📞 ${maskPhone(user.phone)} 📋</span>
                         <span class="user-status ${statusClass}">${statusText}</span>
                     </div>
                     <div class="user-stats">
-                        <div class="user-stat">
-                            <div class="user-stat-value">${user.order_count || 0}</div>
-                            <div class="user-stat-label">Orders</div>
-                        </div>
-                        <div class="user-stat">
-                            <div class="user-stat-value ${rejectRate >= 50 ? 'high' : (rejectRate >= 30 ? 'medium' : '')}">${user.reject_count || 0}</div>
-                            <div class="user-stat-label">Rejected</div>
-                        </div>
-                        <div class="user-stat">
-                            <div class="user-stat-value reject-rate ${rateClass}">${rejectRate}%</div>
-                            <div class="user-stat-label">Reject Rate</div>
-                        </div>
+                        <div class="user-stat"><div class="user-stat-value">${user.order_count || 0}</div><div class="user-stat-label">Orders</div></div>
+                        <div class="user-stat"><div class="user-stat-value ${rejectRate >= 50 ? 'high' : (rejectRate >= 30 ? 'medium' : '')}">${user.reject_count || 0}</div><div class="user-stat-label">Rejected</div></div>
+                        <div class="user-stat"><div class="user-stat-value reject-rate ${rateClass}">${rejectRate}%</div><div class="user-stat-label">Reject Rate</div></div>
                     </div>
                     <div class="user-actions">
-                        ${!user.blocked ? 
-                            `<button class="user-action-btn block" onclick="blockUser('${user.phone}', true)">🔴 Block</button>` : 
-                            `<button class="user-action-btn unblock" onclick="blockUser('${user.phone}', false)">🟢 Unblock</button>`
-                        }
+                        ${!user.blocked ? `<button class="user-action-btn block" onclick="blockUser('${user.phone}', true)">🔴 Block</button>` : `<button class="user-action-btn unblock" onclick="blockUser('${user.phone}', false)">🟢 Unblock</button>`}
                         <button class="user-action-btn delete-user" onclick="deleteUser('${user.phone}')">❌ Delete User</button>
                         <button class="user-action-btn delete-orders" onclick="deleteAllOrders('${user.phone}')">🗑 Delete All Orders</button>
                         ${user.suspect_flag ? `<button class="user-action-btn clear" onclick="clearSuspectFlag('${user.phone}')">✓ Clear Flag</button>` : ''}
@@ -931,9 +880,7 @@
         applyFiltersAndSearch();
     }
 
-    function applyFilters() {
-        applyFiltersAndSearch();
-    }
+    function applyFilters() { applyFiltersAndSearch(); }
     
     function clearFilters() {
         document.getElementById('startDate').value = '';
@@ -973,7 +920,7 @@
                     <div class="order-details">
                         <div class="detail-item">
                             <div class="detail-label"><i class="fas fa-mobile-alt"></i> Phone</div>
-                            <div class="detail-value">${o.phone}</div>
+                            <div class="detail-value clickable-phone" onclick="copyToClipboard('${o.phone}')" title="Click to copy">📞 ${o.phone} 📋</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label"><i class="fas fa-tag"></i> Plan</div>
@@ -1025,6 +972,7 @@
     function manualRefresh() { loadAllData(); showToast('🔄 Synced'); secondsLeft = 30; updateCountdown(); }
     function showToast(msg) { const t = document.createElement('div'); t.style.cssText = 'position:fixed;bottom:80px;right:20px;background:#10b981;color:#030712;padding:8px 16px;border-radius:60px;font-size:0.8rem;font-weight:bold;z-index:9999'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
 
+    // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1051,6 +999,7 @@
     window.searchByPhone = searchByPhone; window.clearSearch = clearSearch;
     window.blockUser = blockUser; window.clearSuspectFlag = clearSuspectFlag;
     window.deleteUser = deleteUser; window.deleteAllOrders = deleteAllOrders;
+    window.copyToClipboard = copyToClipboard;
 
     if (token === 'logged_in') { document.getElementById('loginBox').style.display = 'none'; document.getElementById('adminContent').style.display = 'block'; document.getElementById('fabContainer').style.display = 'flex'; loadAllData(); startAutoSync(); }
 </script>
