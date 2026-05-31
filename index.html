@@ -61,7 +61,6 @@
         }
         @media (min-width: 768px) { .brand { font-size: 1.5rem; } }
         
-        /* Language Switcher */
         .lang-switcher {
             display: flex;
             gap: 8px;
@@ -259,7 +258,38 @@
             overflow-y: auto;
         }
         
-        /* Vertical Stack Container */
+        /* 🔴 LIVE Blinking Badge */
+        .live-badge {
+            background: rgba(244,63,94,0.2);
+            color: #f43f5e;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 40px;
+            margin-left: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            animation: liveBlink 1s step-end infinite;
+            border: 1px solid rgba(244,63,94,0.5);
+        }
+        .live-badge i {
+            font-size: 0.55rem;
+        }
+        @keyframes liveBlink {
+            0%, 100% { 
+                background: rgba(244,63,94,0.2);
+                color: #f43f5e;
+                box-shadow: 0 0 0px rgba(244,63,94,0);
+            }
+            50% { 
+                background: rgba(244,63,94,0.8);
+                color: white;
+                box-shadow: 0 0 8px rgba(244,63,94,0.8);
+            }
+        }
+        
+        /* Vertical Stack Container - Top to Bottom flow */
         .stack-container {
             display: flex;
             flex-direction: column;
@@ -273,15 +303,21 @@
             padding: 14px;
             border-left: 3px solid var(--violet);
             transition: all 0.3s ease;
-            animation: fadeIn 0.3s ease;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .stack-item:hover {
             transform: translateX(4px);
             border-left-color: var(--cyan);
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
         .stack-item.new-order {
             border-left-color: var(--cyan);
@@ -340,10 +376,10 @@
             color: var(--emerald);
         }
         
-        /* Status Bar */
+        /* Status Bar - removed rotation text */
         .status-bar {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
             margin-top: 12px;
             padding-top: 8px;
@@ -689,23 +725,6 @@
             margin-top: 10px;
         }
         
-        .live-badge {
-            background: rgba(244,63,94,0.2);
-            color: #f43f5e;
-            font-size: 0.55rem;
-            padding: 2px 8px;
-            border-radius: 40px;
-            margin-left: 8px;
-        }
-        .priority-badge {
-            background: rgba(0,212,255,0.2);
-            color: var(--cyan);
-            font-size: 0.55rem;
-            padding: 2px 8px;
-            border-radius: 40px;
-            margin-left: 8px;
-        }
-        
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -716,6 +735,18 @@
         ::-webkit-scrollbar-thumb {
             background: var(--cyan);
             border-radius: 4px;
+        }
+        
+        /* Empty message center alignment */
+        .empty-msg {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 30px;
+            font-size: 0.7rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
@@ -820,14 +851,12 @@
         <div class="card-header">
             <i class="fas fa-globe"></i> <span class="live-feed-header-text">အခြားသူများ၏ အော်ဒါများ</span>
             <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span>
-            <span class="priority-badge"><i class="fas fa-arrow-down"></i> <span class="rotating-text">လှည့်ပတ်နေသည်</span></span>
         </div>
         <div class="card-content stack-container" id="stackContainer">
             <div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> <span class="loading-feed-text">Loading feed...</span></div>
         </div>
         <div class="status-bar">
             <span class="status-badge-sm"><span class="status-dot"></span> <span class="live-update-text">စက္ကန့် 30 တိုင်း အသစ်ပြန်တင်မည်</span></span>
-            <span class="status-badge-sm"><i class="fas fa-arrow-down"></i> <span class="rotate-interval-text">စက္ကန့် 10 တိုင်း လှည့်မည်</span></span>
         </div>
     </div>
 </div>
@@ -873,10 +902,8 @@
     // Translations
     const translations = {
         my: {
-            // Header
             myOrdersBtn: 'ကျွန်ုပ်၏အော်ဒါများ',
             heroSubtitle: 'မြန်ဆန်သော Data & Voice Plan များ — VIP အတွေ့အကြုံ',
-            // Panel
             dashboardTitle: 'အော်ဒါများ',
             autoRefresh: 'အလိုအလျောက် ပြန်လည်စတင်ခြင်း: 30s',
             searchTitle: 'ဖုန်းနံပါတ်ဖြင့် ရှာဖွေရန်',
@@ -885,23 +912,19 @@
             searchHint: '💡 မည်သည့်ဖုန်းနံပါတ်မဆို ရှာနိုင်ပါသည်။ ရှာတွေ့ပါက အဝါရောင် Highlight ပြပါမည်။',
             myOrdersHeader: 'ကျွန်ုပ်၏ အော်ဒါများ',
             liveFeedHeader: 'အခြားသူများ၏ အော်ဒါများ',
-            rotating: 'လှည့်ပတ်နေသည်',
             liveUpdate: 'စက္ကန့် 30 တိုင်း အသစ်ပြန်တင်မည်',
-            rotateInterval: 'စက္ကန့် 10 တိုင်း လှည့်မည်',
             loading: 'Loading...',
             loadingFeed: 'Loading feed...',
             noOrders: '📭 အော်ဒါမရှိသေးပါ။<br>ပထမဆုံးအော်ဒါအတွက် စောင့်ဆိုင်းနေပါသည်...',
             noMyOrders: '📭 သင့်အော်ဒါမရှိသေးပါ။',
-            // Payment Modal
+            placeOrderFirst: 'သင့်ပထမဆုံးအော်ဒါကို တင်ပါ။',
             paymentTitle: 'ငွေပေးချေမှုအသေးစိတ်',
             phoneLabel: '📱 ဒေတာထည့်ရမည့်ဖုန်းနံပါတ် *',
             slipLabel: '🧾 ငွေလွှဲပြေစာ (Screenshot)',
             submitBtn: '✅ အော်ဒါတင်မည်',
             footnote: '※ ဖုန်းနံပါတ်ကို နှိပ်၍ ကူးယူနိုင်ပါသည်။',
-            // Screenshot Modal
             screenshotTitle: 'ငွေလွှဲပြေစာ',
             modalFooter: 'အပြင်ဘက်နှိပ်ပါ သို့မဟုတ် ✕ နှိပ်ပါ',
-            // Toast messages
             orderSuccess: '✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ',
             orderError: 'အော်ဒါတင်ရာတွင် အမှားရှိပါသည်',
             searchPrompt: '⚠️ ဖုန်းနံပါတ် ထည့်ပါ',
@@ -909,7 +932,6 @@
             searching: '🔍 ရှာဖွေနေပါသည်...',
             searchCleared: '🔍 ရှာဖွေမှု ရှင်းလင်းပြီးပါပြီ။',
             phoneCopied: '📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။',
-            // Status
             pending: '⏳ စောင့်ဆိုင်းဆဲ',
             approved: '✅ အတည်ပြုပြီး',
             rejected: '❌ ပယ်ဖျက်ခံရ',
@@ -926,9 +948,7 @@
             copyId: '📋 ကူးယူရန်',
             viewReceipt: '🧾 ပြေစာကြည့်ရန်',
             newBadge: 'NEW',
-            // Buy button
             buyNow: 'ဝယ်ယူမည်',
-            // Feature texts
             extremeSpeed: 'အမြန်နှုန်းမြင့်',
             onNetMins: 'မိနစ် (ကွန်ရက်တွင်း)',
             sms: 'SMS',
@@ -941,10 +961,8 @@
             prioritySupport: 'ဦးစားပေး ပံ့ပိုးမှု'
         },
         en: {
-            // Header
             myOrdersBtn: 'My Orders',
             heroSubtitle: 'High-speed Data & Voice Plans — VIP Experience',
-            // Panel
             dashboardTitle: 'Orders',
             autoRefresh: 'Auto sync: 30s',
             searchTitle: 'Search by Phone Number',
@@ -953,23 +971,19 @@
             searchHint: '💡 Search any phone number. Found orders will be highlighted in yellow.',
             myOrdersHeader: 'My Orders',
             liveFeedHeader: 'Live Orders Feed',
-            rotating: 'ROTATING',
             liveUpdate: 'Live updates every 30s',
-            rotateInterval: 'Rotates every 10s',
             loading: 'Loading...',
             loadingFeed: 'Loading feed...',
             noOrders: '📭 No orders yet<br>Waiting for first order...',
             noMyOrders: '📭 No orders found for your number.',
-            // Payment Modal
+            placeOrderFirst: 'Place your first order to view here.',
             paymentTitle: 'Payment Details',
             phoneLabel: '📱 Recipient Phone Number *',
             slipLabel: '🧾 Payment Screenshot',
             submitBtn: '✅ Place Order',
             footnote: '※ Click phone number to copy',
-            // Screenshot Modal
             screenshotTitle: 'Payment Screenshot',
             modalFooter: 'Click outside or press ✕ to close',
-            // Toast messages
             orderSuccess: '✅ Order placed successfully! Order ID: ',
             orderError: 'Failed to place order',
             searchPrompt: '⚠️ Please enter a phone number',
@@ -977,7 +991,6 @@
             searching: '🔍 Searching...',
             searchCleared: '🔍 Search cleared',
             phoneCopied: '📞 Phone number copied',
-            // Status
             pending: '⏳ Pending',
             approved: '✅ Approved',
             rejected: '❌ Rejected',
@@ -994,9 +1007,7 @@
             copyId: '📋 Copy',
             viewReceipt: '🧾 View Receipt',
             newBadge: 'NEW',
-            // Buy button
             buyNow: 'Purchase Now',
-            // Feature texts
             extremeSpeed: 'Extreme Speed',
             onNetMins: 'On-Net Mins',
             sms: 'SMS',
@@ -1014,67 +1025,48 @@
         const t = translations[currentLang];
         if (!t) return;
         
-        // Header
         document.querySelector('.my-orders-text').textContent = t.myOrdersBtn;
         document.querySelector('.hero-subtitle').textContent = t.heroSubtitle;
-        
-        // Panel
         document.querySelector('.dashboard-title').innerHTML = `<i class="fas fa-list-ul"></i> ${t.dashboardTitle}`;
-        document.querySelector('.auto-refresh-status span:last-child').textContent = t.autoRefresh;
-        document.querySelector('.search-title').innerHTML = `<i class="fas fa-search"></i> ${t.searchTitle}`;
+        document.querySelector('.auto-refresh-text').textContent = t.autoRefresh;
+        document.querySelector('.search-title-text').textContent = t.searchTitle;
         document.querySelector('.search-btn-text').textContent = t.searchBtn;
         document.querySelector('.clear-btn-text').textContent = t.clearBtn;
         document.querySelector('.search-hint-text').textContent = t.searchHint;
         document.querySelector('.my-orders-header-text').textContent = t.myOrdersHeader;
         document.querySelector('.live-feed-header-text').textContent = t.liveFeedHeader;
-        document.querySelector('.rotating-text').textContent = t.rotating;
         document.querySelector('.live-update-text').textContent = t.liveUpdate;
-        document.querySelector('.rotate-interval-text').textContent = t.rotateInterval;
         
-        if (document.querySelector('.empty-msg .loading-text')) {
-            document.querySelector('.loading-text').textContent = t.loading;
-        }
-        if (document.querySelector('.loading-feed-text')) {
-            document.querySelector('.loading-feed-text').textContent = t.loadingFeed;
-        }
+        if (document.querySelector('.loading-text')) document.querySelector('.loading-text').textContent = t.loading;
+        if (document.querySelector('.loading-feed-text')) document.querySelector('.loading-feed-text').textContent = t.loadingFeed;
         
-        // Payment Modal
         document.querySelector('.payment-title').textContent = t.paymentTitle;
         document.querySelector('.phone-label').textContent = t.phoneLabel;
         document.querySelector('.slip-label').textContent = t.slipLabel;
         document.querySelector('.submit-btn-text').textContent = t.submitBtn;
         document.querySelector('.footnote-text').textContent = t.footnote;
-        
-        // Screenshot Modal
         document.querySelector('.screenshot-title').textContent = t.screenshotTitle;
         document.querySelector('.modal-footer-text').textContent = t.modalFooter;
         
-        // Feature texts
+        const features = [
+            t.extremeSpeed, t.onNetMins, t.sms,
+            t.ultraData, t.onNetMins, t.anyNetMins,
+            t.highSpeedExtra, t.onNetMins, t.smsUnlimited,
+            t.gamerData, t.unlimited, t.prioritySupport
+        ];
         document.querySelectorAll('.feature-text').forEach((el, idx) => {
-            const features = [
-                t.extremeSpeed, t.onNetMins, t.sms,
-                t.ultraData, t.onNetMins, t.anyNetMins,
-                t.highSpeedExtra, t.onNetMins, t.smsUnlimited,
-                t.gamerData, t.unlimited, t.prioritySupport
-            ];
             if (idx < features.length) el.textContent = features[idx];
         });
         
-        // Buy buttons
         document.querySelectorAll('.buy-btn-text').forEach(btn => {
             btn.textContent = t.buyNow;
         });
         
-        // Active language button
         document.querySelectorAll('.lang-btn').forEach(btn => {
-            if (btn.dataset.lang === currentLang) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
+            if (btn.dataset.lang === currentLang) btn.classList.add('active');
+            else btn.classList.remove('active');
         });
         
-        // Refresh UI content
         renderMyOrders();
         renderStack();
     }
@@ -1090,7 +1082,6 @@
     let refreshSecondsLeft = 30;
     let countdownIntervals = {};
     
-    // Vertical Stack Slider variables
     let stackOrders = [];
     let rotateInterval = null;
     let lastOrdersHash = '';
@@ -1105,17 +1096,14 @@
     function maskPhoneNumber(phone) {
         if (!phone || phone.length < 8) return phone || '';
         if (phone.length === 10 || phone.length === 11) {
-            const firstPart = phone.substring(0, 5);
-            const lastPart = phone.substring(phone.length - 3);
-            return `${firstPart}***${lastPart}`;
+            return phone.substring(0, 5) + '***' + phone.substring(phone.length - 3);
         }
         return phone;
     }
     
     function formatDate(dateString) {
         if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        return date.toISOString().split('T')[0];
+        return new Date(dateString).toISOString().split('T')[0];
     }
     
     function calculateExpiredDate(activatedAt) {
@@ -1140,10 +1128,7 @@
         if (countdownIntervals[orderId]) clearInterval(countdownIntervals[orderId]);
         const updateTimer = () => {
             const elem = document.getElementById(`countdown-${orderId}`);
-            if (!elem) {
-                clearInterval(countdownIntervals[orderId]);
-                return;
-            }
+            if (!elem) { clearInterval(countdownIntervals[orderId]); return; }
             const t = translations[currentLang];
             const remaining = formatRemainingTime(activatedAt);
             if (remaining === "Expired") {
@@ -1161,15 +1146,14 @@
     function copyOrderId(orderId) {
         navigator.clipboard.writeText(orderId.toString());
         const t = translations[currentLang];
-        showToast(`📋 ${t.orderId}: ${orderId} ${t.copyId.split(' ')[1] || 'copied'}`);
+        showToast(`📋 ${t.orderId}: ${orderId} copied`);
     }
     
     function openScreenshot(url) {
         const modal = document.getElementById('screenshotModal');
         const img = document.getElementById('modalImage');
         if (url && url !== 'null' && url !== '') {
-            let fullUrl = url.startsWith('/') ? API_BASE + url : url;
-            img.src = fullUrl;
+            img.src = url.startsWith('/') ? API_BASE + url : url;
         } else {
             img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Screenshot%3C/text%3E%3C/svg%3E';
         }
@@ -1195,7 +1179,8 @@
         }
     }
     
-    // ==================== STACK FUNCTIONS ====================
+    // ==================== STACK FUNCTIONS - TOP TO BOTTOM FLOW ====================
+    // Move first item (top) to bottom - creates downward flow
     function rotateStack() {
         if (stackOrders.length <= 1) return;
         const firstItem = stackOrders.shift();
@@ -1224,6 +1209,7 @@
         const newOrdersList = sortedOrders.filter(o => !currentQueueIds.includes(o.id));
         
         if (newOrdersList.length > 0) {
+            // NEW ORDERS GO TO THE TOP (front of array)
             stackOrders = [...newOrdersList, ...stackOrders];
             if (stackOrders.length > 30) stackOrders = stackOrders.slice(0, 30);
         } else {
@@ -1392,7 +1378,7 @@
             container.innerHTML = `<div class="empty-msg">
                 <i class="fas fa-info-circle"></i><br>
                 ${t.noMyOrders}<br>
-                ${t.placeOrderFirst || 'Place your first order to view here.'}
+                ${t.placeOrderFirst}
             </div>`;
             return;
         }
@@ -1435,14 +1421,8 @@
         const phone = document.getElementById('searchPhoneInput').value.trim();
         const t = translations[currentLang];
         
-        if (!phone) {
-            showToast(t.searchPrompt, true);
-            return;
-        }
-        if (phone.length < 8) {
-            showToast(t.searchInvalid, true);
-            return;
-        }
+        if (!phone) { showToast(t.searchPrompt, true); return; }
+        if (phone.length < 8) { showToast(t.searchInvalid, true); return; }
         currentSearchPhone = phone;
         renderMyOrders();
         showToast(`${t.searching} ${maskPhoneNumber(phone)}`);
@@ -1452,8 +1432,7 @@
         currentSearchPhone = '';
         document.getElementById('searchPhoneInput').value = '';
         renderMyOrders();
-        const t = translations[currentLang];
-        showToast(t.searchCleared);
+        showToast(translations[currentLang].searchCleared);
     }
     
     // ==================== ORDER SUBMISSION ====================
@@ -1469,7 +1448,7 @@
     
     // ==================== AUTO REFRESH ====================
     function updateRefreshTimer() {
-        const timerEl = document.querySelector('.auto-refresh-status span:last-child');
+        const timerEl = document.querySelector('.auto-refresh-text');
         if (timerEl) timerEl.textContent = `${translations[currentLang].autoRefresh}`.replace('30s', `${refreshSecondsLeft}s`);
     }
     
@@ -1557,14 +1536,12 @@
     
     document.getElementById('clickablePhone').addEventListener('click', () => { 
         navigator.clipboard.writeText("09789999368"); 
-        const t = translations[currentLang];
-        showToast(t.phoneCopied); 
+        showToast(translations[currentLang].phoneCopied); 
     });
     
     document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeImageModal(); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeImageModal(); });
     
-    // Language switcher
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             currentLang = btn.dataset.lang;
@@ -1579,14 +1556,13 @@
     window.openScreenshot = openScreenshot;
     window.closeImageModal = closeImageModal;
     
-    // Initialize
     updateLanguage();
     
     if (myPhone) {
         console.log("✅ Loaded with saved phone:", maskPhoneNumber(myPhone));
     }
-    console.log("✅ ATH DIGITAL HUB - Language Switcher Active (Myanmar/English)");
-    console.log("✅ Default language: Myanmar");
+    console.log("✅ ATH DIGITAL HUB - Top to Bottom Flow Active!");
+    console.log("✅ New orders go to TOP, then rotate DOWN every 10 seconds!");
 </script>
 </body>
 </html>
