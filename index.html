@@ -666,7 +666,7 @@
     function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
 
     // ============================================
-    // TRACK ORDER - SIMPLE & RELIABLE
+    // TRACK ORDER - FIXED: Use admin endpoint and filter
     // ============================================
     async function panelTrackOrder() {
         if (panelAutoHideTimer) clearTimeout(panelAutoHideTimer);
@@ -683,7 +683,8 @@
         }
         
         try {
-            const response = await fetch(`${API_BASE}/api/orders/${phone}`);
+            // Use admin endpoint to get all orders, then filter by phone
+            const response = await fetch(`${API_BASE}/api/admin/orders`);
             console.log("📡 Response status:", response.status);
             
             if (!response.ok) {
@@ -693,20 +694,21 @@
             const data = await response.json();
             console.log("📦 Response data:", data);
             
-            // Check if orders exist and is array
-            if (!data.orders || !Array.isArray(data.orders) || data.orders.length === 0) {
-                console.log("❌ No orders found");
+            // Filter orders by phone number
+            const filteredOrders = (data.orders || []).filter(order => order.phone === phone);
+            
+            if (!filteredOrders || filteredOrders.length === 0) {
+                console.log("❌ No orders found for phone:", phone);
                 resultDiv.innerHTML = `<div style="color:var(--text-secondary); padding:8px;">📭 "${phone}" အတွက် အော်ဒါမရှိပါ။</div>`;
                 resultDiv.classList.add('show');
                 panelAutoHideResult();
                 return;
             }
             
-            console.log(`✅ Found ${data.orders.length} orders`);
+            console.log(`✅ Found ${filteredOrders.length} orders for ${phone}`);
             
-            // Build HTML for orders
             let html = `<div style="text-align:left;">`;
-            for (const order of data.orders) {
+            for (const order of filteredOrders) {
                 let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
                 let waitingMsg = "";
                 if (order.status === "Approved") { 
@@ -886,7 +888,7 @@
     document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
     
-    console.log("✅ Track Your Order - Simple reliable version. Check console for details.");
+    console.log("✅ Track Your Order - FIXED: Using admin endpoint with phone filter");
 </script>
 </body>
 </html>
