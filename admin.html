@@ -247,11 +247,17 @@
         }
         .order-card:hover { border-color: rgba(0,212,255,0.3); transform: translateX(3px); }
         
+        /* Search Highlight Effect */
         .order-card.search-highlight {
             border: 2px solid #fbbf24;
             background: rgba(251, 191, 36, 0.15);
             box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
             animation: glowPulse 0.5s ease-in-out;
+        }
+        .user-card.search-highlight {
+            border: 2px solid #fbbf24;
+            background: rgba(251, 191, 36, 0.15);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
         }
         @keyframes glowPulse {
             0% { box-shadow: 0 0 0px rgba(251,191,36,0); }
@@ -655,7 +661,7 @@
     
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text);
-        showToast(` ${text} copied!`);
+        showToast(`📞 ${text} copied!`);
     }
     
     function getRemainingTime(activatedAt) {
@@ -825,8 +831,18 @@
             return;
         }
         
+        let filteredUsers = [...userStats];
+        if (currentSearchPhone) {
+            filteredUsers = filteredUsers.filter(u => u.phone === currentSearchPhone);
+        }
+        
+        if (filteredUsers.length === 0 && currentSearchPhone) {
+            container.innerHTML = `<div class="loading">No user found for ${maskPhone(currentSearchPhone)}</div>`;
+            return;
+        }
+        
         let html = '';
-        for (const user of userStats) {
+        for (const user of filteredUsers) {
             const rejectRate = user.order_count > 0 ? ((user.reject_count / user.order_count) * 100).toFixed(0) : 0;
             let rateClass = '';
             if (rejectRate >= 50) rateClass = 'high';
@@ -881,6 +897,7 @@
         renderOrders(filtered);
         updateStats(filtered);
         
+        // Update search result message
         if (currentSearchPhone) {
             if (!document.getElementById('searchResultMsg')) {
                 const msgDiv = document.createElement('div');
@@ -890,11 +907,16 @@
                 msgDiv.style.justifyContent = 'center';
                 document.querySelector('.filter-bar').after(msgDiv);
             }
-            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Phone: ${currentSearchPhone} | Found: ${filtered.length} order(s)`;
+            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Phone: ${maskPhone(currentSearchPhone)} | Found: ${filtered.length} order(s)`;
         } else {
             if (document.getElementById('searchResultMsg')) {
                 document.getElementById('searchResultMsg').remove();
             }
+        }
+        
+        // Refresh Users tab if it's visible
+        if (currentTab === 'users') {
+            renderUsersTab();
         }
     }
 
@@ -906,6 +928,8 @@
         }
         currentSearchPhone = phone;
         applyFiltersAndSearch();
+        
+        // Auto scroll to highlighted card
         setTimeout(() => {
             const highlighted = document.querySelector('.order-card.search-highlight, .user-card.search-highlight');
             if (highlighted) {
@@ -918,6 +942,13 @@
         currentSearchPhone = "";
         document.getElementById('searchPhoneInput').value = "";
         applyFiltersAndSearch();
+        if (currentTab === 'users') {
+            renderUsersTab();
+        }
+        // Remove search result badge
+        const msgDiv = document.getElementById('searchResultMsg');
+        if (msgDiv) msgDiv.remove();
+        showToast('🔍 Search cleared');
     }
 
     function applyFilters() { applyFiltersAndSearch(); }
@@ -927,6 +958,10 @@
         document.getElementById('endDate').value = '';
         document.getElementById('statusFilter').value = 'all';
         applyFiltersAndSearch();
+        if (currentTab === 'users') {
+            renderUsersTab();
+        }
+        showToast('✅ Filters cleared');
     }
 
     function renderOrders(orders) {
@@ -963,7 +998,7 @@
                     <div class="order-details">
                         <div class="detail-item">
                             <div class="detail-label"><i class="fas fa-mobile-alt"></i> Phone</div>
-                            <div class="detail-value clickable-phone" onclick="copyToClipboard('${o.phone}')" title="Click to copy"> ${o.phone} 📋</div>
+                            <div class="detail-value clickable-phone" onclick="copyToClipboard('${o.phone}')" title="Click to copy">📞 ${maskPhone(o.phone)} 📋</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label"><i class="fas fa-tag"></i> Plan</div>
@@ -1033,7 +1068,7 @@
             } else {
                 document.getElementById('ordersTab').classList.add('hidden');
                 document.getElementById('usersTab').classList.remove('hidden');
-                loadUserStats();
+                renderUsersTab();
             }
         });
     });
