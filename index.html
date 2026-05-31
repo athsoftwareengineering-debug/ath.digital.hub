@@ -242,6 +242,28 @@
             background: rgba(251,191,36,0.15);
             box-shadow: 0 0 20px rgba(251,191,36,0.5);
         }
+        /* 🟠 Orange Glow Animation */
+        @keyframes orangeGlow {
+            0% { 
+                border-color: rgba(245, 158, 11, 0);
+                box-shadow: 0 0 0px rgba(245, 158, 11, 0);
+                background: rgba(245, 158, 11, 0);
+            }
+            50% { 
+                border-color: #f59e0b;
+                box-shadow: 0 0 20px #f59e0b;
+                background: rgba(245, 158, 11, 0.25);
+            }
+            100% { 
+                border-color: rgba(245, 158, 11, 0);
+                box-shadow: 0 0 0px rgba(245, 158, 11, 0);
+                background: rgba(245, 158, 11, 0);
+            }
+        }
+        .stack-item.glow {
+            animation: orangeGlow 0.5s ease-in-out;
+        }
+        
         .new-badge {
             background: linear-gradient(135deg, #f43f5e, #e11d48);
             color: white;
@@ -261,7 +283,17 @@
         .stack-details { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
         .stack-phone { font-size: 0.7rem; font-family: monospace; color: var(--amber); }
         .stack-price { font-size: 0.75rem; font-weight: 600; color: var(--emerald); }
-        .feed-countdown { font-size: 0.6rem; color: var(--cyan); margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 6px; }
+        .feed-countdown { 
+            font-size: 0.6rem; 
+            color: var(--cyan); 
+            margin-top: 6px; 
+            padding-top: 6px; 
+            border-top: 1px solid rgba(255,255,255,0.05); 
+            display: flex; 
+            align-items: center; 
+            gap: 6px;
+            font-family: monospace;
+        }
         .feed-countdown i { font-size: 0.55rem; }
         .feed-countdown.expired { color: var(--rose); }
         
@@ -657,6 +689,7 @@
     let currentSearchPhone = '';
     let autoRefreshInterval = null, refreshCountdown = null, refreshSec = 30;
     let countdownIntervals = {};
+    let liveCountdownIntervals = {};
     let stackOrders = [], rotateInterval = null, lastHash = '';
     const ROTATE_MS = 10000, NEW_TIMEOUT = 120000;
     
@@ -665,7 +698,6 @@
     const formatDate = (d) => d ? new Date(d).toISOString().split('T')[0] : 'N/A';
     const expiredDate = (act) => act ? new Date(new Date(act).getTime()+30*86400000).toISOString().split('T')[0] : null;
     
-    // remainingTime with seconds
     const remainingTime = (act) => {
         if (!act) return null;
         let remain = new Date(act).getTime() + 30*86400000 - Date.now();
@@ -759,7 +791,8 @@
         if(cards[2]){cards[2].querySelectorAll('.f1')[0].innerHTML=t.c3f1;cards[2].querySelectorAll('.f2')[0].innerHTML=t.c3f2;cards[2].querySelectorAll('.f3')[0].innerHTML=t.c3f3;}
         if(cards[3]){cards[3].querySelectorAll('.f1')[0].innerHTML=t.c4f1;cards[3].querySelectorAll('.f2')[0].innerHTML=t.c4f2;cards[3].querySelectorAll('.f3')[0].innerHTML=t.c4f3;}
         document.querySelectorAll('.lang-btn').forEach(btn=>{if(btn.dataset.lang===currentLang)btn.classList.add('active');else btn.classList.remove('active');});
-        renderMyOrders();renderStack();
+        renderMyOrders();
+        renderStack();
     }
     
     function startCountdown(id, act) {
@@ -779,10 +812,41 @@
         fn();countdownIntervals[id]=setInterval(fn,1000);
     }
     
+    function startLiveCountdown(orderId, activatedAt) {
+        if (liveCountdownIntervals[orderId]) clearInterval(liveCountdownIntervals[orderId]);
+        const fn = () => {
+            const el = document.getElementById(`live-cd-${orderId}`);
+            if (!el) { 
+                clearInterval(liveCountdownIntervals[orderId]); 
+                return; 
+            }
+            const remain = remainingTime(activatedAt);
+            const t = translations[currentLang];
+            if (remain === "Expired") {
+                el.innerHTML = `<i class="fas fa-calendar-times"></i> ${t.expired}`;
+                el.classList.add('expired');
+                clearInterval(liveCountdownIntervals[orderId]);
+            } else {
+                el.innerHTML = `<i class="fas fa-hourglass-half"></i> ${t.remaining}: ${remain}`;
+            }
+        };
+        fn();
+        liveCountdownIntervals[orderId] = setInterval(fn, 1000);
+    }
+    
     function copyOrderId(id){navigator.clipboard.writeText(id);showToast(`📋 Order ID: ${id} copied`);}
     function openScreenshot(url){let modal=document.getElementById('screenshotModal'),img=document.getElementById('modalImage');img.src=(url&&url!=='null')?(url.startsWith('/')?API_BASE+url:url):'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Screenshot%3C/text%3E%3C/svg%3E';modal.classList.add('active');}
     function closeImageModal(){document.getElementById('screenshotModal').classList.remove('active');}
     function showToast(msg,err){let toast=document.getElementById('globalToast');toast.style.backgroundColor=err?'#f43f5e':'#10b981';toast.innerHTML=err?`⚠️ ${msg}`:`✅ ${msg}`;toast.style.top="20px";setTimeout(()=>toast.style.top="-80px",2800);}
+    
+    // Add glow effect to an element and remove after animation
+    function addGlowEffect(element) {
+        if (!element) return;
+        element.classList.add('glow');
+        setTimeout(() => {
+            element.classList.remove('glow');
+        }, 500);
+    }
     
     function renderOrderItem(o,showFull,isHighlight,showSlip){
         const t=translations[currentLang];
@@ -848,32 +912,77 @@
             let statClass="pending",statText=t.pending;
             if(order.status==="Approved"){statClass="approved";statText=t.approved;}
             if(order.status==="Rejected"){statClass="rejected";statText=t.rejected;}
+            
             let countdownHtml='';
             if(order.status==='Approved'&&order.activated_at){
-                const remain=remainingTime(order.activated_at);
-                if(remain==='Expired'){
-                    countdownHtml=`<div class="feed-countdown expired"><i class="fas fa-calendar-times"></i> ${t.expired}</div>`;
-                }else{
-                    countdownHtml=`<div class="feed-countdown"><i class="fas fa-hourglass-half"></i> ${t.remaining}: ${remain}</div>`;
-                }
+                countdownHtml=`<div class="feed-countdown" id="live-cd-${order.id}"><i class="fas fa-hourglass-half"></i> ${t.remaining}: ...</div>`;
             }
-            html+=`<div class="stack-item ${isNew?'new-order':''} ${isHighlight?'search-highlight':''}">${isNew?`<div class="new-badge"><i class="fas fa-fire"></i> ${t.newBadge}</div>`:''}<div class="stack-header"><span class="stack-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span><span class="stack-status ${statClass}">${statText}</span></div><div class="stack-details"><span class="stack-phone"><i class="fas fa-mobile-alt"></i> ${maskPhone(order.phone)}</span><span class="stack-price"><i class="fas fa-coins"></i> ${order.price.toLocaleString()} KS</span></div>${countdownHtml}</div>`;
+            html+=`<div class="stack-item ${isNew?'new-order':''} ${isHighlight?'search-highlight':''}" data-order-id="${order.id}">
+                ${isNew?`<div class="new-badge"><i class="fas fa-fire"></i> ${t.newBadge}</div>`:''}
+                <div class="stack-header">
+                    <span class="stack-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
+                    <span class="stack-status ${statClass}">${statText}</span>
+                </div>
+                <div class="stack-details">
+                    <span class="stack-phone"><i class="fas fa-mobile-alt"></i> ${maskPhone(order.phone)}</span>
+                    <span class="stack-price"><i class="fas fa-coins"></i> ${order.price.toLocaleString()} KS</span>
+                </div>
+                ${countdownHtml}
+            </div>`;
         });
         container.innerHTML=html+'</div>';
+        
+        // Start independent countdown timers for each approved order
+        stackOrders.forEach(order => {
+            if (order.status === 'Approved' && order.activated_at) {
+                startLiveCountdown(order.id, order.activated_at);
+            }
+        });
     }
     
-    function rotateStack(){if(stackOrders.length>1){const last=stackOrders.pop();stackOrders.unshift(last);renderStack();}}
+    // Rotate stack with glow effect on the moving card
+    function rotateStack() {
+        if (stackOrders.length > 1) {
+            const lastItem = stackOrders.pop();
+            stackOrders.unshift(lastItem);
+            renderStack();
+            // Add glow effect to the new top card (the one that moved)
+            setTimeout(() => {
+                const topCard = document.querySelector('.stack-item');
+                if (topCard) addGlowEffect(topCard);
+            }, 50);
+        }
+    }
+    
     function updateStack(orders){
         let others=orders.filter(o=>o.phone!==myPhone);
         if(!others.length){if(stackOrders.length){stackOrders=[];renderStack();}return;}
         let sorted=[...others].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
         let hash=JSON.stringify(sorted.map(o=>({id:o.id,status:o.status})));
-        if(hash===lastHash&&stackOrders.length)return;
-        lastHash=hash;
-        let currIds=stackOrders.map(o=>o.id),newOnes=sorted.filter(o=>!currIds.includes(o.id));
-        if(newOnes.length){stackOrders=[...newOnes,...stackOrders].slice(0,30);}
-        else{let upd=[];sorted.forEach(o=>{if(currIds.includes(o.id))upd.push(o);});stackOrders.forEach(o=>{if(!upd.find(x=>x.id===o.id))upd.push(o);});stackOrders=upd.slice(0,30);}
-        renderStack();
+        
+        let hasNewOrders = false;
+        if (hash !== lastHash) {
+            lastHash=hash;
+            let currIds=stackOrders.map(o=>o.id),newOnes=sorted.filter(o=>!currIds.includes(o.id));
+            if(newOnes.length){
+                hasNewOrders = true;
+                stackOrders=[...newOnes,...stackOrders].slice(0,30);
+                renderStack();
+                // Add glow effect to new orders (top cards)
+                setTimeout(() => {
+                    const newCards = document.querySelectorAll('.stack-item');
+                    for (let i = 0; i < newOnes.length && i < newCards.length; i++) {
+                        addGlowEffect(newCards[i]);
+                    }
+                }, 50);
+            } else {
+                let upd=[];
+                sorted.forEach(o=>{if(currIds.includes(o.id))upd.push(o);});
+                stackOrders.forEach(o=>{if(!upd.find(x=>x.id===o.id))upd.push(o);});
+                stackOrders=upd.slice(0,30);
+                renderStack();
+            }
+        }
     }
     
     async function loadData(){
