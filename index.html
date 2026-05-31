@@ -289,7 +289,7 @@
             }
         }
         
-        /* Vertical Stack Container - Top to Bottom flow */
+        /* Vertical Stack Container */
         .stack-container {
             display: flex;
             flex-direction: column;
@@ -323,6 +323,20 @@
             border-left-color: var(--cyan);
             background: rgba(0,212,255,0.08);
         }
+        
+        /* ✨ Search Highlight Effect - Bright Glow */
+        .stack-item.search-highlight {
+            border: 2px solid #fbbf24;
+            background: rgba(251, 191, 36, 0.15);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5), 0 0 5px rgba(251, 191, 36, 0.3);
+            animation: glowPulse 0.5s ease-in-out;
+        }
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 0px rgba(251, 191, 36, 0); }
+            50% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.8); }
+            100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+        }
+        
         .new-badge {
             display: inline-block;
             background: linear-gradient(135deg, #f43f5e, #e11d48);
@@ -376,7 +390,6 @@
             color: var(--emerald);
         }
         
-        /* Status Bar - removed rotation text */
         .status-bar {
             display: flex;
             justify-content: flex-start;
@@ -418,12 +431,15 @@
             border-color: rgba(0,212,255,0.3);
         }
         .order-item.highlight {
-            border-color: var(--cyan);
-            background: rgba(0,212,255,0.1);
-            box-shadow: 0 0 10px rgba(0,212,255,0.2);
+            border-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.15);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
         }
         .my-orders .order-item {
             border-left: 2px solid var(--cyan);
+        }
+        .my-orders .order-item.highlight {
+            border-left-color: #fbbf24;
         }
         
         .order-header {
@@ -737,7 +753,6 @@
             border-radius: 4px;
         }
         
-        /* Empty message center alignment */
         .empty-msg {
             text-align: center;
             color: var(--text-secondary);
@@ -899,7 +914,6 @@
     // ==================== LANGUAGE SYSTEM ====================
     let currentLang = localStorage.getItem('app_language') || 'my';
     
-    // Translations
     const translations = {
         my: {
             myOrdersBtn: 'ကျွန်ုပ်၏အော်ဒါများ',
@@ -1179,8 +1193,7 @@
         }
     }
     
-    // ==================== STACK FUNCTIONS - TOP TO BOTTOM FLOW ====================
-    // Move first item (top) to bottom - creates downward flow
+    // ==================== STACK FUNCTIONS ====================
     function rotateStack() {
         if (stackOrders.length <= 1) return;
         const firstItem = stackOrders.shift();
@@ -1209,7 +1222,6 @@
         const newOrdersList = sortedOrders.filter(o => !currentQueueIds.includes(o.id));
         
         if (newOrdersList.length > 0) {
-            // NEW ORDERS GO TO THE TOP (front of array)
             stackOrders = [...newOrdersList, ...stackOrders];
             if (stackOrders.length > 30) stackOrders = stackOrders.slice(0, 30);
         } else {
@@ -1240,6 +1252,7 @@
         for (let i = 0; i < stackOrders.length; i++) {
             const order = stackOrders[i];
             const isNew = isNewOrder(order);
+            const isHighlighted = currentSearchPhone && order.phone === currentSearchPhone;
             
             let statusClass = "pending", statusText = t.pending;
             if (order.status === "Approved") { statusClass = "approved"; statusText = t.approved; }
@@ -1248,9 +1261,10 @@
             const maskedPhone = maskPhoneNumber(order.phone);
             const priceFormatted = order.price.toLocaleString();
             const newBadgeHtml = isNew ? `<div class="new-badge"><i class="fas fa-fire"></i> ${t.newBadge}</div>` : '';
+            const highlightClass = isHighlighted ? 'search-highlight' : '';
             
             html += `
-                <div class="stack-item ${isNew ? 'new-order' : ''}">
+                <div class="stack-item ${isNew ? 'new-order' : ''} ${highlightClass}">
                     ${newBadgeHtml}
                     <div class="stack-header">
                         <span class="stack-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
@@ -1383,14 +1397,18 @@
             return;
         }
         
-        const myOrders = allOrdersData.filter(order => order.phone === myPhone);
+        let myOrders = allOrdersData.filter(order => order.phone === myPhone);
+        
+        if (currentSearchPhone) {
+            myOrders = myOrders.filter(order => order.phone === currentSearchPhone);
+        }
         
         if (myOrders.length === 0) {
             container.innerHTML = `<div class="empty-msg">📭 ${t.noMyOrders}</div>`;
             return;
         }
         
-        container.innerHTML = myOrders.map(order => renderOrderItem(order, true, order.phone === currentSearchPhone, true)).join('');
+        container.innerHTML = myOrders.map(order => renderOrderItem(order, true, currentSearchPhone && order.phone === currentSearchPhone, true)).join('');
         
         myOrders.forEach(order => {
             if (order.status === 'Approved' && order.activated_at) {
@@ -1423,16 +1441,31 @@
         
         if (!phone) { showToast(t.searchPrompt, true); return; }
         if (phone.length < 8) { showToast(t.searchInvalid, true); return; }
+        
         currentSearchPhone = phone;
+        
+        // Update both displays with highlight
         renderMyOrders();
+        renderStack();
+        
         showToast(`${t.searching} ${maskPhoneNumber(phone)}`);
+        
+        // Scroll to highlighted element
+        setTimeout(() => {
+            const highlighted = document.querySelector('.search-highlight, .order-item.highlight');
+            if (highlighted) {
+                highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
     }
     
     function clearSearch() {
         currentSearchPhone = '';
         document.getElementById('searchPhoneInput').value = '';
         renderMyOrders();
-        showToast(translations[currentLang].searchCleared);
+        renderStack();
+        const t = translations[currentLang];
+        showToast(t.searchCleared);
     }
     
     // ==================== ORDER SUBMISSION ====================
@@ -1561,8 +1594,8 @@
     if (myPhone) {
         console.log("✅ Loaded with saved phone:", maskPhoneNumber(myPhone));
     }
-    console.log("✅ ATH DIGITAL HUB - Top to Bottom Flow Active!");
-    console.log("✅ New orders go to TOP, then rotate DOWN every 10 seconds!");
+    console.log("✅ ATH DIGITAL HUB - Fully Functional with Search Highlight!");
+    console.log("✅ Search any phone number - matching orders will glow in bright yellow!");
 </script>
 </body>
 </html>
