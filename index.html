@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
@@ -60,6 +60,35 @@
             gap: 6px;
         }
         @media (min-width: 768px) { .brand { font-size: 1.5rem; } }
+        
+        /* Language Switcher */
+        .lang-switcher {
+            display: flex;
+            gap: 8px;
+            background: rgba(0,212,255,0.1);
+            padding: 4px;
+            border-radius: 60px;
+            border: 1px solid rgba(0,212,255,0.2);
+        }
+        .lang-btn {
+            background: transparent;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        .lang-btn.active {
+            background: var(--cyan);
+            color: #030712;
+            box-shadow: 0 0 10px rgba(0,212,255,0.3);
+        }
+        .lang-btn:hover:not(.active) {
+            color: var(--cyan);
+        }
         
         .my-orders-btn {
             background: rgba(139,92,246,0.2);
@@ -230,32 +259,6 @@
             overflow-y: auto;
         }
         
-        /* Professional Marketing Banner - Static professional message */
-        .marketing-banner {
-            background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(139,92,246,0.08));
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin-bottom: 20px;
-            text-align: center;
-            border: 1px solid rgba(0,212,255,0.2);
-        }
-        .marketing-title {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--cyan);
-            margin-bottom: 6px;
-        }
-        .marketing-text {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-        .marketing-text i {
-            margin-right: 6px;
-            color: var(--emerald);
-        }
-        
         /* Vertical Stack Container */
         .stack-container {
             display: flex;
@@ -286,7 +289,7 @@
         }
         .new-badge {
             display: inline-block;
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
             color: white;
             font-size: 0.55rem;
             font-weight: 700;
@@ -337,7 +340,7 @@
             color: var(--emerald);
         }
         
-        /* Professional Status Bar */
+        /* Status Bar */
         .status-bar {
             display: flex;
             justify-content: space-between;
@@ -717,15 +720,19 @@
     </style>
 </head>
 <body>
-<div class="toast" id="globalToast">✅ Order placed successfully</div>
+<div class="toast" id="globalToast">✅ အော်ဒါအောင်မြင်ပါပြီ။</div>
 <div class="container">
     <div class="store-header">
         <div class="brand"><i class="fas fa-bolt"></i> ATH DIGITAL HUB</div>
-        <button class="my-orders-btn" id="myOrdersBtn"><i class="fas fa-list-ul"></i> My Orders</button>
+        <div class="lang-switcher">
+            <button class="lang-btn" data-lang="my">🇲🇲 မြန်မာ</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 English</button>
+        </div>
+        <button class="my-orders-btn" id="myOrdersBtn"><i class="fas fa-list-ul"></i> <span class="my-orders-text">ကျွန်ုပ်၏အော်ဒါများ</span></button>
     </div>
     <div class="hero">
-        <h1>MYTEL DATA ELITE</h1>
-        <p>Premium Data & Voice Plans — VIP Experience</p>
+        <h1 class="hero-title">MYTEL DATA ELITE</h1>
+        <p class="hero-subtitle">မြန်ဆန်သော Data & Voice Plan များ — VIP အတွေ့အကြုံ</p>
     </div>
     
     <div class="pack-grid">
@@ -734,11 +741,11 @@
             <div class="pack-tier" style="color:#fbbf24;">TIER V1</div>
             <div class="pack-price">15,000 <small>MMK</small></div>
             <div class="feature-list">
-                <li><i class="fas fa-tachometer-alt" style="color:#fbbf24;"></i> <span style="font-weight:600; color:#fbbf24;">22GB</span> Extreme Speed</li>
-                <li><i class="fas fa-phone-alt" style="color:#fbbf24;"></i> <span style="font-weight:600; color:#fbbf24;">8,000</span> On-Net Mins</li>
-                <li><i class="fas fa-envelope" style="color:#fbbf24;"></i> <span style="font-weight:600; color:#fbbf24;">5,000</span> SMS</li>
+                <li><i class="fas fa-tachometer-alt" style="color:#fbbf24;"></i> <span style="font-weight:600; color:#fbbf24;">22GB</span> <span class="feature-text">အမြန်နှုန်းမြင့်</span></li>
+                <li><i class="fas fa-phone-alt" style="color:#fbbf24;"></i> <span style="font-weight:600; color:#fbbf24;">8,000</span> <span class="feature-text">မိနစ် (ကွန်ရက်တွင်း)</span></li>
+                <li><i class="fas fa-envelope" style="color:#fbbf24;"></i> <span style="font-weight:600; color:#fbbf24;">5,000</span> <span class="feature-text">SMS</span></li>
             </div>
-            <button class="buy-btn" data-plan="VIP LEVEL - 1" data-price="15000">Purchase Now</button>
+            <button class="buy-btn" data-plan="VIP LEVEL - 1" data-price="15000"><span class="buy-btn-text">ဝယ်ယူမည်</span></button>
         </div>
         
         <div class="pack-card">
@@ -746,11 +753,11 @@
             <div class="pack-tier" style="color:#00d4ff;">TIER V2</div>
             <div class="pack-price">20,000 <small>MMK</small></div>
             <div class="feature-list">
-                <li><i class="fas fa-tachometer-alt" style="color:#00d4ff;"></i> <span style="font-weight:600; color:#00d4ff;">40GB</span> Ultra Data</li>
-                <li><i class="fas fa-phone-alt" style="color:#00d4ff;"></i> <span style="font-weight:600; color:#00d4ff;">250</span> On-Net Mins</li>
-                <li><i class="fas fa-globe" style="color:#00d4ff;"></i> <span style="font-weight:600; color:#00d4ff;">25</span> Any Net Mins</li>
+                <li><i class="fas fa-tachometer-alt" style="color:#00d4ff;"></i> <span style="font-weight:600; color:#00d4ff;">40GB</span> <span class="feature-text">အာထရာဒေတာ</span></li>
+                <li><i class="fas fa-phone-alt" style="color:#00d4ff;"></i> <span style="font-weight:600; color:#00d4ff;">250</span> <span class="feature-text">မိနစ် (ကွန်ရက်တွင်း)</span></li>
+                <li><i class="fas fa-globe" style="color:#00d4ff;"></i> <span style="font-weight:600; color:#00d4ff;">25</span> <span class="feature-text">မိနစ် (အခြားကွန်ရက်)</span></li>
             </div>
-            <button class="buy-btn" data-plan="VIP LEVEL - 2" data-price="20000">Purchase Now</button>
+            <button class="buy-btn" data-plan="VIP LEVEL - 2" data-price="20000"><span class="buy-btn-text">ဝယ်ယူမည်</span></button>
         </div>
         
         <div class="pack-card" style="border-color:#22c55e;">
@@ -758,11 +765,11 @@
             <div class="pack-tier" style="color:#22c55e;">TIER V3</div>
             <div class="pack-price">25,000 <small>MMK</small></div>
             <div class="feature-list">
-                <li><i class="fas fa-database" style="color:#22c55e;"></i> <span style="font-weight:600; color:#22c55e;">40GB</span> High-Speed + Extra</li>
-                <li><i class="fas fa-phone-volume" style="color:#22c55e;"></i> <span style="font-weight:600; color:#22c55e;">1,400</span> On-Net Mins</li>
-                <li><i class="fas fa-comment-dots" style="color:#22c55e;"></i> <span style="font-weight:600; color:#22c55e;">8,000</span> SMS Unlimited</li>
+                <li><i class="fas fa-database" style="color:#22c55e;"></i> <span style="font-weight:600; color:#22c55e;">40GB</span> <span class="feature-text">အမြန်နှုန်း + အပို</span></li>
+                <li><i class="fas fa-phone-volume" style="color:#22c55e;"></i> <span style="font-weight:600; color:#22c55e;">1,400</span> <span class="feature-text">မိနစ် (ကွန်ရက်တွင်း)</span></li>
+                <li><i class="fas fa-comment-dots" style="color:#22c55e;"></i> <span style="font-weight:600; color:#22c55e;">8,000</span> <span class="feature-text">SMS အကန့်အသတ်မရှိ</span></li>
             </div>
-            <button class="buy-btn" data-plan="VIP LEVEL - 3" data-price="25000">Purchase Now</button>
+            <button class="buy-btn" data-plan="VIP LEVEL - 3" data-price="25000"><span class="buy-btn-text">ဝယ်ယူမည်</span></button>
         </div>
         
         <div class="pack-card" style="border-color:#8b5cf6;">
@@ -770,67 +777,57 @@
             <div class="pack-tier" style="color:#a78bfa;">TIER V4 (ULTRA)</div>
             <div class="pack-price">30,000 <small>MMK</small></div>
             <div class="feature-list">
-                <li><i class="fas fa-cloud-upload-alt" style="color:#a78bfa;"></i> <span style="font-weight:600; color:#a78bfa;">120GB</span> Gamer Data</li>
-                <li><i class="fas fa-infinity" style="color:#a78bfa;"></i> <span style="font-weight:600; color:#a78bfa;">Unlimited</span> Streaming</li>
-                <li><i class="fas fa-headset" style="color:#a78bfa;"></i> <span style="font-weight:600; color:#a78bfa;">Priority</span> Support</li>
+                <li><i class="fas fa-cloud-upload-alt" style="color:#a78bfa;"></i> <span style="font-weight:600; color:#a78bfa;">120GB</span> <span class="feature-text">ဂိမ်းဒေတာ</span></li>
+                <li><i class="fas fa-infinity" style="color:#a78bfa;"></i> <span class="feature-text">အကန့်အသတ်မရှိ</span> <span class="feature-text">Streaming</span></li>
+                <li><i class="fas fa-headset" style="color:#a78bfa;"></i> <span class="feature-text">ဦးစားပေး</span> <span class="feature-text">ပံ့ပိုးမှု</span></li>
             </div>
-            <button class="buy-btn" data-plan="VIP LEVEL - 4 (ULTRA)" data-price="30000">Purchase Now</button>
+            <button class="buy-btn" data-plan="VIP LEVEL - 4 (ULTRA)" data-price="30000"><span class="buy-btn-text">ဝယ်ယူမည်</span></button>
         </div>
     </div>
 </div>
 
 <div id="historyPanel" class="history-panel">
     <div class="history-header">
-        <h3><i class="fas fa-list-ul"></i> Order Dashboard</h3>
+        <h3 class="dashboard-title"><i class="fas fa-list-ul"></i> အော်ဒါများ</h3>
         <span class="close-history" id="closeHistoryBtn">&times;</span>
     </div>
     
     <div class="auto-refresh-status">
         <i class="fas fa-sync-alt"></i>
-        <span id="autoRefreshTimer">Auto sync: 30s</span>
+        <span class="auto-refresh-text">အလိုအလျောက် ပြန်လည်စတင်ခြင်း: 30s</span>
     </div>
     
     <div class="search-section">
-        <div class="search-title"><i class="fas fa-search"></i> Track Order</div>
+        <div class="search-title"><i class="fas fa-search"></i> <span class="search-title-text">ဖုန်းနံပါတ်ဖြင့် ရှာဖွေရန်</span></div>
         <div class="search-input-group">
-            <input type="tel" id="searchPhoneInput" class="search-input" placeholder="📱 Phone number (09XXXXXXXXX)">
-            <button id="searchBtn" class="search-btn"><i class="fas fa-search"></i> Search</button>
-            <button id="clearSearchBtn" class="clear-search-btn"><i class="fas fa-times"></i> Clear</button>
+            <input type="tel" id="searchPhoneInput" class="search-input" placeholder="📱 09xxxxxxxxx">
+            <button id="searchBtn" class="search-btn"><i class="fas fa-search"></i> <span class="search-btn-text">ရှာမည်</span></button>
+            <button id="clearSearchBtn" class="clear-search-btn"><i class="fas fa-times"></i> <span class="clear-btn-text">ရှင်းမည်</span></button>
         </div>
-        <div class="search-hint">💡 Search any phone number to view orders (masked for privacy)</div>
-    </div>
-    
-    <!-- Professional Marketing Banner -->
-    <div class="marketing-banner">
-        <div class="marketing-title">⚡ LIVE ACTIVITY</div>
-        <div class="marketing-text">
-            <i class="fas fa-chart-line"></i> Real-time orders from customers • 
-            <i class="fas fa-shield-alt"></i> 100% secure payment • 
-            <i class="fas fa-clock"></i> 30-day validity
-        </div>
+        <div class="search-hint search-hint-text">💡 မည်သည့်ဖုန်းနံပါတ်မဆို ရှာနိုင်ပါသည်။ ရှာတွေ့ပါက အဝါရောင် Highlight ပြပါမည်။</div>
     </div>
     
     <div class="orders-card my-orders">
         <div class="card-header">
-            <i class="fas fa-user-circle"></i> My Orders
+            <i class="fas fa-user-circle"></i> <span class="my-orders-header-text">ကျွန်ုပ်၏ အော်ဒါများ</span>
         </div>
         <div class="card-content" id="myOrdersContainer">
-            <div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading...</div>
+            <div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> <span class="loading-text">Loading...</span></div>
         </div>
     </div>
     
     <div class="orders-card others-orders">
         <div class="card-header">
-            <i class="fas fa-globe"></i> Live Orders Feed
+            <i class="fas fa-globe"></i> <span class="live-feed-header-text">အခြားသူများ၏ အော်ဒါများ</span>
             <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span>
-            <span class="priority-badge"><i class="fas fa-arrow-down"></i> ROTATING</span>
+            <span class="priority-badge"><i class="fas fa-arrow-down"></i> <span class="rotating-text">လှည့်ပတ်နေသည်</span></span>
         </div>
         <div class="card-content stack-container" id="stackContainer">
-            <div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading feed...</div>
+            <div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> <span class="loading-feed-text">Loading feed...</span></div>
         </div>
         <div class="status-bar">
-            <span class="status-badge-sm"><span class="status-dot"></span> Live updates every 30s</span>
-            <span class="status-badge-sm"><i class="fas fa-arrow-down"></i> Rotates every 10s</span>
+            <span class="status-badge-sm"><span class="status-dot"></span> <span class="live-update-text">စက္ကန့် 30 တိုင်း အသစ်ပြန်တင်မည်</span></span>
+            <span class="status-badge-sm"><i class="fas fa-arrow-down"></i> <span class="rotate-interval-text">စက္ကန့် 10 တိုင်း လှည့်မည်</span></span>
         </div>
     </div>
 </div>
@@ -839,37 +836,249 @@
     <div class="modal-card">
         <div class="modal-close" id="closeModalBtn">&times;</div>
         <div style="text-align:center;"><i class="fas fa-credit-card" style="font-size:1.8rem; color:var(--cyan);"></i></div>
-        <h3 style="font-family:'Space Grotesk'; text-align:center;">Payment Details</h3>
+        <h3 class="payment-title" style="font-family:'Space Grotesk'; text-align:center;">ငွေပေးချေမှုအသေးစိတ်</h3>
         <div class="info-compact">
-            <div class="info-row"><span class="info-label">🏦 Payment Method</span><span class="info-value">K-Pay / WavePay</span></div>
-            <div class="info-row"><span class="info-label">👤 Account Name</span><span class="info-value">AUNG THU HTWE</span></div>
-            <div class="info-row"><span class="info-label">📞 Phone Number</span><span class="info-value phone-copy" id="clickablePhone">09789999368 📋</span></div>
+            <div class="info-row"><span class="info-label">🏦 ငွေလွှဲနည်းလမ်း</span><span class="info-value">K-Pay / WavePay</span></div>
+            <div class="info-row"><span class="info-label">👤 အကောင့်အမည်</span><span class="info-value">AUNG THU HTWE</span></div>
+            <div class="info-row"><span class="info-label">📞 ဖုန်းနံပါတ်</span><span class="info-value phone-copy" id="clickablePhone">09789999368 📋</span></div>
         </div>
         <form id="orderForm" enctype="multipart/form-data">
-            <div class="form-group"><label>📱 Recipient Phone Number *</label><input type="tel" id="customerPhone" class="form-control" placeholder="09XXXXXXXXX" required></div>
-            <div class="form-group"><label>🧾 Payment Screenshot</label><input type="file" id="slipImage" class="form-control" accept="image/*" required></div>
-            <button type="submit" class="submit-btn">✅ Place Order</button>
+            <div class="form-group"><label class="phone-label">📱 ဒေတာထည့်ရမည့်ဖုန်းနံပါတ် *</label><input type="tel" id="customerPhone" class="form-control" placeholder="09XXXXXXXXX" required></div>
+            <div class="form-group"><label class="slip-label">🧾 ငွေလွှဲပြေစာ (Screenshot)</label><input type="file" id="slipImage" class="form-control" accept="image/*" required></div>
+            <button type="submit" class="submit-btn"><span class="submit-btn-text">✅ အော်ဒါတင်မည်</span></button>
         </form>
-        <div class="footnote">※ Click phone number to copy</div>
+        <div class="footnote footnote-text">※ ဖုန်းနံပါတ်ကို နှိပ်၍ ကူးယူနိုင်ပါသည်။</div>
     </div>
 </div>
 
 <div id="screenshotModal" class="image-modal" onclick="closeImageModal()">
     <div class="image-modal-content" onclick="event.stopPropagation()">
         <div class="img-modal-header">
-            <span><i class="fas fa-image"></i> Payment Screenshot</span>
+            <span><i class="fas fa-image"></i> <span class="screenshot-title">ငွေလွှဲပြေစာ</span></span>
             <button class="close-img-modal" onclick="closeImageModal()">&times;</button>
         </div>
         <img id="modalImage" src="" alt="Screenshot">
         <div class="img-modal-footer">
-            <i class="fas fa-info-circle"></i> Click outside or press ✕ to close
+            <i class="fas fa-info-circle"></i> <span class="modal-footer-text">အပြင်ဘက်နှိပ်ပါ သို့မဟုတ် ✕ နှိပ်ပါ</span>
         </div>
     </div>
 </div>
 
-<footer><p>© 2026 <strong>ATH DIGITAL HUB</strong> — MYTEL VIP Store | Official Partner</p></footer>
+<footer><p>© 2026 <strong>ATH DIGITAL HUB</strong> — MYTEL VIP Store | Developed by AUNG THU HTWE</p></footer>
 
 <script>
+    // ==================== LANGUAGE SYSTEM ====================
+    let currentLang = localStorage.getItem('app_language') || 'my';
+    
+    // Translations
+    const translations = {
+        my: {
+            // Header
+            myOrdersBtn: 'ကျွန်ုပ်၏အော်ဒါများ',
+            heroSubtitle: 'မြန်ဆန်သော Data & Voice Plan များ — VIP အတွေ့အကြုံ',
+            // Panel
+            dashboardTitle: 'အော်ဒါများ',
+            autoRefresh: 'အလိုအလျောက် ပြန်လည်စတင်ခြင်း: 30s',
+            searchTitle: 'ဖုန်းနံပါတ်ဖြင့် ရှာဖွေရန်',
+            searchBtn: 'ရှာမည်',
+            clearBtn: 'ရှင်းမည်',
+            searchHint: '💡 မည်သည့်ဖုန်းနံပါတ်မဆို ရှာနိုင်ပါသည်။ ရှာတွေ့ပါက အဝါရောင် Highlight ပြပါမည်။',
+            myOrdersHeader: 'ကျွန်ုပ်၏ အော်ဒါများ',
+            liveFeedHeader: 'အခြားသူများ၏ အော်ဒါများ',
+            rotating: 'လှည့်ပတ်နေသည်',
+            liveUpdate: 'စက္ကန့် 30 တိုင်း အသစ်ပြန်တင်မည်',
+            rotateInterval: 'စက္ကန့် 10 တိုင်း လှည့်မည်',
+            loading: 'Loading...',
+            loadingFeed: 'Loading feed...',
+            noOrders: '📭 အော်ဒါမရှိသေးပါ။<br>ပထမဆုံးအော်ဒါအတွက် စောင့်ဆိုင်းနေပါသည်...',
+            noMyOrders: '📭 သင့်အော်ဒါမရှိသေးပါ။',
+            // Payment Modal
+            paymentTitle: 'ငွေပေးချေမှုအသေးစိတ်',
+            phoneLabel: '📱 ဒေတာထည့်ရမည့်ဖုန်းနံပါတ် *',
+            slipLabel: '🧾 ငွေလွှဲပြေစာ (Screenshot)',
+            submitBtn: '✅ အော်ဒါတင်မည်',
+            footnote: '※ ဖုန်းနံပါတ်ကို နှိပ်၍ ကူးယူနိုင်ပါသည်။',
+            // Screenshot Modal
+            screenshotTitle: 'ငွေလွှဲပြေစာ',
+            modalFooter: 'အပြင်ဘက်နှိပ်ပါ သို့မဟုတ် ✕ နှိပ်ပါ',
+            // Toast messages
+            orderSuccess: '✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ',
+            orderError: 'အော်ဒါတင်ရာတွင် အမှားရှိပါသည်',
+            searchPrompt: '⚠️ ဖုန်းနံပါတ် ထည့်ပါ',
+            searchInvalid: '⚠️ ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ',
+            searching: '🔍 ရှာဖွေနေပါသည်...',
+            searchCleared: '🔍 ရှာဖွေမှု ရှင်းလင်းပြီးပါပြီ။',
+            phoneCopied: '📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။',
+            // Status
+            pending: '⏳ စောင့်ဆိုင်းဆဲ',
+            approved: '✅ အတည်ပြုပြီး',
+            rejected: '❌ ပယ်ဖျက်ခံရ',
+            awaitingApproval: '⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ',
+            expired: 'သက်တမ်းကုန်ဆုံးပါပြီ',
+            remaining: 'ကျန်ရက်',
+            startDate: 'စတင်ရက်',
+            expiryDate: 'ကုန်ဆုံးရက်',
+            orderDate: 'အော်ဒါရက်',
+            status: 'အခြေအနေ',
+            phone: 'ဖုန်းနံပါတ်',
+            amount: 'ပမာဏ',
+            orderId: 'အော်ဒါအမှတ်',
+            copyId: '📋 ကူးယူရန်',
+            viewReceipt: '🧾 ပြေစာကြည့်ရန်',
+            newBadge: 'NEW',
+            // Buy button
+            buyNow: 'ဝယ်ယူမည်',
+            // Feature texts
+            extremeSpeed: 'အမြန်နှုန်းမြင့်',
+            onNetMins: 'မိနစ် (ကွန်ရက်တွင်း)',
+            sms: 'SMS',
+            ultraData: 'အာထရာဒေတာ',
+            anyNetMins: 'မိနစ် (အခြားကွန်ရက်)',
+            highSpeedExtra: 'အမြန်နှုန်း + အပို',
+            smsUnlimited: 'SMS အကန့်အသတ်မရှိ',
+            gamerData: 'ဂိမ်းဒေတာ',
+            unlimited: 'အကန့်အသတ်မရှိ',
+            prioritySupport: 'ဦးစားပေး ပံ့ပိုးမှု'
+        },
+        en: {
+            // Header
+            myOrdersBtn: 'My Orders',
+            heroSubtitle: 'High-speed Data & Voice Plans — VIP Experience',
+            // Panel
+            dashboardTitle: 'Orders',
+            autoRefresh: 'Auto sync: 30s',
+            searchTitle: 'Search by Phone Number',
+            searchBtn: 'Search',
+            clearBtn: 'Clear',
+            searchHint: '💡 Search any phone number. Found orders will be highlighted in yellow.',
+            myOrdersHeader: 'My Orders',
+            liveFeedHeader: 'Live Orders Feed',
+            rotating: 'ROTATING',
+            liveUpdate: 'Live updates every 30s',
+            rotateInterval: 'Rotates every 10s',
+            loading: 'Loading...',
+            loadingFeed: 'Loading feed...',
+            noOrders: '📭 No orders yet<br>Waiting for first order...',
+            noMyOrders: '📭 No orders found for your number.',
+            // Payment Modal
+            paymentTitle: 'Payment Details',
+            phoneLabel: '📱 Recipient Phone Number *',
+            slipLabel: '🧾 Payment Screenshot',
+            submitBtn: '✅ Place Order',
+            footnote: '※ Click phone number to copy',
+            // Screenshot Modal
+            screenshotTitle: 'Payment Screenshot',
+            modalFooter: 'Click outside or press ✕ to close',
+            // Toast messages
+            orderSuccess: '✅ Order placed successfully! Order ID: ',
+            orderError: 'Failed to place order',
+            searchPrompt: '⚠️ Please enter a phone number',
+            searchInvalid: '⚠️ Please enter a valid phone number',
+            searching: '🔍 Searching...',
+            searchCleared: '🔍 Search cleared',
+            phoneCopied: '📞 Phone number copied',
+            // Status
+            pending: '⏳ Pending',
+            approved: '✅ Approved',
+            rejected: '❌ Rejected',
+            awaitingApproval: '⏳ Please wait for admin approval',
+            expired: 'Expired',
+            remaining: 'Remaining',
+            startDate: 'Start Date',
+            expiryDate: 'Expiry Date',
+            orderDate: 'Order Date',
+            status: 'Status',
+            phone: 'Phone',
+            amount: 'Amount',
+            orderId: 'Order ID',
+            copyId: '📋 Copy',
+            viewReceipt: '🧾 View Receipt',
+            newBadge: 'NEW',
+            // Buy button
+            buyNow: 'Purchase Now',
+            // Feature texts
+            extremeSpeed: 'Extreme Speed',
+            onNetMins: 'On-Net Mins',
+            sms: 'SMS',
+            ultraData: 'Ultra Data',
+            anyNetMins: 'Any Net Mins',
+            highSpeedExtra: 'High-Speed + Extra',
+            smsUnlimited: 'SMS Unlimited',
+            gamerData: 'Gamer Data',
+            unlimited: 'Unlimited',
+            prioritySupport: 'Priority Support'
+        }
+    };
+    
+    function updateLanguage() {
+        const t = translations[currentLang];
+        if (!t) return;
+        
+        // Header
+        document.querySelector('.my-orders-text').textContent = t.myOrdersBtn;
+        document.querySelector('.hero-subtitle').textContent = t.heroSubtitle;
+        
+        // Panel
+        document.querySelector('.dashboard-title').innerHTML = `<i class="fas fa-list-ul"></i> ${t.dashboardTitle}`;
+        document.querySelector('.auto-refresh-status span:last-child').textContent = t.autoRefresh;
+        document.querySelector('.search-title').innerHTML = `<i class="fas fa-search"></i> ${t.searchTitle}`;
+        document.querySelector('.search-btn-text').textContent = t.searchBtn;
+        document.querySelector('.clear-btn-text').textContent = t.clearBtn;
+        document.querySelector('.search-hint-text').textContent = t.searchHint;
+        document.querySelector('.my-orders-header-text').textContent = t.myOrdersHeader;
+        document.querySelector('.live-feed-header-text').textContent = t.liveFeedHeader;
+        document.querySelector('.rotating-text').textContent = t.rotating;
+        document.querySelector('.live-update-text').textContent = t.liveUpdate;
+        document.querySelector('.rotate-interval-text').textContent = t.rotateInterval;
+        
+        if (document.querySelector('.empty-msg .loading-text')) {
+            document.querySelector('.loading-text').textContent = t.loading;
+        }
+        if (document.querySelector('.loading-feed-text')) {
+            document.querySelector('.loading-feed-text').textContent = t.loadingFeed;
+        }
+        
+        // Payment Modal
+        document.querySelector('.payment-title').textContent = t.paymentTitle;
+        document.querySelector('.phone-label').textContent = t.phoneLabel;
+        document.querySelector('.slip-label').textContent = t.slipLabel;
+        document.querySelector('.submit-btn-text').textContent = t.submitBtn;
+        document.querySelector('.footnote-text').textContent = t.footnote;
+        
+        // Screenshot Modal
+        document.querySelector('.screenshot-title').textContent = t.screenshotTitle;
+        document.querySelector('.modal-footer-text').textContent = t.modalFooter;
+        
+        // Feature texts
+        document.querySelectorAll('.feature-text').forEach((el, idx) => {
+            const features = [
+                t.extremeSpeed, t.onNetMins, t.sms,
+                t.ultraData, t.onNetMins, t.anyNetMins,
+                t.highSpeedExtra, t.onNetMins, t.smsUnlimited,
+                t.gamerData, t.unlimited, t.prioritySupport
+            ];
+            if (idx < features.length) el.textContent = features[idx];
+        });
+        
+        // Buy buttons
+        document.querySelectorAll('.buy-btn-text').forEach(btn => {
+            btn.textContent = t.buyNow;
+        });
+        
+        // Active language button
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            if (btn.dataset.lang === currentLang) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
+        // Refresh UI content
+        renderMyOrders();
+        renderStack();
+    }
+    
     // ==================== CONFIGURATION ====================
     const API_BASE = window.location.origin;
     let selectedPlan = "", selectedPrice = 0;
@@ -935,13 +1144,14 @@
                 clearInterval(countdownIntervals[orderId]);
                 return;
             }
+            const t = translations[currentLang];
             const remaining = formatRemainingTime(activatedAt);
             if (remaining === "Expired") {
-                elem.innerHTML = `<i class="fas fa-calendar-times"></i> Expired`;
+                elem.innerHTML = `<i class="fas fa-calendar-times"></i> ${t.expired}`;
                 elem.style.color = "#f43f5e";
                 clearInterval(countdownIntervals[orderId]);
             } else {
-                elem.innerHTML = `<i class="fas fa-hourglass-half"></i> Remaining: ${remaining}`;
+                elem.innerHTML = `<i class="fas fa-hourglass-half"></i> ${t.remaining}: ${remaining}`;
             }
         };
         updateTimer();
@@ -950,7 +1160,8 @@
     
     function copyOrderId(orderId) {
         navigator.clipboard.writeText(orderId.toString());
-        showToast(`📋 Order ID: ${orderId} copied`);
+        const t = translations[currentLang];
+        showToast(`📋 ${t.orderId}: ${orderId} ${t.copyId.split(' ')[1] || 'copied'}`);
     }
     
     function openScreenshot(url) {
@@ -1015,7 +1226,6 @@
         if (newOrdersList.length > 0) {
             stackOrders = [...newOrdersList, ...stackOrders];
             if (stackOrders.length > 30) stackOrders = stackOrders.slice(0, 30);
-            currentSliderIndex = 0;
         } else {
             const updatedStack = [];
             for (const order of sortedOrders) {
@@ -1032,9 +1242,10 @@
     
     function renderStack() {
         const container = document.getElementById('stackContainer');
+        const t = translations[currentLang];
         
         if (stackOrders.length === 0) {
-            container.innerHTML = `<div class="empty-msg">📭 No orders yet<br>Be the first to order!</div>`;
+            container.innerHTML = `<div class="empty-msg">${t.noOrders}</div>`;
             return;
         }
         
@@ -1044,13 +1255,13 @@
             const order = stackOrders[i];
             const isNew = isNewOrder(order);
             
-            let statusClass = "pending", statusText = "Pending";
-            if (order.status === "Approved") { statusClass = "approved"; statusText = "Approved"; }
-            if (order.status === "Rejected") { statusClass = "rejected"; statusText = "Rejected"; }
+            let statusClass = "pending", statusText = t.pending;
+            if (order.status === "Approved") { statusClass = "approved"; statusText = t.approved; }
+            if (order.status === "Rejected") { statusClass = "rejected"; statusText = t.rejected; }
             
             const maskedPhone = maskPhoneNumber(order.phone);
             const priceFormatted = order.price.toLocaleString();
-            const newBadgeHtml = isNew ? `<div class="new-badge"><i class="fas fa-fire"></i> NEW</div>` : '';
+            const newBadgeHtml = isNew ? `<div class="new-badge"><i class="fas fa-fire"></i> ${t.newBadge}</div>` : '';
             
             html += `
                 <div class="stack-item ${isNew ? 'new-order' : ''}">
@@ -1087,13 +1298,15 @@
     
     // ==================== MY ORDERS ====================
     function renderOrderItem(order, showFullPhone, isHighlighted, showSlipButton = false) {
-        let statusClass = "status-pending", statusText = "Pending";
+        const t = translations[currentLang];
+        
+        let statusClass = "status-pending", statusText = t.pending;
         let waitingMsg = "";
         
-        if (order.status === "Approved") { statusClass = "status-approved"; statusText = "Approved"; }
-        if (order.status === "Rejected") { statusClass = "status-rejected"; statusText = "Rejected"; }
+        if (order.status === "Approved") { statusClass = "status-approved"; statusText = t.approved; }
+        if (order.status === "Rejected") { statusClass = "status-rejected"; statusText = t.rejected; }
         if (order.status === "Pending") {
-            waitingMsg = `<div class="waiting-badge">⏳ Please wait for admin approval</div>`;
+            waitingMsg = `<div class="waiting-badge">${t.awaitingApproval}</div>`;
         }
         
         const displayPhone = showFullPhone ? order.phone : maskPhoneNumber(order.phone);
@@ -1108,31 +1321,31 @@
             expiredDateHtml = `
                 <div class="date-row">
                     <div class="date-box">
-                        <div class="date-label"><i class="fas fa-play-circle"></i> Start Date</div>
+                        <div class="date-label"><i class="fas fa-play-circle"></i> ${t.startDate}</div>
                         <div class="date-value start">${startDate}</div>
                     </div>
                     <div class="date-box">
-                        <div class="date-label"><i class="fas fa-stop-circle"></i> Expiry Date</div>
+                        <div class="date-label"><i class="fas fa-stop-circle"></i> ${t.expiryDate}</div>
                         <div class="date-value expired">${expiredDate || 'N/A'}</div>
                     </div>
                 </div>
             `;
             const remaining = formatRemainingTime(order.activated_at);
             if (remaining !== "Expired") {
-                countdownHtml = `<div class="countdown-timer" id="countdown-${order.id}"><i class="fas fa-hourglass-half"></i> Remaining: ${remaining}</div>`;
+                countdownHtml = `<div class="countdown-timer" id="countdown-${order.id}"><i class="fas fa-hourglass-half"></i> ${t.remaining}: ${remaining}</div>`;
             } else {
-                countdownHtml = `<div class="countdown-timer" style="color:#f43f5e;"><i class="fas fa-calendar-times"></i> Expired</div>`;
+                countdownHtml = `<div class="countdown-timer" style="color:#f43f5e;"><i class="fas fa-calendar-times"></i> ${t.expired}</div>`;
             }
         } else {
             expiredDateHtml = `
                 <div class="date-row">
                     <div class="date-box">
-                        <div class="date-label"><i class="fas fa-play-circle"></i> Order Date</div>
+                        <div class="date-label"><i class="fas fa-play-circle"></i> ${t.orderDate}</div>
                         <div class="date-value start">${startDate}</div>
                     </div>
                     <div class="date-box">
-                        <div class="date-label"><i class="fas fa-clock"></i> Status</div>
-                        <div class="date-value" style="color:var(--amber);">${order.status === 'Pending' ? 'Awaiting Approval' : (order.status === 'Rejected' ? 'Rejected' : 'N/A')}</div>
+                        <div class="date-label"><i class="fas fa-clock"></i> ${t.status}</div>
+                        <div class="date-value" style="color:var(--amber);">${order.status === 'Pending' ? t.pending : (order.status === 'Rejected' ? t.rejected : 'N/A')}</div>
                     </div>
                 </div>
             `;
@@ -1140,7 +1353,7 @@
         
         let slipButton = '';
         if (showSlipButton && order.slip_url && order.slip_url !== 'null') {
-            slipButton = `<button class="view-slip-btn" onclick="openScreenshot('${order.slip_url}')"><i class="fas fa-image"></i> View Receipt</button>`;
+            slipButton = `<button class="view-slip-btn" onclick="openScreenshot('${order.slip_url}')"><i class="fas fa-image"></i> ${t.viewReceipt}</button>`;
         }
         
         return `
@@ -1151,15 +1364,15 @@
                 </div>
                 <div class="info-grid">
                     <div class="info-item">
-                        <div class="info-label"><i class="fas fa-mobile-alt"></i> Phone</div>
+                        <div class="info-label"><i class="fas fa-mobile-alt"></i> ${t.phone}</div>
                         <div class="info-value">${displayPhone}</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label"><i class="fas fa-coins"></i> Amount</div>
+                        <div class="info-label"><i class="fas fa-coins"></i> ${t.amount}</div>
                         <div class="info-value price">${order.price.toLocaleString()} KS</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label"><i class="fas fa-barcode"></i> Order ID <span class="copy-id" onclick="copyOrderId('${order.id}')">📋</span></div>
+                        <div class="info-label"><i class="fas fa-barcode"></i> ${t.orderId} <span class="copy-id" onclick="copyOrderId('${order.id}')">📋</span></div>
                         <div class="info-value" style="font-size:0.65rem; font-family:monospace;">${order.id}</div>
                     </div>
                 </div>
@@ -1173,10 +1386,13 @@
     
     function renderMyOrders() {
         const container = document.getElementById('myOrdersContainer');
+        const t = translations[currentLang];
+        
         if (!myPhone) {
             container.innerHTML = `<div class="empty-msg">
                 <i class="fas fa-info-circle"></i><br>
-                Place your first order to view your orders here.
+                ${t.noMyOrders}<br>
+                ${t.placeOrderFirst || 'Place your first order to view here.'}
             </div>`;
             return;
         }
@@ -1184,7 +1400,7 @@
         const myOrders = allOrdersData.filter(order => order.phone === myPhone);
         
         if (myOrders.length === 0) {
-            container.innerHTML = `<div class="empty-msg">📭 No orders found for ${maskPhoneNumber(myPhone)}</div>`;
+            container.innerHTML = `<div class="empty-msg">📭 ${t.noMyOrders}</div>`;
             return;
         }
         
@@ -1217,24 +1433,27 @@
     // ==================== SEARCH ====================
     function searchByPhone() {
         const phone = document.getElementById('searchPhoneInput').value.trim();
+        const t = translations[currentLang];
+        
         if (!phone) {
-            showToast("⚠️ Please enter a phone number", true);
+            showToast(t.searchPrompt, true);
             return;
         }
         if (phone.length < 8) {
-            showToast("⚠️ Please enter a valid phone number", true);
+            showToast(t.searchInvalid, true);
             return;
         }
         currentSearchPhone = phone;
         renderMyOrders();
-        showToast(`🔍 Searching for ${maskPhoneNumber(phone)}...`);
+        showToast(`${t.searching} ${maskPhoneNumber(phone)}`);
     }
     
     function clearSearch() {
         currentSearchPhone = '';
         document.getElementById('searchPhoneInput').value = '';
         renderMyOrders();
-        showToast("🔍 Search cleared");
+        const t = translations[currentLang];
+        showToast(t.searchCleared);
     }
     
     // ==================== ORDER SUBMISSION ====================
@@ -1250,8 +1469,8 @@
     
     // ==================== AUTO REFRESH ====================
     function updateRefreshTimer() {
-        const timerEl = document.getElementById('autoRefreshTimer');
-        if (timerEl) timerEl.innerHTML = `Auto sync: ${refreshSecondsLeft}s`;
+        const timerEl = document.querySelector('.auto-refresh-status span:last-child');
+        if (timerEl) timerEl.textContent = `${translations[currentLang].autoRefresh}`.replace('30s', `${refreshSecondsLeft}s`);
     }
     
     function startAutoRefresh() {
@@ -1298,14 +1517,15 @@
         e.preventDefault();
         const phone = document.getElementById('customerPhone').value.trim();
         const file = document.getElementById('slipImage').files[0];
+        const t = translations[currentLang];
         
-        if (!phone) { showToast("⚠️ Please enter phone number", true); return; }
-        if (!file) { showToast("📎 Please upload payment screenshot", true); return; }
+        if (!phone) { showToast(t.searchPrompt, true); return; }
+        if (!file) { showToast("📎 ငွေလွှဲပြေစာ ထည့်ပါ", true); return; }
         
         const result = await addOrder(phone, selectedPlan, selectedPrice, file);
         
         if (result.success) {
-            showToast(`✅ Order placed successfully! Order ID: ${result.orderId}`);
+            showToast(`${t.orderSuccess}${result.orderId}`);
             saveMyPhone(phone);
             document.getElementById('paymentModal').classList.remove('active');
             document.getElementById('orderForm').reset();
@@ -1313,7 +1533,7 @@
                 loadAllData();
             }
         } else {
-            showToast(result.error || 'Failed to place order', true);
+            showToast(t.orderError, true);
         }
     });
     
@@ -1337,22 +1557,36 @@
     
     document.getElementById('clickablePhone').addEventListener('click', () => { 
         navigator.clipboard.writeText("09789999368"); 
-        showToast("📞 Phone number copied"); 
+        const t = translations[currentLang];
+        showToast(t.phoneCopied); 
     });
     
     document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeImageModal(); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeImageModal(); });
     
+    // Language switcher
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentLang = btn.dataset.lang;
+            localStorage.setItem('app_language', currentLang);
+            updateLanguage();
+            renderMyOrders();
+            renderStack();
+        });
+    });
+    
     window.copyOrderId = copyOrderId;
     window.openScreenshot = openScreenshot;
     window.closeImageModal = closeImageModal;
     
+    // Initialize
+    updateLanguage();
+    
     if (myPhone) {
         console.log("✅ Loaded with saved phone:", maskPhoneNumber(myPhone));
     }
-    console.log("✅ ATH DIGITAL HUB - Professional Mode Active");
-    console.log("✅ Live feed with 10s rotation");
-    console.log("✅ NEW badge shows for 2 minutes");
+    console.log("✅ ATH DIGITAL HUB - Language Switcher Active (Myanmar/English)");
+    console.log("✅ Default language: Myanmar");
 </script>
 </body>
 </html>
