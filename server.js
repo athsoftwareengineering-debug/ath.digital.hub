@@ -49,111 +49,108 @@ const upload = multer({
     }
 });
 
-// ==================== HELPER FUNCTIONS ====================
+// ==================== FRAUD DETECTION HELPERS ====================
 
-// Calculate image hash (MD5)
 function calculateImageHash(fileBuffer) {
     return crypto.createHash('md5').update(fileBuffer).digest('hex');
 }
 
-// Get user stats
 async function getUserStats(phone) {
-    const { data, error } = await supabaseAdmin
-        .from('user_stats')
-        .select('*')
-        .eq('phone', phone)
-        .single();
-    
-    if (error && error.code !== 'PGRST116') {
-        console.error('Error getting user stats:', error);
-    }
-    
-    return data;
-}
-
-// Create or update user stats
-async function updateUserStats(phone, isRejected = false) {
-    const existing = await getUserStats(phone);
-    
-    if (existing) {
-        const updateData = {
-            order_count: (existing.order_count || 0) + 1,
-            updated_at: new Date().toISOString()
-        };
-        if (isRejected) {
-            updateData.reject_count = (existing.reject_count || 0) + 1;
-            // Auto suspect if reject rate > 50% and more than 5 orders
-            const newRejectCount = (existing.reject_count || 0) + 1;
-            const newOrderCount = (existing.order_count || 0) + 1;
-            if (newOrderCount >= 5 && (newRejectCount / newOrderCount) > 0.5) {
-                updateData.suspect_flag = true;
-            }
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('user_stats')
+            .select('*')
+            .eq('phone', phone)
+            .maybeSingle();
+        
+        if (error && error.code !== 'PGRST116') {
+            console.error('Error getting user stats:', error);
         }
-        
-        const { error } = await supabaseAdmin
-            .from('user_stats')
-            .update(updateData)
-            .eq('phone', phone);
-        
-        if (error) console.error('Error updating user stats:', error);
-    } else {
-        const { error } = await supabaseAdmin
-            .from('user_stats')
-            .insert([{
-                phone: phone,
-                order_count: 1,
-                reject_count: isRejected ? 1 : 0,
-                suspect_flag: false,
-                blocked: false
-            }]);
-        
-        if (error) console.error('Error creating user stats:', error);
+        return data;
+    } catch (e) {
+        return null;
     }
 }
 
-// Check if phone is blocked
+async function updateUserStats(phone, isRejected = false) {
+    try {
+        const existing = await getUserStats(phone);
+        
+        if (existing) {
+            const updateData = {
+                order_count: (existing.order_count || 0) + 1,
+                updated_at: new Date().toISOString()
+            };
+            if (isRejected) {
+                updateData.reject_count = (existing.reject_count || 0) + 1;
+                const newRejectCount = (existing.reject_count || 0) + 1;
+                const newOrderCount = (existing.order_count || 0) + 1;
+                if (newOrderCount >= 5 && (newRejectCount / newOrderCount) > 0.5) {
+                    updateData.suspect_flag = true;
+                }
+            }
+            
+            await supabaseAdmin
+                .from('user_stats')
+                .update(updateData)
+                .eq('phone', phone);
+        } else {
+            await supabaseAdmin
+                .from('user_stats')
+                .insert([{
+                    phone: phone,
+                    order_count: 1,
+                    reject_count: isRejected ? 1 : 0,
+                    suspect_flag: false,
+                    blocked: false
+                }]);
+        }
+    } catch (e) {
+        console.error('Error updating user stats:', e);
+    }
+}
+
 async function isPhoneBlocked(phone) {
     const stats = await getUserStats(phone);
     return stats?.blocked === true;
 }
 
-// Check for duplicate order (same phone + plan within 5 minutes)
 async function isDuplicateOrder(phone, plan) {
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-    const { data, error } = await supabaseAdmin
-        .from('orders')
-        .select('id')
-        .eq('phone', phone)
-        .eq('plan', plan)
-        .gte('created_at', fiveMinutesAgo)
-        .limit(1);
-    
-    if (error) {
-        console.error('Error checking duplicate order:', error);
+    try {
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+        const { data, error } = await supabaseAdmin
+            .from('orders')
+            .select('id')
+            .eq('phone', phone)
+            .eq('plan', plan)
+            .gte('created_at', fiveMinutesAgo)
+            .limit(1);
+        
+        if (error) return false;
+        return data && data.length > 0;
+    } catch (e) {
         return false;
     }
-    return data && data.length > 0;
 }
 
-// Check for duplicate image hash
 async function isDuplicateImage(imageHash) {
     if (!imageHash) return false;
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const { data, error } = await supabaseAdmin
-        .from('orders')
-        .select('id')
-        .eq('image_hash', imageHash)
-        .gte('created_at', oneDayAgo)
-        .limit(1);
-    
-    if (error) {
-        console.error('Error checking duplicate image:', error);
+    try {
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { data, error } = await supabaseAdmin
+            .from('orders')
+            .select('id')
+            .eq('image_hash', imageHash)
+            .gte('created_at', oneDayAgo)
+            .limit(1);
+        
+        if (error) return false;
+        return data && data.length > 0;
+    } catch (e) {
         return false;
     }
-    return data && data.length > 0;
 }
 
-// Rate limiting (3 orders per minute per phone)
 const orderRateLimit = new Map();
 function checkRateLimit(phone) {
     const now = Date.now();
@@ -161,7 +158,7 @@ function checkRateLimit(phone) {
     const recentOrders = userOrders.filter(time => now - time < 60 * 1000);
     
     if (recentOrders.length >= 3) {
-        return false; // Rate limit exceeded
+        return false;
     }
     
     recentOrders.push(now);
@@ -180,12 +177,11 @@ app.get('/admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
-// Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ==================== USER API - Track Order by Phone ====================
+// ==================== USER API ====================
 app.get('/api/orders/:phone', async (req, res) => {
     try {
         const { phone } = req.params;
@@ -211,7 +207,7 @@ app.get('/api/orders/:phone', async (req, res) => {
     }
 });
 
-// ==================== ADMIN API - Get All Orders ====================
+// ==================== ADMIN API ====================
 app.get('/api/admin/orders', async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
@@ -230,7 +226,6 @@ app.get('/api/admin/orders', async (req, res) => {
     }
 });
 
-// ==================== ADMIN API - Get User Stats ====================
 app.get('/api/admin/user-stats', async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
@@ -249,7 +244,6 @@ app.get('/api/admin/user-stats', async (req, res) => {
     }
 });
 
-// ==================== ADMIN API - Block/Unblock User ====================
 app.post('/api/admin/user-block', async (req, res) => {
     try {
         const { phone, block } = req.body;
@@ -274,7 +268,6 @@ app.post('/api/admin/user-block', async (req, res) => {
     }
 });
 
-// ==================== ADMIN API - Clear Suspect Flag ====================
 app.post('/api/admin/clear-suspect', async (req, res) => {
     try {
         const { phone } = req.body;
@@ -299,7 +292,76 @@ app.post('/api/admin/clear-suspect', async (req, res) => {
     }
 });
 
-// ==================== CREATE ORDER (with fraud detection) ====================
+// NEW: Delete user from stats
+app.post('/api/admin/user-delete', async (req, res) => {
+    try {
+        const { phone } = req.body;
+        
+        if (!phone) {
+            return res.status(400).json({ success: false, error: 'Phone required' });
+        }
+        
+        const { error } = await supabaseAdmin
+            .from('user_stats')
+            .delete()
+            .eq('phone', phone);
+        
+        if (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        res.json({ success: true, message: 'User deleted from stats' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// NEW: Delete all orders for a user
+app.post('/api/admin/user-delete-orders', async (req, res) => {
+    try {
+        const { phone } = req.body;
+        
+        if (!phone) {
+            return res.status(400).json({ success: false, error: 'Phone required' });
+        }
+        
+        // Get all orders to delete files
+        const { data: orders } = await supabaseAdmin
+            .from('orders')
+            .select('slip_url')
+            .eq('phone', phone);
+        
+        // Delete uploaded files
+        if (orders && orders.length > 0) {
+            for (const order of orders) {
+                if (order.slip_url) {
+                    const filePath = path.join(__dirname, order.slip_url);
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                    }
+                }
+            }
+        }
+        
+        // Delete orders from database
+        const { error } = await supabaseAdmin
+            .from('orders')
+            .delete()
+            .eq('phone', phone);
+        
+        if (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        res.json({ success: true, message: `Deleted ${orders?.length || 0} orders for ${phone}` });
+    } catch (error) {
+        console.error('Error deleting user orders:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ==================== CREATE ORDER ====================
 app.post('/api/orders', upload.single('slip'), async (req, res) => {
     try {
         const { phone, plan, price } = req.body;
@@ -317,15 +379,15 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
             return res.status(403).json({ success: false, error: 'This phone number has been blocked. Contact admin for support.' });
         }
         
-        // 2. Check rate limit (3 orders per minute)
+        // 2. Check rate limit
         if (!checkRateLimit(phone)) {
             return res.status(429).json({ success: false, error: 'Too many orders. Please wait a moment.' });
         }
         
-        // 3. Check duplicate order (same phone + plan within 5 minutes)
+        // 3. Check duplicate order
         const duplicate = await isDuplicateOrder(phone, plan);
         if (duplicate) {
-            return res.status(409).json({ success: false, error: 'Duplicate order detected. Please wait 5 minutes before ordering again.' });
+            return res.status(409).json({ success: false, error: 'Duplicate order detected. Please wait 5 minutes.' });
         }
         
         let slipUrl = null;
@@ -333,14 +395,12 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
         
         if (slipFile) {
             slipUrl = `/uploads/${slipFile.filename}`;
-            // Calculate image hash
             const fileBuffer = fs.readFileSync(slipFile.path);
             imageHash = calculateImageHash(fileBuffer);
             
-            // 4. Check duplicate image hash
+            // 4. Check duplicate image
             const duplicateImage = await isDuplicateImage(imageHash);
             if (duplicateImage) {
-                // Clean up uploaded file
                 fs.unlinkSync(slipFile.path);
                 return res.status(409).json({ success: false, error: 'Duplicate screenshot detected. Please use a new screenshot.' });
             }
@@ -365,7 +425,6 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
             return res.status(500).json({ success: false, error: error.message });
         }
         
-        // Update user stats (successful order)
         await updateUserStats(phone, false);
         
         console.log(`✅ Order created: ${orderId}`);
@@ -380,17 +439,10 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
     }
 });
 
-// ==================== ADMIN - Approve Order ====================
+// ==================== ADMIN - Approve/Reject/Delete ====================
 app.put('/api/admin/orders/:id/approve', async (req, res) => {
     try {
         const { id } = req.params;
-        
-        // Get order to update user stats if rejected before
-        const { data: order } = await supabaseAdmin
-            .from('orders')
-            .select('phone')
-            .eq('id', id)
-            .single();
         
         const { error } = await supabaseAdmin
             .from('orders')
@@ -411,12 +463,10 @@ app.put('/api/admin/orders/:id/approve', async (req, res) => {
     }
 });
 
-// ==================== ADMIN - Reject Order ====================
 app.put('/api/admin/orders/:id/reject', async (req, res) => {
     try {
         const { id } = req.params;
         
-        // Get order to update user stats
         const { data: order } = await supabaseAdmin
             .from('orders')
             .select('phone')
@@ -432,7 +482,6 @@ app.put('/api/admin/orders/:id/reject', async (req, res) => {
             return res.status(500).json({ success: false, error: error.message });
         }
         
-        // Update user stats with rejection
         if (order) {
             await updateUserStats(order.phone, true);
         }
@@ -444,7 +493,6 @@ app.put('/api/admin/orders/:id/reject', async (req, res) => {
     }
 });
 
-// ==================== ADMIN - Delete Order ====================
 app.delete('/api/admin/orders/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -465,7 +513,6 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
     }
 });
 
-// ==================== ADMIN - Login ====================
 app.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
     if (password === process.env.ADMIN_PASSWORD) {
@@ -475,10 +522,8 @@ app.post('/api/admin/login', (req, res) => {
     }
 });
 
-// Serve uploaded files
 app.use('/uploads', express.static('uploads'));
 
-// Start server
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`📱 User Store: http://localhost:${PORT}/index.html`);
