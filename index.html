@@ -15,7 +15,6 @@
             --card-bg: rgba(18, 22, 35, 0.85);
             --cyan: #00d4ff;
             --violet: #8b5cf6;
-            --purple-dark: #6d28d9;
             --emerald: #10b981;
             --rose: #f43f5e;
             --amber: #f59e0b;
@@ -189,7 +188,6 @@
             margin-bottom: 20px;
             overflow: hidden;
         }
-        /* My Orders Card - Cyan/Blue Theme */
         .orders-card.my-orders {
             background: rgba(0, 212, 255, 0.03);
             border: 1px solid rgba(0, 212, 255, 0.4);
@@ -200,7 +198,6 @@
             border-bottom: 1px solid rgba(0, 212, 255, 0.3);
             color: var(--cyan);
         }
-        /* Others Orders Card - Purple/Gray Theme - LIVE FEED */
         .orders-card.others-orders {
             background: rgba(139, 92, 246, 0.03);
             border: 1px solid rgba(139, 92, 246, 0.3);
@@ -220,25 +217,26 @@
         }
         .card-content {
             padding: 12px;
-            max-height: 400px;
-            overflow-y: auto;
+            min-height: 300px;
         }
         
-        /* Live Feed Container */
-        .live-feed-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        /* Priority Slider Container */
+        .slider-container {
+            position: relative;
+            overflow: hidden;
         }
-        
-        /* Live Feed Item */
-        .live-feed-item {
+        .slider-item {
             background: linear-gradient(135deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
             border-radius: 12px;
             padding: 12px;
             border-left: 3px solid var(--violet);
             animation: slideIn 0.3s ease;
-            transition: all 0.2s ease;
+            margin-bottom: 0;
+        }
+        .slider-item.new-order {
+            border-left-color: var(--cyan);
+            background: rgba(0,212,255,0.1);
+            animation: pulse 0.5s ease;
         }
         @keyframes slideIn {
             from {
@@ -250,63 +248,59 @@
                 transform: translateY(0);
             }
         }
-        .live-feed-item.new {
-            border-left-color: var(--cyan);
-            background: rgba(0,212,255,0.08);
-        }
-        .live-feed-item:hover {
-            transform: translateX(3px);
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0,212,255,0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0,212,255,0); }
+            100% { box-shadow: 0 0 0 0 rgba(0,212,255,0); }
         }
         
-        .feed-header {
+        .slider-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 6px;
             margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .feed-plan {
+        .slider-plan {
             font-size: 0.75rem;
             font-weight: 700;
             color: var(--cyan);
         }
-        .feed-status {
+        .slider-status {
             display: inline-block;
             padding: 3px 8px;
             border-radius: 40px;
             font-size: 0.55rem;
             font-weight: 700;
         }
-        .feed-status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
-        .feed-status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
-        .feed-status.rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        .slider-status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .slider-status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
+        .slider-status.rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
         
-        .feed-details {
+        .slider-details {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
-        .feed-phone {
+        .slider-phone {
             font-size: 0.7rem;
             font-family: monospace;
             color: var(--amber);
         }
-        .feed-price {
+        .slider-price {
             font-size: 0.7rem;
             font-weight: 600;
             color: var(--emerald);
         }
-        .feed-time {
+        .slider-time {
             font-size: 0.55rem;
             color: #64748b;
-        }
-        .feed-divider {
-            margin: 8px 0;
-            border-top: 1px dashed rgba(255,255,255,0.05);
         }
         
         .empty-msg {
@@ -638,12 +632,27 @@
             padding: 2px 8px;
             border-radius: 40px;
             margin-left: 8px;
-            animation: pulse 1.5s infinite;
+            animation: badgePulse 1.5s infinite;
         }
-        @keyframes pulse {
+        .priority-badge {
+            background: rgba(0,212,255,0.2);
+            color: var(--cyan);
+            font-size: 0.55rem;
+            padding: 2px 8px;
+            border-radius: 40px;
+            margin-left: 8px;
+        }
+        @keyframes badgePulse {
             0% { opacity: 1; }
             50% { opacity: 0.5; }
             100% { opacity: 1; }
+        }
+        
+        .slider-indicator {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.55rem;
+            color: #64748b;
         }
     </style>
 </head>
@@ -732,7 +741,7 @@
         <div class="search-hint">💡 မည်သည့်ဖုန်းနံပါတ်မဆို ရှာနိုင်ပါသည်။ ရှာတွေ့ပါက အဝါရောင် Highlight ပြပါမည်။</div>
     </div>
     
-    <!-- My Orders Card (Live - My own orders) - CYAN THEME -->
+    <!-- My Orders Card -->
     <div class="orders-card my-orders">
         <div class="card-header">
             <i class="fas fa-user-circle"></i> ကျွန်ုပ်၏ အော်ဒါများ
@@ -742,14 +751,18 @@
         </div>
     </div>
     
-    <!-- Others Orders Card - LIVE FEED (New on top, old moves down) -->
+    <!-- Others Orders Card - PRIORITY SLIDER (New comes first, then old slides) -->
     <div class="orders-card others-orders">
         <div class="card-header">
             <i class="fas fa-globe"></i> အခြားသူများ၏ အော်ဒါများ 
             <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span>
+            <span class="priority-badge"><i class="fas fa-bolt"></i> PRIORITY</span>
         </div>
-        <div class="card-content" id="liveFeedContainer">
-            <div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading live feed...</div>
+        <div class="card-content" id="sliderContainer">
+            <div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading slider...</div>
+        </div>
+        <div class="slider-indicator" id="sliderIndicator">
+            <i class="fas fa-arrow-down"></i> လှုပ်ရှားနေပါသည် <i class="fas fa-arrow-down"></i>
         </div>
     </div>
 </div>
@@ -800,9 +813,14 @@
     let refreshSecondsLeft = 30;
     let countdownIntervals = {};
     
-    // Live Feed variables
-    let liveFeedOrders = [];      // Queue of orders to display (max 20)
-    let lastOrdersHash = '';      // Track changes
+    // Priority Slider variables
+    let sliderQueue = [];           // Queue of orders to display (new first)
+    let currentSliderIndex = 0;
+    let sliderInterval = null;
+    let isNewOrderPending = false;
+    let lastOrdersHash = '';
+    const SLIDER_SPEED = 5000;      // 5 seconds per item
+    const MAX_QUEUE_SIZE = 30;
     
     // ==================== HELPER FUNCTIONS ====================
     function showToast(msg, isError = false) {
@@ -910,87 +928,183 @@
         }
     }
     
-    // ==================== LIVE FEED FUNCTIONS ====================
-    // Update live feed queue with new orders (new on top, old moves down)
-    function updateLiveFeed(newOrders) {
-        // Filter out own orders for live feed
+    // ==================== PRIORITY SLIDER FUNCTIONS ====================
+    
+    // Update slider queue with new orders (new orders go to FRONT of queue)
+    function updateSliderQueue(newOrders) {
+        // Filter out own orders
         const otherOrders = newOrders.filter(order => order.phone !== myPhone);
         
-        // Create a hash to detect changes
-        const ordersHash = JSON.stringify(otherOrders.map(o => ({ id: o.id, status: o.status, updated_at: o.updated_at })));
+        if (otherOrders.length === 0) {
+            if (sliderQueue.length > 0) {
+                sliderQueue = [];
+                renderSliderItem();
+            }
+            return;
+        }
         
-        if (ordersHash === lastOrdersHash && liveFeedOrders.length > 0) {
+        // Sort by created_at (newest first)
+        const sortedOrders = [...otherOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        
+        // Create hash to detect changes
+        const ordersHash = JSON.stringify(sortedOrders.map(o => ({ id: o.id, status: o.status, updated_at: o.updated_at })));
+        
+        if (ordersHash === lastOrdersHash && sliderQueue.length > 0) {
             return; // No changes
         }
         lastOrdersHash = ordersHash;
         
-        // Build new feed: most recent first (new on top)
-        const sortedOrders = [...otherOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        // Get current queue order IDs for comparison
+        const currentQueueIds = sliderQueue.map(o => o.id);
         
-        // Limit to last 20 orders
-        liveFeedOrders = sortedOrders.slice(0, 20);
+        // Find new orders (not in current queue)
+        const newOrdersList = sortedOrders.filter(o => !currentQueueIds.includes(o.id));
         
-        renderLiveFeed();
+        if (newOrdersList.length > 0) {
+            // New orders found - add them to the FRONT of queue
+            console.log(`🆕 Found ${newOrdersList.length} new order(s), adding to front of queue`);
+            sliderQueue = [...newOrdersList, ...sliderQueue];
+            
+            // Limit queue size
+            if (sliderQueue.length > MAX_QUEUE_SIZE) {
+                sliderQueue = sliderQueue.slice(0, MAX_QUEUE_SIZE);
+            }
+            
+            // Reset index to show new order immediately
+            currentSliderIndex = 0;
+            
+            // Show notification on slider
+            const container = document.getElementById('sliderContainer');
+            if (container) {
+                const tempDiv = document.createElement('div');
+                tempDiv.className = 'slider-item new-order';
+                tempDiv.style.position = 'relative';
+                tempDiv.style.marginBottom = '10px';
+                tempDiv.innerHTML = `
+                    <div style="text-align: center; padding: 10px;">
+                        <i class="fas fa-bell" style="color: var(--cyan); font-size: 1.2rem;"></i>
+                        <div style="font-size: 0.7rem; margin-top: 5px;">အော်ဒါအသစ် ${newOrdersList.length} ခုရောက်ရှိလာပါသည်!</div>
+                    </div>
+                `;
+                container.prepend(tempDiv);
+                setTimeout(() => tempDiv.remove(), 2000);
+            }
+        } else {
+            // No new orders, just update existing orders (status might have changed)
+            const updatedQueue = [];
+            for (const order of sortedOrders) {
+                if (currentQueueIds.includes(order.id)) {
+                    updatedQueue.push(order);
+                }
+            }
+            // Add any remaining from old queue that still exist
+            for (const oldOrder of sliderQueue) {
+                if (!updatedQueue.find(o => o.id === oldOrder.id)) {
+                    updatedQueue.push(oldOrder);
+                }
+            }
+            sliderQueue = updatedQueue.slice(0, MAX_QUEUE_SIZE);
+        }
+        
+        // Ensure we have items to show
+        if (sliderQueue.length > 0 && currentSliderIndex >= sliderQueue.length) {
+            currentSliderIndex = 0;
+        }
+        
+        renderSliderItem();
     }
     
-    function renderLiveFeed() {
-        const container = document.getElementById('liveFeedContainer');
+    // Render current slider item
+    function renderSliderItem() {
+        const container = document.getElementById('sliderContainer');
+        const indicator = document.getElementById('sliderIndicator');
         
-        if (liveFeedOrders.length === 0) {
-            container.innerHTML = `<div class="empty-msg">📭 အခြားသူများ၏ အော်ဒါမရှိသေးပါ။<br>ပထမဆုံးအော်ဒါအတွက် စောင့်ဆိုင်းနေပါသည်...</div>`;
+        if (sliderQueue.length === 0) {
+            container.innerHTML = `<div class="empty-msg">📭 အခြားသူများ၏ အော်ဒါမရှိသေးပါ။<br>စောင့်ဆိုင်းနေပါသည်...</div>`;
+            if (indicator) indicator.style.opacity = '0.3';
             return;
         }
         
-        let html = `<div class="live-feed-container">`;
+        if (indicator) indicator.style.opacity = '1';
         
-        for (const order of liveFeedOrders) {
-            let statusClass = "pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
-            let statusIcon = "🕐";
-            
-            if (order.status === "Approved") { 
-                statusClass = "approved"; 
-                statusText = "✅ အတည်ပြုပြီး";
-                statusIcon = "✅";
-            }
-            if (order.status === "Rejected") { 
-                statusClass = "rejected"; 
-                statusText = "❌ ပယ်ဖျက်ခံရ";
-                statusIcon = "❌";
-            }
-            
-            const maskedPhone = maskPhoneNumber(order.phone);
-            const timeAgo = formatTimeAgo(order.created_at);
-            const priceFormatted = order.price.toLocaleString();
-            
-            // Determine action text
-            let actionText = "";
-            if (order.status === "Pending") {
-                actionText = `🆕 ${maskedPhone} မှ <strong>${order.plan}</strong> (${priceFormatted} KS) ဝယ်ယူခဲ့ပါသည်`;
-            } else if (order.status === "Approved") {
-                actionText = `✅ ${maskedPhone} မှ <strong>${order.plan}</strong> အတည်ပြုပြီးပါပြီ`;
-            } else {
-                actionText = `❌ ${maskedPhone} မှ <strong>${order.plan}</strong> ပယ်ဖျက်ခံရပါသည်`;
-            }
-            
-            html += `
-                <div class="live-feed-item">
-                    <div class="feed-header">
-                        <span class="feed-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
-                        <span class="feed-status ${statusClass}">${statusText}</span>
-                    </div>
-                    <div class="feed-details">
-                        <span class="feed-phone"><i class="fas fa-mobile-alt"></i> ${maskedPhone}</span>
-                        <span class="feed-price"><i class="fas fa-coins"></i> ${priceFormatted} KS</span>
-                    </div>
-                    <div class="feed-time">
-                        <i class="far fa-clock"></i> ${timeAgo}
-                    </div>
-                </div>
-            `;
+        const order = sliderQueue[currentSliderIndex];
+        if (!order) return;
+        
+        let statusClass = "pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
+        let statusIcon = "🕐";
+        
+        if (order.status === "Approved") { 
+            statusClass = "approved"; 
+            statusText = "✅ အတည်ပြုပြီး";
+            statusIcon = "✅";
+        }
+        if (order.status === "Rejected") { 
+            statusClass = "rejected"; 
+            statusText = "❌ ပယ်ဖျက်ခံရ";
+            statusIcon = "❌";
         }
         
-        html += `</div>`;
-        container.innerHTML = html;
+        const maskedPhone = maskPhoneNumber(order.phone);
+        const timeAgo = formatTimeAgo(order.created_at);
+        const priceFormatted = order.price.toLocaleString();
+        const isNew = currentSliderIndex === 0 && sliderQueue.length > 1 && sliderQueue[0].created_at !== sliderQueue[1]?.created_at;
+        
+        // Determine action text
+        let actionText = "";
+        if (order.status === "Pending") {
+            actionText = `🆕 ${maskedPhone} မှ <strong>${order.plan}</strong> (${priceFormatted} KS) ဝယ်ယူခဲ့ပါသည်`;
+        } else if (order.status === "Approved") {
+            actionText = `✅ ${maskedPhone} မှ <strong>${order.plan}</strong> အတည်ပြုပြီးပါပြီ`;
+        } else {
+            actionText = `❌ ${maskedPhone} မှ <strong>${order.plan}</strong> ပယ်ဖျက်ခံရပါသည်`;
+        }
+        
+        container.innerHTML = `
+            <div class="slider-item ${isNew ? 'new-order' : ''}">
+                <div class="slider-header">
+                    <span class="slider-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
+                    <span class="slider-status ${statusClass}">${statusText}</span>
+                </div>
+                <div class="slider-details">
+                    <span class="slider-phone"><i class="fas fa-mobile-alt"></i> ${maskedPhone}</span>
+                    <span class="slider-price"><i class="fas fa-coins"></i> ${priceFormatted} KS</span>
+                </div>
+                <div class="slider-time">
+                    <i class="far fa-clock"></i> ${timeAgo}
+                </div>
+            </div>
+        `;
+        
+        // Update indicator text
+        if (indicator) {
+            indicator.innerHTML = `<i class="fas fa-arrow-down"></i> ${currentSliderIndex + 1} / ${sliderQueue.length} <i class="fas fa-arrow-down"></i>`;
+        }
+    }
+    
+    // Move to next slider item
+    function nextSliderItem() {
+        if (sliderQueue.length === 0) return;
+        
+        currentSliderIndex++;
+        if (currentSliderIndex >= sliderQueue.length) {
+            currentSliderIndex = 0; // Loop back to start
+        }
+        renderSliderItem();
+    }
+    
+    // Start slider interval
+    function startSlider() {
+        if (sliderInterval) clearInterval(sliderInterval);
+        sliderInterval = setInterval(() => {
+            if (document.getElementById('historyPanel').classList.contains('open')) {
+                nextSliderItem();
+            }
+        }, SLIDER_SPEED);
+    }
+    
+    function stopSlider() {
+        if (sliderInterval) clearInterval(sliderInterval);
+        sliderInterval = null;
     }
     
     // ==================== RENDER MY ORDERS ====================
@@ -1119,18 +1233,12 @@
             if (data.orders) {
                 allOrdersData = data.orders;
                 renderMyOrders();
-                updateLiveFeed(allOrdersData);
-                
-                // Also apply search highlight if active
-                if (currentSearchPhone) {
-                    // Highlight is handled in render functions
-                    renderMyOrders();
-                }
+                updateSliderQueue(allOrdersData);
             }
         } catch(e) {
             console.error("Load data error:", e);
             document.getElementById('myOrdersContainer').innerHTML = `<div class="empty-msg">Connection Error: ${e.message}</div>`;
-            document.getElementById('liveFeedContainer').innerHTML = `<div class="empty-msg">Connection Error: ${e.message}</div>`;
+            document.getElementById('sliderContainer').innerHTML = `<div class="empty-msg">Connection Error: ${e.message}</div>`;
         }
     }
     
@@ -1203,12 +1311,14 @@
         document.getElementById('historyPanel').classList.add('open');
         loadAllData();
         startAutoRefresh();
+        startSlider();
         clearSearch();
     }
     
     function closeHistory() {
         document.getElementById('historyPanel').classList.remove('open');
         stopAutoRefresh();
+        stopSlider();
     }
     
     // ==================== EVENT LISTENERS ====================
@@ -1270,8 +1380,9 @@
     if (myPhone) {
         console.log("✅ Loaded with saved phone:", maskPhoneNumber(myPhone));
     }
-    console.log("✅ ATH DIGITAL HUB - Live Feed Mode Active!");
-    console.log("✅ New orders appear on top, old orders move down automatically!");
+    console.log("✅ ATH DIGITAL HUB - PRIORITY SLIDER MODE ACTIVE!");
+    console.log("✅ New orders appear at front of queue immediately!");
+    console.log("✅ Old orders rotate every 5 seconds!");
 </script>
 </body>
 </html>
