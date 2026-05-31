@@ -15,6 +15,7 @@
             --card-bg: rgba(18, 22, 35, 0.85);
             --cyan: #00d4ff;
             --violet: #8b5cf6;
+            --purple-dark: #6d28d9;
             --emerald: #10b981;
             --rose: #f43f5e;
             --amber: #f59e0b;
@@ -162,6 +163,7 @@
             font-weight: 600;
             cursor: pointer;
             font-size: 0.75rem;
+            color: white;
         }
         .search-btn:hover { transform: scale(0.98); }
         .clear-search-btn {
@@ -172,6 +174,7 @@
             font-weight: 600;
             cursor: pointer;
             font-size: 0.7rem;
+            color: white;
         }
         .search-hint {
             font-size: 0.6rem;
@@ -182,23 +185,39 @@
         
         /* Cards Section */
         .orders-card {
-            background: rgba(0, 212, 255, 0.03);
-            border: 1px solid rgba(0, 212, 255, 0.15);
             border-radius: 1rem;
             margin-bottom: 20px;
             overflow: hidden;
         }
+        /* My Orders Card - Cyan/Blue Theme */
+        .orders-card.my-orders {
+            background: rgba(0, 212, 255, 0.03);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.1);
+        }
+        .orders-card.my-orders .card-header {
+            background: rgba(0, 212, 255, 0.15);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+            color: var(--cyan);
+        }
+        /* Others Orders Card - Purple/Gray Theme */
+        .orders-card.others-orders {
+            background: rgba(139, 92, 246, 0.03);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        .orders-card.others-orders .card-header {
+            background: rgba(139, 92, 246, 0.1);
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+            color: #c4b5fd;
+        }
         .card-header {
-            background: rgba(0, 212, 255, 0.08);
             padding: 10px 14px;
-            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
             font-weight: 600;
             font-size: 0.8rem;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .card-header i { color: var(--cyan); }
         .card-content {
             padding: 12px;
             max-height: 400px;
@@ -215,19 +234,27 @@
         .order-item {
             background: linear-gradient(135deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
             border-radius: 12px;
-            padding: 10px 12px;
+            padding: 12px;
             margin-bottom: 10px;
-            border: 1px solid rgba(0,212,255,0.1);
+            border: 1px solid rgba(255,255,255,0.08);
             transition: all 0.2s ease;
         }
         .order-item:hover {
-            border-color: rgba(0,212,255,0.3);
             transform: translateX(3px);
         }
         .order-item.highlight {
             border-color: var(--cyan);
             background: rgba(0,212,255,0.1);
             box-shadow: 0 0 10px rgba(0,212,255,0.2);
+        }
+        
+        /* My orders item - slight cyan glow */
+        .my-orders .order-item {
+            border-left: 2px solid var(--cyan);
+        }
+        /* Others orders item - purple border left */
+        .others-orders .order-item {
+            border-left: 2px solid var(--violet);
         }
         
         .order-header {
@@ -294,6 +321,34 @@
         }
         .copy-id:hover { opacity: 1; }
         
+        /* Date row - left right side by side */
+        .date-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .date-box {
+            flex: 1;
+            background: rgba(0,0,0,0.25);
+            border-radius: 10px;
+            padding: 6px 8px;
+            text-align: center;
+        }
+        .date-label {
+            font-size: 0.5rem;
+            color: #64748b;
+            margin-bottom: 2px;
+        }
+        .date-value {
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .date-value.start { color: var(--cyan); }
+        .date-value.expired { color: var(--amber); }
+        
         .waiting-badge {
             background: rgba(245,158,11,0.15);
             padding: 5px 10px;
@@ -316,13 +371,14 @@
         .view-slip-btn {
             background: rgba(0,212,255,0.15);
             border: 1px solid rgba(0,212,255,0.3);
-            padding: 5px 10px;
+            padding: 6px 10px;
             border-radius: 40px;
-            font-size: 0.6rem;
+            font-size: 0.65rem;
             cursor: pointer;
             margin-top: 8px;
             width: 100%;
             color: var(--cyan);
+            font-weight: 500;
         }
         .view-slip-btn:hover { background: var(--cyan); color: #030712; }
         
@@ -408,7 +464,7 @@
             color: white;
             font-size: 0.85rem;
         }
-        .submit-btn { background: var(--emerald); width: 100%; padding: 12px; border-radius: 60px; font-weight: 800; cursor: pointer; margin-top: 6px; }
+        .submit-btn { background: var(--emerald); width: 100%; padding: 12px; border-radius: 60px; font-weight: 800; cursor: pointer; margin-top: 6px; color: #030712; }
         .footnote { font-size: 0.6rem; text-align: center; margin-top: 12px; color: #5b6e8c; }
         .toast {
             position: fixed; top: -80px; right: 16px;
@@ -583,8 +639,8 @@
         <div class="search-hint">💡 မည်သည့်ဖုန်းနံပါတ်မဆို ရှာနိုင်ပါသည်။ ရှာတွေ့ပါက အဝါရောင် Highlight ပြပါမည်။</div>
     </div>
     
-    <!-- My Orders Card (Live - My own orders) -->
-    <div class="orders-card">
+    <!-- My Orders Card (Live - My own orders) - CYAN THEME -->
+    <div class="orders-card my-orders">
         <div class="card-header">
             <i class="fas fa-user-circle"></i> ကျွန်ုပ်၏ အော်ဒါများ (Live)
         </div>
@@ -593,8 +649,8 @@
         </div>
     </div>
     
-    <!-- All Orders Card (Live - Everyone's orders with masked phone) -->
-    <div class="orders-card">
+    <!-- All Orders Card (Live - Everyone's orders with masked phone) - PURPLE THEME -->
+    <div class="orders-card others-orders">
         <div class="card-header">
             <i class="fas fa-globe"></i> အခြားသူများ၏ အော်ဒါများ (Live)
         </div>
@@ -669,6 +725,19 @@
         return phone;
     }
     
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0];
+    }
+    
+    function calculateExpiredDate(activatedAt) {
+        if (!activatedAt) return null;
+        const endDate = new Date(activatedAt);
+        endDate.setDate(endDate.getDate() + 30);
+        return endDate.toISOString().split('T')[0];
+    }
+    
     function formatRemainingTime(activatedAt) {
         if (!activatedAt) return null;
         const endDate = new Date(activatedAt).getTime() + (30 * 24 * 60 * 60 * 1000);
@@ -689,8 +758,13 @@
                 return;
             }
             const remaining = formatRemainingTime(activatedAt);
-            elem.innerHTML = `<i class="fas fa-calendar-check"></i> ကျန်ရက်: ${remaining || 'N/A'}`;
-            if (remaining === "Expired") clearInterval(countdownIntervals[orderId]);
+            if (remaining === "Expired") {
+                elem.innerHTML = `<i class="fas fa-calendar-times"></i> သက်တမ်းကုန်ဆုံးပါပြီ`;
+                elem.style.color = "#f43f5e";
+                clearInterval(countdownIntervals[orderId]);
+            } else {
+                elem.innerHTML = `<i class="fas fa-hourglass-half"></i> ကျန်ရက်: ${remaining}`;
+            }
         };
         updateTimer();
         countdownIntervals[orderId] = setInterval(updateTimer, 1000);
@@ -717,7 +791,6 @@
         document.getElementById('screenshotModal').classList.remove('active');
     }
     
-    // Save my phone after order
     function saveMyPhone(phone) {
         if (phone && phone.length >= 8) {
             myPhone = phone;
@@ -726,6 +799,99 @@
     }
     
     // ==================== RENDER FUNCTIONS ====================
+    function renderOrderItem(order, showFullPhone, isHighlighted, showSlipButton = false) {
+        let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
+        let waitingMsg = "";
+        
+        if (order.status === "Approved") { 
+            statusClass = "status-approved"; 
+            statusText = "✅ အတည်ပြုပြီး"; 
+        }
+        if (order.status === "Rejected") { 
+            statusClass = "status-rejected"; 
+            statusText = "❌ ပယ်ဖျက်ခံရ"; 
+        }
+        if (order.status === "Pending") {
+            waitingMsg = `<div class="waiting-badge">⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ</div>`;
+        }
+        
+        const displayPhone = showFullPhone ? order.phone : maskPhoneNumber(order.phone);
+        const phoneClass = showFullPhone ? "info-value" : "info-value masked";
+        const highlightClass = isHighlighted ? 'highlight' : '';
+        
+        // Start Date and Expired Date
+        const startDate = formatDate(order.created_at);
+        let expiredDateHtml = '';
+        let countdownHtml = '';
+        
+        if (order.status === "Approved" && order.activated_at) {
+            const expiredDate = calculateExpiredDate(order.activated_at);
+            expiredDateHtml = `
+                <div class="date-row">
+                    <div class="date-box">
+                        <div class="date-label"><i class="fas fa-play-circle"></i> စတင်ရက်</div>
+                        <div class="date-value start">${startDate}</div>
+                    </div>
+                    <div class="date-box">
+                        <div class="date-label"><i class="fas fa-stop-circle"></i> ကုန်ဆုံးရက်</div>
+                        <div class="date-value expired">${expiredDate || 'N/A'}</div>
+                    </div>
+                </div>
+            `;
+            const remaining = formatRemainingTime(order.activated_at);
+            if (remaining !== "Expired") {
+                countdownHtml = `<div class="countdown-timer" id="countdown-${order.id}"><i class="fas fa-hourglass-half"></i> ကျန်ရက်: ${remaining}</div>`;
+            } else {
+                countdownHtml = `<div class="countdown-timer" style="color:#f43f5e;"><i class="fas fa-calendar-times"></i> သက်တမ်းကုန်ဆုံးပါပြီ</div>`;
+            }
+        } else {
+            expiredDateHtml = `
+                <div class="date-row">
+                    <div class="date-box">
+                        <div class="date-label"><i class="fas fa-play-circle"></i> စတင်ရက်</div>
+                        <div class="date-value start">${startDate}</div>
+                    </div>
+                    <div class="date-box">
+                        <div class="date-label"><i class="fas fa-clock"></i> အခြေအနေ</div>
+                        <div class="date-value" style="color:var(--amber);">${order.status === 'Pending' ? 'စောင့်ဆိုင်းဆဲ' : (order.status === 'Rejected' ? 'ပယ်ဖျက်ခံရ' : 'N/A')}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        let slipButton = '';
+        if (showSlipButton && order.slip_url && order.slip_url !== 'null') {
+            slipButton = `<button class="view-slip-btn" onclick="openScreenshot('${order.slip_url}')"><i class="fas fa-image"></i> 🧾 ပြေစာကြည့်ရန်</button>`;
+        }
+        
+        return `
+            <div class="order-item ${highlightClass}">
+                <div class="order-header">
+                    <span class="order-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-mobile-alt"></i> Phone</div>
+                        <div class="${phoneClass}">${displayPhone}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-coins"></i> Amount</div>
+                        <div class="info-value price">${order.price.toLocaleString()} KS</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label"><i class="fas fa-barcode"></i> Order ID <span class="copy-id" onclick="copyOrderId('${order.id}')">📋</span></div>
+                        <div class="info-value" style="font-size:0.65rem; font-family:monospace;">${order.id}</div>
+                    </div>
+                </div>
+                ${expiredDateHtml}
+                ${waitingMsg}
+                ${countdownHtml}
+                ${slipButton}
+            </div>
+        `;
+    }
+    
     function renderMyOrders() {
         const container = document.getElementById('myOrdersContainer');
         if (!myPhone) {
@@ -743,7 +909,7 @@
             return;
         }
         
-        container.innerHTML = myOrders.map(order => renderOrderItem(order, true, order.phone === currentSearchPhone)).join('');
+        container.innerHTML = myOrders.map(order => renderOrderItem(order, true, order.phone === currentSearchPhone, true)).join('');
         
         // Start countdowns for approved orders
         myOrders.forEach(order => {
@@ -772,7 +938,7 @@
             return;
         }
         
-        container.innerHTML = filteredOrders.map(order => renderOrderItem(order, false, order.phone === currentSearchPhone)).join('');
+        container.innerHTML = filteredOrders.map(order => renderOrderItem(order, false, order.phone === currentSearchPhone, false)).join('');
         
         // Start countdowns for approved orders
         filteredOrders.forEach(order => {
@@ -780,68 +946,6 @@
                 startCountdown(order.id, order.activated_at);
             }
         });
-    }
-    
-    function renderOrderItem(order, showFullPhone, isHighlighted) {
-        let statusClass = "status-pending", statusText = "⏳ စောင့်ဆိုင်းဆဲ";
-        let waitingMsg = "";
-        
-        if (order.status === "Approved") { 
-            statusClass = "status-approved"; 
-            statusText = "✅ အတည်ပြုပြီး"; 
-        }
-        if (order.status === "Rejected") { 
-            statusClass = "status-rejected"; 
-            statusText = "❌ ပယ်ဖျက်ခံရ"; 
-        }
-        if (order.status === "Pending") {
-            waitingMsg = `<div class="waiting-badge">⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ</div>`;
-        }
-        
-        const displayPhone = showFullPhone ? order.phone : maskPhoneNumber(order.phone);
-        const dateStr = new Date(order.created_at).toLocaleString();
-        const highlightClass = isHighlighted ? 'highlight' : '';
-        
-        let countdownHtml = "";
-        if (order.status === "Approved" && order.activated_at) {
-            const remaining = formatRemainingTime(order.activated_at);
-            countdownHtml = `<div class="countdown-timer" id="countdown-${order.id}"><i class="fas fa-calendar-check"></i> ကျန်ရက်: ${remaining || 'Calculating...'}</div>`;
-        }
-        
-        let slipButton = '';
-        if (order.slip_url && order.slip_url !== 'null') {
-            slipButton = `<button class="view-slip-btn" onclick="openScreenshot('${order.slip_url}')"><i class="fas fa-image"></i> ပြေစာကြည့်ရန်</button>`;
-        }
-        
-        return `
-            <div class="order-item ${highlightClass}">
-                <div class="order-header">
-                    <span class="order-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
-                    <span class="status-badge ${statusClass}">${statusText}</span>
-                </div>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label"><i class="fas fa-mobile-alt"></i> Phone</div>
-                        <div class="info-value">${displayPhone}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label"><i class="fas fa-coins"></i> Amount</div>
-                        <div class="info-value price">${order.price.toLocaleString()} KS</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label"><i class="fas fa-calendar"></i> Date</div>
-                        <div class="info-value" style="font-size:0.7rem;">${new Date(order.created_at).toLocaleDateString()}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label"><i class="fas fa-barcode"></i> Order ID <span class="copy-id" onclick="copyOrderId('${order.id}')">📋</span></div>
-                        <div class="info-value" style="font-size:0.65rem; font-family:monospace;">${order.id}</div>
-                    </div>
-                </div>
-                ${waitingMsg}
-                ${countdownHtml}
-                ${slipButton}
-            </div>
-        `;
     }
     
     // ==================== LOAD DATA ====================
@@ -873,11 +977,9 @@
             return;
         }
         currentSearchPhone = phone;
-        renderAllOrders(); // Re-render all orders with search filter
-        showToast(`🔍 ${maskPhoneNumber(phone)} အတွက် ရှာဖွေနေပါသည်...`);
-        
-        // Also highlight in my orders if matches
+        renderAllOrders();
         renderMyOrders();
+        showToast(`🔍 ${maskPhoneNumber(phone)} အတွက် ရှာဖွေနေပါသည်...`);
     }
     
     function clearSearch() {
@@ -1001,7 +1103,7 @@
     if (myPhone) {
         console.log("✅ Loaded with saved phone:", maskPhoneNumber(myPhone));
     }
-    console.log("✅ ATH DIGITAL HUB - Fully loaded with Live Orders!");
+    console.log("✅ ATH DIGITAL HUB - Fully loaded with all features!");
 </script>
 </body>
 </html>
