@@ -666,7 +666,7 @@
     function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
 
     // ============================================
-    // TRACK ORDER - FIXED: Use admin endpoint and filter
+    // TRACK ORDER - Auto hide set to 15 seconds
     // ============================================
     async function panelTrackOrder() {
         if (panelAutoHideTimer) clearTimeout(panelAutoHideTimer);
@@ -683,29 +683,21 @@
         }
         
         try {
-            // Use admin endpoint to get all orders, then filter by phone
             const response = await fetch(`${API_BASE}/api/admin/orders`);
-            console.log("📡 Response status:", response.status);
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
             
             const data = await response.json();
-            console.log("📦 Response data:", data);
-            
-            // Filter orders by phone number
             const filteredOrders = (data.orders || []).filter(order => order.phone === phone);
             
             if (!filteredOrders || filteredOrders.length === 0) {
-                console.log("❌ No orders found for phone:", phone);
                 resultDiv.innerHTML = `<div style="color:var(--text-secondary); padding:8px;">📭 "${phone}" အတွက် အော်ဒါမရှိပါ။</div>`;
                 resultDiv.classList.add('show');
                 panelAutoHideResult();
                 return;
             }
-            
-            console.log(`✅ Found ${filteredOrders.length} orders for ${phone}`);
             
             let html = `<div style="text-align:left;">`;
             for (const order of filteredOrders) {
@@ -749,13 +741,14 @@
         }
     }
 
+    // Auto hide after 15 seconds (changed from 5 to 15)
     function panelAutoHideResult() {
         if (panelAutoHideTimer) clearTimeout(panelAutoHideTimer);
         panelAutoHideTimer = setTimeout(() => {
             const resultDiv = document.getElementById('panelTrackResult');
             resultDiv.classList.remove('show');
             resultDiv.innerHTML = '';
-        }, 5000);
+        }, 15000);  // 15 seconds
     }
 
     async function addOrder(phone, plan, price, file) {
@@ -888,7 +881,7 @@
     document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
     
-    console.log("✅ Track Your Order - FIXED: Using admin endpoint with phone filter");
+    console.log("✅ Auto hide set to 15 seconds");
 </script>
 </body>
 </html>
