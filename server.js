@@ -65,7 +65,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // ============================================
-// USER API - Track Order by Phone
+// USER API - Track Order by Phone (FIXED)
 // ============================================
 app.get('/api/orders/:phone', async (req, res) => {
     try {
@@ -73,10 +73,12 @@ app.get('/api/orders/:phone', async (req, res) => {
         
         console.log(`📞 API /api/orders/${phone} called`);
         
-        if (!phone) {
-            return res.status(400).json({ error: 'Phone number is required' });
+        if (!phone || phone === 'null' || phone === 'undefined') {
+            console.log('❌ Invalid phone number');
+            return res.status(400).json({ orders: [], error: 'Invalid phone number' });
         }
         
+        // Use supabase (not supabaseAdmin) for user endpoint
         const { data, error } = await supabase
             .from('orders')
             .select('*')
@@ -85,16 +87,18 @@ app.get('/api/orders/:phone', async (req, res) => {
         
         if (error) {
             console.error('Supabase error:', error);
-            return res.status(500).json({ error: error.message });
+            return res.status(500).json({ orders: [], error: error.message });
         }
         
         console.log(`✅ Found ${data ? data.length : 0} orders for ${phone}`);
-        // Return format that frontend expects
+        console.log('📦 Orders:', JSON.stringify(data, null, 2));
+        
+        // Always return orders array (even if empty)
         res.json({ orders: data || [] });
         
     } catch (error) {
         console.error('Error fetching orders:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ orders: [], error: error.message });
     }
 });
 
@@ -103,6 +107,8 @@ app.get('/api/orders/:phone', async (req, res) => {
 // ============================================
 app.get('/api/admin/orders', async (req, res) => {
     try {
+        console.log('👑 ADMIN API /api/admin/orders called');
+        
         const { data, error } = await supabaseAdmin
             .from('orders')
             .select('*')
@@ -110,13 +116,14 @@ app.get('/api/admin/orders', async (req, res) => {
         
         if (error) {
             console.error('Supabase admin error:', error);
-            return res.status(500).json({ error: error.message });
+            return res.status(500).json({ orders: [], error: error.message });
         }
         
+        console.log(`✅ Admin: Found ${data ? data.length : 0} total orders`);
         res.json({ orders: data || [] });
     } catch (error) {
         console.error('Error fetching all orders:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ orders: [], error: error.message });
     }
 });
 
