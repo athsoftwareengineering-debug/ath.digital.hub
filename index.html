@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -27,7 +28,7 @@
         body {
             background: var(--bg-deep);
             color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Noto Sans Myanmar', 'Inter', sans-serif;
             min-height: 100vh;
             background-image: radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.12) 0%, transparent 50%),
                               radial-gradient(circle at 85% 70%, rgba(0,212,255,0.08) 0%, transparent 55%);
@@ -161,10 +162,6 @@
             padding: 14px;
             margin-bottom: 20px;
             transition: all 0.2s;
-        }
-        .search-section:focus-within {
-            border-color: rgba(0,212,255,0.5);
-            box-shadow: 0 0 10px rgba(0,212,255,0.1);
         }
         .search-title {
             font-size: 0.85rem;
@@ -325,7 +322,7 @@
             background: rgba(0,212,255,0.08);
         }
         
-        /* ✨ Search Highlight Effect - Bright Glow */
+        /* ✨ Search Highlight Effect */
         .stack-item.search-highlight {
             border: 2px solid #fbbf24;
             background: rgba(251, 191, 36, 0.15);
@@ -568,7 +565,7 @@
         }
         .view-slip-btn:hover { background: var(--cyan); color: #030712; }
         
-        /* Pack Cards - Fixed for text visibility */
+        /* Pack Cards - New Layout */
         .pack-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -586,45 +583,66 @@
             overflow: hidden;
         }
         .pack-card:hover { transform: translateY(-6px); border-color: rgba(34, 197, 94, 0.5); box-shadow: 0 0 20px rgba(34, 197, 94, 0.15); }
-        .featured-flag {
-            position: absolute;
-            top: -10px;
-            right: 16px;
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 0.6rem;
-            font-weight: 800;
-            color: white;
-            z-index: 1;
-        }
-        .pack-tier { font-size: 0.7rem; text-transform: uppercase; font-weight: 600; letter-spacing: 1px; }
-        .pack-price { font-family: 'Space Grotesk', monospace; font-size: 1.6rem; font-weight: 800; margin: 8px 0 12px; }
         
-        /* Fixed feature list - all text visible */
+        /* Card Header Row - Flag, Tier, Price in one line */
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .flag-badge {
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 40px;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .tier-name {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--cyan);
+            letter-spacing: 1px;
+        }
+        .pack-price {
+            font-family: 'Space Grotesk', monospace;
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+        
+        /* Feature list with checkmarks */
         .feature-list {
             list-style: none;
             margin: 12px 0 20px;
         }
         .feature-list li {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-size: 0.7rem;
             display: flex;
             align-items: flex-start;
             gap: 8px;
             color: #cbd5e1;
-            line-height: 1.3;
+            line-height: 1.4;
             word-break: break-word;
         }
         .feature-list li i {
-            width: 18px;
-            font-size: 0.75rem;
-            margin-top: 1px;
+            width: 16px;
+            font-size: 0.7rem;
+            margin-top: 2px;
             flex-shrink: 0;
+            color: #10b981;
         }
         .feature-list li span {
             flex: 1;
+            min-width: 0;
         }
-        .feature-list li .feature-number {
+        .feature-number {
             font-weight: 600;
             color: var(--cyan);
             margin-right: 4px;
@@ -643,6 +661,11 @@
             transition: all 0.2s;
         }
         .buy-btn:hover { background: var(--cyan); transform: scale(0.98); color: #030712; }
+        
+        .divider {
+            margin: 12px 0;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
         
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -812,51 +835,71 @@
     </div>
     
     <div class="pack-grid">
+        <!-- TIER V1 -->
         <div class="pack-card" style="border-color:#fbbf24;">
-            <div class="featured-flag" style="background:linear-gradient(135deg,#fbbf24,#d97706);">🔥 BEST SELLER</div>
-            <div class="pack-tier" style="color:#fbbf24;">TIER V1</div>
-            <div class="pack-price">15,000 <small>MMK</small></div>
-            <div class="feature-list">
-                <li><i class="fas fa-tachometer-alt" style="color:#fbbf24;"></i> <span><span class="feature-number">22GB</span> <span class="feature-text-1">အမြန်နှုန်းမြင့်</span></span></li>
-                <li><i class="fas fa-phone-alt" style="color:#fbbf24;"></i> <span><span class="feature-number">8,000</span> <span class="feature-text-2">မိနစ် (ကွန်ရက်တွင်း)</span></span></li>
-                <li><i class="fas fa-envelope" style="color:#fbbf24;"></i> <span><span class="feature-number">5,000</span> <span class="feature-text-3">SMS</span></span></li>
+            <div class="card-header-row">
+                <span class="flag-badge" style="background:linear-gradient(135deg,#fbbf24,#d97706);">🔥BS</span>
+                <span class="tier-name">TIER V1</span>
+                <span class="pack-price">15,000 <small>MMK</small></span>
             </div>
+            <div class="divider"></div>
+            <ul class="feature-list">
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">22GB</span> <span class="feature-text-1">အမြန်နှုန်းမြင့်</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">8,000</span> <span class="feature-text-2">မိနစ် (ကွန်ရက်တွင်း)</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">5,000</span> <span class="feature-text-3">SMS</span></span></li>
+            </ul>
+            <div class="divider"></div>
             <button class="buy-btn" data-plan="VIP LEVEL - 1" data-price="15000"><span class="buy-btn-text">ဝယ်ယူမည်</span></button>
         </div>
         
+        <!-- TIER V2 -->
         <div class="pack-card">
-            <div class="featured-flag" style="background:linear-gradient(135deg,#00d4ff,#0891b2);">⭐ POPULAR</div>
-            <div class="pack-tier" style="color:#00d4ff;">TIER V2</div>
-            <div class="pack-price">20,000 <small>MMK</small></div>
-            <div class="feature-list">
-                <li><i class="fas fa-tachometer-alt" style="color:#00d4ff;"></i> <span><span class="feature-number">40GB</span> <span class="feature-text-1">အာထရာဒေတာ</span></span></li>
-                <li><i class="fas fa-phone-alt" style="color:#00d4ff;"></i> <span><span class="feature-number">250</span> <span class="feature-text-2">မိနစ် (ကွန်ရက်တွင်း)</span></span></li>
-                <li><i class="fas fa-globe" style="color:#00d4ff;"></i> <span><span class="feature-number">25</span> <span class="feature-text-3">မိနစ် (အခြားကွန်ရက်)</span></span></li>
+            <div class="card-header-row">
+                <span class="flag-badge" style="background:linear-gradient(135deg,#00d4ff,#0891b2);">⭐POP</span>
+                <span class="tier-name">TIER V2</span>
+                <span class="pack-price">20,000 <small>MMK</small></span>
             </div>
+            <div class="divider"></div>
+            <ul class="feature-list">
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">40GB</span> <span class="feature-text-1">အာထရာဒေတာ</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">250</span> <span class="feature-text-2">မိနစ် (ကွန်ရက်တွင်း)</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">25</span> <span class="feature-text-3">မိနစ် (အခြားကွန်ရက်)</span></span></li>
+            </ul>
+            <div class="divider"></div>
             <button class="buy-btn" data-plan="VIP LEVEL - 2" data-price="20000"><span class="buy-btn-text">ဝယ်ယူမည်</span></button>
         </div>
         
+        <!-- TIER V3 -->
         <div class="pack-card" style="border-color:#22c55e;">
-            <div class="featured-flag" style="background:linear-gradient(135deg,#22c55e,#15803d);">⭐ BEST VALUE</div>
-            <div class="pack-tier" style="color:#22c55e;">TIER V3</div>
-            <div class="pack-price">25,000 <small>MMK</small></div>
-            <div class="feature-list">
-                <li><i class="fas fa-database" style="color:#22c55e;"></i> <span><span class="feature-number">40GB</span> <span class="feature-text-1">အမြန်နှုန်း + အပို</span></span></li>
-                <li><i class="fas fa-phone-volume" style="color:#22c55e;"></i> <span><span class="feature-number">1,400</span> <span class="feature-text-2">မိနစ် (ကွန်ရက်တွင်း)</span></span></li>
-                <li><i class="fas fa-comment-dots" style="color:#22c55e;"></i> <span><span class="feature-number">8,000</span> <span class="feature-text-3">SMS အကန့်အသတ်မရှိ</span></span></li>
+            <div class="card-header-row">
+                <span class="flag-badge" style="background:linear-gradient(135deg,#22c55e,#15803d);">⭐VAL</span>
+                <span class="tier-name">TIER V3</span>
+                <span class="pack-price">25,000 <small>MMK</small></span>
             </div>
+            <div class="divider"></div>
+            <ul class="feature-list">
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">40GB</span> <span class="feature-text-1">အမြန်နှုန်း + အပို</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">1,400</span> <span class="feature-text-2">မိနစ် (ကွန်ရက်တွင်း)</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">8,000</span> <span class="feature-text-3">SMS အကန့်အသတ်မရှိ</span></span></li>
+            </ul>
+            <div class="divider"></div>
             <button class="buy-btn" data-plan="VIP LEVEL - 3" data-price="25000"><span class="buy-btn-text">ဝယ်ယူမည်</span></button>
         </div>
         
+        <!-- TIER V4 ULTRA -->
         <div class="pack-card" style="border-color:#8b5cf6;">
-            <div class="featured-flag" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">👑 TOP SELLER</div>
-            <div class="pack-tier" style="color:#a78bfa;">TIER V4 (ULTRA)</div>
-            <div class="pack-price">30,000 <small>MMK</small></div>
-            <div class="feature-list">
-                <li><i class="fas fa-cloud-upload-alt" style="color:#a78bfa;"></i> <span><span class="feature-number">120GB</span> <span class="feature-text-1">ဂိမ်းဒေတာ</span></span></li>
-                <li><i class="fas fa-infinity" style="color:#a78bfa;"></i> <span><span class="feature-text-2">အကန့်အသတ်မရှိ Streaming</span></span></li>
-                <li><i class="fas fa-headset" style="color:#a78bfa;"></i> <span><span class="feature-text-3">ဦးစားပေး ပံ့ပိုးမှု</span></span></li>
+            <div class="card-header-row">
+                <span class="flag-badge" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">👑TOP</span>
+                <span class="tier-name">TIER V4 (ULTRA)</span>
+                <span class="pack-price">30,000 <small>MMK</small></span>
             </div>
+            <div class="divider"></div>
+            <ul class="feature-list">
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">120GB</span> <span class="feature-text-1">ဂိမ်းဒေတာ</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-text-2">အကန့်အသတ်မရှိ Streaming</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-text-3">ဦးစားပေး ပံ့ပိုးမှု</span></span></li>
+            </ul>
+            <div class="divider"></div>
             <button class="buy-btn" data-plan="VIP LEVEL - 4 (ULTRA)" data-price="30000"><span class="buy-btn-text">ဝယ်ယူမည်</span></button>
         </div>
     </div>
@@ -944,7 +987,6 @@
     // ==================== LANGUAGE SYSTEM ====================
     let currentLang = localStorage.getItem('app_language') || 'my';
     
-    // Translations
     const translations = {
         my: {
             myOrdersBtn: 'အော်ဒါများ',
@@ -992,7 +1034,20 @@
             copyId: '📋 ကူးယူရန်',
             viewReceipt: '🧾 ပြေစာကြည့်ရန်',
             newBadge: 'NEW',
-            buyNow: 'ဝယ်ယူမည်'
+            buyNow: 'ဝယ်ယူမည်',
+            // Feature texts for cards
+            f1_1: 'အမြန်နှုန်းမြင့်',
+            f1_2: 'မိနစ် (ကွန်ရက်တွင်း)',
+            f1_3: 'SMS',
+            f2_1: 'အာထရာဒေတာ',
+            f2_2: 'မိနစ် (ကွန်ရက်တွင်း)',
+            f2_3: 'မိနစ် (အခြားကွန်ရက်)',
+            f3_1: 'အမြန်နှုန်း + အပို',
+            f3_2: 'မိနစ် (ကွန်ရက်တွင်း)',
+            f3_3: 'SMS အကန့်အသတ်မရှိ',
+            f4_1: 'ဂိမ်းဒေတာ',
+            f4_2: 'အကန့်အသတ်မရှိ Streaming',
+            f4_3: 'ဦးစားပေး ပံ့ပိုးမှု'
         },
         en: {
             myOrdersBtn: 'Orders',
@@ -1040,7 +1095,19 @@
             copyId: '📋 Copy',
             viewReceipt: '🧾 View Receipt',
             newBadge: 'NEW',
-            buyNow: 'Purchase Now'
+            buyNow: 'Purchase Now',
+            f1_1: 'Extreme Speed',
+            f1_2: 'On-Net Mins',
+            f1_3: 'SMS',
+            f2_1: 'Ultra Data',
+            f2_2: 'On-Net Mins',
+            f2_3: 'Any Net Mins',
+            f3_1: 'High-Speed + Extra',
+            f3_2: 'On-Net Mins',
+            f3_3: 'SMS Unlimited',
+            f4_1: 'Gamer Data',
+            f4_2: 'Unlimited Streaming',
+            f4_3: 'Priority Support'
         }
     };
     
@@ -1048,6 +1115,7 @@
         const t = translations[currentLang];
         if (!t) return;
         
+        // Header & Buttons
         document.getElementById('myOrdersBtnText').textContent = t.myOrdersBtn;
         document.getElementById('dashboardTitleText').textContent = t.dashboardTitle;
         document.getElementById('autoRefreshText').textContent = t.autoRefresh;
@@ -1068,10 +1136,39 @@
         document.getElementById('screenshotTitleText').textContent = t.screenshotTitle;
         document.getElementById('modalFooterText').textContent = t.modalFooter;
         
+        // Pack Card Feature Texts
+        const featureTexts = [
+            document.querySelectorAll('.feature-text-1'),  // First feature of each card
+            document.querySelectorAll('.feature-text-2'),  // Second feature
+            document.querySelectorAll('.feature-text-3')   // Third feature
+        ];
+        
+        // Card 1 (V1) features
+        if (featureTexts[0][0]) featureTexts[0][0].textContent = t.f1_1;
+        if (featureTexts[1][0]) featureTexts[1][0].textContent = t.f1_2;
+        if (featureTexts[2][0]) featureTexts[2][0].textContent = t.f1_3;
+        
+        // Card 2 (V2) features
+        if (featureTexts[0][1]) featureTexts[0][1].textContent = t.f2_1;
+        if (featureTexts[1][1]) featureTexts[1][1].textContent = t.f2_2;
+        if (featureTexts[2][1]) featureTexts[2][1].textContent = t.f2_3;
+        
+        // Card 3 (V3) features
+        if (featureTexts[0][2]) featureTexts[0][2].textContent = t.f3_1;
+        if (featureTexts[1][2]) featureTexts[1][2].textContent = t.f3_2;
+        if (featureTexts[2][2]) featureTexts[2][2].textContent = t.f3_3;
+        
+        // Card 4 (V4) features
+        if (featureTexts[0][3]) featureTexts[0][3].textContent = t.f4_1;
+        if (featureTexts[1][3]) featureTexts[1][3].textContent = t.f4_2;
+        if (featureTexts[2][3]) featureTexts[2][3].textContent = t.f4_3;
+        
+        // Buy buttons
         document.querySelectorAll('.buy-btn-text').forEach(btn => {
             btn.textContent = t.buyNow;
         });
         
+        // Language switcher active state
         document.querySelectorAll('.lang-btn').forEach(btn => {
             if (btn.dataset.lang === currentLang) btn.classList.add('active');
             else btn.classList.remove('active');
@@ -1587,8 +1684,9 @@
     if (myPhone) {
         console.log("✅ Loaded with saved phone:", maskPhoneNumber(myPhone));
     }
-    console.log("✅ ATH DIGITAL HUB - Fully Functional");
-    console.log("✅ Card text fully visible - improved layout");
+    console.log("✅ ATH DIGITAL HUB - Fully Functional with New Card Layout");
+    console.log("✅ Flag + Tier + Price in one row");
+    console.log("✅ Language switcher works for all content");
 </script>
 </body>
 </html>
