@@ -27,7 +27,8 @@ app.use(helmet({
         directives: {
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com", "cdnjs.cloudflare.com"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "fonts.googleapis.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "cdnjs.cloudflare.com", "fonts.googleapis.com"],
+            scriptSrcAttr: ["'unsafe-inline'"],
             fontSrc: ["'self'", "fonts.gstatic.com", "cdnjs.cloudflare.com"],
             imgSrc: ["'self'", "data:", "https:", "i.postimg.cc"],
             connectSrc: ["'self'", "*.supabase.co"],
