@@ -855,10 +855,29 @@
         liveCountdownIntervals[orderId] = setInterval(fn, 1000);
     }
     
-    function copyOrderId(id){navigator.clipboard.writeText(id);showToast(`📋 Order ID: ${id} copied`);}
-    function openScreenshot(url){let modal=document.getElementById('screenshotModal'),img=document.getElementById('modalImage');img.src=(url&&url!=='null')?(url.startsWith('/')?API_BASE+url:url):'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Screenshot%3C/text%3E%3C/svg%3E';modal.classList.add('active');}
-    function closeImageModal(){document.getElementById('screenshotModal').classList.remove('active');}
-    function showToast(msg,err){let toast=document.getElementById('globalToast');toast.style.backgroundColor=err?'#f43f5e':'#10b981';toast.innerHTML=err?`⚠️ ${msg}`:`✅ ${msg}`;toast.style.top="20px";setTimeout(()=>toast.style.top="-80px",2800);}
+    function copyOrderId(id){
+        navigator.clipboard.writeText(id);
+        showToast(`📋 Order ID ${id} ကို ကူးယူပြီးပါပြီ။`);
+    }
+    
+    function openScreenshot(url){
+        let modal=document.getElementById('screenshotModal');
+        let img=document.getElementById('modalImage');
+        img.src=(url&&url!=='null')?(url.startsWith('/')?API_BASE+url:url):'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Screenshot%3C/text%3E%3C/svg%3E';
+        modal.classList.add('active');
+    }
+    
+    function closeImageModal(){
+        document.getElementById('screenshotModal').classList.remove('active');
+    }
+    
+    function showToast(msg,err){
+        let toast=document.getElementById('globalToast');
+        toast.style.backgroundColor=err?'#f43f5e':'#10b981';
+        toast.innerHTML=err?`⚠️ ${msg}`:`✅ ${msg}`;
+        toast.style.top="20px";
+        setTimeout(()=>toast.style.top="-80px",2800);
+    }
     
     function addGlowEffect(element) {
         if (!element) return;
@@ -1101,7 +1120,18 @@
     document.getElementById('searchBtn').addEventListener('click',searchPhone);
     document.getElementById('clearSearchBtn').addEventListener('click',clearSearch);
     document.getElementById('searchPhoneInput').addEventListener('keypress',(e)=>{if(e.key==='Enter')searchPhone();});
-    document.getElementById('clickablePhone').addEventListener('click',()=>{navigator.clipboard.writeText("09789999368");showToast(translations[currentLang].phoneCopied);});
+    
+    // Phone number copy with toast message
+    document.getElementById('clickablePhone').addEventListener('click', function(e) {
+        e.preventDefault();
+        const phoneNumber = "09789999368";
+        navigator.clipboard.writeText(phoneNumber).then(function() {
+            showToast(`📞 ${phoneNumber} ကို ကူးယူပြီးပါပြီ။`);
+        }).catch(function() {
+            showToast("❌ ကူးယူရန် မအောင်မြင်ပါ။ ထပ်စမ်းပါ။", true);
+        });
+    });
+    
     document.getElementById('screenshotModal').addEventListener('click',(e)=>{if(e.target===e.currentTarget)closeImageModal();});
     document.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeImageModal();});
     document.querySelectorAll('.lang-btn').forEach(btn=>btn.addEventListener('click',()=>{currentLang=btn.dataset.lang;localStorage.setItem('app_language',currentLang);updateUI();}));
