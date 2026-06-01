@@ -8,11 +8,9 @@
     <!-- Security Meta Tags -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <!-- X-Frame-Options ကို ဖယ်လိုက်ပြီး (Server က Helmet နဲ့ ထည့်ပေးတယ်) -->
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Fixed Google Fonts URL -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -237,6 +235,12 @@
             color: #fb7185;
         }
         .cleanup-btn:hover { background: #f43f5e; color: white; }
+        .reset-system-btn {
+            background: rgba(244,63,94,0.3);
+            border: 1px solid #f43f5e;
+            color: #fb7185;
+        }
+        .reset-system-btn:hover { background: #f43f5e; color: white; }
         
         .orders-list {
             display: flex;
@@ -255,38 +259,14 @@
         .order-card:hover { border-color: rgba(0,212,255,0.3); transform: translateX(3px); }
         
         @keyframes blinkGlow {
-            0% { 
-                border-color: rgba(251, 191, 36, 0);
-                box-shadow: 0 0 0px rgba(251, 191, 36, 0);
-                background: rgba(251, 191, 36, 0);
-            }
-            25% { 
-                border-color: #fbbf24;
-                box-shadow: 0 0 20px #fbbf24;
-                background: rgba(251, 191, 36, 0.25);
-            }
-            50% { 
-                border-color: rgba(251, 191, 36, 0);
-                box-shadow: 0 0 0px rgba(251, 191, 36, 0);
-                background: rgba(251, 191, 36, 0);
-            }
-            75% { 
-                border-color: #fbbf24;
-                box-shadow: 0 0 20px #fbbf24;
-                background: rgba(251, 191, 36, 0.25);
-            }
-            100% { 
-                border-color: rgba(251, 191, 36, 0);
-                box-shadow: 0 0 0px rgba(251, 191, 36, 0);
-                background: rgba(251, 191, 36, 0);
-            }
+            0% { border-color: rgba(251, 191, 36, 0); box-shadow: 0 0 0px rgba(251, 191, 36, 0); background: rgba(251, 191, 36, 0); }
+            25% { border-color: #fbbf24; box-shadow: 0 0 20px #fbbf24; background: rgba(251, 191, 36, 0.25); }
+            50% { border-color: rgba(251, 191, 36, 0); box-shadow: 0 0 0px rgba(251, 191, 36, 0); background: rgba(251, 191, 36, 0); }
+            75% { border-color: #fbbf24; box-shadow: 0 0 20px #fbbf24; background: rgba(251, 191, 36, 0.25); }
+            100% { border-color: rgba(251, 191, 36, 0); box-shadow: 0 0 0px rgba(251, 191, 36, 0); background: rgba(251, 191, 36, 0); }
         }
-        .order-card.search-highlight {
-            animation: blinkGlow 1s ease-in-out 2;
-        }
-        .user-card.search-highlight {
-            animation: blinkGlow 1s ease-in-out 2;
-        }
+        .order-card.search-highlight { animation: blinkGlow 1s ease-in-out 2; }
+        .user-card.search-highlight { animation: blinkGlow 1s ease-in-out 2; }
         
         .order-header {
             display: flex;
@@ -563,6 +543,14 @@
             align-items: center;
             gap: 6px;
         }
+        
+        /* Toast animation */
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
     </style>
 </head>
 <body>
@@ -609,12 +597,15 @@
                     <option value="Rejected">Rejected</option>
                 </select>
             </div>
-            <div style="display: flex; gap: 8px;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                 <button class="filter-btn cleanup-btn" onclick="manualCleanup()">
                     <i class="fas fa-trash-alt"></i> Delete Old (30+ days)
                 </button>
                 <button class="filter-btn" onclick="applyFilters()"><i class="fas fa-filter"></i> Filter</button>
                 <button class="filter-btn reset" onclick="clearFilters()" style="background:#334155;"><i class="fas fa-undo"></i></button>
+                <button class="filter-btn reset-system-btn" onclick="resetSystem()" style="background:#f43f5e; border-color:#fb7185;">
+                    <i class="fas fa-database"></i> ⚠️ System Reset
+                </button>
             </div>
         </div>
         
@@ -757,6 +748,36 @@
     }
     function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
 
+    // Toast function - fixed at top-right corner, disappears after 2 seconds
+    function showToast(msg, err) {
+        const existingToast = document.getElementById('globalToast');
+        if (existingToast) existingToast.remove();
+        
+        const toast = document.createElement('div');
+        toast.id = 'globalToast';
+        toast.innerHTML = err ? `⚠️ ${msg}` : `✅ ${msg}`;
+        toast.style.position = 'fixed';
+        toast.style.top = '70px';
+        toast.style.right = '16px';
+        toast.style.backgroundColor = err ? '#f43f5e' : '#10b981';
+        toast.style.color = '#030712';
+        toast.style.fontSize = '0.65rem';
+        toast.style.padding = '6px 14px';
+        toast.style.borderRadius = '40px';
+        toast.style.fontWeight = '500';
+        toast.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+        toast.style.whiteSpace = 'nowrap';
+        toast.style.zIndex = '9999';
+        toast.style.fontFamily = 'inherit';
+        toast.style.animation = 'fadeInOut 2s ease forwards';
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast && toast.remove) toast.remove();
+        }, 2000);
+    }
+
     async function login() {
         const password = document.getElementById('adminPassword').value;
         const res = await fetch(`${API_BASE}/api/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
@@ -843,6 +864,43 @@
             }
         }
     }
+    
+    // ========== SYSTEM RESET FUNCTION ==========
+    async function resetSystem() {
+        if (!confirm('⚠️⚠️⚠️ SYSTEM RESET ⚠️⚠️⚠️\n\nThis will DELETE:\n- ALL orders\n- ALL user stats\n- ALL uploaded images\n\nThis action CANNOT be undone!\n\nAre you ABSOLUTELY sure?')) {
+            return;
+        }
+        
+        const password = prompt('Enter admin password to confirm:');
+        if (!password) return;
+        
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Resetting...';
+        btn.disabled = true;
+        
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/reset-system`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                showToast(`✅ System reset completed: ${data.deletedOrders} orders, ${data.deletedFiles} files deleted`);
+                loadAllData();
+            } else {
+                showToast('❌ Reset failed: ' + data.error, true);
+            }
+        } catch (error) {
+            showToast('❌ Network error', true);
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+    // ========== END SYSTEM RESET ==========
 
     function updateStats(orders) {
         const total = orders.length;
@@ -1082,13 +1140,6 @@
     async function rejectOrder(id) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' }); if (res.ok) { showToast('❌ Rejected'); loadOrders(); loadUserStats(); } else alert('Error'); }
     async function deleteOrder(id) { if (confirm('Delete this order?')) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' }); if (res.ok) { showToast('🗑 Deleted'); loadOrders(); } else alert('Error'); } }
     function manualRefresh() { loadAllData(); showToast('🔄 Synced'); secondsLeft = 30; updateCountdown(); }
-    function showToast(msg, isError = false) { 
-        const toast = document.createElement('div'); 
-        toast.style.cssText = `position:fixed;bottom:80px;right:20px;background:${isError ? '#f43f5e' : '#10b981'};color:#030712;padding:8px 16px;border-radius:60px;font-size:0.8rem;font-weight:bold;z-index:9999`; 
-        toast.innerHTML = isError ? `❌ ${msg}` : `✅ ${msg}`; 
-        document.body.appendChild(toast); 
-        setTimeout(() => toast.remove(), 2000); 
-    }
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1118,6 +1169,7 @@
     window.deleteUser = deleteUser; window.deleteAllOrders = deleteAllOrders;
     window.copyToClipboard = copyToClipboard;
     window.manualCleanup = manualCleanup;
+    window.resetSystem = resetSystem;
 
     if (token === 'logged_in') { 
         document.getElementById('loginBox').style.display = 'none'; 
