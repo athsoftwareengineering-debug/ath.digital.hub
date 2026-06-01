@@ -871,12 +871,18 @@
         document.getElementById('screenshotModal').classList.remove('active');
     }
     
-    function showToast(msg,err){
-        let toast=document.getElementById('globalToast');
-        toast.style.backgroundColor=err?'#f43f5e':'#10b981';
-        toast.innerHTML=err?`⚠️ ${msg}`:`✅ ${msg}`;
-        toast.style.top="20px";
-        setTimeout(()=>toast.style.top="-80px",2800);
+    // Toast message - small, fast, disappears quickly
+    function showToast(msg, err) {
+        let toast = document.getElementById('globalToast');
+        toast.style.backgroundColor = err ? '#f43f5e' : '#10b981';
+        toast.innerHTML = err ? `⚠️ ${msg}` : `✅ ${msg}`;
+        toast.style.fontSize = '0.7rem';
+        toast.style.padding = '8px 14px';
+        toast.style.top = '20px';
+        toast.style.right = '16px';
+        setTimeout(() => {
+            toast.style.top = '-80px';
+        }, 1800);
     }
     
     function addGlowEffect(element) {
