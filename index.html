@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>ATH DIGITAL HUB | MYTEL VIP Store</title>
     
-    <!-- Security Meta Tags (X-Frame-Options ဖယ်ထား - Server က Helmet နဲ့ ထည့်ပေးတယ်) -->
+    <!-- Security Meta Tags -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     
-    <!-- Fixed Google Fonts URL -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -325,7 +324,6 @@
         .info-label { font-size: 0.5rem; color: #64748b; }
         .info-value { font-size: 0.7rem; font-weight: 600; }
         .info-value.price { color: var(--emerald); }
-        .copy-id { cursor: pointer; margin-left: 5px; font-size: 0.6rem; opacity: 0.7; }
         .date-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
         .date-box { flex: 1; background: rgba(0,0,0,0.25); border-radius: 10px; padding: 6px 8px; text-align: center; }
         .date-label { font-size: 0.5rem; color: #64748b; }
@@ -405,9 +403,11 @@
         }
         .modal-close { position: absolute; right: 16px; top: 12px; font-size: 1.5rem; cursor: pointer; }
         .modal-close:hover { color: var(--rose); }
-        .info-compact { background: rgba(0,0,0,0.45); border-radius: 1rem; padding: 12px; margin: 16px 0; }
-        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.08); }
-        .info-value { font-weight: 600; background: rgba(6,182,212,0.12); padding: 4px 10px; border-radius: 40px; color: var(--cyan); font-size: 0.75rem; }
+        .info-compact { background: rgba(0,0,0,0.35); border-radius: 1rem; padding: 12px; margin: 16px 0; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-size: 0.75rem; color: #94a3b8; }
+        .info-value { font-size: 0.75rem; font-weight: 600; background: rgba(0,212,255,0.12); padding: 4px 10px; border-radius: 40px; color: var(--cyan); }
         .phone-copy { cursor: pointer; }
         .form-group { margin-bottom: 14px; }
         .form-group label { font-size: 0.7rem; display: block; margin-bottom: 5px; color: var(--text-secondary); }
@@ -435,15 +435,7 @@
         }
         .submit-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.05); }
         .submit-btn:disabled { cursor: not-allowed; opacity: 0.6; }
-        .footnote { font-size: 0.6rem; text-align: center; margin-top: 12px; color: #5b6e8c; }
-        .toast {
-            position: fixed; top: -80px; right: 16px;
-            background: var(--emerald); color: #030712;
-            padding: 12px 20px; border-radius: 60px;
-            font-weight: 700; z-index: 3000;
-            transition: top 0.3s;
-            font-size: 0.8rem;
-        }
+        .footnote { font-size: 0.6rem; text-align: center; margin-top: 8px; color: #fbbf24; }
         
         footer {
             margin-top: 40px;
@@ -634,26 +626,51 @@
     </div>
 </div>
 
+<!-- ========== UPDATED PAYMENT MODAL ========== -->
 <div id="paymentModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-close" id="closeModalBtn">&times;</div>
-        <div style="text-align:center;"><i class="fas fa-credit-card" style="font-size:1.8rem; color:var(--cyan);"></i></div>
-        <h3 id="paymentTitle" style="text-align:center;">ငွေပေးချေမှု</h3>
-        <div class="info-compact">
-            <div class="info-row"><span>🏦 ငွေလွှဲနည်းလမ်း</span><span class="info-value">K-Pay / WavePay</span></div>
-            <div class="info-row"><span>👤 အကောင့်အမည်</span><span class="info-value">AUNG THU HTWE</span></div>
-            <div class="info-row"><span>📞 ဖုန်းနံပါတ်</span><span class="info-value phone-copy" id="clickablePhone">09789999368 📋</span></div>
+        <div style="text-align:center; margin-bottom: 8px;">
+            <i class="fas fa-credit-card" style="font-size: 2rem; color: var(--cyan);"></i>
         </div>
+        <h3 id="paymentTitle" style="text-align:center; margin-bottom: 16px; font-size: 1.2rem;">ငွေပေးချေမှု</h3>
+        
+        <!-- Bank Info - Clean horizontal layout -->
+        <div class="info-compact">
+            <div class="info-row">
+                <span class="info-label"><i class="fas fa-university"></i> 🏦 ငွေလွှဲနည်းလမ်း</span>
+                <span class="info-value">K-Pay / WavePay</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label"><i class="fas fa-user"></i> 👤 အကောင့်အမည်</span>
+                <span class="info-value">AUNG THU HTWE</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label"><i class="fas fa-phone-alt"></i> 📞 ဖုန်းနံပါတ်</span>
+                <span class="info-value phone-copy" id="clickablePhone" style="cursor: pointer;">
+                    09789999368 <i class="fas fa-copy" style="font-size: 0.6rem;"></i>
+                </span>
+            </div>
+        </div>
+        
+        <div class="footnote" id="footnoteText">※ ဖုန်းနံပါတ်ကို နှိပ်၍ ကူးယူနိုင်ပါသည်။</div>
+        
         <form id="orderForm" enctype="multipart/form-data">
-            <div class="form-group"><label id="phoneLabel">📱 ဖုန်းနံပါတ် *</label><input type="tel" id="customerPhone" class="form-control" placeholder="09XXXXXXXXX" required></div>
-            <div class="form-group"><label id="slipLabel">🧾 ငွေလွှဲပြေစာ</label><input type="file" id="slipImage" class="form-control" accept="image/*" required></div>
+            <div class="form-group">
+                <label id="phoneLabel"><i class="fas fa-mobile-alt"></i> 📱 ဖုန်းနံပါတ် *</label>
+                <input type="tel" id="customerPhone" class="form-control" placeholder="09XXXXXXXXX" required>
+            </div>
+            <div class="form-group">
+                <label id="slipLabel"><i class="fas fa-receipt"></i> 🧾 ငွေလွှဲပြေစာ</label>
+                <input type="file" id="slipImage" class="form-control" accept="image/*" required>
+            </div>
             <button type="submit" class="submit-btn" id="submitOrderBtn">
-                <span id="submitBtnText">✅ အော်ဒါတင်မည်</span>
+                <span id="submitBtnText"><i class="fas fa-check-circle"></i> ✅ အော်ဒါတင်မည်</span>
             </button>
         </form>
-        <div class="footnote" id="footnoteText">※ ဖုန်းနံပါတ်ကို နှိပ်၍ copy ကူးယူနိုင်ပါသည်။</div>
     </div>
 </div>
+<!-- ========== END PAYMENT MODAL ========== -->
 
 <div id="screenshotModal" class="image-modal" onclick="closeImageModal()">
     <div class="image-modal-content" onclick="event.stopPropagation()">
@@ -684,7 +701,6 @@
 </footer>
 
 <script>
-    // Security Console Warning
     console.log("%c⚠️ SECURITY WARNING ⚠️", "color: red; font-size: 20px; font-weight: bold;");
     console.log("%cDo NOT paste any code here. ATH DIGITAL HUB will NEVER ask for your password or OTP.", "color: orange; font-size: 14px;");
 
@@ -892,13 +908,16 @@
                     <div class="info-label">${t.amount}</div>
                     <div class="info-value price">${o.price.toLocaleString()} KS</div>
                 </div>
-                <div class="info-item" style="grid-column: span 2;">
-                    <div class="info-label">${t.orderId} <span class="copy-id" onclick="copyOrderId('${o.id}')">📋</span></div>
-                    <div class="info-value" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                        <span style="font-family: monospace;">${o.id}</span>
-                        ${slipBtn}
-                    </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: rgba(0,0,0,0.25); border-radius: 10px; padding: 8px 12px; margin-top: 6px;">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-size: 0.65rem; color: #94a3b8;">${t.orderId}:</span>
+                    <span style="font-family: monospace; font-weight: 700; font-size: 0.8rem; color: #00d4ff;">${o.id}</span>
+                    <button onclick="copyOrderId('${o.id}')" style="background: rgba(0,212,255,0.15); border: none; padding: 4px 10px; border-radius: 40px; font-size: 0.6rem; cursor: pointer; color: #00d4ff; display: inline-flex; align-items: center; gap: 4px;">
+                        <i class="fas fa-copy"></i> ${t.copyId}
+                    </button>
                 </div>
+                ${slipBtn}
             </div>
             ${dateHtml}
             ${waitMsg}
