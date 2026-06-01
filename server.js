@@ -1,5 +1,5 @@
 // ============================================================
-// ATH DIGITAL HUB - SERVER (Order ID starts from 1)
+// ATH DIGITAL HUB - SERVER (with System Reset)
 // ============================================================
 
 const express = require('express');
@@ -108,15 +108,11 @@ async function getNextOrderId() {
             .limit(1);
         
         if (error || !data || data.length === 0) {
-            console.log('📝 No orders found - starting from ID 1');
             return 1;
         }
         
-        const nextId = data[0].id + 1;
-        console.log(`📝 Next order ID: ${nextId}`);
-        return nextId;
+        return data[0].id + 1;
     } catch (error) {
-        console.error('Error getting next order ID:', error);
         return 1;
     }
 }
@@ -143,7 +139,6 @@ async function uploadToSupabaseStorage(fileBuffer, originalName, mimetype) {
             .from('order-slips')
             .getPublicUrl(fileName);
         
-        console.log(`✅ File uploaded to Supabase: ${urlData.publicUrl}`);
         return urlData.publicUrl;
         
     } catch (error) {
@@ -157,12 +152,10 @@ async function deleteFromSupabaseStorage(fileUrl) {
         if (!fileUrl) return true;
         
         if (!fileUrl.includes('supabase.co')) {
-            // Legacy local file
             if (fileUrl.startsWith('/uploads/')) {
                 const filePath = path.join(__dirname, fileUrl);
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
-                    console.log(`✅ Deleted local file: ${filePath}`);
                 }
             }
             return true;
@@ -180,7 +173,6 @@ async function deleteFromSupabaseStorage(fileUrl) {
             return false;
         }
         
-        console.log(`✅ Deleted from Supabase: ${fileName}`);
         return true;
         
     } catch (error) {
@@ -305,10 +297,8 @@ function checkRateLimit(phone) {
     return true;
 }
 
-// ========== TARGET-BASED STORAGE CLEANUP (CORE FUNCTION) ==========
+// ========== TARGET-BASED STORAGE CLEANUP ==========
 async function targetedStorageCleanup() {
-    console.log('🗑️ Starting targeted storage cleanup...');
-    console.log(`📅 Time: ${new Date().toISOString()}`);
     const startTime = Date.now();
     
     try {
@@ -333,8 +323,6 @@ async function targetedStorageCleanup() {
                 .lt('created_at', cutoffDate);
             
             if (oldOrders && oldOrders.length > 0) {
-                console.log(`📋 Status: ${status} | Older than ${days} days: ${oldOrders.length} orders`);
-                
                 for (const order of oldOrders) {
                     if (order.slip_url) {
                         const deleted = await deleteFromSupabaseStorage(order.slip_url);
@@ -351,15 +339,10 @@ async function targetedStorageCleanup() {
                 if (error) throw error;
                 
                 totalDeletedOrders += oldOrders.length;
-            } else {
-                console.log(`📋 Status: ${status} | No orders older than ${days} days`);
             }
         }
         
         const duration = Date.now() - startTime;
-        console.log(`✅ Targeted cleanup completed in ${duration}ms`);
-        console.log(`   📊 Deleted orders: ${totalDeletedOrders}`);
-        console.log(`   🗑️ Deleted files: ${totalDeletedFiles}`);
         
         return { 
             success: true,
@@ -371,7 +354,7 @@ async function targetedStorageCleanup() {
         };
         
     } catch (error) {
-        console.error('❌ Targeted cleanup failed:', error);
+        console.error('Targeted cleanup failed:', error);
         throw error;
     }
 }
@@ -381,24 +364,14 @@ app.post('/api/internal/targeted-cleanup', async (req, res) => {
     const apiKey = req.headers['x-api-key'];
     
     if (!apiKey || apiKey !== CRON_API_KEY) {
-        console.warn('❌ Unauthorized cron job attempt from IP:', req.ip);
-        return res.status(401).json({ 
-            success: false, 
-            error: 'Unauthorized. Invalid or missing API key.' 
-        });
+        return res.status(401).json({ success: false, error: 'Unauthorized.' });
     }
-    
-    console.log('🔐 Cron job authorized, starting targeted cleanup...');
     
     try {
         const result = await targetedStorageCleanup();
         res.json(result);
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message,
-            timestamp: new Date().toISOString()
-        });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
@@ -428,7 +401,6 @@ app.get('/api/orders', async (req, res) => {
         if (error) throw error;
         res.json({ orders: data || [] });
     } catch (error) {
-        console.error('Error fetching orders:', error);
         res.status(500).json({ orders: [], error: error.message });
     }
 });
@@ -451,7 +423,6 @@ app.get('/api/orders/:phone', async (req, res) => {
         if (error) throw error;
         res.json({ orders: data || [] });
     } catch (error) {
-        console.error('Error fetching orders:', error);
         res.status(500).json({ orders: [], error: error.message });
     }
 });
@@ -467,7 +438,6 @@ app.get('/api/admin/orders', async (req, res) => {
         if (error) throw error;
         res.json({ orders: data || [] });
     } catch (error) {
-        console.error('Error fetching admin orders:', error);
         res.status(500).json({ orders: [], error: error.message });
     }
 });
@@ -482,7 +452,6 @@ app.get('/api/admin/user-stats', async (req, res) => {
         if (error) throw error;
         res.json({ stats: data || [] });
     } catch (error) {
-        console.error('Error fetching user stats:', error);
         res.status(500).json({ stats: [], error: error.message });
     }
 });
@@ -503,7 +472,6 @@ app.post('/api/admin/user-block', async (req, res) => {
         if (error) throw error;
         res.json({ success: true, message: block ? 'User blocked' : 'User unblocked' });
     } catch (error) {
-        console.error('Error blocking user:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -524,7 +492,6 @@ app.post('/api/admin/clear-suspect', async (req, res) => {
         if (error) throw error;
         res.json({ success: true, message: 'Suspect flag cleared' });
     } catch (error) {
-        console.error('Error clearing suspect flag:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -545,7 +512,6 @@ app.post('/api/admin/user-delete', async (req, res) => {
         if (error) throw error;
         res.json({ success: true, message: 'User deleted from stats' });
     } catch (error) {
-        console.error('Error deleting user:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -579,7 +545,6 @@ app.post('/api/admin/user-delete-orders', async (req, res) => {
         if (error) throw error;
         res.json({ success: true, message: `Deleted ${orders?.length || 0} orders for ${phone}` });
     } catch (error) {
-        console.error('Error deleting user orders:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -589,7 +554,57 @@ app.post('/api/admin/cleanup-old', async (req, res) => {
         const result = await targetedStorageCleanup();
         res.json({ success: true, message: `Deleted ${result.deletedOrders} orders`, result });
     } catch (error) {
-        console.error('Error during manual cleanup:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ========== ADMIN - SYSTEM RESET (Delete Everything) ==========
+app.post('/api/admin/reset-system', async (req, res) => {
+    const { password } = req.body;
+    
+    if (password !== process.env.ADMIN_PASSWORD) {
+        return res.status(401).json({ success: false, error: 'Invalid admin password' });
+    }
+    
+    try {
+        const { data: orders } = await supabaseAdmin
+            .from('orders')
+            .select('slip_url');
+        
+        let deletedFiles = 0;
+        
+        if (orders && orders.length > 0) {
+            for (const order of orders) {
+                if (order.slip_url && order.slip_url.includes('supabase.co')) {
+                    const deleted = await deleteFromSupabaseStorage(order.slip_url);
+                    if (deleted) deletedFiles++;
+                }
+            }
+        }
+        
+        const { error: ordersError } = await supabaseAdmin
+            .from('orders')
+            .delete()
+            .neq('id', 0);
+        
+        if (ordersError) throw ordersError;
+        
+        const { error: statsError } = await supabaseAdmin
+            .from('user_stats')
+            .delete()
+            .neq('phone', '');
+        
+        if (statsError) throw statsError;
+        
+        res.json({ 
+            success: true, 
+            message: 'System reset completed',
+            deletedOrders: orders?.length || 0,
+            deletedFiles: deletedFiles
+        });
+        
+    } catch (error) {
+        console.error('System reset error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -608,8 +623,6 @@ app.post('/api/orders', upload.single('slip'), [
     try {
         const { phone, plan, price } = req.body;
         const slipFile = req.file;
-        
-        console.log(`📝 Creating order: phone=${phone}, plan=${plan}, price=${price}`);
         
         if (!phone || !plan || !price) {
             return res.status(400).json({ success: false, error: 'Missing required fields' });
@@ -647,7 +660,6 @@ app.post('/api/orders', upload.single('slip'), [
             );
         }
         
-        // Get sequential order ID (1, 2, 3, 4...)
         const orderId = await getNextOrderId();
         
         const { error } = await supabase
@@ -666,7 +678,6 @@ app.post('/api/orders', upload.single('slip'), [
         
         await updateUserStats(phone, false);
         
-        console.log(`✅ Order created: ${orderId}`);
         res.json({ 
             success: true, 
             orderId: orderId,
@@ -694,7 +705,6 @@ app.put('/api/admin/orders/:id/approve', async (req, res) => {
         if (error) throw error;
         res.json({ success: true, message: 'Order approved successfully' });
     } catch (error) {
-        console.error('Error approving order:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -722,7 +732,6 @@ app.put('/api/admin/orders/:id/reject', async (req, res) => {
         
         res.json({ success: true, message: 'Order rejected successfully' });
     } catch (error) {
-        console.error('Error rejecting order:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -749,7 +758,6 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
         if (error) throw error;
         res.json({ success: true, message: 'Order deleted successfully' });
     } catch (error) {
-        console.error('Error deleting order:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -768,13 +776,7 @@ app.use('/uploads', express.static('uploads'));
 
 // ========== START SERVER ==========
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`📱 User Store: http://localhost:${PORT}/index.html`);
-    console.log(`👨‍💼 Admin Panel: http://localhost:${PORT}/admin.html`);
-    console.log(`☁️ Using Supabase Storage for file uploads`);
-    console.log(`🔢 Order ID: Sequential (1, 2, 3, 4...)`);
-    console.log(`🎯 Target-Based Cleanup:`);
-    console.log(`   - Approved: 60 days`);
-    console.log(`   - Rejected: 30 days`);
-    console.log(`   - Pending: 14 days`);
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📱 Store: /index.html`);
+    console.log(`👨‍💼 Admin: /admin.html`);
 });
