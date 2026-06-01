@@ -1,5 +1,5 @@
 // ============================================================
-// ATH DIGITAL HUB - SERVER (Skip Method - MAX + 1)
+// ATH DIGITAL HUB - SERVER (Fixed ID Generation)
 // ============================================================
 
 const express = require('express');
@@ -20,17 +20,17 @@ const PORT = process.env.PORT || 3000;
 // ========== TRUST PROXY (for Render.com) ==========
 app.set('trust proxy', 1);
 
-// ========== SECURITY MIDDLEWARE ==========
+// ========== SECURITY MIDDLEWARE (Updated for Tawk.to) ==========
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com", "cdnjs.cloudflare.com"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "cdnjs.cloudflare.com", "fonts.googleapis.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "cdnjs.cloudflare.com", "fonts.googleapis.com", "embed.tawk.to", "tawk.to"],
             scriptSrcAttr: ["'unsafe-inline'"],
             fontSrc: ["'self'", "fonts.gstatic.com", "cdnjs.cloudflare.com"],
             imgSrc: ["'self'", "data:", "https:", "i.postimg.cc", "*.supabase.co"],
-            connectSrc: ["'self'", "*.supabase.co"],
+            connectSrc: ["'self'", "*.supabase.co", "*.tawk.to"],
         },
     },
 }));
@@ -98,9 +98,26 @@ const upload = multer({
 // ========== CRON JOB SECURITY ==========
 const CRON_API_KEY = '21cef185318d538e47385bdd44d00e6231f59370fd792a6c5709f8d4aa48f82e';
 
-// ========== ORDER ID GENERATOR (Skip Method - MAX + 1) ==========
+// ========== ORDER ID GENERATOR (Fixed - properly handles empty table) ==========
 async function getNextOrderId() {
     try {
+        // First check if there are any orders
+        const { count, error: countError } = await supabase
+            .from('orders')
+            .select('*', { count: 'exact', head: true });
+        
+        if (countError) {
+            console.error('Count error:', countError);
+            return 1;
+        }
+        
+        // No orders exist - start from 1
+        if (count === 0) {
+            console.log('📝 No orders found - starting from ID 1');
+            return 1;
+        }
+        
+        // Get maximum ID
         const { data, error } = await supabase
             .from('orders')
             .select('id')
@@ -108,12 +125,11 @@ async function getNextOrderId() {
             .limit(1);
         
         if (error) {
-            console.error('Error getting max ID:', error);
-            return Math.floor(Date.now() / 1000);
+            console.error('Max ID error:', error);
+            return 1;
         }
         
         if (!data || data.length === 0) {
-            console.log('📝 First order - ID: 1');
             return 1;
         }
         
@@ -662,7 +678,7 @@ app.post('/api/admin/reset-system', async (req, res) => {
     }
 });
 
-// ========== CREATE ORDER (WITH SUPABASE STORAGE & SKIP METHOD ID) ==========
+// ========== CREATE ORDER (WITH SUPABASE STORAGE & SEQUENTIAL ID) ==========
 app.post('/api/orders', upload.single('slip'), [
     body('phone').isMobilePhone().withMessage('Invalid phone number'),
     body('plan').notEmpty().withMessage('Plan is required'),
@@ -713,7 +729,7 @@ app.post('/api/orders', upload.single('slip'), [
             );
         }
         
-        // Get sequential ID (Skip Method - MAX + 1)
+        // Get sequential ID (Skip Method - properly handles empty table)
         const orderId = await getNextOrderId();
         
         const { error } = await supabase
