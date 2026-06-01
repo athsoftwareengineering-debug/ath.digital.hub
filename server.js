@@ -1,5 +1,5 @@
 // ============================================================
-// ATH DIGITAL HUB - SERVER (with System Reset)
+// ATH DIGITAL HUB - SERVER (with Full Storage Cleanup)
 // ============================================================
 
 const express = require('express');
@@ -178,6 +178,44 @@ async function deleteFromSupabaseStorage(fileUrl) {
     } catch (error) {
         console.error('Error deleting from Supabase Storage:', error);
         return false;
+    }
+}
+
+// ========== DELETE ALL FILES FROM STORAGE BUCKET ==========
+async function deleteAllStorageFiles() {
+    try {
+        const { data: files, error: listError } = await supabaseAdmin.storage
+            .from('order-slips')
+            .list();
+        
+        if (listError) {
+            console.error('Error listing files:', listError);
+            return 0;
+        }
+        
+        if (!files || files.length === 0) {
+            console.log('No files to delete in storage');
+            return 0;
+        }
+        
+        const fileNames = files.map(f => f.name);
+        console.log(`Found ${fileNames.length} files to delete:`, fileNames);
+        
+        const { error: deleteError } = await supabaseAdmin.storage
+            .from('order-slips')
+            .remove(fileNames);
+        
+        if (deleteError) {
+            console.error('Error deleting files:', deleteError);
+            return 0;
+        }
+        
+        console.log(`✅ Deleted ${fileNames.length} files from storage bucket`);
+        return fileNames.length;
+        
+    } catch (error) {
+        console.error('Error in deleteAllStorageFiles:', error);
+        return 0;
     }
 }
 
@@ -558,7 +596,7 @@ app.post('/api/admin/cleanup-old', async (req, res) => {
     }
 });
 
-// ========== ADMIN - SYSTEM RESET (Delete Everything) ==========
+// ========== ADMIN - SYSTEM RESET (Delete Everything including ALL storage files) ==========
 app.post('/api/admin/reset-system', async (req, res) => {
     const { password } = req.body;
     
@@ -567,15 +605,27 @@ app.post('/api/admin/reset-system', async (req, res) => {
     }
     
     try {
-        const { data: orders } = await supabaseAdmin
+        let deletedFiles = 0;
+        
+        // FIRST: Delete ALL files from storage bucket (including orphaned files)
+        console.log('🗑️ Deleting all files from storage bucket...');
+        const storageFilesDeleted = await deleteAllStorageFiles();
+        if (storageFilesDeleted > 0) {
+            deletedFiles += storageFilesDeleted;
+            console.log(`✅ Deleted ${storageFilesDeleted} files from storage bucket`);
+        }
+        
+        // SECOND: Delete all orders from database
+        const { data: orders, error: ordersFetchError } = await supabaseAdmin
             .from('orders')
             .select('slip_url');
         
-        let deletedFiles = 0;
+        if (ordersFetchError) throw ordersFetchError;
         
+        // Also delete any remaining files referenced in orders (if any)
         if (orders && orders.length > 0) {
             for (const order of orders) {
-                if (order.slip_url && order.slip_url.includes('supabase.co')) {
+                if (order.slip_url) {
                     const deleted = await deleteFromSupabaseStorage(order.slip_url);
                     if (deleted) deletedFiles++;
                 }
@@ -589,12 +639,15 @@ app.post('/api/admin/reset-system', async (req, res) => {
         
         if (ordersError) throw ordersError;
         
+        // THIRD: Delete all user stats
         const { error: statsError } = await supabaseAdmin
             .from('user_stats')
             .delete()
             .neq('phone', '');
         
         if (statsError) throw statsError;
+        
+        console.log(`✅ System reset completed: Deleted ${orders?.length || 0} orders, ${deletedFiles} files`);
         
         res.json({ 
             success: true, 
@@ -779,4 +832,5 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📱 Store: /index.html`);
     console.log(`👨‍💼 Admin: /admin.html`);
+    console.log(`🗑️ System Reset: Will delete ALL storage files, orders, and user stats`);
 });
