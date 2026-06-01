@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>ATH DIGITAL HUB | MYTEL VIP Store</title>
     
-    <!-- Security Meta Tags -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     
@@ -513,7 +512,6 @@
         ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 4px; }
         .empty-msg { text-align: center; color: var(--text-secondary); padding: 30px; font-size: 0.7rem; }
         
-        /* Toast animation */
         @keyframes fadeInOut {
             0% { opacity: 0; transform: translateY(-10px); }
             10% { opacity: 1; transform: translateY(0); }
@@ -644,15 +642,15 @@
         
         <div class="info-compact">
             <div class="info-row">
-                <span class="info-label"><i class="fas fa-university"></i>  ငွေလွှဲနည်းလမ်း</span>
+                <span class="info-label"><i class="fas fa-university"></i> 🏦 ငွေလွှဲနည်းလမ်း</span>
                 <span class="info-value">K-Pay / WavePay</span>
             </div>
             <div class="info-row">
-                <span class="info-label"><i class="fas fa-user"></i>  အကောင့်အမည်</span>
+                <span class="info-label"><i class="fas fa-user"></i> 👤 အကောင့်အမည်</span>
                 <span class="info-value">AUNG THU HTWE</span>
             </div>
             <div class="info-row">
-                <span class="info-label"><i class="fas fa-phone-alt"></i>  ဖုန်းနံပါတ်</span>
+                <span class="info-label"><i class="fas fa-phone-alt"></i> 📞 ဖုန်းနံပါတ်</span>
                 <span class="info-value phone-copy" id="clickablePhone" style="cursor: pointer;">
                     09789999368 <i class="fas fa-copy" style="font-size: 0.6rem;"></i>
                 </span>
@@ -862,18 +860,13 @@
         liveCountdownIntervals[orderId] = setInterval(fn, 1000);
     }
     
-    // Toast function - fixed at top-right corner, disappears after 2 seconds
     function showToast(msg, err) {
-        // Remove existing toast
         const existingToast = document.getElementById('globalToast');
         if (existingToast) existingToast.remove();
         
-        // Create new toast
         const toast = document.createElement('div');
         toast.id = 'globalToast';
         toast.innerHTML = err ? `⚠️ ${msg}` : `✅ ${msg}`;
-        
-        // Style - fixed position at top-right corner of page
         toast.style.position = 'fixed';
         toast.style.top = '70px';
         toast.style.right = '16px';
@@ -891,7 +884,6 @@
         
         document.body.appendChild(toast);
         
-        // Remove after 2 seconds
         setTimeout(() => {
             if (toast && toast.remove) toast.remove();
         }, 2000);
@@ -979,14 +971,104 @@
         </div>`;
     }
     
-    function renderMyOrders(){
-        let container=document.getElementById('myOrdersContainer'),t=translations[currentLang];
-        if(!myPhone){container.innerHTML=`<div class="empty-msg"><i class="fas fa-info-circle"></i><br>${t.noMyOrders}<br>${t.placeFirst}</div>`;return;}
-        let orders=allOrdersData.filter(o=>o.phone===myPhone);
-        if(currentSearchPhone)orders=orders.filter(o=>o.phone===currentSearchPhone);
-        if(!orders.length){container.innerHTML=`<div class="empty-msg">📭 ${t.noMyOrders}</div>`;return;}
-        container.innerHTML=orders.map(o=>renderOrderItem(o,true,currentSearchPhone&&o.phone===currentSearchPhone,true)).join('');
-        orders.forEach(o=>{if(o.status==='Approved'&&o.activated_at)startCountdown(o.id,o.activated_at);});
+    // ========== FIXED: renderMyOrders - STRICT phone number comparison ==========
+    function renderMyOrders() {
+        let container = document.getElementById('myOrdersContainer');
+        let t = translations[currentLang];
+        
+        console.log('===== renderMyOrders =====');
+        console.log('myPhone from storage:', myPhone, 'type:', typeof myPhone);
+        
+        if (!myPhone || myPhone === '' || myPhone === 'null' || myPhone === 'undefined') {
+            console.log('No valid myPhone - showing empty');
+            container.innerHTML = `<div class="empty-msg"><i class="fas fa-info-circle"></i><br>${t.noMyOrders}<br>${t.placeFirst}</div>`;
+            return;
+        }
+        
+        const currentPhone = String(myPhone).trim();
+        console.log('Filtering for phone:', currentPhone);
+        
+        let orders = allOrdersData.filter(o => {
+            const orderPhone = String(o.phone).trim();
+            const isMatch = orderPhone === currentPhone;
+            if (!isMatch) {
+                console.log(`❌ Filtered OUT: ${orderPhone} !== ${currentPhone}`);
+            } else {
+                console.log(`✅ Kept: ${orderPhone} === ${currentPhone}`);
+            }
+            return isMatch;
+        });
+        
+        if (currentSearchPhone) {
+            const searchPhone = String(currentSearchPhone).trim();
+            orders = orders.filter(o => String(o.phone).trim() === searchPhone);
+        }
+        
+        console.log(`Final: ${orders.length} orders for ${currentPhone}`);
+        
+        if (!orders.length) {
+            container.innerHTML = `<div class="empty-msg">📭 ${t.noMyOrders}</div>`;
+            return;
+        }
+        
+        container.innerHTML = orders.map(o => renderOrderItem(o, true, currentSearchPhone && String(o.phone).trim() === String(currentSearchPhone).trim(), true)).join('');
+        
+        orders.forEach(o => {
+            if (o.status === 'Approved' && o.activated_at) {
+                startCountdown(o.id, o.activated_at);
+            }
+        });
+    }
+    
+    // ========== FIXED: updateStack - EXCLUDE user's own orders from live feed ==========
+    function updateStack(orders) {
+        const currentPhone = String(myPhone).trim();
+        console.log('updateStack - Current phone:', currentPhone);
+        
+        let others = orders.filter(o => {
+            const orderPhone = String(o.phone).trim();
+            return orderPhone !== currentPhone;
+        });
+        
+        console.log(`updateStack: Total ${orders.length}, Others for live feed: ${others.length}`);
+        
+        if (!others.length) {
+            if (stackOrders.length) {
+                stackOrders = [];
+                renderStack();
+            }
+            return;
+        }
+        
+        let sorted = [...others].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        let hash = JSON.stringify(sorted.map(o => ({ id: o.id, status: o.status })));
+        
+        if (hash !== lastHash) {
+            lastHash = hash;
+            let currIds = stackOrders.map(o => o.id);
+            let newOnes = sorted.filter(o => !currIds.includes(o.id));
+            
+            if (newOnes.length) {
+                stackOrders = [...newOnes, ...stackOrders].slice(0, 30);
+                renderStack();
+                setTimeout(() => {
+                    const newCards = document.querySelectorAll('.stack-item');
+                    for (let i = 0; i < newOnes.length && i < newCards.length; i++) {
+                        addGlowEffect(newCards[i]);
+                    }
+                }, 50);
+            } else {
+                let upd = [];
+                sorted.forEach(o => {
+                    if (currIds.includes(o.id)) upd.push(o);
+                });
+                stackOrders.forEach(o => {
+                    if (!upd.find(x => x.id === o.id)) upd.push(o);
+                });
+                stackOrders = upd.slice(0, 30);
+                renderStack();
+            }
+        }
     }
     
     function renderStack(){
@@ -1034,36 +1116,6 @@
                 const topCard = document.querySelector('.stack-item');
                 if (topCard) addGlowEffect(topCard);
             }, 50);
-        }
-    }
-    
-    function updateStack(orders){
-        let others=orders.filter(o=>o.phone!==myPhone);
-        if(!others.length){if(stackOrders.length){stackOrders=[];renderStack();}return;}
-        let sorted=[...others].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-        let hash=JSON.stringify(sorted.map(o=>({id:o.id,status:o.status})));
-        
-        let hasNewOrders = false;
-        if (hash !== lastHash) {
-            lastHash=hash;
-            let currIds=stackOrders.map(o=>o.id),newOnes=sorted.filter(o=>!currIds.includes(o.id));
-            if(newOnes.length){
-                hasNewOrders = true;
-                stackOrders=[...newOnes,...stackOrders].slice(0,30);
-                renderStack();
-                setTimeout(() => {
-                    const newCards = document.querySelectorAll('.stack-item');
-                    for (let i = 0; i < newOnes.length && i < newCards.length; i++) {
-                        addGlowEffect(newCards[i]);
-                    }
-                }, 50);
-            } else {
-                let upd=[];
-                sorted.forEach(o=>{if(currIds.includes(o.id))upd.push(o);});
-                stackOrders.forEach(o=>{if(!upd.find(x=>x.id===o.id))upd.push(o);});
-                stackOrders=upd.slice(0,30);
-                renderStack();
-            }
         }
     }
     
@@ -1127,6 +1179,7 @@
             showToast(`${t.orderSuccess}${result.orderId}`);
             myPhone = phone;
             localStorage.setItem('myOrderPhone', phone);
+            console.log('Saved myPhone to localStorage:', phone);
             document.getElementById('paymentModal').classList.remove('active');
             document.getElementById('orderForm').reset();
             if (document.getElementById('historyPanel').classList.contains('open')) loadData();
@@ -1173,7 +1226,7 @@
     
     window.copyOrderId=copyOrderId;window.openScreenshot=openScreenshot;window.closeImageModal=closeImageModal;
     updateUI();
-    if(myPhone)console.log("Loaded phone:",maskPhone(myPhone));
+    if(myPhone)console.log("Loaded phone from storage:",maskPhone(myPhone));
 </script>
 </body>
 </html>
