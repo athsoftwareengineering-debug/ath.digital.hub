@@ -1,5 +1,5 @@
 // ============================================================
-// ATH DIGITAL HUB - SERVER (with Full Storage Cleanup)
+// ATH DIGITAL HUB - SERVER (Skip Method - MAX + 1)
 // ============================================================
 
 const express = require('express');
@@ -98,7 +98,7 @@ const upload = multer({
 // ========== CRON JOB SECURITY ==========
 const CRON_API_KEY = '21cef185318d538e47385bdd44d00e6231f59370fd792a6c5709f8d4aa48f82e';
 
-// ========== ORDER ID GENERATOR (Start from 1 or continue from last) ==========
+// ========== ORDER ID GENERATOR (Skip Method - MAX + 1) ==========
 async function getNextOrderId() {
     try {
         const { data, error } = await supabase
@@ -107,13 +107,25 @@ async function getNextOrderId() {
             .order('id', { ascending: false })
             .limit(1);
         
-        if (error || !data || data.length === 0) {
+        if (error) {
+            console.error('Error getting max ID:', error);
+            return Math.floor(Date.now() / 1000);
+        }
+        
+        if (!data || data.length === 0) {
+            console.log('📝 First order - ID: 1');
             return 1;
         }
         
-        return data[0].id + 1;
-    } catch (error) {
-        return 1;
+        const maxId = data[0].id;
+        const nextId = maxId + 1;
+        
+        console.log(`📝 Current max ID: ${maxId} → Next ID: ${nextId}`);
+        return nextId;
+        
+    } catch (err) {
+        console.error('❌ ID generation error:', err);
+        return Math.floor(Date.now() / 1000);
     }
 }
 
@@ -199,7 +211,6 @@ async function deleteAllStorageFiles() {
         }
         
         const fileNames = files.map(f => f.name);
-        console.log(`Found ${fileNames.length} files to delete:`, fileNames);
         
         const { error: deleteError } = await supabaseAdmin.storage
             .from('order-slips')
@@ -596,7 +607,7 @@ app.post('/api/admin/cleanup-old', async (req, res) => {
     }
 });
 
-// ========== ADMIN - SYSTEM RESET (Delete Everything including ALL storage files) ==========
+// ========== ADMIN - SYSTEM RESET ==========
 app.post('/api/admin/reset-system', async (req, res) => {
     const { password } = req.body;
     
@@ -605,24 +616,16 @@ app.post('/api/admin/reset-system', async (req, res) => {
     }
     
     try {
-        let deletedFiles = 0;
-        
-        // FIRST: Delete ALL files from storage bucket (including orphaned files)
-        console.log('🗑️ Deleting all files from storage bucket...');
         const storageFilesDeleted = await deleteAllStorageFiles();
-        if (storageFilesDeleted > 0) {
-            deletedFiles += storageFilesDeleted;
-            console.log(`✅ Deleted ${storageFilesDeleted} files from storage bucket`);
-        }
         
-        // SECOND: Delete all orders from database
         const { data: orders, error: ordersFetchError } = await supabaseAdmin
             .from('orders')
             .select('slip_url');
         
         if (ordersFetchError) throw ordersFetchError;
         
-        // Also delete any remaining files referenced in orders (if any)
+        let deletedFiles = storageFilesDeleted;
+        
         if (orders && orders.length > 0) {
             for (const order of orders) {
                 if (order.slip_url) {
@@ -639,15 +642,12 @@ app.post('/api/admin/reset-system', async (req, res) => {
         
         if (ordersError) throw ordersError;
         
-        // THIRD: Delete all user stats
         const { error: statsError } = await supabaseAdmin
             .from('user_stats')
             .delete()
             .neq('phone', '');
         
         if (statsError) throw statsError;
-        
-        console.log(`✅ System reset completed: Deleted ${orders?.length || 0} orders, ${deletedFiles} files`);
         
         res.json({ 
             success: true, 
@@ -662,7 +662,7 @@ app.post('/api/admin/reset-system', async (req, res) => {
     }
 });
 
-// ========== CREATE ORDER (WITH SUPABASE STORAGE & SEQUENTIAL ID) ==========
+// ========== CREATE ORDER (WITH SUPABASE STORAGE & SKIP METHOD ID) ==========
 app.post('/api/orders', upload.single('slip'), [
     body('phone').isMobilePhone().withMessage('Invalid phone number'),
     body('plan').notEmpty().withMessage('Plan is required'),
@@ -713,6 +713,7 @@ app.post('/api/orders', upload.single('slip'), [
             );
         }
         
+        // Get sequential ID (Skip Method - MAX + 1)
         const orderId = await getNextOrderId();
         
         const { error } = await supabase
@@ -727,15 +728,20 @@ app.post('/api/orders', upload.single('slip'), [
                 image_hash: imageHash
             }]);
         
-        if (error) throw error;
+        if (error) {
+            console.error('Insert error:', error);
+            return res.status(500).json({ success: false, error: error.message });
+        }
         
         await updateUserStats(phone, false);
         
+        console.log(`✅ Order created: ${orderId}`);
         res.json({ 
             success: true, 
             orderId: orderId,
             message: 'Order created successfully'
         });
+        
     } catch (error) {
         console.error('Error creating order:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -832,5 +838,6 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📱 Store: /index.html`);
     console.log(`👨‍💼 Admin: /admin.html`);
+    console.log(`🔢 Order ID: Skip Method (MAX + 1)`);
     console.log(`🗑️ System Reset: Will delete ALL storage files, orders, and user stats`);
 });
