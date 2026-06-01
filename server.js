@@ -1,5 +1,5 @@
 // ============================================================
-// ATH DIGITAL HUB - SERVER (Fixed ID Generation)
+// ATH DIGITAL HUB - SERVER (Fixed CSP for all resources)
 // ============================================================
 
 const express = require('express');
@@ -20,17 +20,25 @@ const PORT = process.env.PORT || 3000;
 // ========== TRUST PROXY (for Render.com) ==========
 app.set('trust proxy', 1);
 
-// ========== SECURITY MIDDLEWARE (Updated for Tawk.to) ==========
+// ========== SECURITY MIDDLEWARE (COMPLETELY FIXED CSP) ==========
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com", "cdnjs.cloudflare.com"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "cdnjs.cloudflare.com", "fonts.googleapis.com", "embed.tawk.to", "tawk.to"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https:", "fonts.googleapis.com", "cdnjs.cloudflare.com"],
+            styleSrcElem: ["'self'", "'unsafe-inline'", "https:", "fonts.googleapis.com", "cdnjs.cloudflare.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "https:", "cdnjs.cloudflare.com", "fonts.googleapis.com", "embed.tawk.to", "tawk.to", "blob:"],
+            scriptSrcElem: ["'self'", "'unsafe-inline'", "https:", "cdnjs.cloudflare.com", "fonts.googleapis.com", "embed.tawk.to", "tawk.to", "blob:"],
             scriptSrcAttr: ["'unsafe-inline'"],
-            fontSrc: ["'self'", "fonts.gstatic.com", "cdnjs.cloudflare.com"],
-            imgSrc: ["'self'", "data:", "https:", "i.postimg.cc", "*.supabase.co"],
-            connectSrc: ["'self'", "*.supabase.co", "*.tawk.to"],
+            fontSrc: ["'self'", "https:", "fonts.gstatic.com", "cdnjs.cloudflare.com", "data:"],
+            imgSrc: ["'self'", "data:", "https:", "http:", "i.postimg.cc", "*.supabase.co", "blob:"],
+            connectSrc: ["'self'", "https:", "wss:", "*.supabase.co", "*.tawk.to", "ws://*.tawk.to", "wss://*.tawk.to"],
+            frameSrc: ["'self'", "*.tawk.to"],
+            mediaSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"],
+            upgradeInsecureRequests: [],
         },
     },
 }));
@@ -65,14 +73,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
-// ========== UPLOADS DIRECTORY (Keep for backward compatibility) ==========
+// ========== UPLOADS DIRECTORY ==========
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 app.use('/uploads', express.static('uploads'));
 
-// ========== FILE UPLOAD CONFIGURATION (Memory Storage for Supabase) ==========
+// ========== FILE UPLOAD CONFIGURATION ==========
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
@@ -98,10 +106,9 @@ const upload = multer({
 // ========== CRON JOB SECURITY ==========
 const CRON_API_KEY = '21cef185318d538e47385bdd44d00e6231f59370fd792a6c5709f8d4aa48f82e';
 
-// ========== ORDER ID GENERATOR (Fixed - properly handles empty table) ==========
+// ========== ORDER ID GENERATOR (Fixed) ==========
 async function getNextOrderId() {
     try {
-        // First check if there are any orders
         const { count, error: countError } = await supabase
             .from('orders')
             .select('*', { count: 'exact', head: true });
@@ -111,13 +118,11 @@ async function getNextOrderId() {
             return 1;
         }
         
-        // No orders exist - start from 1
         if (count === 0) {
             console.log('📝 No orders found - starting from ID 1');
             return 1;
         }
         
-        // Get maximum ID
         const { data, error } = await supabase
             .from('orders')
             .select('id')
@@ -209,7 +214,6 @@ async function deleteFromSupabaseStorage(fileUrl) {
     }
 }
 
-// ========== DELETE ALL FILES FROM STORAGE BUCKET ==========
 async function deleteAllStorageFiles() {
     try {
         const { data: files, error: listError } = await supabaseAdmin.storage
@@ -678,7 +682,7 @@ app.post('/api/admin/reset-system', async (req, res) => {
     }
 });
 
-// ========== CREATE ORDER (WITH SUPABASE STORAGE & SEQUENTIAL ID) ==========
+// ========== CREATE ORDER ==========
 app.post('/api/orders', upload.single('slip'), [
     body('phone').isMobilePhone().withMessage('Invalid phone number'),
     body('plan').notEmpty().withMessage('Plan is required'),
@@ -699,16 +703,16 @@ app.post('/api/orders', upload.single('slip'), [
         
         const blocked = await isPhoneBlocked(phone);
         if (blocked) {
-            return res.status(403).json({ success: false, error: 'This phone number has been blocked. Contact admin for support.' });
+            return res.status(403).json({ success: false, error: 'This phone number has been blocked.' });
         }
         
         if (!checkRateLimit(phone)) {
-            return res.status(429).json({ success: false, error: 'Too many orders. Please wait a moment.' });
+            return res.status(429).json({ success: false, error: 'Too many orders. Please wait.' });
         }
         
         const duplicate = await isDuplicateOrder(phone, plan);
         if (duplicate) {
-            return res.status(409).json({ success: false, error: 'Duplicate order detected. Please wait 5 minutes.' });
+            return res.status(409).json({ success: false, error: 'Duplicate order. Please wait 5 minutes.' });
         }
         
         let slipUrl = null;
@@ -719,7 +723,7 @@ app.post('/api/orders', upload.single('slip'), [
             
             const duplicateImage = await isDuplicateImage(imageHash);
             if (duplicateImage) {
-                return res.status(409).json({ success: false, error: 'Duplicate screenshot detected. Please use a new screenshot.' });
+                return res.status(409).json({ success: false, error: 'Duplicate screenshot detected.' });
             }
             
             slipUrl = await uploadToSupabaseStorage(
@@ -729,7 +733,6 @@ app.post('/api/orders', upload.single('slip'), [
             );
         }
         
-        // Get sequential ID (Skip Method - properly handles empty table)
         const orderId = await getNextOrderId();
         
         const { error } = await supabase
@@ -778,7 +781,7 @@ app.put('/api/admin/orders/:id/approve', async (req, res) => {
             .eq('id', id);
         
         if (error) throw error;
-        res.json({ success: true, message: 'Order approved successfully' });
+        res.json({ success: true, message: 'Order approved' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -805,7 +808,7 @@ app.put('/api/admin/orders/:id/reject', async (req, res) => {
             await updateUserStats(order.phone, true);
         }
         
-        res.json({ success: true, message: 'Order rejected successfully' });
+        res.json({ success: true, message: 'Order rejected' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -831,7 +834,7 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
             .eq('id', id);
         
         if (error) throw error;
-        res.json({ success: true, message: 'Order deleted successfully' });
+        res.json({ success: true, message: 'Order deleted' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -855,5 +858,4 @@ app.listen(PORT, () => {
     console.log(`📱 Store: /index.html`);
     console.log(`👨‍💼 Admin: /admin.html`);
     console.log(`🔢 Order ID: Skip Method (MAX + 1)`);
-    console.log(`🗑️ System Reset: Will delete ALL storage files, orders, and user stats`);
 });
