@@ -1,5 +1,5 @@
 // ============================================================
-// ATH DIGITAL HUB - SERVER (Target-Based Auto Cleanup)
+// ATH DIGITAL HUB - SERVER (Order ID starts from 1)
 // ============================================================
 
 const express = require('express');
@@ -97,6 +97,29 @@ const upload = multer({
 
 // ========== CRON JOB SECURITY ==========
 const CRON_API_KEY = '21cef185318d538e47385bdd44d00e6231f59370fd792a6c5709f8d4aa48f82e';
+
+// ========== ORDER ID GENERATOR (Start from 1 or continue from last) ==========
+async function getNextOrderId() {
+    try {
+        const { data, error } = await supabase
+            .from('orders')
+            .select('id')
+            .order('id', { ascending: false })
+            .limit(1);
+        
+        if (error || !data || data.length === 0) {
+            console.log('📝 No orders found - starting from ID 1');
+            return 1;
+        }
+        
+        const nextId = data[0].id + 1;
+        console.log(`📝 Next order ID: ${nextId}`);
+        return nextId;
+    } catch (error) {
+        console.error('Error getting next order ID:', error);
+        return 1;
+    }
+}
 
 // ========== SUPABASE STORAGE HELPERS ==========
 
@@ -291,12 +314,10 @@ async function targetedStorageCleanup() {
     try {
         const now = new Date();
         
-        // Different retention periods for different statuses
-        // မင်း ဒီအတိုင်းထားလို့ရတယ်၊ လိုရင် ပြောင်းလို့ရတယ်
         const retentionDays = {
-            'Approved': 60,    // Keep approved orders for 60 days (2 months)
-            'Rejected': 30,    // Keep rejected orders for 30 days (1 month)  
-            'Pending': 14      // Keep pending orders for 14 days (2 weeks)
+            'Approved': 60,
+            'Rejected': 30,
+            'Pending': 14
         };
         
         let totalDeletedOrders = 0;
@@ -305,7 +326,6 @@ async function targetedStorageCleanup() {
         for (const [status, days] of Object.entries(retentionDays)) {
             const cutoffDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
             
-            // Get orders to delete
             const { data: oldOrders } = await supabaseAdmin
                 .from('orders')
                 .select('id, slip_url, status, created_at')
@@ -315,7 +335,6 @@ async function targetedStorageCleanup() {
             if (oldOrders && oldOrders.length > 0) {
                 console.log(`📋 Status: ${status} | Older than ${days} days: ${oldOrders.length} orders`);
                 
-                // Delete files from storage first
                 for (const order of oldOrders) {
                     if (order.slip_url) {
                         const deleted = await deleteFromSupabaseStorage(order.slip_url);
@@ -323,7 +342,6 @@ async function targetedStorageCleanup() {
                     }
                 }
                 
-                // Delete from database
                 const { error } = await supabaseAdmin
                     .from('orders')
                     .delete()
@@ -576,7 +594,7 @@ app.post('/api/admin/cleanup-old', async (req, res) => {
     }
 });
 
-// ========== CREATE ORDER (WITH SUPABASE STORAGE) ==========
+// ========== CREATE ORDER (WITH SUPABASE STORAGE & SEQUENTIAL ID) ==========
 app.post('/api/orders', upload.single('slip'), [
     body('phone').isMobilePhone().withMessage('Invalid phone number'),
     body('plan').notEmpty().withMessage('Plan is required'),
@@ -629,7 +647,8 @@ app.post('/api/orders', upload.single('slip'), [
             );
         }
         
-        const orderId = parseInt(Date.now().toString() + Math.floor(Math.random() * 1000).toString());
+        // Get sequential order ID (1, 2, 3, 4...)
+        const orderId = await getNextOrderId();
         
         const { error } = await supabase
             .from('orders')
@@ -753,6 +772,7 @@ app.listen(PORT, () => {
     console.log(`📱 User Store: http://localhost:${PORT}/index.html`);
     console.log(`👨‍💼 Admin Panel: http://localhost:${PORT}/admin.html`);
     console.log(`☁️ Using Supabase Storage for file uploads`);
+    console.log(`🔢 Order ID: Sequential (1, 2, 3, 4...)`);
     console.log(`🎯 Target-Based Cleanup:`);
     console.log(`   - Approved: 60 days`);
     console.log(`   - Rejected: 30 days`);
