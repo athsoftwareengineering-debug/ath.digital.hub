@@ -1,5 +1,5 @@
 // ============================================================
-// ATH DIGITAL HUB - SERVER (FULLY UPDATED)
+// ATH DIGITAL HUB - SERVER (Target-Based Auto Cleanup)
 // ============================================================
 
 const express = require('express');
@@ -19,7 +19,6 @@ const PORT = process.env.PORT || 3000;
 
 // ========== TRUST PROXY (for Render.com) ==========
 app.set('trust proxy', 1);
-// ===================================================
 
 // ========== SECURITY MIDDLEWARE ==========
 app.use(helmet({
@@ -30,7 +29,7 @@ app.use(helmet({
             scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "cdnjs.cloudflare.com", "fonts.googleapis.com"],
             scriptSrcAttr: ["'unsafe-inline'"],
             fontSrc: ["'self'", "fonts.gstatic.com", "cdnjs.cloudflare.com"],
-            imgSrc: ["'self'", "data:", "https:", "i.postimg.cc"],
+            imgSrc: ["'self'", "data:", "https:", "i.postimg.cc", "*.supabase.co"],
             connectSrc: ["'self'", "*.supabase.co"],
         },
     },
@@ -66,23 +65,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
-// ========== UPLOADS DIRECTORY ==========
+// ========== UPLOADS DIRECTORY (Keep for backward compatibility) ==========
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 app.use('/uploads', express.static('uploads'));
 
-// ========== FILE UPLOAD CONFIGURATION ==========
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
-        cb(null, uniqueName);
-    }
-});
+// ========== FILE UPLOAD CONFIGURATION (Memory Storage for Supabase) ==========
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
@@ -103,6 +94,77 @@ const upload = multer({
     limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: fileFilter
 });
+
+// ========== CRON JOB SECURITY ==========
+const CRON_API_KEY = '21cef185318d538e47385bdd44d00e6231f59370fd792a6c5709f8d4aa48f82e';
+
+// ========== SUPABASE STORAGE HELPERS ==========
+
+async function uploadToSupabaseStorage(fileBuffer, originalName, mimetype) {
+    try {
+        const timestamp = Date.now();
+        const random = Math.round(Math.random() * 1E9);
+        const extension = path.extname(originalName);
+        const fileName = `${timestamp}-${random}${extension}`;
+        
+        const { data, error } = await supabaseAdmin.storage
+            .from('order-slips')
+            .upload(fileName, fileBuffer, {
+                contentType: mimetype,
+                cacheControl: '3600'
+            });
+        
+        if (error) throw error;
+        
+        const { data: urlData } = supabaseAdmin.storage
+            .from('order-slips')
+            .getPublicUrl(fileName);
+        
+        console.log(`✅ File uploaded to Supabase: ${urlData.publicUrl}`);
+        return urlData.publicUrl;
+        
+    } catch (error) {
+        console.error('Error uploading to Supabase Storage:', error);
+        throw new Error('Failed to upload file to storage');
+    }
+}
+
+async function deleteFromSupabaseStorage(fileUrl) {
+    try {
+        if (!fileUrl) return true;
+        
+        if (!fileUrl.includes('supabase.co')) {
+            // Legacy local file
+            if (fileUrl.startsWith('/uploads/')) {
+                const filePath = path.join(__dirname, fileUrl);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                    console.log(`✅ Deleted local file: ${filePath}`);
+                }
+            }
+            return true;
+        }
+        
+        const urlParts = fileUrl.split('/');
+        const fileName = urlParts[urlParts.length - 1];
+        
+        const { error } = await supabaseAdmin.storage
+            .from('order-slips')
+            .remove([fileName]);
+        
+        if (error) {
+            console.error('Storage delete error:', error);
+            return false;
+        }
+        
+        console.log(`✅ Deleted from Supabase: ${fileName}`);
+        return true;
+        
+    } catch (error) {
+        console.error('Error deleting from Supabase Storage:', error);
+        return false;
+    }
+}
 
 // ========== FRAUD DETECTION HELPERS ==========
 function calculateImageHash(fileBuffer) {
@@ -220,46 +282,107 @@ function checkRateLimit(phone) {
     return true;
 }
 
-// ========== AUTO CLEANUP FUNCTION ==========
-async function autoCleanupOldOrders() {
+// ========== TARGET-BASED STORAGE CLEANUP (CORE FUNCTION) ==========
+async function targetedStorageCleanup() {
+    console.log('🗑️ Starting targeted storage cleanup...');
+    console.log(`📅 Time: ${new Date().toISOString()}`);
+    const startTime = Date.now();
+    
     try {
-        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const now = new Date();
         
-        const { data: ordersToDelete } = await supabaseAdmin
-            .from('orders')
-            .select('slip_url')
-            .in('status', ['Pending', 'Rejected'])
-            .lt('created_at', thirtyDaysAgo);
+        // Different retention periods for different statuses
+        // မင်း ဒီအတိုင်းထားလို့ရတယ်၊ လိုရင် ပြောင်းလို့ရတယ်
+        const retentionDays = {
+            'Approved': 60,    // Keep approved orders for 60 days (2 months)
+            'Rejected': 30,    // Keep rejected orders for 30 days (1 month)  
+            'Pending': 14      // Keep pending orders for 14 days (2 weeks)
+        };
         
-        if (ordersToDelete && ordersToDelete.length > 0) {
-            for (const order of ordersToDelete) {
-                if (order.slip_url) {
-                    const filePath = path.join(__dirname, order.slip_url);
-                    if (fs.existsSync(filePath)) {
-                        fs.unlinkSync(filePath);
+        let totalDeletedOrders = 0;
+        let totalDeletedFiles = 0;
+        
+        for (const [status, days] of Object.entries(retentionDays)) {
+            const cutoffDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
+            
+            // Get orders to delete
+            const { data: oldOrders } = await supabaseAdmin
+                .from('orders')
+                .select('id, slip_url, status, created_at')
+                .eq('status', status)
+                .lt('created_at', cutoffDate);
+            
+            if (oldOrders && oldOrders.length > 0) {
+                console.log(`📋 Status: ${status} | Older than ${days} days: ${oldOrders.length} orders`);
+                
+                // Delete files from storage first
+                for (const order of oldOrders) {
+                    if (order.slip_url) {
+                        const deleted = await deleteFromSupabaseStorage(order.slip_url);
+                        if (deleted) totalDeletedFiles++;
                     }
                 }
+                
+                // Delete from database
+                const { error } = await supabaseAdmin
+                    .from('orders')
+                    .delete()
+                    .eq('status', status)
+                    .lt('created_at', cutoffDate);
+                
+                if (error) throw error;
+                
+                totalDeletedOrders += oldOrders.length;
+            } else {
+                console.log(`📋 Status: ${status} | No orders older than ${days} days`);
             }
         }
         
-        const { data, error } = await supabaseAdmin
-            .from('orders')
-            .delete()
-            .in('status', ['Pending', 'Rejected'])
-            .lt('created_at', thirtyDaysAgo);
+        const duration = Date.now() - startTime;
+        console.log(`✅ Targeted cleanup completed in ${duration}ms`);
+        console.log(`   📊 Deleted orders: ${totalDeletedOrders}`);
+        console.log(`   🗑️ Deleted files: ${totalDeletedFiles}`);
         
-        if (error) {
-            console.error('Auto cleanup error:', error);
-        } else {
-            console.log(`✅ Auto cleanup completed at ${new Date().toISOString()} - Deleted ${ordersToDelete?.length || 0} old orders`);
-        }
-    } catch (e) {
-        console.error('Auto cleanup failed:', e);
+        return { 
+            success: true,
+            deletedOrders: totalDeletedOrders, 
+            deletedFiles: totalDeletedFiles, 
+            duration,
+            retentionApplied: retentionDays,
+            timestamp: new Date().toISOString()
+        };
+        
+    } catch (error) {
+        console.error('❌ Targeted cleanup failed:', error);
+        throw error;
     }
 }
 
-setInterval(autoCleanupOldOrders, 24 * 60 * 60 * 1000);
-setTimeout(autoCleanupOldOrders, 5000);
+// ========== INTERNAL ENDPOINT FOR CRON JOB ==========
+app.post('/api/internal/targeted-cleanup', async (req, res) => {
+    const apiKey = req.headers['x-api-key'];
+    
+    if (!apiKey || apiKey !== CRON_API_KEY) {
+        console.warn('❌ Unauthorized cron job attempt from IP:', req.ip);
+        return res.status(401).json({ 
+            success: false, 
+            error: 'Unauthorized. Invalid or missing API key.' 
+        });
+    }
+    
+    console.log('🔐 Cron job authorized, starting targeted cleanup...');
+    
+    try {
+        const result = await targetedStorageCleanup();
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
 
 // ========== STATIC HTML ROUTES ==========
 app.get('/', (req, res) => {
@@ -276,7 +399,7 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ========== MAIN STORE - GET ALL ORDERS (LIVE FEED) ==========
+// ========== MAIN STORE - GET ALL ORDERS ==========
 app.get('/api/orders', async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
@@ -284,13 +407,10 @@ app.get('/api/orders', async (req, res) => {
             .select('*')
             .order('created_at', { ascending: false });
         
-        if (error) {
-            return res.status(500).json({ orders: [], error: error.message });
-        }
-        
+        if (error) throw error;
         res.json({ orders: data || [] });
     } catch (error) {
-        console.error('Error fetching orders for store:', error);
+        console.error('Error fetching orders:', error);
         res.status(500).json({ orders: [], error: error.message });
     }
 });
@@ -310,10 +430,7 @@ app.get('/api/orders/:phone', async (req, res) => {
             .eq('phone', phone)
             .order('created_at', { ascending: false });
         
-        if (error) {
-            return res.status(500).json({ orders: [], error: error.message });
-        }
-        
+        if (error) throw error;
         res.json({ orders: data || [] });
     } catch (error) {
         console.error('Error fetching orders:', error);
@@ -329,13 +446,10 @@ app.get('/api/admin/orders', async (req, res) => {
             .select('*')
             .order('created_at', { ascending: false });
         
-        if (error) {
-            return res.status(500).json({ orders: [], error: error.message });
-        }
-        
+        if (error) throw error;
         res.json({ orders: data || [] });
     } catch (error) {
-        console.error('Error fetching all orders:', error);
+        console.error('Error fetching admin orders:', error);
         res.status(500).json({ orders: [], error: error.message });
     }
 });
@@ -347,10 +461,7 @@ app.get('/api/admin/user-stats', async (req, res) => {
             .select('*')
             .order('order_count', { ascending: false });
         
-        if (error) {
-            return res.status(500).json({ stats: [], error: error.message });
-        }
-        
+        if (error) throw error;
         res.json({ stats: data || [] });
     } catch (error) {
         console.error('Error fetching user stats:', error);
@@ -371,10 +482,7 @@ app.post('/api/admin/user-block', async (req, res) => {
             .update({ blocked: block, updated_at: new Date().toISOString() })
             .eq('phone', phone);
         
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
+        if (error) throw error;
         res.json({ success: true, message: block ? 'User blocked' : 'User unblocked' });
     } catch (error) {
         console.error('Error blocking user:', error);
@@ -395,10 +503,7 @@ app.post('/api/admin/clear-suspect', async (req, res) => {
             .update({ suspect_flag: false, updated_at: new Date().toISOString() })
             .eq('phone', phone);
         
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
+        if (error) throw error;
         res.json({ success: true, message: 'Suspect flag cleared' });
     } catch (error) {
         console.error('Error clearing suspect flag:', error);
@@ -419,10 +524,7 @@ app.post('/api/admin/user-delete', async (req, res) => {
             .delete()
             .eq('phone', phone);
         
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
+        if (error) throw error;
         res.json({ success: true, message: 'User deleted from stats' });
     } catch (error) {
         console.error('Error deleting user:', error);
@@ -446,10 +548,7 @@ app.post('/api/admin/user-delete-orders', async (req, res) => {
         if (orders && orders.length > 0) {
             for (const order of orders) {
                 if (order.slip_url) {
-                    const filePath = path.join(__dirname, order.slip_url);
-                    if (fs.existsSync(filePath)) {
-                        fs.unlinkSync(filePath);
-                    }
+                    await deleteFromSupabaseStorage(order.slip_url);
                 }
             }
         }
@@ -459,10 +558,7 @@ app.post('/api/admin/user-delete-orders', async (req, res) => {
             .delete()
             .eq('phone', phone);
         
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
+        if (error) throw error;
         res.json({ success: true, message: `Deleted ${orders?.length || 0} orders for ${phone}` });
     } catch (error) {
         console.error('Error deleting user orders:', error);
@@ -472,43 +568,15 @@ app.post('/api/admin/user-delete-orders', async (req, res) => {
 
 app.post('/api/admin/cleanup-old', async (req, res) => {
     try {
-        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-        
-        const { data: ordersToDelete } = await supabaseAdmin
-            .from('orders')
-            .select('slip_url')
-            .in('status', ['Pending', 'Rejected'])
-            .lt('created_at', thirtyDaysAgo);
-        
-        if (ordersToDelete && ordersToDelete.length > 0) {
-            for (const order of ordersToDelete) {
-                if (order.slip_url) {
-                    const filePath = path.join(__dirname, order.slip_url);
-                    if (fs.existsSync(filePath)) {
-                        fs.unlinkSync(filePath);
-                    }
-                }
-            }
-        }
-        
-        const { data, error } = await supabaseAdmin
-            .from('orders')
-            .delete()
-            .in('status', ['Pending', 'Rejected'])
-            .lt('created_at', thirtyDaysAgo);
-        
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
-        res.json({ success: true, message: `Deleted ${ordersToDelete?.length || 0} old orders` });
+        const result = await targetedStorageCleanup();
+        res.json({ success: true, message: `Deleted ${result.deletedOrders} orders`, result });
     } catch (error) {
         console.error('Error during manual cleanup:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// ========== CREATE ORDER (WITH VALIDATION) ==========
+// ========== CREATE ORDER (WITH SUPABASE STORAGE) ==========
 app.post('/api/orders', upload.single('slip'), [
     body('phone').isMobilePhone().withMessage('Invalid phone number'),
     body('plan').notEmpty().withMessage('Plan is required'),
@@ -547,18 +615,21 @@ app.post('/api/orders', upload.single('slip'), [
         let imageHash = null;
         
         if (slipFile) {
-            slipUrl = `/uploads/${slipFile.filename}`;
-            const fileBuffer = fs.readFileSync(slipFile.path);
-            imageHash = calculateImageHash(fileBuffer);
+            imageHash = calculateImageHash(slipFile.buffer);
             
             const duplicateImage = await isDuplicateImage(imageHash);
             if (duplicateImage) {
-                fs.unlinkSync(slipFile.path);
                 return res.status(409).json({ success: false, error: 'Duplicate screenshot detected. Please use a new screenshot.' });
             }
+            
+            slipUrl = await uploadToSupabaseStorage(
+                slipFile.buffer,
+                slipFile.originalname,
+                slipFile.mimetype
+            );
         }
         
-        const orderId = Date.now();
+        const orderId = parseInt(Date.now().toString() + Math.floor(Math.random() * 1000).toString());
         
         const { error } = await supabase
             .from('orders')
@@ -572,10 +643,7 @@ app.post('/api/orders', upload.single('slip'), [
                 image_hash: imageHash
             }]);
         
-        if (error) {
-            console.error('Insert error:', error);
-            return res.status(500).json({ success: false, error: error.message });
-        }
+        if (error) throw error;
         
         await updateUserStats(phone, false);
         
@@ -604,10 +672,7 @@ app.put('/api/admin/orders/:id/approve', async (req, res) => {
             })
             .eq('id', id);
         
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
+        if (error) throw error;
         res.json({ success: true, message: 'Order approved successfully' });
     } catch (error) {
         console.error('Error approving order:', error);
@@ -630,9 +695,7 @@ app.put('/api/admin/orders/:id/reject', async (req, res) => {
             .update({ status: 'Rejected' })
             .eq('id', id);
         
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
+        if (error) throw error;
         
         if (order) {
             await updateUserStats(order.phone, true);
@@ -649,15 +712,22 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
     try {
         const { id } = req.params;
         
+        const { data: order } = await supabaseAdmin
+            .from('orders')
+            .select('slip_url')
+            .eq('id', id)
+            .single();
+        
+        if (order && order.slip_url) {
+            await deleteFromSupabaseStorage(order.slip_url);
+        }
+        
         const { error } = await supabaseAdmin
             .from('orders')
             .delete()
             .eq('id', id);
         
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
+        if (error) throw error;
         res.json({ success: true, message: 'Order deleted successfully' });
     } catch (error) {
         console.error('Error deleting order:', error);
@@ -682,6 +752,9 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`📱 User Store: http://localhost:${PORT}/index.html`);
     console.log(`👨‍💼 Admin Panel: http://localhost:${PORT}/admin.html`);
-    console.log(`📁 Uploads folder: ${uploadsDir}`);
-    console.log(`🗑️ Auto cleanup: Pending/Rejected orders older than 30 days will be deleted daily`);
+    console.log(`☁️ Using Supabase Storage for file uploads`);
+    console.log(`🎯 Target-Based Cleanup:`);
+    console.log(`   - Approved: 60 days`);
+    console.log(`   - Rejected: 30 days`);
+    console.log(`   - Pending: 14 days`);
 });
