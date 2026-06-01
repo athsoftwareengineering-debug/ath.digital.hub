@@ -5,14 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>ATH DIGITAL HUB | MYTEL VIP Store</title>
     
-    <!-- Security Meta Tags -->
+    <!-- Security Meta Tags (X-Frame-Options ဖယ်ထား - Server က Helmet နဲ့ ထည့်ပေးတယ်) -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Fixed Google Fonts URL -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -856,7 +854,6 @@
         }, 500);
     }
     
-    // FIXED: renderOrderItem with proper slip button for My Orders
     function renderOrderItem(o, showFull, isHighlight, showSlip) {
         const t = translations[currentLang];
         let statClass = "status-pending", statText = t.pending, waitMsg = "";
@@ -874,7 +871,6 @@
             dateHtml = `<div class="date-row"><div class="date-box"><div class="date-label">${t.orderDate}</div><div class="date-value start">${formatDate(o.created_at)}</div></div><div class="date-box"><div class="date-label">${t.status}</div><div class="date-value" style="color:var(--amber);">${o.status === 'Pending' ? t.pending : (o.status === 'Rejected' ? t.rejected : 'N/A')}</div></div></div>`;
         }
         
-        // Fixed: Slip button appears when slip_url exists (regardless of showSlip parameter)
         let slipBtn = '';
         if (o.slip_url && o.slip_url !== 'null') {
             slipBtn = `<button class="view-slip-btn" onclick="openScreenshot('${o.slip_url}')">
