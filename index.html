@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>ATH DIGITAL HUB | MYTEL VIP Store</title>
     
-    <!-- ========== SECURITY META TAGS ========== -->
+    <!-- Security Meta Tags -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
-    <!-- ========== END SECURITY META ========== -->
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -687,10 +686,9 @@
 </footer>
 
 <script>
-    // ========== SECURITY CONSOLE WARNING ==========
+    // Security Console Warning
     console.log("%c⚠️ SECURITY WARNING ⚠️", "color: red; font-size: 20px; font-weight: bold;");
     console.log("%cDo NOT paste any code here. ATH DIGITAL HUB will NEVER ask for your password or OTP.", "color: orange; font-size: 14px;");
-    // ========== END SECURITY WARNING ==========
 
     let currentLang = localStorage.getItem('app_language') || 'my';
     const API_BASE = window.location.origin;
@@ -858,24 +856,33 @@
         }, 500);
     }
     
-    function renderOrderItem(o,showFull,isHighlight,showSlip){
-        const t=translations[currentLang];
-        let statClass="status-pending",statText=t.pending,waitMsg="";
-        if(o.status==="Approved"){statClass="status-approved";statText=t.approved;}
-        if(o.status==="Rejected"){statClass="status-rejected";statText=t.rejected;}
-        if(o.status==="Pending")waitMsg=`<div class="waiting-badge">${t.awaiting}</div>`;
-        let dateHtml='',cdHtml='';
-        if(o.status==="Approved"&&o.activated_at){
-            let exp=expiredDate(o.activated_at);
-            dateHtml=`<div class="date-row"><div class="date-box"><div class="date-label">${t.startDate}</div><div class="date-value start">${formatDate(o.created_at)}</div></div><div class="date-box"><div class="date-label">${t.expiryDate}</div><div class="date-value expired">${exp||'N/A'}</div></div></div>`;
-            let remain=remainingTime(o.activated_at);
-            cdHtml=`<div class="countdown-timer" id="cd-${o.id}"><i class="fas fa-hourglass-half"></i> ${t.remaining}: ${remain}</div>`;
-        }else{
-            dateHtml=`<div class="date-row"><div class="date-box"><div class="date-label">${t.orderDate}</div><div class="date-value start">${formatDate(o.created_at)}</div></div><div class="date-box"><div class="date-label">${t.status}</div><div class="date-value" style="color:var(--amber);">${o.status==='Pending'?t.pending:(o.status==='Rejected'?t.rejected:'N/A')}</div></div></div>`;
-        }
-        let slipBtn = (showSlip && o.slip_url && o.slip_url !== 'null') ? `<button class="view-slip-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> ${t.viewReceipt}</button>` : '';
+    // FIXED: renderOrderItem with proper slip button for My Orders
+    function renderOrderItem(o, showFull, isHighlight, showSlip) {
+        const t = translations[currentLang];
+        let statClass = "status-pending", statText = t.pending, waitMsg = "";
+        if (o.status === "Approved") { statClass = "status-approved"; statText = t.approved; }
+        if (o.status === "Rejected") { statClass = "status-rejected"; statText = t.rejected; }
+        if (o.status === "Pending") waitMsg = `<div class="waiting-badge">${t.awaiting}</div>`;
         
-        return `<div class="order-item ${isHighlight?'highlight':''}">
+        let dateHtml = '', cdHtml = '';
+        if (o.status === "Approved" && o.activated_at) {
+            let exp = expiredDate(o.activated_at);
+            dateHtml = `<div class="date-row"><div class="date-box"><div class="date-label">${t.startDate}</div><div class="date-value start">${formatDate(o.created_at)}</div></div><div class="date-box"><div class="date-label">${t.expiryDate}</div><div class="date-value expired">${exp || 'N/A'}</div></div></div>`;
+            let remain = remainingTime(o.activated_at);
+            cdHtml = `<div class="countdown-timer" id="cd-${o.id}"><i class="fas fa-hourglass-half"></i> ${t.remaining}: ${remain}</div>`;
+        } else {
+            dateHtml = `<div class="date-row"><div class="date-box"><div class="date-label">${t.orderDate}</div><div class="date-value start">${formatDate(o.created_at)}</div></div><div class="date-box"><div class="date-label">${t.status}</div><div class="date-value" style="color:var(--amber);">${o.status === 'Pending' ? t.pending : (o.status === 'Rejected' ? t.rejected : 'N/A')}</div></div></div>`;
+        }
+        
+        // Fixed: Slip button appears when slip_url exists (regardless of showSlip parameter)
+        let slipBtn = '';
+        if (o.slip_url && o.slip_url !== 'null') {
+            slipBtn = `<button class="view-slip-btn" onclick="openScreenshot('${o.slip_url}')">
+                        <i class="fas fa-image"></i> ${t.viewReceipt}
+                       </button>`;
+        }
+        
+        return `<div class="order-item ${isHighlight ? 'highlight' : ''}">
             <div class="order-header">
                 <span class="order-plan"><i class="fas fa-sim-card"></i> ${o.plan}</span>
                 <span class="status-badge ${statClass}">${statText}</span>
@@ -883,7 +890,7 @@
             <div class="info-grid">
                 <div class="info-item">
                     <div class="info-label">${t.phone}</div>
-                    <div class="info-value">${showFull?o.phone:maskPhone(o.phone)}</div>
+                    <div class="info-value">${showFull ? o.phone : maskPhone(o.phone)}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">${t.amount}</div>
