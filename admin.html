@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Admin Panel | ATH DIGITAL HUB</title>
     
-    <!-- Security Meta Tags -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     
@@ -21,6 +20,7 @@
             --emerald: #10b981;
             --rose: #f43f5e;
             --amber: #f59e0b;
+            --violet: #8b5cf6;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
         }
@@ -229,26 +229,15 @@
             font-weight: 500;
         }
         .filter-btn:hover { background: var(--cyan); color: #030712; }
-        .cleanup-btn {
-            background: rgba(244,63,94,0.2);
-            border: 1px solid rgba(244,63,94,0.3);
-            color: #fb7185;
-        }
-        .cleanup-btn:hover { background: #f43f5e; color: white; }
-        .reset-system-btn {
-            background: rgba(244,63,94,0.3);
-            border: 1px solid #f43f5e;
-            color: #fb7185;
-        }
-        .reset-system-btn:hover { background: #f43f5e; color: white; }
         
-        .orders-list {
+        .orders-list, .users-list, .settings-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
             margin-bottom: 16px;
         }
-        .order-card {
+        
+        .order-card, .user-card, .setting-card {
             background: linear-gradient(145deg, rgba(18,22,35,0.85), rgba(10,12,21,0.9));
             backdrop-filter: blur(10px);
             border: 1px solid rgba(0,212,255,0.1);
@@ -256,17 +245,82 @@
             padding: 14px;
             transition: all 0.2s;
         }
-        .order-card:hover { border-color: rgba(0,212,255,0.3); transform: translateX(3px); }
+        .order-card:hover, .user-card:hover, .setting-card:hover { border-color: rgba(0,212,255,0.3); transform: translateX(3px); }
         
-        @keyframes blinkGlow {
-            0% { border-color: rgba(251, 191, 36, 0); box-shadow: 0 0 0px rgba(251, 191, 36, 0); background: rgba(251, 191, 36, 0); }
-            25% { border-color: #fbbf24; box-shadow: 0 0 20px #fbbf24; background: rgba(251, 191, 36, 0.25); }
-            50% { border-color: rgba(251, 191, 36, 0); box-shadow: 0 0 0px rgba(251, 191, 36, 0); background: rgba(251, 191, 36, 0); }
-            75% { border-color: #fbbf24; box-shadow: 0 0 20px #fbbf24; background: rgba(251, 191, 36, 0.25); }
-            100% { border-color: rgba(251, 191, 36, 0); box-shadow: 0 0 0px rgba(251, 191, 36, 0); background: rgba(251, 191, 36, 0); }
+        .setting-card {
+            border-left: 3px solid var(--violet);
         }
-        .order-card.search-highlight { animation: blinkGlow 1s ease-in-out 2; }
-        .user-card.search-highlight { animation: blinkGlow 1s ease-in-out 2; }
+        .setting-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .setting-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(0,212,255,0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .setting-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .setting-desc {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        .setting-btn {
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .setting-btn.danger {
+            background: rgba(244,63,94,0.2);
+            border-color: rgba(244,63,94,0.3);
+            color: #fb7185;
+        }
+        .setting-btn.danger:hover { background: #f43f5e; color: white; }
+        .setting-btn.warning {
+            background: rgba(245,158,11,0.2);
+            border-color: rgba(245,158,11,0.3);
+            color: #fbbf24;
+        }
+        .setting-btn.warning:hover { background: #f59e0b; color: white; }
+        .setting-btn.success {
+            background: rgba(16,185,129,0.2);
+            border-color: rgba(16,185,129,0.3);
+            color: #34d399;
+        }
+        .setting-btn.success:hover { background: #10b981; color: white; }
+        .setting-btn:hover { transform: translateY(-1px); }
+        
+        .storage-meter {
+            background: rgba(0,0,0,0.5);
+            border-radius: 20px;
+            height: 8px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .storage-meter-fill {
+            background: linear-gradient(90deg, var(--cyan), var(--violet));
+            height: 100%;
+            border-radius: 20px;
+            width: 0%;
+            transition: width 0.3s;
+        }
         
         .order-header {
             display: flex;
@@ -341,9 +395,6 @@
             font-family: 'Space Grotesk', monospace;
             border: 1px solid rgba(0,212,255,0.2);
         }
-        .countdown-box i { color: var(--cyan); }
-        .countdown-timer { font-weight: 700; color: var(--cyan); letter-spacing: 1px; }
-        
         .order-actions {
             display: flex;
             gap: 8px;
@@ -381,21 +432,6 @@
             color: var(--cyan);
         }
         
-        .users-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        .user-card {
-            background: linear-gradient(145deg, rgba(18,22,35,0.85), rgba(10,12,21,0.9));
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,212,255,0.1);
-            border-radius: 1.2rem;
-            padding: 14px;
-            transition: all 0.2s;
-        }
-        .user-card:hover { border-color: rgba(0,212,255,0.3); }
         .user-header {
             display: flex;
             justify-content: space-between;
@@ -428,8 +464,6 @@
         .user-stat { text-align: center; }
         .user-stat-value { font-size: 1.1rem; font-weight: 700; }
         .user-stat-label { font-size: 0.55rem; color: #64748b; }
-        .reject-rate.high { color: var(--rose); }
-        .reject-rate.medium { color: var(--amber); }
         .user-actions { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap; }
         .user-action-btn {
             flex: 1;
@@ -544,7 +578,6 @@
             gap: 6px;
         }
         
-        /* Toast animation */
         @keyframes fadeInOut {
             0% { opacity: 0; transform: translateY(-10px); }
             10% { opacity: 1; transform: translateY(0); }
@@ -567,6 +600,7 @@
         <div class="tab-bar">
             <button class="tab-btn active" data-tab="orders"><i class="fas fa-list-ul"></i> Orders</button>
             <button class="tab-btn" data-tab="users"><i class="fas fa-users"></i> Users</button>
+            <button class="tab-btn" data-tab="settings"><i class="fas fa-cog"></i> Settings</button>
         </div>
         
         <div class="stats-grid">
@@ -598,14 +632,8 @@
                 </select>
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button class="filter-btn cleanup-btn" onclick="manualCleanup()">
-                    <i class="fas fa-trash-alt"></i> Delete Old (30+ days)
-                </button>
                 <button class="filter-btn" onclick="applyFilters()"><i class="fas fa-filter"></i> Filter</button>
                 <button class="filter-btn reset" onclick="clearFilters()" style="background:#334155;"><i class="fas fa-undo"></i></button>
-                <button class="filter-btn reset-system-btn" onclick="resetSystem()" style="background:#f43f5e; border-color:#fb7185;">
-                    <i class="fas fa-database"></i> ⚠️ System Reset
-                </button>
             </div>
         </div>
         
@@ -618,6 +646,57 @@
         <div id="usersTab" class="hidden">
             <div class="users-list" id="usersList">
                 <div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading users...</div>
+            </div>
+        </div>
+        
+        <div id="settingsTab" class="hidden">
+            <div class="settings-list" id="settingsList">
+                <div class="setting-card">
+                    <div class="setting-header">
+                        <div class="setting-icon"><i class="fas fa-database"></i></div>
+                        <div class="setting-title">Storage Usage</div>
+                    </div>
+                    <div class="setting-desc">Current storage usage in Supabase bucket</div>
+                    <div id="storageInfo" style="font-size:0.7rem; color:#64748b; margin-bottom:8px;">Loading...</div>
+                    <div class="storage-meter"><div class="storage-meter-fill" id="storageMeterFill"></div></div>
+                    <button class="setting-btn" onclick="refreshStorageInfo()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                </div>
+                
+                <div class="setting-card">
+                    <div class="setting-header">
+                        <div class="setting-icon"><i class="fas fa-trash-alt"></i></div>
+                        <div class="setting-title">Cleanup Old Orders</div>
+                    </div>
+                    <div class="setting-desc">Delete all Pending/Rejected orders older than 30 days</div>
+                    <button class="setting-btn warning" onclick="manualCleanup()"><i class="fas fa-trash-alt"></i> Delete Old Orders (30+ days)</button>
+                </div>
+                
+                <div class="setting-card">
+                    <div class="setting-header">
+                        <div class="setting-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="setting-title">Export Orders (CSV)</div>
+                    </div>
+                    <div class="setting-desc">Download all orders as Excel/CSV file</div>
+                    <button class="setting-btn success" onclick="exportOrdersCSV()"><i class="fas fa-download"></i> Export to CSV</button>
+                </div>
+                
+                <div class="setting-card">
+                    <div class="setting-header">
+                        <div class="setting-icon"><i class="fas fa-users-slash"></i></div>
+                        <div class="setting-title">Clear All Users</div>
+                    </div>
+                    <div class="setting-desc">Delete ALL user statistics (orders will remain)</div>
+                    <button class="setting-btn warning" onclick="clearAllUsers()"><i class="fas fa-users-slash"></i> Clear All User Stats</button>
+                </div>
+                
+                <div class="setting-card">
+                    <div class="setting-header">
+                        <div class="setting-icon"><i class="fas fa-radiation"></i></div>
+                        <div class="setting-title">System Reset (DANGER)</div>
+                    </div>
+                    <div class="setting-desc">⚠️ DELETE EVERYTHING: All orders, user stats, and uploaded images. This action CANNOT be undone!</div>
+                    <button class="setting-btn danger" onclick="resetSystem()"><i class="fas fa-radiation"></i> 🔥 System Reset (Delete All)</button>
+                </div>
             </div>
         </div>
         
@@ -649,10 +728,7 @@
 </div>
 
 <script>
-    // ========== SECURITY CONSOLE WARNING ==========
     console.log("%c🔐 ADMIN PANEL - AUTHORIZED ACCESS ONLY 🔐", "color: #f43f5e; font-size: 16px; font-weight: bold;");
-    console.log("%cAll activities are logged. Unauthorized access is prohibited.", "color: #94a3b8; font-size: 12px;");
-    // ========== END SECURITY WARNING ==========
 
     const API_BASE = window.location.origin;
     let token = localStorage.getItem('adminToken');
@@ -748,7 +824,6 @@
     }
     function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
 
-    // Toast function - fixed at top-right corner, disappears after 2 seconds
     function showToast(msg, err) {
         const existingToast = document.getElementById('globalToast');
         if (existingToast) existingToast.remove();
@@ -788,6 +863,7 @@
             document.getElementById('adminContent').style.display = 'block';
             document.getElementById('fabContainer').style.display = 'flex';
             loadAllData(); startAutoSync();
+            refreshStorageInfo();
         } else { alert('Invalid Password'); }
     }
 
@@ -865,7 +941,76 @@
         }
     }
     
-    // ========== SYSTEM RESET FUNCTION ==========
+    async function clearAllUsers() {
+        if (!confirm('⚠️ Are you sure you want to delete ALL user statistics?\n\nOrders will remain, but user data (blocked, suspect flags) will be lost.\nThis action cannot be undone!')) {
+            return;
+        }
+        
+        const password = prompt('Enter admin password to confirm:');
+        if (!password) return;
+        
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/clear-all-users`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`✅ ${data.message}`);
+                loadUserStats();
+            } else {
+                showToast('❌ Failed: ' + data.error, true);
+            }
+        } catch (error) {
+            showToast('❌ Network error', true);
+        }
+    }
+    
+    async function refreshStorageInfo() {
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/storage-info`);
+            const data = await res.json();
+            if (data.success) {
+                const storageDiv = document.getElementById('storageInfo');
+                const meterFill = document.getElementById('storageMeterFill');
+                if (storageDiv) {
+                    storageDiv.innerHTML = `📦 Used: ${data.usedMB} MB / ${data.totalMB} MB (${data.percentage}%)`;
+                }
+                if (meterFill) {
+                    meterFill.style.width = `${data.percentage}%`;
+                    if (data.percentage > 80) meterFill.style.background = '#f43f5e';
+                    else if (data.percentage > 60) meterFill.style.background = '#f59e0b';
+                    else meterFill.style.background = 'linear-gradient(90deg, #00d4ff, #8b5cf6)';
+                }
+            }
+        } catch (error) {
+            console.error('Storage info error:', error);
+        }
+    }
+    
+    async function exportOrdersCSV() {
+        try {
+            showToast('📊 Generating CSV...');
+            const res = await fetch(`${API_BASE}/api/admin/export-csv`);
+            const data = await res.json();
+            if (data.success && data.csv) {
+                const blob = new Blob([data.csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `orders_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast(`✅ Exported ${data.count} orders`);
+            } else {
+                showToast('❌ Export failed', true);
+            }
+        } catch (error) {
+            showToast('❌ Export error', true);
+        }
+    }
+    
     async function resetSystem() {
         if (!confirm('⚠️⚠️⚠️ SYSTEM RESET ⚠️⚠️⚠️\n\nThis will DELETE:\n- ALL orders\n- ALL user stats\n- ALL uploaded images\n\nThis action CANNOT be undone!\n\nAre you ABSOLUTELY sure?')) {
             return;
@@ -890,6 +1035,7 @@
             if (data.success) {
                 showToast(`✅ System reset completed: ${data.deletedOrders} orders, ${data.deletedFiles} files deleted`);
                 loadAllData();
+                refreshStorageInfo();
             } else {
                 showToast('❌ Reset failed: ' + data.error, true);
             }
@@ -900,7 +1046,6 @@
             btn.disabled = false;
         }
     }
-    // ========== END SYSTEM RESET ==========
 
     function updateStats(orders) {
         const total = orders.length;
@@ -1139,7 +1284,7 @@
     async function approveOrder(id) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' }); if (res.ok) { showToast('✅ Approved'); loadOrders(); } else alert('Error'); }
     async function rejectOrder(id) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' }); if (res.ok) { showToast('❌ Rejected'); loadOrders(); loadUserStats(); } else alert('Error'); }
     async function deleteOrder(id) { if (confirm('Delete this order?')) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' }); if (res.ok) { showToast('🗑 Deleted'); loadOrders(); } else alert('Error'); } }
-    function manualRefresh() { loadAllData(); showToast('🔄 Synced'); secondsLeft = 30; updateCountdown(); }
+    function manualRefresh() { loadAllData(); showToast('🔄 Synced'); secondsLeft = 30; updateCountdown(); refreshStorageInfo(); }
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1149,11 +1294,18 @@
             if (currentTab === 'orders') {
                 document.getElementById('ordersTab').classList.remove('hidden');
                 document.getElementById('usersTab').classList.add('hidden');
+                document.getElementById('settingsTab').classList.add('hidden');
                 applyFiltersAndSearch();
-            } else {
+            } else if (currentTab === 'users') {
                 document.getElementById('ordersTab').classList.add('hidden');
                 document.getElementById('usersTab').classList.remove('hidden');
+                document.getElementById('settingsTab').classList.add('hidden');
                 renderUsersTab();
+            } else {
+                document.getElementById('ordersTab').classList.add('hidden');
+                document.getElementById('usersTab').classList.add('hidden');
+                document.getElementById('settingsTab').classList.remove('hidden');
+                refreshStorageInfo();
             }
         });
     });
@@ -1170,6 +1322,9 @@
     window.copyToClipboard = copyToClipboard;
     window.manualCleanup = manualCleanup;
     window.resetSystem = resetSystem;
+    window.clearAllUsers = clearAllUsers;
+    window.exportOrdersCSV = exportOrdersCSV;
+    window.refreshStorageInfo = refreshStorageInfo;
 
     if (token === 'logged_in') { 
         document.getElementById('loginBox').style.display = 'none'; 
@@ -1177,6 +1332,7 @@
         document.getElementById('fabContainer').style.display = 'flex'; 
         loadAllData(); 
         startAutoSync();
+        refreshStorageInfo();
     }
 </script>
 </body>
