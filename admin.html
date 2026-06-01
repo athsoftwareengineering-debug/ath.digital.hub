@@ -688,7 +688,7 @@
     
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text);
-        showToast(` ${text} copied!`);
+        showToast(`📞 ${text} copied!`);
     }
     
     function getRemainingTime(activatedAt) {
@@ -788,7 +788,10 @@
             const res = await fetch(`${API_BASE}/api/admin/orders`);
             const data = await res.json();
             if (data.orders) { allOrders = data.orders; applyFiltersAndSearch(); document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | Total: ${allOrders.length}`; }
-        } catch(e) { document.getElementById('ordersList').innerHTML = '<div class="loading">Connection Error</div>'; }
+        } catch(e) { 
+            console.error('Load orders error:', e);
+            document.getElementById('ordersList').innerHTML = '<div class="loading">Connection Error. Please refresh.</div>'; 
+        }
     }
 
     async function loadUserStats() {
@@ -893,7 +896,7 @@
             html += `
                 <div class="user-card ${highlightClass}">
                     <div class="user-header">
-                        <span class="user-phone" onclick="copyToClipboard('${user.phone}')"> ${maskPhone(user.phone)} 📋</span>
+                        <span class="user-phone" onclick="copyToClipboard('${user.phone}')">📞 ${maskPhone(user.phone)} 📋</span>
                         <span class="user-status ${statusClass}">${statusText}</span>
                     </div>
                     <div class="user-stats">
@@ -1028,7 +1031,7 @@
                     <div class="order-details">
                         <div class="detail-item">
                             <div class="detail-label"><i class="fas fa-mobile-alt"></i> Phone</div>
-                            <div class="detail-value clickable-phone" onclick="copyToClipboard('${o.phone}')" title="Click to copy"> ${maskPhone(o.phone)} 📋</div>
+                            <div class="detail-value clickable-phone" onclick="copyToClipboard('${o.phone}')" title="Click to copy">📞 ${maskPhone(o.phone)} 📋</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label"><i class="fas fa-tag"></i> Plan</div>
