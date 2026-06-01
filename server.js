@@ -1,5 +1,5 @@
 // ============================================================
-// ATH DIGITAL HUB - SERVER (Fixed CSP for all resources)
+// ATH DIGITAL HUB - SERVER (CSP Fully Fixed for Tawk.to)
 // ============================================================
 
 const express = require('express');
@@ -17,22 +17,22 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ========== TRUST PROXY (for Render.com) ==========
+// ========== TRUST PROXY ==========
 app.set('trust proxy', 1);
 
-// ========== SECURITY MIDDLEWARE (COMPLETELY FIXED CSP) ==========
+// ========== SECURITY MIDDLEWARE (COMPLETE CSP FOR Tawk.to) ==========
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https:", "fonts.googleapis.com", "cdnjs.cloudflare.com"],
             styleSrcElem: ["'self'", "'unsafe-inline'", "https:", "fonts.googleapis.com", "cdnjs.cloudflare.com"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "https:", "cdnjs.cloudflare.com", "fonts.googleapis.com", "embed.tawk.to", "tawk.to", "blob:"],
-            scriptSrcElem: ["'self'", "'unsafe-inline'", "https:", "cdnjs.cloudflare.com", "fonts.googleapis.com", "embed.tawk.to", "tawk.to", "blob:"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "https:", "cdnjs.cloudflare.com", "fonts.googleapis.com", "embed.tawk.to", "tawk.to", "blob:", "cdn.jsdelivr.net"],
+            scriptSrcElem: ["'self'", "'unsafe-inline'", "https:", "cdnjs.cloudflare.com", "fonts.googleapis.com", "embed.tawk.to", "tawk.to", "blob:", "cdn.jsdelivr.net"],
             scriptSrcAttr: ["'unsafe-inline'"],
             fontSrc: ["'self'", "https:", "fonts.gstatic.com", "cdnjs.cloudflare.com", "data:"],
-            imgSrc: ["'self'", "data:", "https:", "http:", "i.postimg.cc", "*.supabase.co", "blob:"],
-            connectSrc: ["'self'", "https:", "wss:", "*.supabase.co", "*.tawk.to", "ws://*.tawk.to", "wss://*.tawk.to"],
+            imgSrc: ["'self'", "data:", "https:", "http:", "i.postimg.cc", "*.supabase.co", "blob:", "*.tawk.to"],
+            connectSrc: ["'self'", "https:", "wss:", "*.supabase.co", "*.tawk.to", "ws://*.tawk.to", "wss://*.tawk.to", "https://va.tawk.to"],
             frameSrc: ["'self'", "*.tawk.to"],
             mediaSrc: ["'self'"],
             objectSrc: ["'none'"],
