@@ -1,5 +1,5 @@
 // ============================================================
-// ATH DIGITAL HUB - SERVER (CSP Fully Fixed for Tawk.to)
+// ATH DIGITAL HUB - SERVER (Auto-Increment ID + CSP Fixed)
 // ============================================================
 
 const express = require('express');
@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3000;
 // ========== TRUST PROXY ==========
 app.set('trust proxy', 1);
 
-// ========== SECURITY MIDDLEWARE (COMPLETE CSP FOR Tawk.to) ==========
+// ========== SECURITY MIDDLEWARE (FULL CSP FOR TAWK.TO) ==========
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -105,50 +105,6 @@ const upload = multer({
 
 // ========== CRON JOB SECURITY ==========
 const CRON_API_KEY = '21cef185318d538e47385bdd44d00e6231f59370fd792a6c5709f8d4aa48f82e';
-
-// ========== ORDER ID GENERATOR (Fixed) ==========
-async function getNextOrderId() {
-    try {
-        const { count, error: countError } = await supabase
-            .from('orders')
-            .select('*', { count: 'exact', head: true });
-        
-        if (countError) {
-            console.error('Count error:', countError);
-            return 1;
-        }
-        
-        if (count === 0) {
-            console.log('📝 No orders found - starting from ID 1');
-            return 1;
-        }
-        
-        const { data, error } = await supabase
-            .from('orders')
-            .select('id')
-            .order('id', { ascending: false })
-            .limit(1);
-        
-        if (error) {
-            console.error('Max ID error:', error);
-            return 1;
-        }
-        
-        if (!data || data.length === 0) {
-            return 1;
-        }
-        
-        const maxId = data[0].id;
-        const nextId = maxId + 1;
-        
-        console.log(`📝 Current max ID: ${maxId} → Next ID: ${nextId}`);
-        return nextId;
-        
-    } catch (err) {
-        console.error('❌ ID generation error:', err);
-        return Math.floor(Date.now() / 1000);
-    }
-}
 
 // ========== SUPABASE STORAGE HELPERS ==========
 
@@ -682,7 +638,7 @@ app.post('/api/admin/reset-system', async (req, res) => {
     }
 });
 
-// ========== CREATE ORDER ==========
+// ========== CREATE ORDER (Database Auto-Increment ID) ==========
 app.post('/api/orders', upload.single('slip'), [
     body('phone').isMobilePhone().withMessage('Invalid phone number'),
     body('plan').notEmpty().withMessage('Plan is required'),
@@ -703,16 +659,16 @@ app.post('/api/orders', upload.single('slip'), [
         
         const blocked = await isPhoneBlocked(phone);
         if (blocked) {
-            return res.status(403).json({ success: false, error: 'This phone number has been blocked.' });
+            return res.status(403).json({ success: false, error: 'This phone number has been blocked. Contact admin for support.' });
         }
         
         if (!checkRateLimit(phone)) {
-            return res.status(429).json({ success: false, error: 'Too many orders. Please wait.' });
+            return res.status(429).json({ success: false, error: 'Too many orders. Please wait a moment.' });
         }
         
         const duplicate = await isDuplicateOrder(phone, plan);
         if (duplicate) {
-            return res.status(409).json({ success: false, error: 'Duplicate order. Please wait 5 minutes.' });
+            return res.status(409).json({ success: false, error: 'Duplicate order detected. Please wait 5 minutes.' });
         }
         
         let slipUrl = null;
@@ -723,7 +679,7 @@ app.post('/api/orders', upload.single('slip'), [
             
             const duplicateImage = await isDuplicateImage(imageHash);
             if (duplicateImage) {
-                return res.status(409).json({ success: false, error: 'Duplicate screenshot detected.' });
+                return res.status(409).json({ success: false, error: 'Duplicate screenshot detected. Please use a new screenshot.' });
             }
             
             slipUrl = await uploadToSupabaseStorage(
@@ -733,19 +689,19 @@ app.post('/api/orders', upload.single('slip'), [
             );
         }
         
-        const orderId = await getNextOrderId();
-        
-        const { error } = await supabase
+        // Let Supabase auto-generate the ID (no manual ID needed)
+        const { data, error } = await supabase
             .from('orders')
             .insert([{
-                id: orderId,
                 phone: phone,
                 plan: plan,
                 price: parseInt(price),
                 status: 'Pending',
                 slip_url: slipUrl,
                 image_hash: imageHash
-            }]);
+            }])
+            .select('id')
+            .single();
         
         if (error) {
             console.error('Insert error:', error);
@@ -754,10 +710,10 @@ app.post('/api/orders', upload.single('slip'), [
         
         await updateUserStats(phone, false);
         
-        console.log(`✅ Order created: ${orderId}`);
+        console.log(`✅ Order created: ${data.id}`);
         res.json({ 
             success: true, 
-            orderId: orderId,
+            orderId: data.id,
             message: 'Order created successfully'
         });
         
@@ -781,7 +737,7 @@ app.put('/api/admin/orders/:id/approve', async (req, res) => {
             .eq('id', id);
         
         if (error) throw error;
-        res.json({ success: true, message: 'Order approved' });
+        res.json({ success: true, message: 'Order approved successfully' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -808,7 +764,7 @@ app.put('/api/admin/orders/:id/reject', async (req, res) => {
             await updateUserStats(order.phone, true);
         }
         
-        res.json({ success: true, message: 'Order rejected' });
+        res.json({ success: true, message: 'Order rejected successfully' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -834,7 +790,7 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
             .eq('id', id);
         
         if (error) throw error;
-        res.json({ success: true, message: 'Order deleted' });
+        res.json({ success: true, message: 'Order deleted successfully' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -857,5 +813,6 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📱 Store: /index.html`);
     console.log(`👨‍💼 Admin: /admin.html`);
-    console.log(`🔢 Order ID: Skip Method (MAX + 1)`);
+    console.log(`🔢 Order ID: Database Auto-Increment`);
+    console.log(`🗑️ System Reset: Will delete ALL storage files, orders, and user stats`);
 });
