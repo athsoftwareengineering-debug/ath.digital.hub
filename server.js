@@ -1,30 +1,74 @@
-// server.js - Express Server
+// ============================================================
+// ATH DIGITAL HUB - SERVER (FULLY UPDATED)
+// ============================================================
+
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
 const crypto = require('crypto');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
 const { supabase, supabaseAdmin } = require('./database');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// ========== SECURITY MIDDLEWARE ==========
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com", "cdnjs.cloudflare.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "fonts.googleapis.com"],
+            fontSrc: ["'self'", "fonts.gstatic.com", "cdnjs.cloudflare.com"],
+            imgSrc: ["'self'", "data:", "https:", "i.postimg.cc"],
+            connectSrc: ["'self'", "*.supabase.co"],
+        },
+    },
+}));
+
+// ========== RATE LIMITING ==========
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { success: false, error: 'Too many requests. Please try again later.' }
+});
+
+const orderLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 5,
+    message: { success: false, error: 'Too many orders. Please wait a moment.' }
+});
+
+const adminLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    skipSuccessfulRequests: true,
+    message: { success: false, error: 'Too many login attempts. Try again later.' }
+});
+
+app.use('/api/', globalLimiter);
+app.use('/api/orders', orderLimiter);
+app.use('/api/admin/login', adminLimiter);
+
+// ========== STANDARD MIDDLEWARE ==========
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
-// Ensure uploads directory exists
+// ========== UPLOADS DIRECTORY ==========
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 app.use('/uploads', express.static('uploads'));
 
-// File upload configuration
+// ========== FILE UPLOAD CONFIGURATION ==========
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'uploads/');
@@ -34,23 +78,28 @@ const storage = multer.diskStorage({
         cb(null, uniqueName);
     }
 });
+
+const fileFilter = (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+    const allowedExt = ['.jpg', '.jpeg', '.png', '.webp'];
+    
+    const extname = allowedExt.includes(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedMimes.includes(file.mimetype);
+    
+    if (mimetype && extname) {
+        cb(null, true);
+    } else {
+        cb(new Error('Only image files (JPEG, PNG, WEBP) are allowed!'));
+    }
+};
+
 const upload = multer({ 
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png|gif|webp/;
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
-        if (mimetype && extname) {
-            return cb(null, true);
-        } else {
-            cb(new Error('Only images are allowed'));
-        }
-    }
+    fileFilter: fileFilter
 });
 
-// ==================== FRAUD DETECTION HELPERS ====================
-
+// ========== FRAUD DETECTION HELPERS ==========
 function calculateImageHash(fileBuffer) {
     return crypto.createHash('md5').update(fileBuffer).digest('hex');
 }
@@ -166,7 +215,7 @@ function checkRateLimit(phone) {
     return true;
 }
 
-// ==================== AUTO CLEANUP FUNCTION ====================
+// ========== AUTO CLEANUP FUNCTION ==========
 async function autoCleanupOldOrders() {
     try {
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -207,7 +256,7 @@ async function autoCleanupOldOrders() {
 setInterval(autoCleanupOldOrders, 24 * 60 * 60 * 1000);
 setTimeout(autoCleanupOldOrders, 5000);
 
-// ==================== STATIC HTML ROUTES ====================
+// ========== STATIC HTML ROUTES ==========
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -222,7 +271,26 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ==================== USER API ====================
+// ========== MAIN STORE - GET ALL ORDERS (LIVE FEED) ==========
+app.get('/api/orders', async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            return res.status(500).json({ orders: [], error: error.message });
+        }
+        
+        res.json({ orders: data || [] });
+    } catch (error) {
+        console.error('Error fetching orders for store:', error);
+        res.status(500).json({ orders: [], error: error.message });
+    }
+});
+
+// ========== USER API - GET USER'S OWN ORDERS ==========
 app.get('/api/orders/:phone', async (req, res) => {
     try {
         const { phone } = req.params;
@@ -248,7 +316,7 @@ app.get('/api/orders/:phone', async (req, res) => {
     }
 });
 
-// ==================== ADMIN API ====================
+// ========== ADMIN API ==========
 app.get('/api/admin/orders', async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
@@ -435,8 +503,17 @@ app.post('/api/admin/cleanup-old', async (req, res) => {
     }
 });
 
-// ==================== CREATE ORDER ====================
-app.post('/api/orders', upload.single('slip'), async (req, res) => {
+// ========== CREATE ORDER (WITH VALIDATION) ==========
+app.post('/api/orders', upload.single('slip'), [
+    body('phone').isMobilePhone().withMessage('Invalid phone number'),
+    body('plan').notEmpty().withMessage('Plan is required'),
+    body('price').isInt({ min: 1000, max: 100000 }).withMessage('Invalid price'),
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    
     try {
         const { phone, plan, price } = req.body;
         const slipFile = req.file;
@@ -509,7 +586,7 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
     }
 });
 
-// ==================== ADMIN - Approve/Reject/Delete ====================
+// ========== ADMIN - Approve/Reject/Delete ==========
 app.put('/api/admin/orders/:id/approve', async (req, res) => {
     try {
         const { id } = req.params;
@@ -583,6 +660,7 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
     }
 });
 
+// ========== ADMIN LOGIN ==========
 app.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
     if (password === process.env.ADMIN_PASSWORD) {
@@ -594,6 +672,7 @@ app.post('/api/admin/login', (req, res) => {
 
 app.use('/uploads', express.static('uploads'));
 
+// ========== START SERVER ==========
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`📱 User Store: http://localhost:${PORT}/index.html`);
