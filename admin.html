@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Admin Panel | ATH DIGITAL HUB</title>
+    
+    <!-- ========== 🟢 NEW: Security Meta Tags ========== -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <!-- ========== 🔵 END OF NEW ========== -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,20 +31,25 @@
             color: var(--text-primary);
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
-            /* 🌌 Space Background - Minimal Space with Stars */
-            background-image: 
-                radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.15) 0%, transparent 60%),
-                radial-gradient(circle at 85% 70%, rgba(0,212,255,0.1) 0%, transparent 55%),
-                repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 2px);
-            background-size: 100% 100%, 100% 100%, 100% 100%;
             padding: 12px;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 20% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 85% 70%, rgba(0, 212, 255, 0.1) 0%, transparent 60%);
+            z-index: -2;
         }
         
         .container { max-width: 600px; margin: 0 auto; }
         
         .header {
             backdrop-filter: blur(20px);
-            background: rgba(10,12,21,0.7);
+            background: rgba(10, 12, 21, 0.7);
             border: 1px solid rgba(0,212,255,0.2);
             border-radius: 1.5rem;
             padding: 12px 16px;
@@ -137,7 +149,7 @@
         .stat-number.cost { color: var(--amber); }
         
         .search-bar {
-            background: rgba(18,22,35,0.8);
+            background: rgba(18, 22, 35, 0.8);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(0,212,255,0.15);
             border-radius: 1rem;
@@ -181,7 +193,7 @@
         }
         
         .filter-bar {
-            background: rgba(18,22,35,0.8);
+            background: rgba(18, 22, 35, 0.8);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(0,212,255,0.15);
             border-radius: 1rem;
@@ -242,25 +254,38 @@
         }
         .order-card:hover { border-color: rgba(0,212,255,0.3); transform: translateX(3px); }
         
+        @keyframes blinkGlow {
+            0% { 
+                border-color: rgba(251, 191, 36, 0);
+                box-shadow: 0 0 0px rgba(251, 191, 36, 0);
+                background: rgba(251, 191, 36, 0);
+            }
+            25% { 
+                border-color: #fbbf24;
+                box-shadow: 0 0 20px #fbbf24;
+                background: rgba(251, 191, 36, 0.25);
+            }
+            50% { 
+                border-color: rgba(251, 191, 36, 0);
+                box-shadow: 0 0 0px rgba(251, 191, 36, 0);
+                background: rgba(251, 191, 36, 0);
+            }
+            75% { 
+                border-color: #fbbf24;
+                box-shadow: 0 0 20px #fbbf24;
+                background: rgba(251, 191, 36, 0.25);
+            }
+            100% { 
+                border-color: rgba(251, 191, 36, 0);
+                box-shadow: 0 0 0px rgba(251, 191, 36, 0);
+                background: rgba(251, 191, 36, 0);
+            }
+        }
         .order-card.search-highlight {
-            border: 2px solid #fbbf24;
-            background: rgba(251,191,36,0.15);
-            box-shadow: 0 0 20px rgba(251,191,36,0.5);
             animation: blinkGlow 1s ease-in-out 2;
         }
         .user-card.search-highlight {
-            border: 2px solid #fbbf24;
-            background: rgba(251,191,36,0.15);
-            box-shadow: 0 0 20px rgba(251,191,36,0.5);
             animation: blinkGlow 1s ease-in-out 2;
-        }
-        
-        @keyframes blinkGlow {
-            0% { border-color: rgba(251,191,36,0); box-shadow: 0 0 0px rgba(251,191,36,0); background: rgba(251,191,36,0); }
-            25% { border-color: #fbbf24; box-shadow: 0 0 20px #fbbf24; background: rgba(251,191,36,0.25); }
-            50% { border-color: rgba(251,191,36,0); box-shadow: 0 0 0px rgba(251,191,36,0); background: rgba(251,191,36,0); }
-            75% { border-color: #fbbf24; box-shadow: 0 0 20px #fbbf24; background: rgba(251,191,36,0.25); }
-            100% { border-color: rgba(251,191,36,0); box-shadow: 0 0 0px rgba(251,191,36,0); background: rgba(251,191,36,0); }
         }
         
         .order-header {
@@ -633,6 +658,38 @@
 </div>
 
 <script>
+    // ========== 🟢 NEW: Security Console Warning & Session Timeout ==========
+    console.log("%c🔐 ADMIN PANEL - AUTHORIZED ACCESS ONLY 🔐", "color: #f43f5e; font-size: 16px; font-weight: bold;");
+    console.log("%cAll activities are logged. Unauthorized access is prohibited.", "color: #94a3b8; font-size: 12px;");
+    
+    // Session timeout after 30 minutes of inactivity
+    let sessionTimer;
+    function resetSessionTimer() {
+        clearTimeout(sessionTimer);
+        sessionTimer = setTimeout(() => {
+            if (token === 'logged_in') {
+                alert("⚠️ Session timeout due to inactivity (30 minutes). Please login again.");
+                logout();
+            }
+        }, 30 * 60 * 1000);
+    }
+    
+    // Add event listeners for user activity
+    function startSessionTimer() {
+        document.addEventListener('click', resetSessionTimer);
+        document.addEventListener('keypress', resetSessionTimer);
+        document.addEventListener('mousemove', resetSessionTimer);
+        resetSessionTimer();
+    }
+    
+    function stopSessionTimer() {
+        clearTimeout(sessionTimer);
+        document.removeEventListener('click', resetSessionTimer);
+        document.removeEventListener('keypress', resetSessionTimer);
+        document.removeEventListener('mousemove', resetSessionTimer);
+    }
+    // ========== 🔵 END OF NEW ==========
+
     const API_BASE = window.location.origin;
     let token = localStorage.getItem('adminToken');
     let allOrders = [];
@@ -737,10 +794,19 @@
             document.getElementById('adminContent').style.display = 'block';
             document.getElementById('fabContainer').style.display = 'flex';
             loadAllData(); startAutoSync();
+            startSessionTimer(); // Start session timer after login
         } else { alert('Invalid Password'); }
     }
 
-    function logout() { stopAutoSync(); localStorage.removeItem('adminToken'); token = null; document.getElementById('loginBox').style.display = 'block'; document.getElementById('adminContent').style.display = 'none'; document.getElementById('fabContainer').style.display = 'none'; }
+    function logout() { 
+        stopAutoSync(); 
+        stopSessionTimer(); // Stop session timer
+        localStorage.removeItem('adminToken'); 
+        token = null; 
+        document.getElementById('loginBox').style.display = 'block'; 
+        document.getElementById('adminContent').style.display = 'none'; 
+        document.getElementById('fabContainer').style.display = 'none'; 
+    }
 
     async function loadAllData() {
         await loadOrders();
@@ -1079,7 +1145,14 @@
     window.copyToClipboard = copyToClipboard;
     window.manualCleanup = manualCleanup;
 
-    if (token === 'logged_in') { document.getElementById('loginBox').style.display = 'none'; document.getElementById('adminContent').style.display = 'block'; document.getElementById('fabContainer').style.display = 'flex'; loadAllData(); startAutoSync(); }
+    if (token === 'logged_in') { 
+        document.getElementById('loginBox').style.display = 'none'; 
+        document.getElementById('adminContent').style.display = 'block'; 
+        document.getElementById('fabContainer').style.display = 'flex'; 
+        loadAllData(); 
+        startAutoSync();
+        startSessionTimer();
+    }
 </script>
 </body>
 </html>
