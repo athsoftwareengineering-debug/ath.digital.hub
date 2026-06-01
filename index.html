@@ -389,7 +389,7 @@
         .buy-btn:hover { background: var(--cyan); transform: scale(0.98); color: #030712; }
         .divider { margin: 12px 0; border-top: 1px solid rgba(255,255,255,0.08); }
         
-        /* Enhanced Modal Styles */
+        /* Modal Styles */
         .modal-overlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
             background: rgba(3,7,18,0.96); backdrop-filter: blur(20px);
@@ -459,15 +459,6 @@
         }
         .phone-copy:hover { transform: scale(1.02); }
         
-        .order-summary {
-            background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(139,92,246,0.05));
-            border: 1px solid rgba(0,212,255,0.15);
-            border-radius: 16px;
-            padding: 12px;
-            margin: 0 0 16px 0;
-            text-align: center;
-        }
-        
         .file-upload-btn {
             background: rgba(0,212,255,0.08);
             border: 1px dashed rgba(0,212,255,0.4);
@@ -483,8 +474,6 @@
         }
         
         .submit-btn {
-            position: relative;
-            overflow: hidden;
             width: 100%;
             padding: 12px;
             border-radius: 60px;
@@ -498,22 +487,6 @@
         }
         .submit-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.05); }
         .submit-btn:disabled { cursor: not-allowed; opacity: 0.6; }
-        .submit-btn::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.3s, height 0.3s;
-        }
-        .submit-btn:active::after {
-            width: 100%;
-            height: 100%;
-        }
         
         .form-group { margin-bottom: 16px; }
         .form-group label { font-size: 0.75rem; display: block; margin-bottom: 6px; color: var(--text-secondary); }
@@ -722,7 +695,7 @@
     </div>
 </div>
 
-<!-- Enhanced Payment Modal -->
+<!-- Payment Modal (No Order Summary) -->
 <div id="paymentModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-close" id="closeModalBtn">&times;</div>
@@ -756,15 +729,6 @@
             </div>
             <div style="text-align: center; margin-top: 8px; padding-top: 6px; border-top: 1px dashed rgba(255,255,255,0.08);">
                 <p style="font-size: 0.55rem; color: #64748b;"><i class="fas fa-info-circle"></i> ဖုန်းနံပါတ်ကို နှိပ်၍ ကူးယူနိုင်ပါသည်။</p>
-            </div>
-        </div>
-        
-        <!-- Order Summary -->
-        <div class="order-summary">
-            <span style="font-size: 0.6rem; color: #64748b;"><i class="fas fa-shopping-cart"></i> သင်၏အော်ဒါ</span>
-            <div style="display: flex; justify-content: center; align-items: baseline; gap: 12px; margin-top: 6px;">
-                <span id="selectedPlanName" style="font-size: 0.75rem; font-weight: 600; color: var(--cyan);">-</span>
-                <span id="selectedPlanPrice" style="font-size: 1rem; font-weight: 700; color: var(--emerald);">- KS</span>
             </div>
         </div>
         
@@ -1161,17 +1125,11 @@
         autoRefreshInterval=setInterval(()=>{if(document.getElementById('historyPanel').classList.contains('open')){loadData();refreshSec=30;}},30000);
     }
     
-    // Enhanced modal functions
+    // Modal functions
     document.querySelectorAll('.buy-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             selectedPlan = btn.dataset.plan;
             selectedPrice = parseInt(btn.dataset.price);
-            
-            const planNameEl = document.getElementById('selectedPlanName');
-            const planPriceEl = document.getElementById('selectedPlanPrice');
-            if (planNameEl) planNameEl.innerHTML = selectedPlan;
-            if (planPriceEl) planPriceEl.innerHTML = selectedPrice.toLocaleString() + ' KS';
-            
             document.getElementById('paymentModal').classList.add('active');
         });
     });
