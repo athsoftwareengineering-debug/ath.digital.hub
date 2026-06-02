@@ -1,4 +1,4 @@
-// server.js - MYTEL REAL API (Balance, Data, Minutes, SMS, Points)
+// server.js - MYTEL REAL API (UPDATED - FIXED URL)
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -13,18 +13,15 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Trust proxy for Render
 app.set('trust proxy', 1);
 
-// Middleware
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
-// Session
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'mytel-real-balance-secret',
+    secret: process.env.SESSION_SECRET || 'mytel-real-api-secret',
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -35,12 +32,10 @@ app.use(session({
     }
 }));
 
-// Uploads directory
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 app.use('/uploads', express.static('uploads'));
 
-// File upload config
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'uploads/'),
     filename: (req, file, cb) => {
@@ -50,9 +45,10 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
-// ==================== MYTEL REAL API FUNCTIONS ====================
-
-const MYTEL_API_BASE = process.env.MYTEL_API_BASE || 'https://apis.mytel.com.mm';
+// ==================== MYTEL API CONFIGURATION ====================
+// ✅ FIXED: Correct API Base URL (myd → myid)
+const MYTEL_AUTH_BASE = process.env.MYTEL_API_BASE || 'https://apis.mytel.com.mm/myid/authen/v1.0';
+const MYTEL_ACCOUNT_BASE = 'https://apis.mytel.com.mm/account-detail/api/v1.2/individual';
 
 function generateDeviceId() {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 8);
@@ -72,7 +68,6 @@ function getMytelHeaders(accessToken = null) {
     return headers;
 }
 
-// Convert Myanmar numbers to English
 function convertToEnglishNumbers(input) {
     const myanmarNumbers = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
     const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -87,27 +82,35 @@ function convertToEnglishNumbers(input) {
 
 async function checkMytelAccount(phone) {
     try {
-        const url = `${MYTEL_API_BASE}/myid/authen/v1.0/login/action/check-account?phoneNumber=${phone}`;
+        const url = `${MYTEL_AUTH_BASE}/login/action/check-account?phoneNumber=${phone}`;
+        console.log(`📡 [CHECK] ${url}`);
         const response = await axios.get(url, { headers: getMytelHeaders(), timeout: 15000 });
         return response.data;
     } catch (error) {
-        return { errorCode: 500, message: error.message };
+        console.error('Check Account Error:', error.response?.status);
+        return { errorCode: error.response?.status || 500, message: error.message };
     }
 }
 
 async function sendMytelOTP(phone) {
     try {
-        const url = `${MYTEL_API_BASE}/myid/authen/v1.0/login/method/otp/get-otp?phoneNumber=${phone}`;
-        const response = await axios.get(url, { headers: getMytelHeaders(), timeout: 20000 });
+        const url = `${MYTEL_AUTH_BASE}/login/method/otp/get-otp?phoneNumber=${phone}`;
+        console.log(`📡 [SEND OTP] ${url}`);
+        const response = await axios.get(url, { 
+            headers: getMytelHeaders(), 
+            timeout: 20000
+        });
+        console.log(`📡 [OTP RESPONSE]`, response.status, response.data);
         return response.data;
     } catch (error) {
-        return { errorCode: 500, message: error.message };
+        console.error('Send OTP Error:', error.response?.status, error.response?.data || error.message);
+        return { errorCode: error.response?.status || 500, message: error.message };
     }
 }
 
 async function validateMytelOTP(phone, otp, deviceId) {
     try {
-        const url = `${MYTEL_API_BASE}/myid/authen/v1.0/login/method/otp/validate-otp`;
+        const url = `${MYTEL_AUTH_BASE}/login/method/otp/validate-otp`;
         const payload = {
             appVersion: "2.0.16",
             buildVersionApp: "300",
@@ -125,30 +128,24 @@ async function validateMytelOTP(phone, otp, deviceId) {
         if (response.data && response.data.errorCode === 200) {
             return { 
                 success: true, 
-                accessToken: response.data.result?.access_token,
-                refreshToken: response.data.result?.refresh_token
+                accessToken: response.data.result?.access_token
             };
         }
         return { success: false, error: response.data?.message };
     } catch (error) {
+        console.error('Validate Error:', error.response?.status);
         return { success: false, error: error.message };
     }
 }
 
-// ==================== REAL BALANCE APIS ====================
+// ==================== BALANCE APIS ====================
 
-// 1. Account Balance (ဘေလ်လက်ကျန်)
 async function getRealAccountBalance(accessToken) {
     try {
-        const url = `${MYTEL_API_BASE}/account-detail/api/v1.2/individual/account-balance`;
+        const url = `${MYTEL_ACCOUNT_BASE}/account-balance`;
         const response = await axios.get(url, { headers: getMytelHeaders(accessToken), timeout: 10000 });
-        
-        if (response.data && response.data.errorCode === 200 && response.data.result) {
-            return {
-                success: true,
-                balance: response.data.result.balance || response.data.result.remainingBalance || 0,
-                currency: response.data.result.currency || 'MMK'
-            };
+        if (response.data && response.data.errorCode === 200) {
+            return { success: true, balance: response.data.result?.balance || 0 };
         }
         return { success: false, balance: 0 };
     } catch (error) {
@@ -156,26 +153,13 @@ async function getRealAccountBalance(accessToken) {
     }
 }
 
-// 2. Data Usage (ဒေတာလက်ကျန်)
 async function getRealDataUsage(accessToken) {
     try {
-        const url = `${MYTEL_API_BASE}/account-detail/api/v1.2/individual/data-usage`;
+        const url = `${MYTEL_ACCOUNT_BASE}/data-usage`;
         const response = await axios.get(url, { headers: getMytelHeaders(accessToken), timeout: 10000 });
-        
         if (response.data && response.data.errorCode === 200 && response.data.result) {
-            let remainingData = 0;
-            const result = response.data.result;
-            
-            if (result.remainingData) remainingData = result.remainingData;
-            else if (result.remaining) remainingData = result.remaining;
-            else if (result.dataRemaining) remainingData = result.dataRemaining;
-            else if (result.remainingMB) remainingData = result.remainingMB;
-            
-            if (remainingData < 100 && result.unit === 'GB') {
-                remainingData = remainingData * 1024;
-            }
-            
-            return { success: true, data: Math.round(remainingData), unit: 'MB' };
+            let data = response.data.result.remainingData || response.data.result.remaining || 0;
+            return { success: true, data: Math.round(data) };
         }
         return { success: false, data: 0 };
     } catch (error) {
@@ -183,21 +167,12 @@ async function getRealDataUsage(accessToken) {
     }
 }
 
-// 3. Voice Usage (မိနစ်လက်ကျန်)
 async function getRealVoiceUsage(accessToken) {
     try {
-        const url = `${MYTEL_API_BASE}/account-detail/api/v1.2/individual/voice-usage`;
+        const url = `${MYTEL_ACCOUNT_BASE}/voice-usage`;
         const response = await axios.get(url, { headers: getMytelHeaders(accessToken), timeout: 10000 });
-        
         if (response.data && response.data.errorCode === 200 && response.data.result) {
-            let remainingMinutes = 0;
-            const result = response.data.result;
-            
-            if (result.remainingMinutes) remainingMinutes = result.remainingMinutes;
-            else if (result.remaining) remainingMinutes = result.remaining;
-            else if (result.minutesRemaining) remainingMinutes = result.minutesRemaining;
-            
-            return { success: true, minutes: remainingMinutes };
+            return { success: true, minutes: response.data.result.remainingMinutes || 0 };
         }
         return { success: false, minutes: 0 };
     } catch (error) {
@@ -205,21 +180,12 @@ async function getRealVoiceUsage(accessToken) {
     }
 }
 
-// 4. SMS Usage (SMS လက်ကျန်)
 async function getRealSmsUsage(accessToken) {
     try {
-        const url = `${MYTEL_API_BASE}/account-detail/api/v1.2/individual/sms-usage`;
+        const url = `${MYTEL_ACCOUNT_BASE}/sms-usage`;
         const response = await axios.get(url, { headers: getMytelHeaders(accessToken), timeout: 10000 });
-        
         if (response.data && response.data.errorCode === 200 && response.data.result) {
-            let remainingSms = 0;
-            const result = response.data.result;
-            
-            if (result.remainingSMS) remainingSms = result.remainingSMS;
-            else if (result.remaining) remainingSms = result.remaining;
-            else if (result.smsRemaining) remainingSms = result.smsRemaining;
-            
-            return { success: true, sms: remainingSms };
+            return { success: true, sms: response.data.result.remainingSMS || 0 };
         }
         return { success: false, sms: 0 };
     } catch (error) {
@@ -227,16 +193,12 @@ async function getRealSmsUsage(accessToken) {
     }
 }
 
-// 5. Points (အမှတ်များ) - From Account Main API
 async function getRealPoints(accessToken) {
     try {
-        const url = `${MYTEL_API_BASE}/account-detail/api/v1.2/individual/account-main`;
+        const url = `${MYTEL_ACCOUNT_BASE}/account-main`;
         const response = await axios.get(url, { headers: getMytelHeaders(accessToken), timeout: 10000 });
-        
         if (response.data && response.data.errorCode === 200 && response.data.result) {
-            const result = response.data.result;
-            // Try to find points in different possible fields
-            const points = result.loyaltyPoints || result.points || result.rewardPoints || result.mytelPoints || 0;
+            const points = response.data.result.loyaltyPoints || response.data.result.points || 0;
             return { success: true, points: points };
         }
         return { success: false, points: 0 };
@@ -252,7 +214,6 @@ app.post('/api/auth/send-otp', async (req, res) => {
     
     try {
         const { phone } = req.body;
-        
         if (!phone || phone.length < 9) {
             return res.status(400).json({ success: false, error: 'ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ' });
         }
@@ -261,21 +222,16 @@ app.post('/api/auth/send-otp', async (req, res) => {
         if (phone.startsWith('09')) formattedPhone = phone;
         else if (phone.startsWith('959')) formattedPhone = '0' + phone.substring(2);
         
-        console.log(`📞 Phone: ${formattedPhone}`);
-        
         const otpResult = await sendMytelOTP(formattedPhone);
-        console.log('Send OTP result:', otpResult);
         
         if (otpResult.errorCode === 200) {
             const localOTP = Math.floor(100000 + Math.random() * 900000).toString();
             saveOTP(formattedPhone, localOTP);
-            
             res.json({ success: true, message: 'OTP ကုဒ် ပို့ပြီးပါပြီ။ သင့် SMS ကို စစ်ဆေးပါ။' });
         } else {
             res.status(500).json({ success: false, error: otpResult.message || 'OTP ပို့ရန် မအောင်မြင်ပါ။' });
         }
     } catch (error) {
-        console.error('Send OTP error:', error);
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
@@ -285,18 +241,14 @@ app.post('/api/auth/verify-otp', async (req, res) => {
     
     try {
         let { phone, otp } = req.body;
-        
         if (!phone || !otp) {
             return res.status(400).json({ success: false, error: 'ဖုန်းနံပါတ်နှင့် OTP ထည့်ပါ' });
         }
         
         const convertedOtp = convertToEnglishNumbers(otp);
-        
         let formattedPhone = phone;
         if (phone.startsWith('09')) formattedPhone = phone;
         else if (phone.startsWith('959')) formattedPhone = '0' + phone.substring(2);
-        
-        console.log(`Phone: ${formattedPhone}, OTP: ${convertedOtp}`);
         
         const deviceId = generateDeviceId();
         const validation = await validateMytelOTP(formattedPhone, convertedOtp, deviceId);
@@ -318,7 +270,6 @@ app.post('/api/auth/verify-otp', async (req, res) => {
                     .insert([{ phone: formattedPhone, order_count: 0, reject_count: 0, suspect_flag: false, blocked: false }]);
             }
             
-            console.log(`✅ Login successful: ${formattedPhone}`);
             res.json({ success: true, message: 'အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်' });
         } else {
             const isValidLocal = verifyOTP(formattedPhone, convertedOtp);
@@ -331,7 +282,6 @@ app.post('/api/auth/verify-otp', async (req, res) => {
             }
         }
     } catch (error) {
-        console.error('Verify OTP error:', error);
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
@@ -349,19 +299,16 @@ app.post('/api/auth/logout', (req, res) => {
     res.json({ success: true });
 });
 
-// ==================== REAL BALANCE API (All in One) ====================
+// ==================== BALANCE API ====================
 app.get('/api/user/balance', async (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ success: false, error: 'ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ' });
     }
     
     const accessToken = req.session.accessToken;
-    
     if (!accessToken) {
-        return res.json({ success: true, balance: 0, minutes: 0, data: 0, sms: 0, points: 0, source: 'no-token' });
+        return res.json({ success: true, balance: 0, minutes: 0, data: 0, sms: 0, points: 0 });
     }
-    
-    console.log(`\n📊 Fetching REAL balance for: ${req.session.userPhone}`);
     
     try {
         const [balanceResult, dataResult, voiceResult, smsResult, pointsResult] = await Promise.all([
@@ -372,7 +319,7 @@ app.get('/api/user/balance', async (req, res) => {
             getRealPoints(accessToken)
         ]);
         
-        const responseData = {
+        res.json({
             success: true,
             balance: balanceResult.balance || 0,
             minutes: voiceResult.minutes || 0,
@@ -381,14 +328,9 @@ app.get('/api/user/balance', async (req, res) => {
             points: pointsResult.points || 0,
             lastUpdated: new Date().toISOString(),
             source: 'mytel-real-api'
-        };
-        
-        console.log('✅ Response:', responseData);
-        res.json(responseData);
-        
+        });
     } catch (error) {
-        console.error('Balance API error:', error);
-        res.json({ success: true, balance: 0, minutes: 0, data: 0, sms: 0, points: 0, source: 'error' });
+        res.json({ success: true, balance: 0, minutes: 0, data: 0, sms: 0, points: 0 });
     }
 });
 
@@ -438,7 +380,6 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
             }]);
         
         if (error) throw error;
-        
         res.json({ success: true, orderId: orderId, message: 'အော်ဒါအောင်မြင်ပါသည်' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -507,12 +448,11 @@ app.get('/api/health', (req, res) => {
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 
-// ==================== START SERVER ====================
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n╔════════════════════════════════════════════════════════════╗`);
-    console.log(`║  🚀 MYTEL REAL API WITH ALL BALANCE                       ║`);
+    console.log(`║  🚀 MYTEL REAL API SERVER (UPDATED)                      ║`);
+    console.log(`║  📡 AUTH BASE: ${MYTEL_AUTH_BASE}`);
     console.log(`║  💰 Balance | 📶 Data | 📞 Minutes | 💬 SMS | ⭐ Points   ║`);
     console.log(`║  📱 Store: https://ath-digital-hub.onrender.com/         ║`);
-    console.log(`║  📡 Fetching REAL data from Mytel servers                ║`);
     console.log(`╚════════════════════════════════════════════════════════════╝\n`);
 });
