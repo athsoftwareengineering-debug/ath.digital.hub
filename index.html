@@ -3,105 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>ATH DIGITAL HUB - Digital Products Store</title>
+    <title>ATH DIGITAL HUB - Multi-Product Store</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #0a0c15;
-            color: #f1f5f9;
-            font-family: 'Inter', sans-serif;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
         
+        :root {
+            --primary: #00d4ff;
+            --primary-dark: #0099cc;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #f43f5e;
+            --dark: #0a0c15;
+            --darker: #05070f;
+            --card-bg: linear-gradient(145deg, #11131e, #0c0e16);
+            --glass: rgba(18,22,35,0.8);
+        }
+        
+        body {
+            background: var(--dark);
+            color: #fff;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            background-image: radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.08) 0%, transparent 50%),
+                              radial-gradient(circle at 85% 70%, rgba(0,212,255,0.05) 0%, transparent 55%);
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+        
+        /* Header */
         .header {
             background: rgba(10,12,21,0.8);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(0,212,255,0.2);
             border-radius: 20px;
-            padding: 12px 20px;
+            padding: 12px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 15px;
             margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
         }
-        .logo { display: flex; align-items: center; gap: 12px; }
-        .logo img { width: 45px; height: 45px; border-radius: 12px; }
-        .logo h1 { font-size: 1.2rem; background: linear-gradient(135deg, #fff, #00d4ff); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo img {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,212,255,0.3);
+        }
+        
+        .logo h1 {
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #fff, var(--primary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        
+        .logo p {
+            font-size: 0.65rem;
+            color: #64748b;
+            margin-top: 2px;
+        }
+        
         .cart-btn {
             background: rgba(0,212,255,0.15);
             border: 1px solid rgba(0,212,255,0.3);
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 40px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            transition: all 0.2s;
+            font-weight: 600;
         }
-        .cart-count { background: #f43f5e; border-radius: 50%; width: 22px; height: 22px; font-size: 0.7rem; display: inline-flex; align-items: center; justify-content: center; }
         
+        .cart-btn:hover {
+            background: rgba(0,212,255,0.3);
+            transform: scale(1.02);
+        }
+        
+        .cart-count {
+            background: var(--danger);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        
+        /* Categories */
         .categories {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             justify-content: center;
         }
+        
         .cat-btn {
             background: rgba(18,22,35,0.8);
             border: 1px solid rgba(0,212,255,0.2);
-            padding: 8px 20px;
+            padding: 10px 24px;
             border-radius: 40px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             transition: all 0.2s;
+            font-weight: 500;
         }
-        .cat-btn.active { background: #00d4ff; color: #030712; }
         
+        .cat-btn:hover {
+            background: rgba(0,212,255,0.15);
+            transform: translateY(-2px);
+        }
+        
+        .cat-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #030712;
+            border-color: transparent;
+            box-shadow: 0 5px 15px rgba(0,212,255,0.3);
+        }
+        
+        /* Products Grid */
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
         }
+        
         .product-card {
-            background: linear-gradient(145deg, #11131e, #0c0e16);
-            border: 1px solid rgba(0,212,255,0.15);
+            background: var(--card-bg);
+            border: 1px solid rgba(0,212,255,0.1);
             border-radius: 20px;
-            padding: 18px;
+            padding: 20px;
             transition: all 0.3s;
             position: relative;
+            overflow: hidden;
         }
-        .product-card:hover { transform: translateY(-5px); border-color: #00d4ff; }
-        .product-icon { font-size: 3rem; margin-bottom: 12px; text-align: center; }
-        .product-name { font-size: 1rem; font-weight: 700; margin-bottom: 5px; }
-        .product-category { font-size: 0.6rem; color: #00d4ff; margin-bottom: 8px; }
+        
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(0,212,255,0.4);
+            box-shadow: 0 20px 30px -15px rgba(0,212,255,0.2);
+        }
+        
+        .product-card:hover::before { opacity: 1; }
+        
         .product-type-badge {
             position: absolute;
-            top: 12px;
-            right: 12px;
+            top: 15px;
+            right: 15px;
             background: rgba(0,212,255,0.2);
-            padding: 2px 8px;
+            padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.6rem;
-            color: #00d4ff;
+            font-weight: 600;
+            color: var(--primary);
+            backdrop-filter: blur(5px);
         }
-        .product-desc { font-size: 0.7rem; color: #94a3b8; margin-bottom: 12px; }
-        .product-price { font-size: 1.2rem; font-weight: 700; color: #10b981; margin-bottom: 12px; }
+        
+        .product-icon {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .product-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .product-category {
+            font-size: 0.65rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: inline-block;
+            padding: 3px 10px;
+            background: rgba(0,212,255,0.1);
+            border-radius: 20px;
+        }
+        
+        .product-desc {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .product-price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 15px;
+        }
+        
         .add-btn {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             background: rgba(0,212,255,0.15);
             border: 1px solid rgba(0,212,255,0.3);
             border-radius: 40px;
-            color: #00d4ff;
+            color: var(--primary);
             cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        .add-btn:hover { background: #00d4ff; color: #030712; }
         
+        .add-btn:hover {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #030712;
+            transform: scale(0.98);
+        }
+        
+        /* Cart Sidebar */
         .cart-sidebar {
             position: fixed;
             top: 0;
@@ -111,26 +257,122 @@
             height: 100%;
             background: rgba(8,12,22,0.98);
             backdrop-filter: blur(24px);
-            border-left: 1px solid #00d4ff;
+            border-left: 2px solid var(--primary);
             z-index: 1000;
-            transition: right 0.3s;
+            transition: right 0.35s ease;
             padding: 20px;
             overflow-y: auto;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.5);
         }
-        .cart-sidebar.open { right: 0; }
-        .cart-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
-        .close-cart { font-size: 1.5rem; cursor: pointer; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .cart-total { margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 1.1rem; font-weight: 700; }
-        .checkout-btn { width: 100%; margin-top: 15px; padding: 12px; background: #10b981; border: none; border-radius: 40px; color: white; font-weight: 700; cursor: pointer; }
         
+        .cart-sidebar.open { right: 0; }
+        
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0,212,255,0.3);
+            margin-bottom: 20px;
+        }
+        
+        .cart-header h3 {
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+        
+        .close-cart {
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .close-cart:hover {
+            background: rgba(244,63,94,0.2);
+            color: var(--danger);
+        }
+        
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .cart-item-info { flex: 1; }
+        .cart-item-title { font-weight: 600; font-size: 0.9rem; }
+        .cart-item-price { font-size: 0.7rem; color: var(--success); margin-top: 3px; }
+        .cart-item-type { font-size: 0.6rem; color: var(--primary); }
+        
+        .cart-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .cart-qty-btn {
+            background: rgba(0,212,255,0.15);
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: white;
+            transition: all 0.2s;
+        }
+        
+        .cart-qty-btn:hover { background: var(--primary); color: #030712; }
+        .cart-qty { font-size: 0.9rem; min-width: 25px; text-align: center; }
+        .cart-remove-btn {
+            background: rgba(244,63,94,0.2);
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: #fb7185;
+        }
+        
+        .cart-total {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-align: right;
+        }
+        
+        .checkout-btn {
+            width: 100%;
+            margin-top: 15px;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--success), #059669);
+            border: none;
+            border-radius: 40px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        
+        .checkout-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+        
+        /* Payment Modal */
         .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.95);
+            background: rgba(3,7,18,0.96);
             backdrop-filter: blur(20px);
             display: flex;
             align-items: center;
@@ -140,15 +382,45 @@
             opacity: 0;
             transition: all 0.3s;
         }
+        
         .modal.active { visibility: visible; opacity: 1; }
+        
         .modal-content {
             background: linear-gradient(145deg, #11131e, #0c0e16);
-            border: 1px solid #00d4ff;
+            border: 1px solid var(--primary);
             border-radius: 24px;
-            padding: 25px;
+            padding: 30px;
             width: 90%;
             max-width: 450px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
         }
+        
+        .modal-content h3 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .payment-info {
+            background: rgba(0,212,255,0.08);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,212,255,0.15);
+        }
+        
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.85rem;
+        }
+        
+        .payment-row .label { color: #64748b; }
+        .payment-row .value { color: var(--primary); font-weight: 600; }
+        .copy-phone { cursor: pointer; transition: all 0.2s; }
+        .copy-phone:hover { color: var(--success); }
+        
         .modal input, .modal input[type="file"] {
             width: 100%;
             padding: 12px;
@@ -157,34 +429,124 @@
             border: 1px solid #2d3a5e;
             border-radius: 40px;
             color: white;
+            transition: all 0.2s;
         }
+        
+        .modal input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 10px rgba(0,212,255,0.2);
+        }
+        
+        .submit-order {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--success), #059669);
+            border: none;
+            border-radius: 40px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+        
+        .submit-order:hover { transform: translateY(-2px); filter: brightness(1.05); }
+        
+        /* Toast */
         .toast {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: #10b981;
+            background: var(--success);
             color: #030712;
-            padding: 12px 20px;
+            padding: 12px 24px;
             border-radius: 40px;
             z-index: 3000;
             display: none;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            align-items: center;
+            gap: 10px;
         }
-        .toast.show { display: block; }
-        footer { text-align: center; padding: 30px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 20px; }
+        
+        .toast.show { display: flex; animation: slideIn 0.3s ease; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 20px;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .social-icon i { font-size: 1.2rem; color: white; }
+        .social-icon.facebook { background: #1877f2; }
+        .social-icon.telegram { background: #0088cc; }
+        .social-icon.viber { background: #7360f2; }
+        .social-icon.phone { background: #25d366; }
+        .social-icon:hover { transform: translateY(-3px); }
+        
+        .footer-text { font-size: 0.7rem; color: #64748b; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 12px; }
+            .products-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; }
+            .cat-btn { padding: 6px 16px; font-size: 0.75rem; }
+            .header { padding: 12px 16px; }
+            .logo img { width: 40px; height: 40px; }
+            .logo h1 { font-size: 1rem; }
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+        
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
 
 <div class="container">
     <div class="header">
         <div class="logo">
-            <img src="https://i.postimg.cc/GpR4ctR1/photo-2026-05-31-22-35-50.jpg" alt="Logo">
-            <h1>ATH DIGITAL HUB</h1>
+            <img src="https://i.postimg.cc/GpR4ctR1/photo-2026-05-31-22-35-50.jpg" alt="ATH Logo">
+            <div>
+                <h1>ATH DIGITAL HUB</h1>
+                <p>Multi-Product Digital Store</p>
+            </div>
         </div>
         <div class="cart-btn" id="cartBtn">
             <i class="fas fa-shopping-cart"></i>
-            <span id="cartCount">0</span>
+            <span>ဈေးခြင်း</span>
+            <span class="cart-count" id="cartCount">0</span>
         </div>
     </div>
     
@@ -192,99 +554,120 @@
     <div class="products-grid" id="productsGrid"></div>
 </div>
 
+<!-- Cart Sidebar -->
 <div class="cart-sidebar" id="cartSidebar">
     <div class="cart-header">
         <h3><i class="fas fa-shopping-cart"></i> ဈေးခြင်း</h3>
-        <span class="close-cart" id="closeCartBtn">&times;</span>
+        <div class="close-cart" id="closeCartBtn">&times;</div>
     </div>
     <div id="cartItems"></div>
     <div class="cart-total" id="cartTotal">Total: 0 Ks</div>
     <button class="checkout-btn" id="checkoutBtn"><i class="fas fa-credit-card"></i> မှာယူမည်</button>
 </div>
 
+<!-- Payment Modal -->
 <div class="modal" id="paymentModal">
     <div class="modal-content">
-        <h3 style="margin-bottom:20px; text-align:center;">ငွေပေးချေမှု</h3>
-        <div style="background:rgba(0,212,255,0.1); border-radius:16px; padding:15px; margin-bottom:20px;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>ငွေလွှဲနည်းလမ်း</span><span style="color:#00d4ff;">K-Pay / WavePay</span></div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>အကောင့်အမည်</span><span style="color:#00d4ff;">AUNG THU HTWE</span></div>
-            <div style="display:flex; justify-content:space-between;"><span>ဖုန်းနံပါတ်</span><span style="color:#00d4ff; cursor:pointer;" id="copyPhone">09789999368 📋</span></div>
+        <h3><i class="fas fa-credit-card"></i> ငွေပေးချေမှု</h3>
+        <div class="payment-info">
+            <div class="payment-row"><span class="label"><i class="fas fa-university"></i> ငွေလွှဲနည်းလမ်း</span><span class="value">K-Pay / WavePay</span></div>
+            <div class="payment-row"><span class="label"><i class="fas fa-user-circle"></i> အကောင့်အမည်</span><span class="value">AUNG THU HTWE</span></div>
+            <div class="payment-row"><span class="label"><i class="fas fa-phone-alt"></i> ဖုန်းနံပါတ်</span><span class="value copy-phone" id="copyPhone">09789999368 <i class="fas fa-copy"></i></span></div>
         </div>
         <form id="orderForm" enctype="multipart/form-data">
             <input type="tel" id="phone" placeholder="📱 ဖုန်းနံပါတ် (09xxxxxxxxx)" required>
             <input type="file" id="slip" accept="image/*" required>
-            <button type="submit" style="width:100%; padding:12px; background:#10b981; border:none; border-radius:40px; color:white; font-weight:700; cursor:pointer;">အော်ဒါတင်မည်</button>
+            <button type="submit" class="submit-order"><i class="fas fa-check-circle"></i> အော်ဒါတင်မည်</button>
         </form>
     </div>
 </div>
 
 <footer>
-    <p>© 2026 ATH DIGITAL HUB | Digital Products Store</p>
+    <div class="social-links">
+        <a href="https://www.facebook.com/athdigitalhub/" target="_blank" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://t.me/ATHCustomerService" target="_blank" class="social-icon telegram"><i class="fab fa-telegram-plane"></i></a>
+        <a href="viber://chat?number=09799480995" class="social-icon viber"><i class="fab fa-viber"></i></a>
+        <a href="tel:09789999368" class="social-icon phone"><i class="fas fa-phone-alt"></i></a>
+    </div>
+    <div class="footer-text">© 2026 <strong>ATH DIGITAL HUB</strong> | All Rights Reserved</div>
 </footer>
 
 <script>
-    // ============ LOAD DATA FROM LOCALSTORAGE ============
-    let categories = [];
-    let products = [];
+    // ============ PRODUCTS DATABASE ============
+    let products = [
+        // Data Plans
+        { id: 1, name: "VIP LEVEL - 1", categoryId: "data", type: "standard", price: 15000, icon: "📱", desc: "22GB အမြန်နှုန်းမြင့် + 8,000 မိနစ်", link: "" },
+        { id: 2, name: "VIP LEVEL - 2", categoryId: "data", type: "standard", price: 20000, icon: "📡", desc: "40GB အာထရာဒေတာ + 250 မိနစ်", link: "" },
+        { id: 3, name: "VIP LEVEL - 3", categoryId: "data", type: "standard", price: 25000, icon: "⚡", desc: "40GB + အပို + 1,400 မိနစ်", link: "" },
+        { id: 4, name: "VIP LEVEL - 4 ULTRA", categoryId: "data", type: "standard", price: 30000, icon: "👑", desc: "120GB ဂိမ်းဒေတာ + Unlimited Streaming", link: "" },
+        
+        // Digital Products
+        { id: 5, name: "Windows 11 Pro License", categoryId: "digital_product", type: "digital", price: 25000, icon: "🪟", desc: "Original License Key - Lifetime", link: "https://example.com/download/windows11" },
+        { id: 6, name: "Adobe Photoshop 2024", categoryId: "digital_product", type: "digital", price: 35000, icon: "🎨", desc: "Professional Photo Editing Software", link: "https://example.com/download/photoshop" },
+        { id: 7, name: "Microsoft Office 2024", categoryId: "digital_product", type: "digital", price: 30000, icon: "📊", desc: "Word, Excel, PowerPoint, Outlook", link: "https://example.com/download/office" },
+        
+        // Digital Courses
+        { id: 8, name: "Full Stack Web Development", categoryId: "digital_course", type: "course", price: 150000, icon: "💻", desc: "HTML, CSS, JS, React, Node.js, MongoDB", link: "" },
+        { id: 9, name: "UI/UX Design Masterclass", categoryId: "digital_course", type: "course", price: 120000, icon: "🎨", desc: "Figma, Adobe XD, Prototyping", link: "" },
+        { id: 10, name: "Digital Marketing Pro", categoryId: "digital_course", type: "course", price: 80000, icon: "📈", desc: "SEO, Social Media, Google Ads", link: "" },
+        
+        // Game Items
+        { id: 11, name: "Free Fire 500 Diamonds", categoryId: "game_items", type: "game", price: 15000, icon: "🔥", desc: "FF Diamonds Top Up - Instant Delivery", link: "" },
+        { id: 12, name: "Mobile Legends 1000 Diamonds", categoryId: "game_items", type: "game", price: 25000, icon: "⚔️", desc: "MLBB Diamonds + Free Bonus", link: "" },
+        { id: 13, name: "PUBG UC 600", categoryId: "game_items", type: "game", price: 18000, icon: "🎯", desc: "PUBG Unknown Cash", link: "" },
+        
+        // Language Courses
+        { id: 14, name: "English Speaking Course", categoryId: "language_course", type: "course", price: 50000, icon: "🇬🇧", desc: "Beginner to Advanced - 50 Hours", link: "" },
+        { id: 15, name: "Japanese Language N5-N4", categoryId: "language_course", type: "course", price: 60000, icon: "🇯🇵", desc: "Complete Japanese Course", link: "" },
+        { id: 16, name: "Korean Language TOPIK", categoryId: "language_course", type: "course", price: 55000, icon: "🇰🇷", desc: "Korean for Beginners", link: "" },
+        
+        // PDF Books
+        { id: 17, name: "Rich Dad Poor Dad (PDF)", categoryId: "pdf_books", type: "pdf", price: 8000, icon: "📚", desc: "Robert Kiyosaki - Financial Freedom", link: "https://example.com/pdf/richdad" },
+        { id: 18, name: "Atomic Habits (PDF)", categoryId: "pdf_books", type: "pdf", price: 12000, icon: "📖", desc: "James Clear - Build Good Habits", link: "https://example.com/pdf/atomichabits" },
+        { id: 19, name: "Think and Grow Rich (PDF)", categoryId: "pdf_books", type: "pdf", price: 10000, icon: "📕", desc: "Napoleon Hill - Success Principles", link: "https://example.com/pdf/thinkgrow" },
+        
+        // Video Content
+        { id: 20, name: "Python Tutorial Video Series", categoryId: "video_content", type: "video", price: 45000, icon: "🐍", desc: "10+ Hours - From Zero to Hero", link: "https://example.com/video/python" },
+        { id: 21, name: "Video Editing Masterclass", categoryId: "video_content", type: "video", price: 60000, icon: "🎬", desc: "Premiere Pro + After Effects", link: "https://example.com/video/editing" },
+        
+        // Clothing
+        { id: 22, name: "Men's Premium T-Shirt", categoryId: "clothing", type: "standard", price: 15000, icon: "👕", desc: "100% Cotton, Size S-XXL", link: "" },
+        { id: 23, name: "Women's Summer Dress", categoryId: "clothing", type: "standard", price: 35000, icon: "👗", desc: "Floral Pattern, Size S-L", link: "" },
+        { id: 24, name: "Winter Jacket", categoryId: "clothing", type: "standard", price: 55000, icon: "🧥", desc: "Waterproof, Warm Lining", link: "" },
+        
+        // Others
+        { id: 25, name: "Smartphone 6GB/128GB", categoryId: "other", type: "standard", price: 250000, icon: "📱", desc: "6.5 inch, 48MP Camera", link: "" },
+        { id: 26, name: "Wireless Headphone", categoryId: "other", type: "standard", price: 35000, icon: "🎧", desc: "Bluetooth 5.0, 20H Battery", link: "" }
+    ];
+    
+    // Categories
+    const categoryNames = {
+        all: { name: "အားလုံး", icon: "📦", color: "#00d4ff" },
+        data: { name: "Data Plans", icon: "📡", color: "#00d4ff" },
+        digital_product: { name: "Digital Products", icon: "🖥️", color: "#8b5cf6" },
+        digital_course: { name: "Digital Courses", icon: "🎓", color: "#e11d48" },
+        game_items: { name: "Game Items", icon: "🎮", color: "#f59e0b" },
+        language_course: { name: "Language Courses", icon: "🌐", color: "#06b6d4" },
+        pdf_books: { name: "PDF Books", icon: "📘", color: "#22c55e" },
+        video_content: { name: "Video Content", icon: "🎬", color: "#ec4899" },
+        clothing: { name: "Clothing", icon: "👕", color: "#10b981" },
+        other: { name: "Others", icon: "🎁", color: "#64748b" }
+    };
+    
     let cart = [];
     let currentCategory = 'all';
     
-    function loadStoreData() {
-        const savedCats = localStorage.getItem('store_categories');
-        const savedProds = localStorage.getItem('store_products');
-        
-        if (savedCats) {
-            categories = JSON.parse(savedCats);
-        } else {
-            categories = [
-                { id: "data", name: "Data Plans", icon: "📡", color: "#00d4ff" },
-                { id: "clothing", name: "Clothing", icon: "👕", color: "#10b981" },
-                { id: "digital_product", name: "Digital Products", icon: "🖥️", color: "#8b5cf6" },
-                { id: "digital_course", name: "Digital Courses", icon: "🎓", color: "#e11d48" },
-                { id: "game_items", name: "Game Items", icon: "🎮", color: "#f59e0b" },
-                { id: "language_course", name: "Language Courses", icon: "🌐", color: "#06b6d4" },
-                { id: "pdf_books", name: "PDF Books", icon: "📘", color: "#22c55e" },
-                { id: "video_content", name: "Video Content", icon: "🎬", color: "#ec4899" },
-                { id: "other", name: "Others", icon: "🎁", color: "#64748b" }
-            ];
-        }
-        
-        if (savedProds) {
-            products = JSON.parse(savedProds);
-        } else {
-            products = [
-                { id: 1, name: "VIP LEVEL - 1", categoryId: "data", type: "standard", price: 15000, icon: "📱", desc: "22GB + 8,000 မိနစ်", link: "" },
-                { id: 2, name: "Windows 11 Pro License", categoryId: "digital_product", type: "digital", price: 25000, icon: "🪟", desc: "Original License Key", link: "https://example.com/download/windows11" },
-                { id: 3, name: "Full Stack Web Development", categoryId: "digital_course", type: "course", price: 150000, icon: "💻", desc: "Complete Web Dev Course", link: "https://example.com/course/webdev" },
-                { id: 4, name: "Free Fire 500 Diamonds", categoryId: "game_items", type: "game", price: 15000, icon: "🔥", desc: "FF Diamonds Top Up", link: "" },
-                { id: 5, name: "English Speaking Course", categoryId: "language_course", type: "course", price: 50000, icon: "🇬🇧", desc: "Beginner to Advanced", link: "https://example.com/course/english" },
-                { id: 6, name: "Rich Dad Poor Dad (PDF)", categoryId: "pdf_books", type: "pdf", price: 8000, icon: "📚", desc: "Robert Kiyosaki", link: "https://example.com/pdf/richdad" },
-                { id: 7, name: "Python Tutorial Video Series", categoryId: "video_content", type: "video", price: 45000, icon: "🐍", desc: "10+ Hours Video Course", link: "https://example.com/video/python" },
-                { id: 8, name: "Men's T-Shirt", categoryId: "clothing", type: "standard", price: 15000, icon: "👕", desc: "Cotton T-Shirt", link: "" },
-                { id: 9, name: "Smartphone", categoryId: "other", type: "standard", price: 250000, icon: "📱", desc: "6GB RAM, 128GB", link: "" }
-            ];
-        }
-    }
-    loadStoreData();
-    
     function getProductTypeName(type) {
-        const types = {
-            standard: '📦 Product',
-            digital: '💾 Digital',
-            course: '🎓 Course',
-            game: '🎮 Game',
-            pdf: '📘 PDF',
-            video: '🎬 Video'
-        };
+        const types = { standard: '📦 Standard', digital: '💾 Digital', course: '🎓 Course', game: '🎮 Game', pdf: '📘 PDF', video: '🎬 Video' };
         return types[type] || type;
     }
     
     function renderCategories() {
         const container = document.getElementById('categories');
-        let html = `<button class="cat-btn ${currentCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">📦 အားလုံး</button>`;
-        categories.forEach(cat => {
-            html += `<button class="cat-btn ${currentCategory === cat.id ? 'active' : ''}" onclick="setCategory('${cat.id}')" style="border-left-color: ${cat.color};">${cat.icon} ${cat.name}</button>`;
-        });
+        let html = '';
+        for (const [key, cat] of Object.entries(categoryNames)) {
+            html += `<button class="cat-btn ${currentCategory === key ? 'active' : ''}" onclick="setCategory('${key}')" style="border-left: 3px solid ${cat.color};">${cat.icon} ${cat.name}</button>`;
+        }
         container.innerHTML = html;
     }
     
@@ -301,20 +684,20 @@
         }
         const container = document.getElementById('productsGrid');
         if (filtered.length === 0) {
-            container.innerHTML = '<div style="text-align:center; padding:40px;">📭 ထုတ်ကုန်မရှိပါ</div>';
+            container.innerHTML = '<div style="text-align:center; padding:60px; color:#64748b;"><i class="fas fa-box-open" style="font-size:3rem; margin-bottom:15px;"></i><br>📭 ထုတ်ကုန်မရှိပါ</div>';
             return;
         }
         container.innerHTML = filtered.map(p => {
-            const cat = categories.find(c => c.id === p.categoryId);
+            const cat = categoryNames[p.categoryId] || categoryNames.other;
             return `
                 <div class="product-card">
                     <div class="product-type-badge">${getProductTypeName(p.type)}</div>
                     <div class="product-icon">${p.icon}</div>
                     <div class="product-name">${p.name}</div>
-                    <div class="product-category">${cat ? `${cat.icon} ${cat.name}` : p.categoryId}</div>
-                    <div class="product-desc">${p.desc || ''}</div>
+                    <div class="product-category">${cat.icon} ${cat.name}</div>
+                    <div class="product-desc">${p.desc}</div>
                     <div class="product-price">${p.price.toLocaleString()} Ks</div>
-                    <button class="add-btn" onclick="addToCart(${p.id})"><i class="fas fa-cart-plus"></i> ထည့်မည်</button>
+                    <button class="add-btn" onclick="addToCart(${p.id})"><i class="fas fa-cart-plus"></i> ဈေးခြင်းထဲထည့်ရန်</button>
                 </div>
             `;
         }).join('');
@@ -323,8 +706,11 @@
     function addToCart(id) {
         const product = products.find(p => p.id === id);
         const existing = cart.find(i => i.id === id);
-        if (existing) { existing.qty++; }
-        else { cart.push({ ...product, qty: 1 }); }
+        if (existing) {
+            existing.qty++;
+        } else {
+            cart.push({ ...product, qty: 1 });
+        }
         updateCartUI();
         showToast(`${product.name} ထည့်သွင်းပြီး`);
     }
@@ -335,7 +721,7 @@
         
         const container = document.getElementById('cartItems');
         if (cart.length === 0) {
-            container.innerHTML = '<div style="text-align:center; padding:20px;">ဈေးခြင်းထဲတွင် ပစ္စည်းမရှိပါ</div>';
+            container.innerHTML = '<div class="empty-cart"><i class="fas fa-shopping-cart" style="font-size:3rem; margin-bottom:10px;"></i><br>ဈေးခြင်းထဲတွင် ပစ္စည်းမရှိပါ</div>';
             document.getElementById('cartTotal').innerHTML = 'Total: 0 Ks';
             return;
         }
@@ -345,12 +731,16 @@
             total += item.price * item.qty;
             return `
                 <div class="cart-item">
-                    <div><strong>${item.name}</strong><br><small>${item.price.toLocaleString()} Ks</small><br><small class="product-type-badge" style="background:rgba(0,212,255,0.15);">${getProductTypeName(item.type)}</small></div>
-                    <div>
-                        <button onclick="updateQty(${item.id}, -1)" style="background:#334155; border:none; width:28px; border-radius:50%; cursor:pointer;">-</button>
-                        <span style="margin:0 10px;">${item.qty}</span>
-                        <button onclick="updateQty(${item.id}, 1)" style="background:#334155; border:none; width:28px; border-radius:50%; cursor:pointer;">+</button>
-                        <button onclick="removeFromCart(${item.id})" style="background:#f43f5e; border:none; width:28px; border-radius:50%; cursor:pointer; margin-left:8px;">🗑</button>
+                    <div class="cart-item-info">
+                        <div class="cart-item-title">${item.name}</div>
+                        <div class="cart-item-price">${item.price.toLocaleString()} Ks</div>
+                        <div class="cart-item-type">${getProductTypeName(item.type)}</div>
+                    </div>
+                    <div class="cart-item-actions">
+                        <button class="cart-qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
+                        <span class="cart-qty">${item.qty}</span>
+                        <button class="cart-qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
+                        <button class="cart-remove-btn" onclick="removeFromCart(${item.id})"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             `;
@@ -362,7 +752,9 @@
         const item = cart.find(i => i.id === id);
         if (item) {
             item.qty += delta;
-            if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+            if (item.qty <= 0) {
+                cart = cart.filter(i => i.id !== id);
+            }
             updateCartUI();
         }
     }
@@ -370,11 +762,12 @@
     function removeFromCart(id) {
         cart = cart.filter(i => i.id !== id);
         updateCartUI();
+        showToast('ပစ္စည်းဖယ်ရှားပြီး');
     }
     
     async function placeOrder(phone, file) {
         const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-        const items = cart.map(i => `${i.name} x${i.qty} (${getProductTypeName(i.type)})`).join(', ');
+        const items = cart.map(i => `${i.name} x${i.qty}`).join(', ');
         const fd = new FormData();
         fd.append('phone', phone);
         fd.append('plan', items);
@@ -383,6 +776,25 @@
         const res = await fetch('/api/orders', { method: 'POST', body: fd });
         return await res.json();
     }
+    
+    // Event Listeners
+    document.getElementById('cartBtn').addEventListener('click', () => {
+        document.getElementById('cartSidebar').classList.add('open');
+    });
+    document.getElementById('closeCartBtn').addEventListener('click', () => {
+        document.getElementById('cartSidebar').classList.remove('open');
+    });
+    document.getElementById('checkoutBtn').addEventListener('click', () => {
+        if (cart.length === 0) {
+            showToast('ဈေးခြင်းထဲတွင် ပစ္စည်းမရှိပါ', true);
+            return;
+        }
+        document.getElementById('paymentModal').classList.add('active');
+    });
+    document.getElementById('copyPhone').addEventListener('click', () => {
+        navigator.clipboard.writeText("09789999368");
+        showToast('ဖုန်းနံပါတ် ကူးယူပြီး');
+    });
     
     document.getElementById('orderForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -404,25 +816,23 @@
         }
     });
     
-    document.getElementById('cartBtn').addEventListener('click', () => document.getElementById('cartSidebar').classList.add('open'));
-    document.getElementById('closeCartBtn').addEventListener('click', () => document.getElementById('cartSidebar').classList.remove('open'));
-    document.getElementById('checkoutBtn').addEventListener('click', () => {
-        if (cart.length === 0) { showToast('ဈေးခြင်းထဲတွင် ပစ္စည်းမရှိပါ', true); return; }
-        document.getElementById('paymentModal').classList.add('active');
-    });
-    document.getElementById('copyPhone')?.addEventListener('click', () => {
-        navigator.clipboard.writeText("09789999368");
-        showToast('ဖုန်းနံပါတ် ကူးယူပြီး');
-    });
-    
     function showToast(msg, isError = false) {
         const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toastMsg');
+        toastMsg.innerText = msg;
         toast.style.backgroundColor = isError ? '#f43f5e' : '#10b981';
-        toast.innerText = msg;
+        toast.querySelector('i').className = isError ? 'fas fa-exclamation-triangle' : 'fas fa-check-circle';
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 2500);
     }
     
+    // Close modal on outside click
+    window.onclick = (e) => {
+        const modal = document.getElementById('paymentModal');
+        if (e.target === modal) modal.classList.remove('active');
+    };
+    
+    // Initialize
     renderCategories();
     renderProducts();
     
