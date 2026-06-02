@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>ATH Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -40,20 +40,30 @@
             padding: 24px 20px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .logo h2 {
-            font-size: 1.3rem;
+        .logo img {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .logo-text h2 {
+            font-size: 1.1rem;
             background: linear-gradient(135deg, #00d4ff, #8b5cf6);
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
         }
 
-        .logo p {
-            font-size: 0.7rem;
+        .logo-text p {
+            font-size: 0.65rem;
             color: #64748b;
-            margin-top: 5px;
+            margin-top: 2px;
         }
 
         .nav-item {
@@ -240,17 +250,19 @@
             color: #00d4ff;
         }
 
-        /* ============ USERS TABLE (Web App Style) ============ */
+        /* ============ TABLES (Web App Style) ============ */
         .users-table-container {
             background: rgba(18,22,35,0.8);
             border: 1px solid rgba(0,212,255,0.1);
             border-radius: 16px;
             overflow: hidden;
+            overflow-x: auto;
         }
 
         .users-table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 800px;
         }
 
         .users-table th {
@@ -348,7 +360,7 @@
             font-weight: 600;
         }
 
-        /* Orders Table (same style) */
+        /* Sections */
         .section-title {
             font-size: 1.1rem;
             font-weight: 600;
@@ -391,6 +403,21 @@
             font-weight: 600;
             cursor: pointer;
         }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 80px;
+            }
+            .sidebar .logo-text, .sidebar .nav-item span {
+                display: none;
+            }
+            .sidebar .logo img {
+                margin: 0 auto;
+            }
+            .main-content {
+                margin-left: 80px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -408,8 +435,11 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">
-                <h2><i class="fas fa-crown"></i> ATH Admin</h2>
-                <p>Digital Hub Dashboard</p>
+                <img src="https://i.postimg.cc/GpR4ctR1/photo-2026-05-31-22-35-50.jpg" alt="ATH Logo">
+                <div class="logo-text">
+                    <h2><i class="fas fa-crown"></i> ATH Admin</h2>
+                    <p>Digital Hub Dashboard</p>
+                </div>
             </div>
             <div class="nav-item active" onclick="switchTab('orders')">
                 <i class="fas fa-shopping-cart"></i>
@@ -479,8 +509,8 @@
 
             <!-- Filter Bar -->
             <div class="filter-bar">
-                <input type="date" id="startDate" class="filter-input" placeholder="Start Date">
-                <input type="date" id="endDate" class="filter-input" placeholder="End Date">
+                <input type="date" id="startDate" class="filter-input">
+                <input type="date" id="endDate" class="filter-input">
                 <select id="statusFilter" class="filter-input">
                     <option value="all">All Status</option>
                     <option value="Pending">Pending</option>
@@ -491,7 +521,7 @@
                 <button class="filter-btn" onclick="clearFilters()"><i class="fas fa-undo"></i> Reset</button>
             </div>
 
-            <!-- Orders Tab Content -->
+            <!-- Orders Tab -->
             <div id="ordersTab">
                 <div class="users-table-container">
                     <table class="users-table" id="ordersTable">
@@ -505,7 +535,7 @@
                 </div>
             </div>
 
-            <!-- Users Tab Content -->
+            <!-- Users Tab -->
             <div id="usersTab" class="hidden">
                 <div class="section-title"><i class="fas fa-users"></i> All Users</div>
                 <div class="users-table-container">
@@ -520,7 +550,7 @@
                 </div>
             </div>
 
-            <!-- Analytics Tab Content -->
+            <!-- Analytics Tab -->
             <div id="analyticsTab" class="hidden">
                 <div class="section-title"><i class="fas fa-chart-bar"></i> Analytics Overview</div>
                 <div class="stats-grid">
@@ -570,7 +600,7 @@
     }
 
     // ============ TAB SWITCHING ============
-    function switchTab(tab) {
+    window.switchTab = function(tab) {
         currentTab = tab;
         document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
         document.querySelectorAll('.nav-item')[tab === 'orders' ? 0 : (tab === 'users' ? 1 : 2)].classList.add('active');
@@ -645,7 +675,7 @@
         document.getElementById('totalProfit').innerText = profit.toLocaleString();
     }
 
-    // ============ RENDER ORDERS (Table Style) ============
+    // ============ RENDER ORDERS ============
     function renderOrders() {
         let filtered = [...allOrders];
         if (currentSearchPhone) {
@@ -665,6 +695,16 @@
             return;
         }
         
+        function maskPhone(phone) {
+            if (!phone || phone.length < 8) return phone || '';
+            return phone.substring(0, 5) + '***' + phone.substring(phone.length - 3);
+        }
+        function getStatusBadge(status) {
+            if (status === 'Pending') return '<span class="status-badge status-suspect">⏳ Pending</span>';
+            if (status === 'Approved') return '<span class="status-badge status-normal">✅ Approved</span>';
+            return '<span class="status-badge status-blocked">❌ Rejected</span>';
+        }
+        
         tbody.innerHTML = filtered.map(o => `
             <tr>
                 <td style="font-family:monospace">${o.id}</td>
@@ -682,7 +722,7 @@
         `).join('');
     }
 
-    // ============ RENDER USERS (Table Style - Web App) ============
+    // ============ RENDER USERS ============
     function renderUsers() {
         const tbody = document.getElementById('usersList');
         let filtered = [...allUsers];
@@ -693,6 +733,11 @@
         if (!filtered.length) {
             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">No users found</td></tr>';
             return;
+        }
+        
+        function maskPhone(phone) {
+            if (!phone || phone.length < 8) return phone || '';
+            return phone.substring(0, 5) + '***' + phone.substring(phone.length - 3);
         }
         
         tbody.innerHTML = filtered.map(u => {
@@ -725,7 +770,7 @@
         }).join('');
     }
 
-    // ============ RENDER ANALYTICS ============
+    // ============ ANALYTICS ============
     function renderAnalytics() {
         const totalUsers = allUsers.length;
         const suspectUsers = allUsers.filter(u => u.suspect_flag).length;
@@ -738,23 +783,29 @@
         document.getElementById('avgOrderValue').innerText = avgOrderValue.toLocaleString() + ' K';
     }
 
-    // ============ HELPER FUNCTIONS ============
-    function maskPhone(phone) {
-        if (!phone || phone.length < 8) return phone || '';
-        return phone.substring(0, 5) + '***' + phone.substring(phone.length - 3);
+    // ============ ACTIONS ============
+    window.searchByPhone = function() {
+        currentSearchPhone = document.getElementById('searchPhone').value.trim();
+        if (currentTab === 'orders') renderOrders();
+        else renderUsers();
     }
-
-    function getStatusBadge(status) {
-        if (status === 'Pending') return '<span class="status-badge status-suspect">⏳ Pending</span>';
-        if (status === 'Approved') return '<span class="status-badge status-normal">✅ Approved</span>';
-        return '<span class="status-badge status-blocked">❌ Rejected</span>';
+    window.clearSearch = function() {
+        currentSearchPhone = '';
+        document.getElementById('searchPhone').value = '';
+        if (currentTab === 'orders') renderOrders();
+        else renderUsers();
     }
-
-    function copyToClipboard(text) {
+    window.applyFilters = function() { renderOrders(); }
+    window.clearFilters = function() {
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        document.getElementById('statusFilter').value = 'all';
+        renderOrders();
+    }
+    window.copyToClipboard = function(text) {
         navigator.clipboard.writeText(text);
         showToast(`📞 ${text} copied!`);
     }
-
     function showToast(msg) {
         const toast = document.createElement('div');
         toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#10b981;color:#030712;padding:10px 20px;border-radius:8px;z-index:9999';
@@ -762,54 +813,26 @@
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 2000);
     }
-
-    // ============ ACTIONS ============
-    function searchByPhone() {
-        currentSearchPhone = document.getElementById('searchPhone').value.trim();
-        if (currentTab === 'orders') renderOrders();
-        else renderUsers();
-    }
-
-    function clearSearch() {
-        currentSearchPhone = '';
-        document.getElementById('searchPhone').value = '';
-        if (currentTab === 'orders') renderOrders();
-        else renderUsers();
-    }
-
-    function applyFilters() {
-        renderOrders();
-    }
-
-    function clearFilters() {
-        document.getElementById('startDate').value = '';
-        document.getElementById('endDate').value = '';
-        document.getElementById('statusFilter').value = 'all';
-        renderOrders();
-    }
-
-    async function approveOrder(id) {
+    
+    window.approveOrder = async function(id) {
         await fetch(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' });
         await loadOrders();
         showToast('✅ Order approved');
     }
-
-    async function rejectOrder(id) {
+    window.rejectOrder = async function(id) {
         await fetch(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' });
         await loadOrders();
         await loadUsers();
         showToast('❌ Order rejected');
     }
-
-    async function deleteOrder(id) {
+    window.deleteOrder = async function(id) {
         if (confirm('Delete this order?')) {
             await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' });
             await loadOrders();
             showToast('🗑 Order deleted');
         }
     }
-
-    async function blockUser(phone, block) {
+    window.blockUser = async function(phone, block) {
         await fetch(`${API_BASE}/api/admin/user-block`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -818,9 +841,8 @@
         await loadUsers();
         showToast(block ? '🔴 User blocked' : '🟢 User unblocked');
     }
-
-    async function deleteUser(phone) {
-        if (confirm(`Delete user ${maskPhone(phone)}?`)) {
+    window.deleteUser = async function(phone) {
+        if (confirm(`Delete user ${phone}?`)) {
             await fetch(`${API_BASE}/api/admin/user-delete`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -830,8 +852,7 @@
             showToast('❌ User deleted');
         }
     }
-
-    async function clearSuspect(phone) {
+    window.clearSuspect = async function(phone) {
         await fetch(`${API_BASE}/api/admin/clear-suspect`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -855,22 +876,6 @@
         document.getElementById('mainApp').style.display = 'flex';
         loadAllData();
     }
-
-    // Expose functions to window
-    window.login = login;
-    window.logout = logout;
-    window.switchTab = switchTab;
-    window.searchByPhone = searchByPhone;
-    window.clearSearch = clearSearch;
-    window.applyFilters = applyFilters;
-    window.clearFilters = clearFilters;
-    window.approveOrder = approveOrder;
-    window.rejectOrder = rejectOrder;
-    window.deleteOrder = deleteOrder;
-    window.blockUser = blockUser;
-    window.deleteUser = deleteUser;
-    window.clearSuspect = clearSuspect;
-    window.copyToClipboard = copyToClipboard;
 </script>
 </body>
 </html>
