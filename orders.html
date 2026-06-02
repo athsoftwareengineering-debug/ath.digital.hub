@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>My Orders | ATH DIGITAL HUB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0c15;
+            color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+        }
+        .back-btn {
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            display: inline-block;
+            text-decoration: none;
+        }
+        .orders-container { max-width: 800px; margin: 0 auto; }
+        .order-card {
+            background: rgba(18,22,35,0.95);
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(0,212,255,0.15);
+        }
+        .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .status-approved { color: #10b981; }
+        .status-pending { color: #f59e0b; }
+        .status-rejected { color: #f43f5e; }
+        .empty-msg { text-align: center; padding: 40px; color: #64748b; }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Store</a>
+    <div class="orders-container">
+        <h2><i class="fas fa-list-ul"></i> My Orders</h2>
+        <div id="ordersList" class="empty-msg">Loading...</div>
+    </div>
+    <script>
+        const API_BASE = window.location.origin;
+        const myPhone = localStorage.getItem('myOrderPhone') || '';
+        
+        async function loadOrders() {
+            if (!myPhone) {
+                document.getElementById('ordersList').innerHTML = '<div class="empty-msg">No phone number saved. Please place an order first.</div>';
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/api/orders/${myPhone}`);
+                const data = await res.json();
+                const orders = data.orders || [];
+                if (orders.length === 0) {
+                    document.getElementById('ordersList').innerHTML = '<div class="empty-msg">No orders found.</div>';
+                    return;
+                }
+                document.getElementById('ordersList').innerHTML = orders.map(o => `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span><strong>Order #${o.id}</strong></span>
+                            <span class="status-${o.status.toLowerCase()}">${o.status}</span>
+                        </div>
+                        <div>📞 ${o.phone}</div>
+                        <div>📦 ${o.plan}</div>
+                        <div>💰 ${o.price.toLocaleString()} KS</div>
+                        <div>📅 ${new Date(o.created_at).toLocaleDateString()}</div>
+                    </div>
+                `).join('');
+            } catch(e) {
+                document.getElementById('ordersList').innerHTML = '<div class="empty-msg">Error loading orders.</div>';
+            }
+        }
+        loadOrders();
+    </script>
+</body>
+</html>
