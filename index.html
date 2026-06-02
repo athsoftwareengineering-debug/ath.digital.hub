@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>ATH DIGITAL HUB - Multi-Product Store</title>
-    <!-- Safe Google Font with Fallback -->
+    <title>ATH DIGITAL HUB - Digital Products Store</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -12,12 +11,10 @@
         body {
             background: #0a0c15;
             color: #f1f5f9;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
         }
         .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
         
-        /* Header */
         .header {
             background: rgba(10,12,21,0.8);
             backdrop-filter: blur(10px);
@@ -31,23 +28,9 @@
             gap: 12px;
             margin-bottom: 30px;
         }
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .logo img {
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-        }
-        .logo h1 {
-            font-size: 1.2rem;
-            background: linear-gradient(135deg, #fff, #00d4ff);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo img { width: 45px; height: 45px; border-radius: 12px; }
+        .logo h1 { font-size: 1.2rem; background: linear-gradient(135deg, #fff, #00d4ff); background-clip: text; -webkit-background-clip: text; color: transparent; }
         .cart-btn {
             background: rgba(0,212,255,0.15);
             border: 1px solid rgba(0,212,255,0.3);
@@ -58,18 +41,8 @@
             align-items: center;
             gap: 8px;
         }
-        .cart-count {
-            background: #f43f5e;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 0.7rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .cart-count { background: #f43f5e; border-radius: 50%; width: 22px; height: 22px; font-size: 0.7rem; display: inline-flex; align-items: center; justify-content: center; }
         
-        /* Categories */
         .categories {
             display: flex;
             gap: 10px;
@@ -84,13 +57,10 @@
             border-radius: 40px;
             cursor: pointer;
             font-size: 0.8rem;
+            transition: all 0.2s;
         }
-        .cat-btn.active {
-            background: #00d4ff;
-            color: #030712;
-        }
+        .cat-btn.active { background: #00d4ff; color: #030712; }
         
-        /* Products Grid */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -103,24 +73,22 @@
             border-radius: 20px;
             padding: 18px;
             transition: all 0.3s;
+            position: relative;
         }
-        .product-card:hover {
-            transform: translateY(-5px);
-            border-color: #00d4ff;
-        }
-        .product-image {
-            width: 100%;
-            height: 180px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            background: #1a1c2a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-        }
+        .product-card:hover { transform: translateY(-5px); border-color: #00d4ff; }
+        .product-icon { font-size: 3rem; margin-bottom: 12px; text-align: center; }
         .product-name { font-size: 1rem; font-weight: 700; margin-bottom: 5px; }
         .product-category { font-size: 0.6rem; color: #00d4ff; margin-bottom: 8px; }
+        .product-type-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0,212,255,0.2);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            color: #00d4ff;
+        }
         .product-desc { font-size: 0.7rem; color: #94a3b8; margin-bottom: 12px; }
         .product-price { font-size: 1.2rem; font-weight: 700; color: #10b981; margin-bottom: 12px; }
         .add-btn {
@@ -134,7 +102,6 @@
         }
         .add-btn:hover { background: #00d4ff; color: #030712; }
         
-        /* Cart Sidebar */
         .cart-sidebar {
             position: fixed;
             top: 0;
@@ -151,45 +118,12 @@
             overflow-y: auto;
         }
         .cart-sidebar.open { right: 0; }
-        .cart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 15px;
-        }
-        .close-cart {
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .cart-total {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-        .checkout-btn {
-            width: 100%;
-            margin-top: 15px;
-            padding: 12px;
-            background: #10b981;
-            border: none;
-            border-radius: 40px;
-            color: white;
-            font-weight: 700;
-            cursor: pointer;
-        }
+        .cart-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
+        .close-cart { font-size: 1.5rem; cursor: pointer; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .cart-total { margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 1.1rem; font-weight: 700; }
+        .checkout-btn { width: 100%; margin-top: 15px; padding: 12px; background: #10b981; border: none; border-radius: 40px; color: white; font-weight: 700; cursor: pointer; }
         
-        /* Modal */
         .modal {
             position: fixed;
             top: 0;
@@ -236,13 +170,7 @@
             display: none;
         }
         .toast.show { display: block; }
-        footer {
-            text-align: center;
-            padding: 30px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            margin-top: 20px;
-        }
-        .hidden { display: none; }
+        footer { text-align: center; padding: 30px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -291,56 +219,77 @@
 </div>
 
 <footer>
-    <p>© 2026 ATH DIGITAL HUB | Multi-Product Store</p>
+    <p>© 2026 ATH DIGITAL HUB | Digital Products Store</p>
 </footer>
 
 <script>
-    // ============ PRODUCTS DATABASE (Safe Version) ============
-    let products = [
-        { id: 1, name: "VIP LEVEL - 1", category: "data", price: 15000, icon: "📱", desc: "22GB + 8,000 မိနစ်" },
-        { id: 2, name: "VIP LEVEL - 2", category: "data", price: 20000, icon: "📡", desc: "40GB + 250 မိနစ်" },
-        { id: 3, name: "VIP LEVEL - 3", category: "data", price: 25000, icon: "⚡", desc: "40GB + 1,400 မိနစ်" },
-        { id: 4, name: "VIP LEVEL - 4 ULTRA", category: "data", price: 30000, icon: "👑", desc: "120GB + Unlimited" },
-        { id: 5, name: "Men's T-Shirt", category: "clothing", price: 15000, icon: "👕", desc: "Cotton T-Shirt, Size S-XXL" },
-        { id: 6, name: "Women's Dress", category: "clothing", price: 35000, icon: "👗", desc: "Summer Dress, Size S-L" },
-        { id: 7, name: "Jacket", category: "clothing", price: 45000, icon: "🧥", desc: "Winter Jacket" },
-        { id: 8, name: "Jeans", category: "clothing", price: 25000, icon: "👖", desc: "Denim Jeans" },
-        { id: 9, name: "Web Development Bootcamp", category: "course", price: 150000, icon: "💻", desc: "Full Stack, 3 months" },
-        { id: 10, name: "Digital Marketing Course", category: "course", price: 80000, icon: "📈", desc: "SEO, Social Media, Ads" },
-        { id: 11, name: "English Speaking Course", category: "course", price: 50000, icon: "🇬🇧", desc: "Beginner to Advanced" },
-        { id: 12, name: "Python Programming", category: "course", price: 120000, icon: "🐍", desc: "From Zero to Hero" },
-        { id: 13, name: "Rich Dad Poor Dad", category: "book", price: 8000, icon: "📚", desc: "Robert Kiyosaki" },
-        { id: 14, name: "Atomic Habits", category: "book", price: 12000, icon: "📖", desc: "James Clear" },
-        { id: 15, name: "Think and Grow Rich", category: "book", price: 10000, icon: "📕", desc: "Napoleon Hill" },
-        { id: 16, name: "The Psychology of Money", category: "book", price: 15000, icon: "💰", desc: "Morgan Housel" },
-        { id: 17, name: "Smartphone", category: "other", price: 250000, icon: "📱", desc: "6GB RAM, 128GB Storage" },
-        { id: 18, name: "Headphone", category: "other", price: 25000, icon: "🎧", desc: "Wireless Bluetooth" },
-        { id: 19, name: "Watch", category: "other", price: 35000, icon: "⌚", desc: "Smart Watch" },
-        { id: 20, name: "Backpack", category: "other", price: 20000, icon: "🎒", desc: "Waterproof, 20L" }
-    ];
-    
+    // ============ LOAD DATA FROM LOCALSTORAGE ============
+    let categories = [];
+    let products = [];
     let cart = [];
     let currentCategory = 'all';
     
-    const categoryNames = {
-        all: 'အားလုံး',
-        data: '📡 Data Plans',
-        clothing: '👕 အဝတ်အထည်',
-        course: '💻 သင်တန်း',
-        book: '📚 စာအုပ်',
-        other: '🎁 အခြား'
-    };
+    function loadStoreData() {
+        const savedCats = localStorage.getItem('store_categories');
+        const savedProds = localStorage.getItem('store_products');
+        
+        if (savedCats) {
+            categories = JSON.parse(savedCats);
+        } else {
+            categories = [
+                { id: "data", name: "Data Plans", icon: "📡", color: "#00d4ff" },
+                { id: "clothing", name: "Clothing", icon: "👕", color: "#10b981" },
+                { id: "digital_product", name: "Digital Products", icon: "🖥️", color: "#8b5cf6" },
+                { id: "digital_course", name: "Digital Courses", icon: "🎓", color: "#e11d48" },
+                { id: "game_items", name: "Game Items", icon: "🎮", color: "#f59e0b" },
+                { id: "language_course", name: "Language Courses", icon: "🌐", color: "#06b6d4" },
+                { id: "pdf_books", name: "PDF Books", icon: "📘", color: "#22c55e" },
+                { id: "video_content", name: "Video Content", icon: "🎬", color: "#ec4899" },
+                { id: "other", name: "Others", icon: "🎁", color: "#64748b" }
+            ];
+        }
+        
+        if (savedProds) {
+            products = JSON.parse(savedProds);
+        } else {
+            products = [
+                { id: 1, name: "VIP LEVEL - 1", categoryId: "data", type: "standard", price: 15000, icon: "📱", desc: "22GB + 8,000 မိနစ်", link: "" },
+                { id: 2, name: "Windows 11 Pro License", categoryId: "digital_product", type: "digital", price: 25000, icon: "🪟", desc: "Original License Key", link: "https://example.com/download/windows11" },
+                { id: 3, name: "Full Stack Web Development", categoryId: "digital_course", type: "course", price: 150000, icon: "💻", desc: "Complete Web Dev Course", link: "https://example.com/course/webdev" },
+                { id: 4, name: "Free Fire 500 Diamonds", categoryId: "game_items", type: "game", price: 15000, icon: "🔥", desc: "FF Diamonds Top Up", link: "" },
+                { id: 5, name: "English Speaking Course", categoryId: "language_course", type: "course", price: 50000, icon: "🇬🇧", desc: "Beginner to Advanced", link: "https://example.com/course/english" },
+                { id: 6, name: "Rich Dad Poor Dad (PDF)", categoryId: "pdf_books", type: "pdf", price: 8000, icon: "📚", desc: "Robert Kiyosaki", link: "https://example.com/pdf/richdad" },
+                { id: 7, name: "Python Tutorial Video Series", categoryId: "video_content", type: "video", price: 45000, icon: "🐍", desc: "10+ Hours Video Course", link: "https://example.com/video/python" },
+                { id: 8, name: "Men's T-Shirt", categoryId: "clothing", type: "standard", price: 15000, icon: "👕", desc: "Cotton T-Shirt", link: "" },
+                { id: 9, name: "Smartphone", categoryId: "other", type: "standard", price: 250000, icon: "📱", desc: "6GB RAM, 128GB", link: "" }
+            ];
+        }
+    }
+    loadStoreData();
     
-    function renderCategories() {
-        const categories = ['all', 'data', 'clothing', 'course', 'book', 'other'];
-        const container = document.getElementById('categories');
-        container.innerHTML = categories.map(cat => `
-            <button class="cat-btn ${currentCategory === cat ? 'active' : ''}" onclick="setCategory('${cat}')">${categoryNames[cat]}</button>
-        `).join('');
+    function getProductTypeName(type) {
+        const types = {
+            standard: '📦 Product',
+            digital: '💾 Digital',
+            course: '🎓 Course',
+            game: '🎮 Game',
+            pdf: '📘 PDF',
+            video: '🎬 Video'
+        };
+        return types[type] || type;
     }
     
-    function setCategory(cat) {
-        currentCategory = cat;
+    function renderCategories() {
+        const container = document.getElementById('categories');
+        let html = `<button class="cat-btn ${currentCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">📦 အားလုံး</button>`;
+        categories.forEach(cat => {
+            html += `<button class="cat-btn ${currentCategory === cat.id ? 'active' : ''}" onclick="setCategory('${cat.id}')" style="border-left-color: ${cat.color};">${cat.icon} ${cat.name}</button>`;
+        });
+        container.innerHTML = html;
+    }
+    
+    function setCategory(catId) {
+        currentCategory = catId;
         renderCategories();
         renderProducts();
     }
@@ -348,31 +297,34 @@
     function renderProducts() {
         let filtered = products;
         if (currentCategory !== 'all') {
-            filtered = products.filter(p => p.category === currentCategory);
+            filtered = products.filter(p => p.categoryId === currentCategory);
         }
         const container = document.getElementById('productsGrid');
-        container.innerHTML = filtered.map(p => `
-            <div class="product-card">
-                <div class="product-image">
-                    ${p.icon}
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:40px;">📭 ထုတ်ကုန်မရှိပါ</div>';
+            return;
+        }
+        container.innerHTML = filtered.map(p => {
+            const cat = categories.find(c => c.id === p.categoryId);
+            return `
+                <div class="product-card">
+                    <div class="product-type-badge">${getProductTypeName(p.type)}</div>
+                    <div class="product-icon">${p.icon}</div>
+                    <div class="product-name">${p.name}</div>
+                    <div class="product-category">${cat ? `${cat.icon} ${cat.name}` : p.categoryId}</div>
+                    <div class="product-desc">${p.desc || ''}</div>
+                    <div class="product-price">${p.price.toLocaleString()} Ks</div>
+                    <button class="add-btn" onclick="addToCart(${p.id})"><i class="fas fa-cart-plus"></i> ထည့်မည်</button>
                 </div>
-                <div class="product-name">${p.name}</div>
-                <div class="product-category">${categoryNames[p.category] || p.category}</div>
-                <div class="product-desc">${p.desc}</div>
-                <div class="product-price">${p.price.toLocaleString()} Ks</div>
-                <button class="add-btn" onclick="addToCart(${p.id})"><i class="fas fa-cart-plus"></i> ထည့်မည်</button>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
     
     function addToCart(id) {
         const product = products.find(p => p.id === id);
         const existing = cart.find(i => i.id === id);
-        if (existing) {
-            existing.qty++;
-        } else {
-            cart.push({ ...product, qty: 1 });
-        }
+        if (existing) { existing.qty++; }
+        else { cart.push({ ...product, qty: 1 }); }
         updateCartUI();
         showToast(`${product.name} ထည့်သွင်းပြီး`);
     }
@@ -393,7 +345,7 @@
             total += item.price * item.qty;
             return `
                 <div class="cart-item">
-                    <div><strong>${item.name}</strong><br><small>${item.price.toLocaleString()} Ks</small></div>
+                    <div><strong>${item.name}</strong><br><small>${item.price.toLocaleString()} Ks</small><br><small class="product-type-badge" style="background:rgba(0,212,255,0.15);">${getProductTypeName(item.type)}</small></div>
                     <div>
                         <button onclick="updateQty(${item.id}, -1)" style="background:#334155; border:none; width:28px; border-radius:50%; cursor:pointer;">-</button>
                         <span style="margin:0 10px;">${item.qty}</span>
@@ -410,9 +362,7 @@
         const item = cart.find(i => i.id === id);
         if (item) {
             item.qty += delta;
-            if (item.qty <= 0) {
-                cart = cart.filter(i => i.id !== id);
-            }
+            if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
             updateCartUI();
         }
     }
@@ -424,14 +374,12 @@
     
     async function placeOrder(phone, file) {
         const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-        const items = cart.map(i => `${i.name} x${i.qty}`).join(', ');
-        
+        const items = cart.map(i => `${i.name} x${i.qty} (${getProductTypeName(i.type)})`).join(', ');
         const fd = new FormData();
         fd.append('phone', phone);
         fd.append('plan', items);
         fd.append('price', total);
         fd.append('slip', file);
-        
         const res = await fetch('/api/orders', { method: 'POST', body: fd });
         return await res.json();
     }
@@ -440,7 +388,6 @@
         e.preventDefault();
         const phone = document.getElementById('phone').value.trim();
         const file = document.getElementById('slip').files[0];
-        
         if (!phone) { showToast('ဖုန်းနံပါတ်ထည့်ပါ', true); return; }
         if (!file) { showToast('ငွေလွှဲပြေစာထည့်ပါ', true); return; }
         if (cart.length === 0) { showToast('ဈေးခြင်းထဲတွင် ပစ္စည်းမရှိပါ', true); return; }
@@ -457,17 +404,10 @@
         }
     });
     
-    document.getElementById('cartBtn').addEventListener('click', () => {
-        document.getElementById('cartSidebar').classList.add('open');
-    });
-    document.getElementById('closeCartBtn').addEventListener('click', () => {
-        document.getElementById('cartSidebar').classList.remove('open');
-    });
+    document.getElementById('cartBtn').addEventListener('click', () => document.getElementById('cartSidebar').classList.add('open'));
+    document.getElementById('closeCartBtn').addEventListener('click', () => document.getElementById('cartSidebar').classList.remove('open'));
     document.getElementById('checkoutBtn').addEventListener('click', () => {
-        if (cart.length === 0) {
-            showToast('ဈေးခြင်းထဲတွင် ပစ္စည်းမရှိပါ', true);
-            return;
-        }
+        if (cart.length === 0) { showToast('ဈေးခြင်းထဲတွင် ပစ္စည်းမရှိပါ', true); return; }
         document.getElementById('paymentModal').classList.add('active');
     });
     document.getElementById('copyPhone')?.addEventListener('click', () => {
