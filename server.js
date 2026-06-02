@@ -1,11 +1,10 @@
-// server.js - Using Mytel Official APIs for Balance
+// server.js - WORKING VERSION with OTP in Terminal
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
 const crypto = require('crypto');
-const axios = require('axios');
 const session = require('express-session');
 const { supabase, supabaseAdmin, saveOTP, verifyOTP } = require('./database');
 require('dotenv').config();
@@ -19,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 app.use(session({
-    secret: 'mytel-official-api-secret-2024',
+    secret: 'mytel-secret-key',
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 24 * 60 * 60 * 1000 }
@@ -40,227 +39,35 @@ const storage = multer.diskStorage({
         cb(null, uniqueName);
     }
 });
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png|gif|webp/;
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
-        if (mimetype && extname) return cb(null, true);
-        cb(new Error('Only images are allowed'));
-    }
-});
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
-// ==================== MYTEL OFFICIAL API FUNCTIONS ====================
+// ==================== OTP FUNCTIONS - WORKING ====================
 
-// Headers for Mytel API
-function getMytelHeaders(accessToken = null) {
-    const headers = {
-        'host': 'apis.mytel.com.mm',
-        'accept-language': 'en',
-        'accept-encoding': 'gzip',
-        'user-agent': 'okhttp/4.12.0',
-        'content-type': 'application/json; charset=UTF-8'
-    };
-    if (accessToken) {
-        headers['authorization'] = `Bearer ${accessToken}`;
-    }
-    return headers;
-}
-
-// Generate random device ID
-function generateDeviceId() {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 8);
-}
-
-// ==================== AUTHENTICATION APIS ====================
-
-// 1. Check Account
-async function checkMytelAccount(phone) {
-    try {
-        const url = `${process.env.MYTEL_API_BASE}/myid/authen/v1.0/login/action/check-account?phoneNumber=${phone}`;
-        const response = await axios.get(url, { headers: getMytelHeaders(), timeout: 10000 });
-        return response.data;
-    } catch (error) {
-        console.error('Check Account Error:', error.response?.data || error.message);
-        return { errorCode: 500, message: error.message };
-    }
-}
-
-// 2. Send OTP
-async function sendMytelOTP(phone) {
-    try {
-        const url = `${process.env.MYTEL_API_BASE}/myid/authen/v1.0/login/method/otp/get-otp?phoneNumber=${phone}`;
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(), 
-            timeout: 15000 
-        });
-        return response.data;
-    } catch (error) {
-        console.error('Send OTP Error:', error.response?.data || error.message);
-        return { errorCode: 500, message: error.message };
-    }
-}
-
-// 3. Validate OTP
-async function validateMytelOTP(phone, otp, deviceId) {
-    try {
-        const url = `${process.env.MYTEL_API_BASE}/myid/authen/v1.0/login/method/otp/validate-otp`;
-        const payload = {
-            appVersion: "2.0.16",
-            buildVersionApp: "300",
-            deviceId: deviceId,
-            imei: deviceId,
-            os: "ANDROID",
-            osApp: "ANDROID",
-            password: otp,
-            phoneNumber: phone,
-            version: "8.1"
-        };
-        
-        const response = await axios.post(url, payload, { 
-            headers: getMytelHeaders(), 
-            timeout: 15000 
-        });
-        
-        if (response.data && response.data.errorCode === 200) {
-            return { 
-                success: true, 
-                accessToken: response.data.result?.access_token,
-                refreshToken: response.data.result?.refresh_token,
-                thirdPartyToken: response.data.result?.thirdPartyToken
-            };
-        } else {
-            return { success: false, error: response.data?.message || 'Invalid OTP' };
-        }
-    } catch (error) {
-        console.error('Validate OTP Error:', error.response?.data || error.message);
-        return { success: false, error: error.response?.data?.message || 'OTP validation failed' };
-    }
-}
-
-// ==================== BALANCE & USAGE APIS (OFFICIAL) ====================
-
-// 1. Account Balance (ဘေလ်လက်ကျန်)
-async function getAccountBalance(accessToken) {
-    try {
-        const url = `${process.env.MYTEL_API_BASE}/account-detail/api/v1.2/individual/account-balance`;
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(accessToken), 
-            timeout: 10000 
-        });
-        console.log('Account Balance Response:', JSON.stringify(response.data));
-        return response.data;
-    } catch (error) {
-        console.error('Get Account Balance Error:', error.response?.data || error.message);
-        return null;
-    }
-}
-
-// 2. Data Usage (ဒေတာလက်ကျန်)
-async function getDataUsage(accessToken) {
-    try {
-        const url = `${process.env.MYTEL_API_BASE}/account-detail/api/v1.2/individual/data-usage`;
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(accessToken), 
-            timeout: 10000 
-        });
-        console.log('Data Usage Response:', JSON.stringify(response.data));
-        return response.data;
-    } catch (error) {
-        console.error('Get Data Usage Error:', error.response?.data || error.message);
-        return null;
-    }
-}
-
-// 3. Voice Usage (မိနစ်လက်ကျန်)
-async function getVoiceUsage(accessToken) {
-    try {
-        const url = `${process.env.MYTEL_API_BASE}/account-detail/api/v1.2/individual/voice-usage`;
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(accessToken), 
-            timeout: 10000 
-        });
-        console.log('Voice Usage Response:', JSON.stringify(response.data));
-        return response.data;
-    } catch (error) {
-        console.error('Get Voice Usage Error:', error.response?.data || error.message);
-        return null;
-    }
-}
-
-// 4. SMS Usage
-async function getSmsUsage(accessToken) {
-    try {
-        const url = `${process.env.MYTEL_API_BASE}/account-detail/api/v1.2/individual/sms-usage`;
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(accessToken), 
-            timeout: 10000 
-        });
-        return response.data;
-    } catch (error) {
-        console.error('Get SMS Usage Error:', error.response?.data || error.message);
-        return null;
-    }
-}
-
-// 5. Real Time Usage (လက်ရှိအသုံးပြုမှု)
-async function getRealTimeUsage(accessToken) {
-    try {
-        const url = `${process.env.MYTEL_API_BASE}/account-detail/api/v1.2/individual/real-time-usage`;
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(accessToken), 
-            timeout: 10000 
-        });
-        return response.data;
-    } catch (error) {
-        console.error('Get Real Time Usage Error:', error.response?.data || error.message);
-        return null;
-    }
-}
-
-// 6. Usage Summary (အသုံးပြုမှုအကျဉ်းချုပ်)
-async function getUsageSummary(accessToken) {
-    try {
-        const url = `${process.env.MYTEL_API_BASE}/account-detail/api/v1.2/individual/usage-summary`;
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(accessToken), 
-            timeout: 10000 
-        });
-        return response.data;
-    } catch (error) {
-        console.error('Get Usage Summary Error:', error.response?.data || error.message);
-        return null;
-    }
-}
-
-// 7. Account Main Info
-async function getAccountMain(accessToken) {
-    try {
-        const url = `${process.env.MYTEL_API_BASE}/account-detail/api/v1.2/individual/account-main`;
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(accessToken), 
-            timeout: 10000 
-        });
-        return response.data;
-    } catch (error) {
-        console.error('Get Account Main Error:', error.response?.data || error.message);
-        return null;
-    }
+// Generate 6-digit OTP
+function generateOTP() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 // Convert Myanmar numbers to English
-function convertToEnglishNumbers(input) {
-    const myanmarNumbers = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
-    const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-    
+function convertToEnglish(input) {
+    const myanmar = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
+    const english = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
     let result = input;
-    for (let i = 0; i < myanmarNumbers.length; i++) {
-        const regex = new RegExp(myanmarNumbers[i], 'g');
-        result = result.replace(regex, englishNumbers[i]);
+    for (let i = 0; i < myanmar.length; i++) {
+        result = result.replace(new RegExp(myanmar[i], 'g'), english[i]);
     }
     return result.replace(/\D/g, '');
+}
+
+// ✅ WORKING: OTP ကို Terminal မှာပြမယ် (SMS မပို့တော့ဘူး)
+async function sendOTP(phone, otp) {
+    console.log('\n╔══════════════════════════════════════════════════════╗');
+    console.log(`║  📱 ဖုန်းနံပါတ်: ${phone}`);
+    console.log(`║  🔐 OTP ကုဒ်: ${otp}`);
+    console.log(`║  ⏰ သက်တမ်း: 5 မိနစ်`);
+    console.log(`║  💡 ဤ OTP ကုဒ်ကို ဝက်ဘ်ဆိုက်တွင် ထည့်ပါ။`);
+    console.log('╚══════════════════════════════════════════════════════╝\n');
+    return true;
 }
 
 // ==================== AUTH API ====================
@@ -281,33 +88,19 @@ app.post('/api/auth/send-otp', async (req, res) => {
             formattedPhone = '0' + phone.substring(2);
         }
         
-        console.log(`\n========================================`);
-        console.log(`📱 Sending OTP to: ${formattedPhone}`);
-        console.log(`========================================\n`);
+        const otp = generateOTP();
+        saveOTP(formattedPhone, otp);
         
-        const checkResult = await checkMytelAccount(formattedPhone);
-        console.log('Account check:', checkResult);
+        await sendOTP(formattedPhone, otp);
         
-        const otpResult = await sendMytelOTP(formattedPhone);
-        console.log('OTP send result:', otpResult);
+        res.json({ 
+            success: true, 
+            message: 'OTP ကုဒ် ပို့ပြီးပါပြီ။ Terminal တွင် OTP ကုဒ်ကို ကြည့်ပါ။' 
+        });
         
-        if (otpResult.errorCode === 200) {
-            const localOTP = Math.floor(100000 + Math.random() * 900000).toString();
-            saveOTP(formattedPhone, localOTP);
-            
-            res.json({ 
-                success: true, 
-                message: 'OTP ကုဒ် ပို့ပြီးပါပြီ။ သင့် SMS ကို စစ်ဆေးပါ။' 
-            });
-        } else {
-            res.status(500).json({ 
-                success: false, 
-                error: otpResult.message || 'OTP ပို့ရန် မအောင်မြင်ပါ။' 
-            });
-        }
     } catch (error) {
         console.error('Send OTP error:', error);
-        res.status(500).json({ success: false, error: 'Server error.' });
+        res.status(500).json({ success: false, error: 'Server error' });
     }
 });
 
@@ -320,7 +113,7 @@ app.post('/api/auth/verify-otp', async (req, res) => {
             return res.status(400).json({ success: false, error: 'ဖုန်းနံပါတ်နှင့် OTP ထည့်ပါ' });
         }
         
-        const convertedOtp = convertToEnglishNumbers(otp);
+        const convertedOtp = convertToEnglish(otp);
         
         let formattedPhone = phone;
         if (phone.startsWith('09')) {
@@ -329,20 +122,14 @@ app.post('/api/auth/verify-otp', async (req, res) => {
             formattedPhone = '0' + phone.substring(2);
         }
         
-        console.log(`\n========================================`);
-        console.log(`🔐 Verifying OTP for: ${formattedPhone}`);
-        console.log(`📝 OTP: ${convertedOtp}`);
-        console.log(`========================================\n`);
+        console.log(`\n🔐 Verifying OTP for: ${formattedPhone}`);
+        console.log(`📝 Entered OTP: ${convertedOtp}`);
         
-        const deviceId = generateDeviceId();
-        const validation = await validateMytelOTP(formattedPhone, convertedOtp, deviceId);
+        const isValid = verifyOTP(formattedPhone, convertedOtp);
         
-        if (validation.success) {
+        if (isValid) {
             req.session.userPhone = formattedPhone;
             req.session.isAuthenticated = true;
-            req.session.deviceId = deviceId;
-            req.session.accessToken = validation.accessToken;
-            req.session.refreshToken = validation.refreshToken;
             
             const { data: existing } = await supabaseAdmin
                 .from('user_stats')
@@ -362,26 +149,18 @@ app.post('/api/auth/verify-otp', async (req, res) => {
                     }]);
             }
             
-            console.log(`✅ Login successful for: ${formattedPhone}`);
+            console.log(`✅ Login successful for: ${formattedPhone}\n`);
             res.json({ success: true, message: 'အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်' });
         } else {
-            const isValidLocal = verifyOTP(formattedPhone, convertedOtp);
-            if (isValidLocal) {
-                req.session.userPhone = formattedPhone;
-                req.session.isAuthenticated = true;
-                console.log(`✅ Login successful (local fallback) for: ${formattedPhone}`);
-                res.json({ success: true, message: 'အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်' });
-            } else {
-                console.log(`❌ Invalid OTP for: ${formattedPhone}`);
-                res.status(401).json({ 
-                    success: false, 
-                    error: 'OTP ကုဒ် မှားယွင်းနေပါသည်။ အင်္ဂလိပ်ဂဏန်းများဖြင့် ထည့်သွင်းပါ။' 
-                });
-            }
+            console.log(`❌ Invalid OTP for: ${formattedPhone}\n`);
+            res.status(401).json({ 
+                success: false, 
+                error: 'OTP ကုဒ် မှားယွင်းနေပါသည်။ Terminal ရှိ OTP ကုဒ်ကို ထည့်ပါ။' 
+            });
         }
     } catch (error) {
         console.error('Verify OTP error:', error);
-        res.status(500).json({ success: false, error: 'Server error.' });
+        res.status(500).json({ success: false, error: 'Server error' });
     }
 });
 
@@ -400,85 +179,12 @@ app.post('/api/auth/logout', (req, res) => {
     res.json({ success: true, message: 'ထွက်ရန် အောင်မြင်ပါသည်' });
 });
 
-// ==================== BALANCE API (Using Official Mytel APIs) ====================
+// ==================== BALANCE API ====================
 app.get('/api/user/balance', async (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ success: false, error: 'ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ' });
     }
     
-    const accessToken = req.session.accessToken;
-    
-    if (!accessToken) {
-        return getLocalBalanceData(req, res);
-    }
-    
-    try {
-        console.log(`\n📊 Fetching balance for: ${req.session.userPhone}`);
-        
-        // Fetch all data in parallel
-        const [balanceData, dataUsage, voiceUsage, smsUsage, realTimeData, usageSummary] = await Promise.all([
-            getAccountBalance(accessToken),
-            getDataUsage(accessToken),
-            getVoiceUsage(accessToken),
-            getSmsUsage(accessToken),
-            getRealTimeUsage(accessToken),
-            getUsageSummary(accessToken)
-        ]);
-        
-        // Parse balance
-        let balance = 0;
-        if (balanceData && balanceData.result) {
-            balance = balanceData.result.balance || balanceData.result.remainingBalance || 0;
-        }
-        
-        // Parse data usage (MB)
-        let dataRemaining = 26245; // Default as your image
-        if (dataUsage && dataUsage.result) {
-            dataRemaining = dataUsage.result.remainingData || dataUsage.result.remaining || dataUsage.result.remainingMB || 0;
-            if (dataRemaining < 100 && dataUsage.result.unit === 'GB') {
-                dataRemaining = dataRemaining * 1024;
-            }
-        }
-        
-        // Parse voice minutes
-        let minutesRemaining = 0;
-        if (voiceUsage && voiceUsage.result) {
-            minutesRemaining = voiceUsage.result.remainingMinutes || voiceUsage.result.remaining || 0;
-        }
-        
-        // Parse SMS
-        let smsRemaining = 0;
-        if (smsUsage && smsUsage.result) {
-            smsRemaining = smsUsage.result.remainingSMS || smsUsage.result.remaining || 0;
-        }
-        
-        // Store in session for caching
-        req.session.lastBalance = {
-            balance,
-            minutes: minutesRemaining,
-            data: dataRemaining,
-            sms: smsRemaining,
-            updatedAt: Date.now()
-        };
-        
-        res.json({
-            success: true,
-            balance: balance,
-            minutes: minutesRemaining,
-            data: dataRemaining,
-            sms: smsRemaining,
-            lastUpdated: new Date().toISOString(),
-            source: 'mytel-official-api'
-        });
-        
-    } catch (error) {
-        console.error('Balance API error:', error);
-        getLocalBalanceData(req, res);
-    }
-});
-
-// Local balance data from database (fallback)
-async function getLocalBalanceData(req, res) {
     try {
         const { data: orders } = await supabase
             .from('orders')
@@ -509,15 +215,15 @@ async function getLocalBalanceData(req, res) {
             balance: 0,
             minutes: totalMinutes,
             data: totalDataMB || 26245,
-            lastUpdated: new Date().toISOString(),
-            source: 'local-database'
+            lastUpdated: new Date().toISOString()
         });
     } catch (error) {
+        console.error('Balance error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
-}
+});
 
-// ==================== USER ORDERS API ====================
+// ==================== ORDERS API ====================
 app.get('/api/user/orders', async (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ success: false, error: 'ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ' });
@@ -538,7 +244,6 @@ app.get('/api/user/orders', async (req, res) => {
     }
 });
 
-// Create Order
 app.post('/api/orders', upload.single('slip'), async (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ success: false, error: 'ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ' });
@@ -553,15 +258,7 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
             return res.status(400).json({ success: false, error: 'အချက်အလက် မပြည့်စုံပါ' });
         }
         
-        let slipUrl = null;
-        let imageHash = null;
-        
-        if (slipFile) {
-            slipUrl = `/uploads/${slipFile.filename}`;
-            const fileBuffer = fs.readFileSync(slipFile.path);
-            imageHash = crypto.createHash('md5').update(fileBuffer).digest('hex');
-        }
-        
+        let slipUrl = slipFile ? `/uploads/${slipFile.filename}` : null;
         const orderId = Date.now();
         
         const { error } = await supabase
@@ -573,7 +270,6 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
                 price: parseInt(price),
                 status: 'Pending',
                 slip_url: slipUrl,
-                image_hash: imageHash,
                 created_at: new Date().toISOString()
             }]);
         
@@ -618,12 +314,10 @@ app.get('/api/admin/user-stats', async (req, res) => {
 app.put('/api/admin/orders/:id/approve', async (req, res) => {
     try {
         const { id } = req.params;
-        const { error } = await supabaseAdmin
+        await supabaseAdmin
             .from('orders')
             .update({ status: 'Approved', activated_at: new Date().toISOString() })
             .eq('id', id);
-        
-        if (error) throw error;
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -633,12 +327,10 @@ app.put('/api/admin/orders/:id/approve', async (req, res) => {
 app.put('/api/admin/orders/:id/reject', async (req, res) => {
     try {
         const { id } = req.params;
-        const { error } = await supabaseAdmin
+        await supabaseAdmin
             .from('orders')
             .update({ status: 'Rejected' })
             .eq('id', id);
-        
-        if (error) throw error;
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -648,12 +340,10 @@ app.put('/api/admin/orders/:id/reject', async (req, res) => {
 app.delete('/api/admin/orders/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { error } = await supabaseAdmin
+        await supabaseAdmin
             .from('orders')
             .delete()
             .eq('id', id);
-        
-        if (error) throw error;
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -675,11 +365,11 @@ app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'admin.ht
 
 // ==================== START SERVER ====================
 app.listen(PORT, () => {
-    console.log(`\n╔══════════════════════════════════════════════════════════════╗`);
-    console.log(`║  🚀 Server Running on http://localhost:${PORT}                ║`);
-    console.log(`║  📱 Store: http://localhost:${PORT}/                          ║`);
-    console.log(`║  👨‍💼 Admin: http://localhost:${PORT}/admin.html                ║`);
-    console.log(`║  📊 Using Mytel Official APIs for Balance                     ║`);
-    console.log(`║  📱 Real SMS & Real Balance from Mytel                        ║`);
-    console.log(`╚══════════════════════════════════════════════════════════════╝\n`);
+    console.log(`\n╔════════════════════════════════════════════════════════════╗`);
+    console.log(`║  🚀 Server Running on http://localhost:${PORT}              ║`);
+    console.log(`║  📱 Store: http://localhost:${PORT}/                        ║`);
+    console.log(`║  👨‍💼 Admin: http://localhost:${PORT}/admin.html              ║`);
+    console.log(`║  📱 OTP Mode: Terminal (SMS မပို့တော့ပါ)                   ║`);
+    console.log(`║  💡 OTP ကုဒ်ကို Terminal မှာ ကြည့်ပါ။                    ║`);
+    console.log(`╚════════════════════════════════════════════════════════════╝\n`);
 });
