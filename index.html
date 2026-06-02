@@ -1,902 +1,336 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>ATH DIGITAL HUB | MYTEL VIP Store</title>
-    
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATH Digital Hub - Live Chat</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --bg-deep: #0a0c15;
-            --cyan: #00d4ff;
-            --violet: #8b5cf6;
-            --emerald: #10b981;
-            --rose: #f43f5e;
-            --amber: #f59e0b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         body {
-            background: #0a0c15;
-            color: var(--text-primary);
-            font-family: 'Inter', 'Noto Sans Myanmar', sans-serif;
-            min-height: 100vh;
-            transition: background 0.3s, color 0.3s;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f0f0f0;
         }
-        body.light-mode {
-            background: #f1f5f9;
-            color: #0f172a;
-        }
-        body.light-mode .pack-card,
-        body.light-mode .order-item,
-        body.light-mode .stack-item,
-        body.light-mode .side-drawer,
-        body.light-mode .notification-panel,
-        body.light-mode .search-modal-content,
-        body.light-mode .chat-container {
-            background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(240,245,250,0.98));
-            color: #0f172a;
-        }
-        .container { max-width: 1400px; margin: 0 auto; padding: 16px; padding-bottom: 80px; }
-        
-        /* ========== TOP NAVIGATION (Responsive) ========== */
-        .top-nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(20px);
-            background: rgba(10,12,21,0.85);
-            border-bottom: 1px solid rgba(0,212,255,0.2);
-            padding: 12px 16px;
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
+            flex-direction: column;
+        }
+        .chat-header {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        .chat-header h3 {
+            font-size: 18px;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .message {
+            margin-bottom: 12px;
+            display: flex;
+        }
+        .message.customer {
+            justify-content: flex-end;
+        }
+        .message.admin {
+            justify-content: flex-start;
+        }
+        .message-content {
+            max-width: 70%;
+            padding: 10px 14px;
+            border-radius: 18px;
+        }
+        .message.customer .message-content {
+            background: #007bff;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .message.admin .message-content {
+            background: #e9ecef;
+            color: black;
+            border-bottom-left-radius: 4px;
+        }
+        .message-time {
+            font-size: 10px;
+            margin-top: 5px;
+            opacity: 0.7;
+        }
+        .message.customer .message-time {
+            text-align: right;
+        }
+        .chat-input {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid #ddd;
+            background: white;
             gap: 10px;
         }
-        .nav-left { display: flex; align-items: center; gap: 16px; }
-        .hamburger-btn {
-            background: rgba(0,212,255,0.15);
-            border: 1px solid rgba(0,212,255,0.3);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            color: var(--cyan);
-            font-size: 1.2rem;
-            transition: all 0.2s;
-        }
-        .hamburger-btn:hover { background: var(--cyan); color: #030712; }
-        .logo { cursor: pointer; }
-        .logo span { font-weight: 700; font-size: 1rem; background: linear-gradient(135deg, #fff, var(--cyan)); background-clip: text; -webkit-background-clip: text; color: transparent; }
-        @media (min-width: 768px) { .logo span { font-size: 1.2rem; } }
-        
-        .nav-right { display: flex; align-items: center; gap: 8px; }
-        @media (min-width: 768px) { .nav-right { gap: 16px; } }
-        .nav-icon {
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 1rem;
-            cursor: pointer;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            transition: all 0.2s;
-        }
-        @media (min-width: 768px) { .nav-icon { font-size: 1.2rem; width: 40px; height: 40px; } }
-        .nav-icon:hover { background: rgba(0,212,255,0.15); color: var(--cyan); }
-        .lang-btn {
-            background: transparent;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 40px;
-            cursor: pointer;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-        }
-        @media (min-width: 768px) { .lang-btn { padding: 6px 12px; font-size: 0.9rem; } }
-        .lang-btn.active { background: var(--cyan); color: #030712; }
-        
-        /* ========== BOTTOM NAVIGATION (Responsive) ========== */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            backdrop-filter: blur(20px);
-            background: rgba(10,12,21,0.95);
-            border-top: 1px solid rgba(0,212,255,0.2);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 6px 12px;
-            z-index: 100;
-        }
-        @media (min-width: 768px) { .bottom-nav { padding: 8px 16px; } }
-        .bottom-nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            color: var(--text-secondary);
-            transition: all 0.2s;
-            padding: 4px 8px;
-            border-radius: 40px;
-        }
-        @media (min-width: 768px) { .bottom-nav-item { padding: 4px 12px; gap: 4px; } }
-        .bottom-nav-item i { font-size: 1rem; }
-        @media (min-width: 768px) { .bottom-nav-item i { font-size: 1.2rem; } }
-        .bottom-nav-item span { font-size: 0.55rem; font-weight: 500; }
-        @media (min-width: 768px) { .bottom-nav-item span { font-size: 0.6rem; } }
-        .bottom-nav-item.active { color: var(--cyan); background: rgba(0,212,255,0.1); }
-        .bottom-nav-item:hover { color: var(--cyan); transform: translateY(-2px); }
-        
-        /* ========== PRODUCT GRID (Responsive) ========== */
-        .pack-grid {
-            display: grid;
-            gap: 16px;
-            margin: 32px 0;
-        }
-        /* ဖုန်း: 1 column */
-        @media (max-width: 640px) {
-            .pack-grid { grid-template-columns: 1fr; gap: 16px; }
-        }
-        /* တက်ဘလက်: 2 columns */
-        @media (min-width: 641px) and (max-width: 1024px) {
-            .pack-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
-        }
-        /* ကွန်ပျူတာ: 4 columns */
-        @media (min-width: 1025px) {
-            .pack-grid { grid-template-columns: repeat(4, 1fr); gap: 24px; }
-        }
-        
-        .pack-card {
-            background: linear-gradient(145deg, #11131e, #0c0e16);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(34,197,94,0.2);
-            border-radius: 20px;
-            padding: 16px;
-            transition: all 0.3s;
-        }
-        @media (min-width: 768px) { .pack-card { padding: 1.2rem; border-radius: 24px; } }
-        .pack-card:hover { transform: translateY(-6px); border-color: rgba(34,197,94,0.5); }
-        .card-header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .flag-badge { font-size: 0.6rem; font-weight: 800; padding: 3px 10px; border-radius: 40px; color: white; }
-        @media (min-width: 768px) { .flag-badge { font-size: 0.65rem; } }
-        .tier-name { font-size: 0.7rem; font-weight: 700; color: var(--cyan); letter-spacing: 1px; }
-        @media (min-width: 768px) { .tier-name { font-size: 0.75rem; } }
-        .pack-price { font-size: 1.2rem; font-weight: 800; }
-        @media (min-width: 768px) { .pack-price { font-size: 1.3rem; } }
-        .feature-list { list-style: none; margin: 12px 0 16px; }
-        .feature-list li { margin-bottom: 8px; font-size: 0.65rem; display: flex; align-items: flex-start; gap: 6px; color: #cbd5e1; }
-        @media (min-width: 768px) { .feature-list li { font-size: 0.7rem; gap: 8px; } }
-        .feature-list li i { width: 14px; font-size: 0.65rem; margin-top: 2px; color: #10b981; }
-        .feature-number { font-weight: 600; color: var(--cyan); margin-right: 4px; }
-        .buy-btn {
-            width: 100%;
-            padding: 8px 0;
-            border: none;
-            border-radius: 60px;
-            font-weight: 700;
-            background: white;
-            color: #0f172a;
-            cursor: pointer;
-            font-size: 0.7rem;
-            transition: all 0.2s;
-        }
-        @media (min-width: 768px) { .buy-btn { padding: 10px 0; font-size: 0.8rem; } }
-        .buy-btn:hover { background: var(--cyan); transform: scale(0.98); color: #030712; }
-        
-        /* ========== SIDE DRAWER (Responsive) ========== */
-        .side-drawer {
-            position: fixed;
-            top: 0;
-            left: -280px;
-            width: 280px;
-            height: 100%;
-            background: rgba(10,12,21,0.98);
-            backdrop-filter: blur(30px);
-            border-right: 1px solid rgba(0,212,255,0.2);
-            z-index: 2000;
-            transition: left 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-        @media (min-width: 768px) { .side-drawer { width: 320px; left: -320px; } }
-        .side-drawer.open { left: 0; }
-        .drawer-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 1999;
-            visibility: hidden;
-            opacity: 0;
-            transition: all 0.3s ease;
-        }
-        .drawer-overlay.active { visibility: visible; opacity: 1; }
-        .drawer-header { padding: 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); }
-        @media (min-width: 768px) { .drawer-header { padding: 20px; } }
-        .drawer-logo { display: flex; align-items: center; gap: 10px; }
-        .drawer-logo img { height: 32px; width: auto; border-radius: 8px; }
-        @media (min-width: 768px) { .drawer-logo img { height: 40px; } }
-        .drawer-logo span { font-weight: 700; font-size: 0.9rem; background: linear-gradient(135deg, #fff, var(--cyan)); background-clip: text; -webkit-background-clip: text; color: transparent; }
-        .close-drawer {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
-        .drawer-menu { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
-        @media (min-width: 768px) { .drawer-menu { padding: 16px; gap: 8px; } }
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 12px;
-            border-radius: 10px;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        @media (min-width: 768px) { .menu-item { padding: 12px 16px; font-size: 0.9rem; gap: 14px; } }
-        .menu-item i { width: 20px; font-size: 1rem; }
-        .menu-item:hover { background: rgba(0,212,255,0.1); color: var(--cyan); }
-        .divider { height: 1px; background: rgba(255,255,255,0.08); margin: 8px 0; }
-        .drawer-footer { padding: 12px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; }
-        .version { font-size: 0.55rem; color: #475569; }
-        
-        /* ========== CHAT ROOM (Responsive) ========== */
-        .chat-container {
-            background: linear-gradient(145deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
-            border-radius: 16px;
-            overflow: hidden;
-            margin-top: 20px;
-        }
-        @media (min-width: 768px) { .chat-container { border-radius: 20px; } }
-        .chat-header {
-            background: rgba(0,212,255,0.15);
-            padding: 10px 12px;
-            border-bottom: 1px solid rgba(0,212,255,0.2);
-            font-size: 0.8rem;
-        }
-        @media (min-width: 768px) { .chat-header { padding: 12px 16px; font-size: 0.9rem; } }
-        .chat-messages { height: 350px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-        @media (min-width: 768px) { .chat-messages { height: 400px; padding: 16px; } }
-        .chat-input-area { padding: 10px; display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
-        @media (min-width: 768px) { .chat-input-area { padding: 12px; gap: 10px; } }
-        .chat-input-area input {
+        .chat-input input {
             flex: 1;
-            padding: 8px 12px;
-            border-radius: 40px;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #2d3a5e;
-            color: white;
-            font-size: 0.8rem;
-        }
-        .chat-send-btn {
-            background: var(--cyan);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.7rem;
-        }
-        @media (min-width: 768px) { .chat-send-btn { padding: 10px 20px; font-size: 0.8rem; } }
-        
-        /* ========== NOTIFICATION PANEL (Responsive) ========== */
-        .notification-panel {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 85%;
-            max-width: 350px;
-            height: 100%;
-            background: rgba(8,12,22,0.98);
-            backdrop-filter: blur(24px);
-            border-left: 1px solid rgba(0,212,255,0.3);
-            z-index: 1500;
-            transition: right 0.35s ease;
             padding: 12px;
-            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
         }
-        @media (min-width: 768px) { .notification-panel { width: 90%; max-width: 400px; padding: 16px; } }
-        .notification-panel.open { right: 0; }
-        .notification-header { margin-bottom: 12px; padding-bottom: 10px; }
-        .notification-header h3 { font-size: 1rem; }
-        .notif-btn { padding: 4px 10px; font-size: 0.65rem; }
-        @media (min-width: 768px) { .notif-btn { padding: 6px 12px; font-size: 0.7rem; } }
-        
-        /* ========== SEARCH MODAL (Responsive) ========== */
-        .search-modal-content {
-            width: 90%;
-            max-width: 450px;
-            padding: 16px;
+        .chat-input input:focus {
+            border-color: #007bff;
         }
-        @media (min-width: 768px) { .search-modal-content { padding: 20px; } }
-        
-        /* ========== HERO (Responsive) ========== */
-        .hero h1 { font-size: 1.5rem; }
-        @media (min-width: 640px) { .hero h1 { font-size: 1.8rem; } }
-        @media (min-width: 1024px) { .hero h1 { font-size: 2.5rem; } }
-        .hero p { font-size: 0.7rem; }
-        @media (min-width: 768px) { .hero p { font-size: 0.8rem; } }
-        
-        .toast {
-            position: fixed;
-            top: 70px;
-            right: 10px;
-            background: #10b981;
-            color: #030712;
-            padding: 6px 12px;
-            border-radius: 40px;
-            font-weight: 500;
-            z-index: 9999;
-            font-size: 0.65rem;
-            animation: fadeOut 2s ease forwards;
+        .chat-input button {
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
         }
-        @keyframes fadeOut {
-            0% { opacity: 1; transform: translateX(0); }
-            70% { opacity: 1; }
-            100% { opacity: 0; transform: translateX(100px); visibility: hidden; }
+        .chat-input button:hover {
+            background: #0056b3;
         }
-        
-        footer { margin-top: 40px; text-align: center; border-top: 1px solid rgba(255,255,255,0.08); padding: 16px; }
-        .social-links { display: flex; justify-content: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
-        .social-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.3s; text-decoration: none; }
-        @media (min-width: 768px) { .social-icon { width: 40px; height: 40px; } }
-        .social-icon:hover { transform: translateY(-3px); }
-        .social-icon i { font-size: 1rem; color: white; }
-        @media (min-width: 768px) { .social-icon i { font-size: 1.2rem; } }
-        .footer-text { font-size: 0.6rem; color: #64748b; }
-        
-        .empty-msg { text-align: center; color: var(--text-secondary); padding: 30px; font-size: 0.7rem; }
+        .user-id {
+            padding: 8px;
+            background: #f8f9fa;
+            font-size: 11px;
+            color: #666;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        .status {
+            font-size: 11px;
+            color: #28a745;
+            margin-left: 8px;
+        }
+        @media (max-width: 600px) {
+            .chat-input button {
+                padding: 12px 20px;
+            }
+        }
     </style>
 </head>
 <body>
-<div class="top-nav">
-    <div class="nav-left">
-        <button class="hamburger-btn" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
-        <div class="logo" id="homeBtn"><span>ATH</span></div>
-    </div>
-    <div class="nav-right">
-        <button class="nav-icon" id="notificationBtn"><i class="fas fa-bell"></i></button>
-        <button class="nav-icon" id="searchBtn"><i class="fas fa-search"></i></button>
-        <button class="nav-icon" id="themeToggle"><i class="fas fa-moon"></i></button>
-        <button class="lang-btn" id="langBtn">🌐</button>
-    </div>
-</div>
-
-<!-- Side Drawer -->
-<div class="side-drawer" id="sideDrawer">
-    <div class="drawer-header">
-        <div class="drawer-logo">
-            <img src="https://i.postimg.cc/GpR4ctR1/photo-2026-05-31-22-35-50.jpg" alt="Logo">
-            <span>ATH DIGITAL HUB</span>
-        </div>
-        <button class="close-drawer" id="closeDrawerBtn"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="drawer-menu">
-        <div class="menu-item" data-page="home"><i class="fas fa-home"></i> Dashboard</div>
-        <div class="menu-item" data-page="market"><i class="fas fa-store"></i> Market</div>
-        <div class="menu-item" data-page="orders"><i class="fas fa-list-ul"></i> My Orders</div>
-        <div class="menu-item" data-page="live"><i class="fas fa-broadcast-tower"></i> Live Feed</div>
-        <div class="menu-item" data-page="notifications"><i class="fas fa-bell"></i> Notifications</div>
-        <div class="divider"></div>
-        <div class="menu-item" data-page="statistics"><i class="fas fa-chart-line"></i> My Statistics</div>
-        <div class="menu-item" data-page="transactions"><i class="fas fa-receipt"></i> Transaction History</div>
-        <div class="divider"></div>
-        <div class="menu-item" data-page="profile"><i class="fas fa-user"></i> My Profile</div>
-        <div class="menu-item" data-page="change-phone"><i class="fas fa-phone-alt"></i> Change Phone</div>
-        <div class="menu-item" data-page="clear-phone"><i class="fas fa-trash-alt"></i> Clear Phone</div>
-        <div class="divider"></div>
-        <div class="menu-item" data-page="refer"><i class="fas fa-handshake"></i> Refer a Friend</div>
-        <div class="menu-item" data-page="share"><i class="fas fa-share-alt"></i> Share App</div>
-        <div class="divider"></div>
-        <div class="menu-item" data-page="support"><i class="fas fa-headset"></i> Support</div>
-        <div class="menu-item" data-page="faq"><i class="fas fa-question-circle"></i> FAQs</div>
-        <div class="divider"></div>
-        <div class="menu-item" id="darkModeMenuItem"><i class="fas fa-moon"></i> Dark Mode</div>
-        <div class="menu-item" id="langMenuItem"><i class="fas fa-globe"></i> Language</div>
-        <div class="menu-item" data-page="rate"><i class="fas fa-star"></i> Rate App</div>
-    </div>
-    <div class="drawer-footer">
-        <div class="version">v3.0.0</div>
-    </div>
-</div>
-<div class="drawer-overlay" id="drawerOverlay"></div>
-
-<!-- Notification Panel -->
-<div class="notification-panel" id="notificationPanel">
-    <div class="notification-header">
-        <h3><i class="fas fa-bell"></i> Notifications</h3>
-        <span class="close-drawer" id="closeNotificationBtn">&times;</span>
-    </div>
-    <div class="notification-actions">
-        <button class="notif-btn" id="notifAllBtn">All</button>
-        <button class="notif-btn" id="notifUnreadBtn">Unread</button>
-        <button class="notif-btn" id="notifMarkReadBtn">Mark read</button>
-        <button class="notif-btn" id="notifClearBtn">Clear all</button>
-    </div>
-    <div id="notificationsList"></div>
-</div>
-
-<!-- Search Modal -->
-<div class="search-modal" id="searchModal">
-    <div class="search-modal-content">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
-            <h3><i class="fas fa-search"></i> Search Orders</h3>
-            <button class="close-drawer" id="closeSearchBtn">&times;</button>
-        </div>
-        <div class="search-input-group">
-            <input type="tel" id="searchPhoneInput" placeholder="📱 09xxxxxxxxx">
-            <button class="buy-btn" id="searchSubmitBtn" style="width: auto; padding: 0 20px;">Search</button>
-        </div>
-        <div id="searchResults"></div>
-        <div class="version" style="margin-top: 12px;">💡 Tip: Press Ctrl+K to open</div>
-    </div>
-</div>
-
-<!-- Main Content -->
-<div class="container" id="mainContainer">
-    <div class="hero">
-        <h1>MYTEL DATA ELITE 5G+</h1>
-        <p id="heroSubtitle">မြန်ဆန်သော Data & Voice Plan များ — VIP အတွေ့အကြုံ</p>
-    </div>
-    <div class="pack-grid" id="productsGrid"></div>
-    
-    <!-- Chat Room -->
-    <div class="chat-container" id="chatRoom" style="display: none;">
+    <div class="container">
         <div class="chat-header">
-            <i class="fas fa-comment-dots"></i> Live Chat Support
-            <span id="chatStatus" style="float: right; font-size: 0.7rem;">🟢 Online</span>
+            <h3>💬 ATH Digital Hub Support</h3>
+        </div>
+        <div class="user-id">
+            🆔 Your ID: <span id="userId"></span>
+            <span class="status" id="status">● Connected</span>
         </div>
         <div class="chat-messages" id="chatMessages">
-            <div class="empty-msg">Loading messages...</div>
-        </div>
-        <div class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="Type a message...">
-            <button class="chat-send-btn" id="chatSendBtn">Send</button>
-        </div>
-    </div>
-</div>
-
-<!-- Bottom Navigation -->
-<div class="bottom-nav">
-    <button class="bottom-nav-item" data-page="home"><i class="fas fa-home"></i><span>Home</span></button>
-    <button class="bottom-nav-item" data-page="market"><i class="fas fa-store"></i><span>Market</span></button>
-    <button class="bottom-nav-item" data-page="payment"><i class="fas fa-credit-card"></i><span>Payment</span></button>
-    <button class="bottom-nav-item" data-page="live"><i class="fas fa-broadcast-tower"></i><span>Live</span></button>
-    <button class="bottom-nav-item" data-page="chat"><i class="fas fa-comment-dots"></i><span>Chat</span></button>
-</div>
-
-<footer>
-    <div class="social-links">
-        <a href="https://www.facebook.com/athdigitalhub/" target="_blank" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://t.me/ATHCustomerService" target="_blank" class="social-icon telegram"><i class="fab fa-telegram-plane"></i></a>
-        <a href="viber://chat?number=09799480995" class="social-icon viber"><i class="fab fa-viber"></i></a>
-        <a href="tel:09789999368" class="social-icon phone"><i class="fas fa-phone-alt"></i></a>
-    </div>
-    <div class="footer-text">© 2026 ATH DIGITAL HUB | Developed by AUNG THU HTWE</div>
-</footer>
-
-<!-- Payment Modal -->
-<div id="paymentModal" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-close" id="closeModalBtn">&times;</div>
-        <div style="text-align:center;"><i class="fas fa-credit-card" style="font-size:1.8rem; color:var(--cyan);"></i></div>
-        <h3 style="text-align:center;">ငွေပေးချေမှု</h3>
-        <div style="background:rgba(0,0,0,0.35); border-radius:1rem; padding:12px; margin:16px 0;">
-            <div style="display:flex; justify-content:space-between; padding:8px 0;"><span>🏦 ငွေလွှဲနည်းလမ်း</span><span style="background:rgba(0,212,255,0.12); padding:4px 10px; border-radius:40px;">K-Pay / WavePay</span></div>
-            <div style="display:flex; justify-content:space-between; padding:8px 0;"><span>👤 အကောင့်အမည်</span><span style="background:rgba(0,212,255,0.12); padding:4px 10px; border-radius:40px;">AUNG THU HTWE</span></div>
-            <div style="display:flex; justify-content:space-between; padding:8px 0;"><span>📞 ဖုန်းနံပါတ်</span><span id="clickablePhone" style="background:rgba(0,212,255,0.12); padding:4px 10px; border-radius:40px; cursor:pointer;">09789999368 📋</span></div>
-        </div>
-        <div class="footnote" style="font-size:0.6rem; text-align:center; color:#fbbf24;">※ ဖုန်းနံပါတ်ကို နှိပ်၍ ကူးယူနိုင်ပါသည်။</div>
-        <form id="orderForm" enctype="multipart/form-data">
-            <div class="form-group" style="margin-bottom:14px;"><label>📱 ဖုန်းနံပါတ် *</label><input type="tel" id="customerPhone" class="form-control" placeholder="09XXXXXXXXX" required></div>
-            <div class="form-group" style="margin-bottom:14px;"><label>🧾 ငွေလွှဲပြေစာ</label><input type="file" id="slipImage" class="form-control" accept="image/*" required></div>
-            <button type="submit" class="submit-btn" id="submitOrderBtn">✅ အော်ဒါတင်မည်</button>
-        </form>
-    </div>
-</div>
-
-<script>
-    // ========== SUPABASE CONFIG ==========
-    const SUPABASE_URL = 'https://yubbfbmfoycvdxfaecbh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1YmJmYm1mb3ljdmR4ZmFlY2JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNDQyODIsImV4cCI6MjA5NTcyMDI4Mn0.hYNmdWDour1ZF9if37h8uoOR_ejZjoyqY9qjs7pHEoY';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    // ========== GLOBALS ==========
-    let currentLang = localStorage.getItem('app_language') || 'my';
-    let isDarkMode = localStorage.getItem('darkMode') !== 'false';
-    let myPhone = localStorage.getItem('myOrderPhone') || '';
-    let selectedPlan = "", selectedPrice = 0;
-    let notifications = [];
-    let chatChannel = null;
-    let currentChatMessages = [];
-    const API_BASE = window.location.origin;
-    
-    function showToast(msg, err) {
-        const existing = document.getElementById('globalToast');
-        if (existing) existing.remove();
-        const toast = document.createElement('div');
-        toast.id = 'globalToast';
-        toast.className = 'toast';
-        toast.innerHTML = err ? `⚠️ ${msg}` : `✅ ${msg}`;
-        document.body.appendChild(toast);
-        setTimeout(() => { if (toast && toast.remove) toast.remove(); }, 2500);
-    }
-    
-    function maskPhone(p) { return p && p.length >= 8 ? p.substring(0,5)+'***'+p.substring(p.length-3) : p; }
-    function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
-    
-    function setTheme() {
-        if (!isDarkMode) {
-            document.body.classList.add('light-mode');
-            document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i>';
-        } else {
-            document.body.classList.remove('light-mode');
-            document.getElementById('themeToggle').innerHTML = '<i class="fas fa-moon"></i>';
-        }
-    }
-    function toggleTheme() {
-        isDarkMode = !isDarkMode;
-        localStorage.setItem('darkMode', isDarkMode);
-        setTheme();
-    }
-    
-    function openDrawer() { document.getElementById('sideDrawer').classList.add('open'); document.getElementById('drawerOverlay').classList.add('active'); }
-    function closeDrawer() { document.getElementById('sideDrawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('active'); }
-    
-    function addNotification(title, message) {
-        notifications.unshift({ id: Date.now(), title, message, read: false, time: new Date() });
-        renderNotifications();
-    }
-    function renderNotifications() {
-        const container = document.getElementById('notificationsList');
-        if (!container) return;
-        if (notifications.length === 0) { container.innerHTML = '<div class="empty-msg">No notifications</div>'; return; }
-        container.innerHTML = notifications.map(n => `
-            <div class="notif-item ${!n.read ? 'notif-new' : ''}">
-                <div class="notif-title">${n.title}</div>
-                <div class="notif-time">${n.message} • ${n.time.toLocaleTimeString()}</div>
-            </div>
-        `).join('');
-    }
-    function openNotificationPanel() { document.getElementById('notificationPanel').classList.add('open'); }
-    function closeNotificationPanel() { document.getElementById('notificationPanel').classList.remove('open'); }
-    function markAllRead() { notifications.forEach(n => n.read = true); renderNotifications(); showToast('All notifications marked as read'); }
-    function clearAllNotifications() { notifications = []; renderNotifications(); showToast('All notifications cleared'); }
-    
-    function openSearchModal() { document.getElementById('searchModal').classList.add('active'); document.getElementById('searchPhoneInput').focus(); }
-    function closeSearchModal() { document.getElementById('searchModal').classList.remove('active'); }
-    async function performSearch() {
-        const phone = document.getElementById('searchPhoneInput').value.trim();
-        if (!phone) { showToast('Please enter a phone number', true); return; }
-        const res = await fetch(`${API_BASE}/api/orders`);
-        const data = await res.json();
-        const results = (data.orders || []).filter(o => o.phone === phone);
-        const container = document.getElementById('searchResults');
-        if (results.length === 0) {
-            container.innerHTML = `<div class="empty-msg">No orders found for ${maskPhone(phone)}</div>`;
-        } else {
-            container.innerHTML = results.map(o => `
-                <div class="notif-item">
-                    <div class="notif-title">${o.plan} - ${o.price.toLocaleString()}K</div>
-                    <div class="notif-time">Status: ${o.status} • ${new Date(o.created_at).toLocaleDateString()}</div>
-                </div>
-            `).join('');
-        }
-    }
-    
-    async function loadChatMessages() {
-        const phone = localStorage.getItem('myOrderPhone') || 'guest';
-        try {
-            const res = await fetch(`${API_BASE}/api/chat/messages/${phone}`);
-            const data = await res.json();
-            if (data.success) {
-                currentChatMessages = data.messages;
-                renderChatMessages();
-            }
-        } catch (e) { console.error(e); }
-    }
-    
-    function renderChatMessages() {
-        const container = document.getElementById('chatMessages');
-        if (!container) return;
-        if (currentChatMessages.length === 0) {
-            container.innerHTML = '<div class="empty-msg">No messages yet. Start a conversation!</div>';
-            return;
-        }
-        container.innerHTML = currentChatMessages.map(msg => `
-            <div style="display: flex; justify-content: ${msg.sender_type === 'admin' ? 'flex-start' : 'flex-end'};">
-                <div style="max-width: 75%; background: ${msg.sender_type === 'admin' ? 'rgba(0,212,255,0.15)' : 'rgba(16,185,129,0.2)'}; border-radius: 18px; padding: 8px 14px;">
-                    <div style="font-size: 0.7rem; color: #00d4ff; margin-bottom: 2px;">
-                        ${msg.sender_name || (msg.sender_type === 'admin' ? 'Admin' : maskPhone(msg.sender_id))}
-                    </div>
-                    <div style="font-size: 0.85rem;">${escapeHtml(msg.message)}</div>
-                    <div style="font-size: 0.55rem; color: #64748b; margin-top: 4px;">
-                        ${new Date(msg.created_at).toLocaleTimeString()}
-                    </div>
+            <div class="message admin">
+                <div class="message-content">
+                    Welcome to ATH Digital Hub! 👋<br>
+                    How can we help you today?
+                    <div class="message-time">Just now</div>
                 </div>
             </div>
-        `).join('');
-        container.scrollTop = container.scrollHeight;
-    }
-    
-    async function sendChatMessage() {
-        const input = document.getElementById('chatInput');
-        const message = input.value.trim();
-        if (!message) return;
-        const phone = localStorage.getItem('myOrderPhone') || 'guest';
-        input.disabled = true;
-        try {
-            const res = await fetch(`${API_BASE}/api/chat/send`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    sender_type: 'customer',
-                    sender_id: phone,
-                    sender_name: maskPhone(phone),
-                    message: message
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
-                input.value = '';
-                await loadChatMessages();
-            } else {
-                showToast('❌ Failed to send message', true);
-            }
-        } catch (e) {
-            showToast('❌ Network error', true);
-        } finally {
-            input.disabled = false;
-            input.focus();
+        </div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">Send 📤</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // ========== SUPABASE CONFIG (ခင်ဗျားရဲ့ credentials) ==========
+        const SUPABASE_URL = 'https://yubbfbmfoycvdxfaecbh.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1YmJmYm1mb3ljdmR4ZmFlY2JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNDQyODIsImV4cCI6MjA5NTcyMDI4Mn0.hYNmdWDour1ZF9if37h8uoOR_ejZjoyqY9qjs7pHEoY';
+        
+        const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // User ID (local storage မှာ သိမ်းမယ်)
+        let userId = localStorage.getItem('ath_chat_user_id');
+        if (!userId) {
+            userId = 'user_' + Math.random().toString(36).substr(2, 8) + Date.now().toString(36);
+            localStorage.setItem('ath_chat_user_id', userId);
         }
-    }
-    
-    function initRealtimeChat() {
-        const phone = localStorage.getItem('myOrderPhone') || 'guest';
-        if (chatChannel) chatChannel.unsubscribe();
-        chatChannel = supabaseClient
-            .channel('chat-room')
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'chat_messages'
-            }, (payload) => {
-                const newMsg = payload.new;
-                if (newMsg.sender_id === phone || newMsg.sender_id === 'admin') {
-                    loadChatMessages();
+        document.getElementById('userId').innerText = userId;
+        
+        // Load messages from database
+        async function loadMessages() {
+            try {
+                const { data, error } = await supabase
+                    .from('chat_messages')
+                    .select('*')
+                    .order('created_at', { ascending: true })
+                    .limit(100);
+                
+                if (error) {
+                    console.error('Load error:', error);
+                    return;
                 }
-            })
-            .subscribe();
-    }
-    
-    function toggleChatRoom() {
-        const chatRoom = document.getElementById('chatRoom');
-        const productsGrid = document.getElementById('productsGrid');
-        const hero = document.querySelector('.hero');
-        if (chatRoom.style.display === 'none') {
-            chatRoom.style.display = 'block';
-            productsGrid.style.display = 'none';
-            hero.style.display = 'none';
-            loadChatMessages();
-            initRealtimeChat();
-        } else {
-            chatRoom.style.display = 'none';
-            productsGrid.style.display = 'grid';
-            hero.style.display = 'block';
-            if (chatChannel) chatChannel.unsubscribe();
+                
+                const messagesDiv = document.getElementById('chatMessages');
+                messagesDiv.innerHTML = '';
+                
+                if (!data || data.length === 0) {
+                    // Show welcome message if no messages
+                    messagesDiv.innerHTML = `
+                        <div class="message admin">
+                            <div class="message-content">
+                                Welcome to ATH Digital Hub! 👋<br>
+                                How can we help you today?
+                                <div class="message-time">Just now</div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                data.forEach(msg => {
+                    const isCurrentUser = msg.user_id === userId;
+                    const isAdmin = msg.role === 'admin';
+                    
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${isCurrentUser ? 'customer' : 'admin'}`;
+                    
+                    const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    
+                    messageDiv.innerHTML = `
+                        <div class="message-content">
+                            <div>${escapeHtml(msg.message)}</div>
+                            <div class="message-time">${time}</div>
+                        </div>
+                    `;
+                    
+                    messagesDiv.appendChild(messageDiv);
+                });
+                
+                // Auto scroll to bottom
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            } catch (err) {
+                console.error('Load messages error:', err);
+            }
         }
-    }
-    
-    function navigateTo(page) {
-        closeDrawer();
-        const productsGrid = document.getElementById('productsGrid');
-        const hero = document.querySelector('.hero');
-        const chatRoom = document.getElementById('chatRoom');
         
-        if (page === 'home') {
-            chatRoom.style.display = 'none';
-            productsGrid.style.display = 'grid';
-            hero.style.display = 'block';
-        } else if (page === 'market') {
-            chatRoom.style.display = 'none';
-            productsGrid.style.display = 'grid';
-            hero.style.display = 'block';
-            showToast('🛒 Market page coming soon', false);
-        } else if (page === 'payment') {
-            const buyBtn = document.querySelector('.buy-btn');
-            if (buyBtn) buyBtn.click();
-            else showToast('Please select a product first', true);
-        } else if (page === 'chat') {
-            toggleChatRoom();
-        } else if (page === 'live') {
-            window.location.href = '/live.html';
-        } else if (page === 'orders') {
-            window.location.href = '/orders.html';
-        } else if (page === 'profile') {
-            window.location.href = '/profile.html';
-        } else if (page === 'support') {
-            window.location.href = '/support.html';
-        } else if (page === 'notifications') {
-            openNotificationPanel();
-        } else if (page === 'change-phone') {
-            const newPhone = prompt('Enter new phone number:', myPhone);
-            if (newPhone && newPhone.length >= 8) {
-                localStorage.setItem('myOrderPhone', newPhone);
-                myPhone = newPhone;
-                showToast(`📞 Phone changed to ${maskPhone(newPhone)}`);
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Disable button temporarily
+            const sendBtn = document.querySelector('.chat-input button');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            
+            try {
+                const { error } = await supabase
+                    .from('chat_messages')
+                    .insert([
+                        {
+                            message: message,
+                            user_id: userId,
+                            role: 'customer',
+                            created_at: new Date().toISOString()
+                        }
+                    ]);
+                
+                if (error) {
+                    console.error('Send error:', error);
+                    alert('Error sending message: ' + error.message);
+                    return;
+                }
+                
+                input.value = '';
+                // Message will appear via realtime subscription
+                
+            } catch (err) {
+                console.error('Send error:', err);
+                alert('Failed to send message');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send 📤';
             }
-        } else if (page === 'clear-phone') {
-            if (confirm('Clear your saved phone number?')) {
-                localStorage.removeItem('myOrderPhone');
-                myPhone = '';
-                showToast('📞 Phone number cleared');
-                location.reload();
-            }
-        } else if (page === 'refer') {
-            showToast('🤝 Referral feature coming soon', false);
-        } else if (page === 'share') {
-            if (navigator.share) navigator.share({ title: 'ATH DIGITAL HUB', url: window.location.href });
-            else showToast('📤 Copy the link to share', false);
-        } else if (page === 'faq') {
-            showToast('❓ FAQ page coming soon', false);
-        } else if (page === 'rate') {
-            showToast('⭐ Thank you for rating!', false);
         }
-    }
-    
-    async function loadProducts() {
-        const container = document.getElementById('productsGrid');
-        const products = [
-            { name: 'VIP LEVEL - 1', tier: 'TIER V1', price: 15000, icon: '🔥', badge: 'linear-gradient(135deg,#fbbf24,#d97706)', features: ['22GB အမြန်နှုန်းမြင့်', '8,000 မိနစ် (ကွန်ရက်တွင်း)', '5,000 SMS'] },
-            { name: 'VIP LEVEL - 2', tier: 'TIER V2', price: 20000, icon: '⭐', badge: 'linear-gradient(135deg,#00d4ff,#0891b2)', features: ['40GB အာထရာဒေတာ', '250 မိနစ် (ကွန်ရက်တွင်း)', '25 မိနစ် (အခြားကွန်ရက်)'] },
-            { name: 'VIP LEVEL - 3', tier: 'TIER V3', price: 25000, icon: '⭐', badge: 'linear-gradient(135deg,#22c55e,#15803d)', features: ['40GB အမြန်နှုန်း + အပို', '1,400 မိနစ် (ကွန်ရက်တွင်း)', '8,000 SMS အကန့်အသတ်မရှိ'] },
-            { name: 'VIP LEVEL - 4 (ULTRA)', tier: 'TIER V4', price: 30000, icon: '👑', badge: 'linear-gradient(135deg,#8b5cf6,#6d28d9)', features: ['120GB ဂိမ်းဒေတာ', 'အကန့်အသတ်မရှိ Streaming', 'ဦးစားပေး ပံ့ပိုးမှု'] }
-        ];
-        container.innerHTML = products.map(p => `
-            <div class="pack-card">
-                <div class="card-header-row">
-                    <span class="flag-badge" style="background:${p.badge};">${p.icon}${p.tier.split(' ')[0]}</span>
-                    <span class="tier-name">${p.tier}</span>
-                    <span class="pack-price">${p.price.toLocaleString()} <small>MMK</small></span>
-                </div>
-                <div class="divider"></div>
-                <ul class="feature-list">
-                    ${p.features.map(f => `<li><i class="fas fa-check-circle"></i> <span>${f}</span></li>`).join('')}
-                </ul>
-                <div class="divider"></div>
-                <button class="buy-btn" data-plan="${p.name}" data-price="${p.price}"><span class="buy-text">ဝယ်ယူမည်</span></button>
-            </div>
-        `).join('');
         
-        document.querySelectorAll('.buy-btn').forEach(btn => btn.addEventListener('click', () => {
-            selectedPlan = btn.dataset.plan;
-            selectedPrice = parseInt(btn.dataset.price);
-            document.getElementById('paymentModal').classList.add('active');
-        }));
-    }
-    
-    function setLanguage(lang) {
-        currentLang = lang;
-        localStorage.setItem('app_language', lang);
-        const t = lang === 'my' ? { heroSubtitle: 'မြန်ဆန်သော Data & Voice Plan များ — VIP အတွေ့အကြုံ', buyNow: 'ဝယ်ယူမည်' } 
-                               : { heroSubtitle: 'High-speed Data & Voice Plans — VIP Experience', buyNow: 'Purchase Now' };
-        document.getElementById('heroSubtitle').innerHTML = t.heroSubtitle;
-        document.querySelectorAll('.buy-text').forEach(el => el.innerHTML = t.buyNow);
-        showToast(`Language changed to ${lang === 'my' ? 'မြန်မာ' : 'English'}`);
-    }
-    
-    function init() {
-        setTheme();
-        loadProducts();
+        // Realtime subscription (messages appear instantly)
+        let channel = null;
         
-        document.getElementById('hamburgerBtn').addEventListener('click', openDrawer);
-        document.getElementById('closeDrawerBtn').addEventListener('click', closeDrawer);
-        document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
-        document.getElementById('notificationBtn').addEventListener('click', openNotificationPanel);
-        document.getElementById('closeNotificationBtn').addEventListener('click', closeNotificationPanel);
-        document.getElementById('notifMarkReadBtn').addEventListener('click', markAllRead);
-        document.getElementById('notifClearBtn').addEventListener('click', clearAllNotifications);
-        document.getElementById('searchBtn').addEventListener('click', openSearchModal);
-        document.getElementById('closeSearchBtn').addEventListener('click', closeSearchModal);
-        document.getElementById('searchSubmitBtn').addEventListener('click', performSearch);
-        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-        document.getElementById('darkModeMenuItem').addEventListener('click', toggleTheme);
-        document.getElementById('homeBtn').addEventListener('click', () => navigateTo('home'));
-        document.getElementById('langBtn').addEventListener('click', () => setLanguage(currentLang === 'my' ? 'en' : 'my'));
-        document.getElementById('langMenuItem').addEventListener('click', () => setLanguage(currentLang === 'my' ? 'en' : 'my'));
-        document.getElementById('chatSendBtn').addEventListener('click', sendChatMessage);
-        document.getElementById('chatInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChatMessage(); });
-        
-        document.querySelectorAll('.bottom-nav-item').forEach(item => {
-            item.addEventListener('click', () => navigateTo(item.dataset.page));
-        });
-        document.querySelectorAll('.menu-item[data-page]').forEach(item => {
-            item.addEventListener('click', () => navigateTo(item.dataset.page));
-        });
-        
-        document.getElementById('closeModalBtn').addEventListener('click', () => {
-            document.getElementById('paymentModal').classList.remove('active');
-        });
-        document.getElementById('clickablePhone').addEventListener('click', () => {
-            navigator.clipboard.writeText("09789999368");
-            showToast('📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။');
-        });
-        
-        document.getElementById('orderForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const phone = document.getElementById('customerPhone').value.trim();
-            const file = document.getElementById('slipImage').files[0];
-            if (!phone) { showToast('ဖုန်းနံပါတ် ထည့်ပါ', true); return; }
-            if (!file) { showToast('ငွေလွှဲပြေစာ ထည့်ပါ', true); return; }
-            const fd = new FormData();
-            fd.append('phone', phone);
-            fd.append('plan', selectedPlan);
-            fd.append('price', selectedPrice);
-            fd.append('slip', file);
-            const res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
-            const result = await res.json();
-            if (result.success) {
-                showToast(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${result.orderId}`);
-                localStorage.setItem('myOrderPhone', phone);
-                myPhone = phone;
-                document.getElementById('paymentModal').classList.remove('active');
-                document.getElementById('orderForm').reset();
-                addNotification('✅ Order #' + result.orderId, 'Your order has been placed successfully');
-            } else {
-                showToast('❌ အော်ဒါတင်ရာတွင် အမှားရှိပါသည်', true);
+        function setupRealtime() {
+            if (channel) {
+                supabase.removeChannel(channel);
             }
-        });
+            
+            channel = supabase
+                .channel('chat_messages_channel')
+                .on('postgres_changes', 
+                    { 
+                        event: 'INSERT', 
+                        schema: 'public', 
+                        table: 'chat_messages' 
+                    },
+                    (payload) => {
+                        console.log('New message:', payload.new);
+                        loadMessages(); // Reload messages
+                    }
+                )
+                .subscribe((status) => {
+                    console.log('Realtime status:', status);
+                    const statusEl = document.getElementById('status');
+                    if (status === 'SUBSCRIBED') {
+                        statusEl.textContent = '● Connected';
+                        statusEl.style.color = '#28a745';
+                    } else {
+                        statusEl.textContent = '● Connecting...';
+                        statusEl.style.color = '#ffc107';
+                    }
+                });
+        }
         
-        addNotification('✅ Welcome!', 'Thanks for visiting ATH DIGITAL HUB');
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
         
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeDrawer();
-                closeNotificationPanel();
-                closeSearchModal();
-                document.getElementById('paymentModal').classList.remove('active');
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Create table if not exists (run this once in Supabase SQL Editor)
+        async function initDatabase() {
+            try {
+                // Test connection
+                const { error } = await supabase.from('chat_messages').select('count').limit(1);
+                if (error && error.message.includes('does not exist')) {
+                    console.warn('Table may not exist. Please run the SQL script in Supabase.');
+                    document.getElementById('status').textContent = '⚠️ Table not ready';
+                    document.getElementById('status').style.color = '#dc3545';
+                } else {
+                    console.log('Database ready');
+                }
+            } catch (err) {
+                console.error('Init error:', err);
             }
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                openSearchModal();
-            }
-        });
-    }
-    
-    init();
-</script>
+        }
+        
+        // Start app
+        loadMessages();
+        setupRealtime();
+        initDatabase();
+        
+        // Refresh messages every 30 seconds as backup
+        setInterval(() => {
+            loadMessages();
+        }, 30000);
+    </script>
 </body>
 </html>
