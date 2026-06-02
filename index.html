@@ -2,67 +2,55 @@
 <html lang="my">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>ATH DIGITAL HUB | Multi-Product Store</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ATH DIGITAL HUB - Multi-Product Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --bg-deep: #0a0c15;
-            --cyan: #00d4ff;
-            --violet: #8b5cf6;
-            --emerald: #10b981;
-            --rose: #f43f5e;
-            --amber: #f59e0b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-        }
         body {
             background: #0a0c15;
-            color: var(--text-primary);
-            font-family: 'Noto Sans Myanmar', 'Inter', sans-serif;
+            color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
             min-height: 100vh;
-            background-image: radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.12) 0%, transparent 50%),
-                              radial-gradient(circle at 85% 70%, rgba(0,212,255,0.08) 0%, transparent 55%);
         }
-        .container { max-width: 1320px; margin: 0 auto; padding: 16px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
         
-        /* ============ HEADER ============ */
-        .store-header {
-            backdrop-filter: blur(20px);
-            background: rgba(10,12,21,0.6);
+        /* Header */
+        .header {
+            background: rgba(10,12,21,0.8);
+            backdrop-filter: blur(10px);
             border: 1px solid rgba(0,212,255,0.2);
-            border-radius: 1.5rem;
+            border-radius: 20px;
             padding: 12px 20px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             flex-wrap: wrap;
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
-        .brand { display: flex; align-items: center; gap: 12px; }
-        .brand img { width: 45px; height: 45px; border-radius: 12px; object-fit: cover; }
-        .brand-text {
-            font-family: 'Space Grotesk', monospace;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo img {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+        }
+        .logo h1 {
             font-size: 1.2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #ffffff, #94a3b8, var(--cyan));
+            background: linear-gradient(135deg, #fff, #00d4ff);
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
         }
-        .brand-text small { font-size: 0.65rem; display: block; color: #64748b; }
-        
-        .cart-icon {
-            position: relative;
+        .cart-btn {
             background: rgba(0,212,255,0.15);
             border: 1px solid rgba(0,212,255,0.3);
-            padding: 8px 16px;
+            padding: 10px 20px;
             border-radius: 40px;
             cursor: pointer;
             display: flex;
@@ -70,57 +58,38 @@
             gap: 8px;
         }
         .cart-count {
-            background: var(--rose);
-            color: white;
+            background: #f43f5e;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 0.65rem;
+            width: 22px;
+            height: 22px;
+            font-size: 0.7rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
         }
         
-        .my-orders-btn {
-            background: rgba(139,92,246,0.2);
-            border: 1px solid rgba(139,92,246,0.5);
-            padding: 8px 16px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.75rem;
-            color: #c4b5fd;
-            cursor: pointer;
-        }
-        
-        /* ============ CATEGORY FILTER ============ */
-        .category-bar {
+        /* Categories */
+        .categories {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
             margin-bottom: 25px;
             justify-content: center;
         }
-        .category-btn {
+        .cat-btn {
             background: rgba(18,22,35,0.8);
             border: 1px solid rgba(0,212,255,0.2);
             padding: 8px 20px;
             border-radius: 40px;
-            font-size: 0.75rem;
             cursor: pointer;
-            color: var(--text-secondary);
-            transition: all 0.2s;
+            font-size: 0.8rem;
         }
-        .category-btn.active {
-            background: var(--cyan);
+        .cat-btn.active {
+            background: #00d4ff;
             color: #030712;
-            border-color: var(--cyan);
-        }
-        .category-btn:hover {
-            background: rgba(0,212,255,0.2);
-            color: var(--cyan);
         }
         
-        /* ============ PRODUCTS GRID ============ */
+        /* Products Grid */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -133,67 +102,28 @@
             border-radius: 20px;
             padding: 18px;
             transition: all 0.3s;
-            position: relative;
         }
         .product-card:hover {
             transform: translateY(-5px);
-            border-color: rgba(0,212,255,0.4);
-            box-shadow: 0 10px 25px -10px rgba(0,212,255,0.2);
+            border-color: #00d4ff;
         }
-        .product-badge {
-            position: absolute;
-            top: -8px;
-            right: 12px;
-            background: linear-gradient(135deg, var(--cyan), var(--violet));
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 0.6rem;
-            font-weight: 700;
-        }
-        .product-icon {
-            font-size: 2rem;
-            margin-bottom: 12px;
-        }
-        .product-title {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-        .product-category {
-            font-size: 0.6rem;
-            color: var(--cyan);
-            margin-bottom: 10px;
-        }
-        .product-desc {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            line-height: 1.4;
-        }
-        .product-price {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--emerald);
-            margin-bottom: 12px;
-        }
-        .add-to-cart {
+        .product-icon { font-size: 2rem; margin-bottom: 10px; }
+        .product-name { font-size: 1rem; font-weight: 700; margin-bottom: 5px; }
+        .product-category { font-size: 0.6rem; color: #00d4ff; margin-bottom: 8px; }
+        .product-desc { font-size: 0.7rem; color: #94a3b8; margin-bottom: 12px; }
+        .product-price { font-size: 1.2rem; font-weight: 700; color: #10b981; margin-bottom: 12px; }
+        .add-btn {
             width: 100%;
             padding: 8px;
             background: rgba(0,212,255,0.15);
             border: 1px solid rgba(0,212,255,0.3);
             border-radius: 40px;
-            color: var(--cyan);
-            font-weight: 600;
-            font-size: 0.7rem;
+            color: #00d4ff;
             cursor: pointer;
-            transition: all 0.2s;
         }
-        .add-to-cart:hover {
-            background: var(--cyan);
-            color: #030712;
-        }
+        .add-btn:hover { background: #00d4ff; color: #030712; }
         
-        /* ============ CART SIDEBAR ============ */
+        /* Cart Sidebar */
         .cart-sidebar {
             position: fixed;
             top: 0;
@@ -203,10 +133,10 @@
             height: 100%;
             background: rgba(8,12,22,0.98);
             backdrop-filter: blur(24px);
-            border-left: 1px solid rgba(0,212,255,0.3);
-            z-index: 1500;
-            transition: right 0.35s ease;
-            padding: 16px;
+            border-left: 1px solid #00d4ff;
+            z-index: 1000;
+            transition: right 0.3s;
+            padding: 20px;
             overflow-y: auto;
         }
         .cart-sidebar.open { right: 0; }
@@ -214,14 +144,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid rgba(0,212,255,0.3);
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 15px;
         }
-        .cart-header h3 { font-size: 1.1rem; color: var(--cyan); }
-        .close-cart { font-size: 1.5rem; cursor: pointer; padding: 0 8px; }
-        .close-cart:hover { color: var(--rose); }
-        
+        .close-cart {
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
         .cart-item {
             display: flex;
             justify-content: space-between;
@@ -229,181 +159,101 @@
             padding: 10px 0;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .cart-item-info { flex: 1; }
-        .cart-item-title { font-size: 0.8rem; font-weight: 600; }
-        .cart-item-price { font-size: 0.7rem; color: var(--emerald); }
-        .cart-item-actions { display: flex; gap: 8px; align-items: center; }
-        .cart-qty-btn {
-            background: rgba(0,212,255,0.15);
-            border: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            color: white;
-        }
-        .cart-qty { font-size: 0.8rem; min-width: 25px; text-align: center; }
         .cart-total {
-            margin-top: 16px;
-            padding-top: 16px;
+            margin-top: 20px;
+            padding-top: 15px;
             border-top: 1px solid rgba(255,255,255,0.1);
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 700;
         }
         .checkout-btn {
             width: 100%;
-            margin-top: 16px;
+            margin-top: 15px;
             padding: 12px;
-            background: linear-gradient(135deg, var(--emerald), #059669);
+            background: #10b981;
             border: none;
             border-radius: 40px;
             color: white;
             font-weight: 700;
             cursor: pointer;
         }
-        .clear-cart {
-            width: 100%;
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(244,63,94,0.2);
-            border: none;
-            border-radius: 40px;
-            color: var(--rose);
-            cursor: pointer;
-        }
         
-        /* ============ ORDERS HISTORY PANEL ============ */
-        .history-panel {
+        /* Modal */
+        .modal {
             position: fixed;
             top: 0;
-            right: -100%;
-            width: 90%;
-            max-width: 500px;
-            height: 100%;
-            background: rgba(8,12,22,0.98);
-            backdrop-filter: blur(24px);
-            border-left: 1px solid rgba(0,212,255,0.3);
-            z-index: 1600;
-            transition: right 0.35s ease;
-            padding: 16px;
-            overflow-y: auto;
-        }
-        .history-panel.open { right: 0; }
-        
-        /* ============ PAYMENT MODAL ============ */
-        .modal-overlay {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(3,7,18,0.96); backdrop-filter: blur(20px);
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; visibility: hidden; transition: 0.25s; z-index: 2000;
-        }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-card {
-            background: linear-gradient(145deg, rgba(18,22,35,0.98), rgba(10,12,21,0.98));
-            border: 1px solid rgba(0,212,255,0.4);
-            border-radius: 1.5rem;
-            width: 90%;
-            max-width: 480px;
-            padding: 1.5rem;
-            position: relative;
-        }
-        .form-control {
+            left: 0;
             width: 100%;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #2d3a5e;
-            border-radius: 60px;
-            padding: 12px 16px;
-            color: white;
-            font-size: 0.85rem;
-            margin-bottom: 12px;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s;
         }
-        .submit-btn {
+        .modal.active { visibility: visible; opacity: 1; }
+        .modal-content {
+            background: linear-gradient(145deg, #11131e, #0c0e16);
+            border: 1px solid #00d4ff;
+            border-radius: 24px;
+            padding: 25px;
+            width: 90%;
+            max-width: 450px;
+        }
+        .modal input, .modal input[type="file"] {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, var(--emerald), #059669);
-            border: none;
-            border-radius: 60px;
+            margin: 10px 0;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 40px;
             color: white;
-            font-weight: 700;
-            cursor: pointer;
         }
-        
         .toast {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: var(--emerald);
+            background: #10b981;
             color: #030712;
             padding: 12px 20px;
-            border-radius: 60px;
+            border-radius: 40px;
             z-index: 3000;
             display: none;
         }
         .toast.show { display: block; }
-        
         footer {
-            margin-top: 40px;
             text-align: center;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            padding: 20px;
+            padding: 30px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 20px;
         }
-        .social-links { display: flex; justify-content: center; gap: 15px; margin-bottom: 10px; flex-wrap: wrap; }
-        .social-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-        .social-icon i { font-size: 1.2rem; color: white; }
-        .social-icon.facebook { background: #1877f2; }
-        .social-icon.telegram { background: #0088cc; }
-        .social-icon.viber { background: #7360f2; }
-        .social-icon.phone { background: #25d366; }
-        
         .hidden { display: none; }
-        .empty-msg { text-align: center; color: var(--text-secondary); padding: 30px; }
     </style>
 </head>
 <body>
-<div class="toast" id="globalToast">✅ ထုတ်ကုန် ထည့်သွင်းပြီး</div>
+<div class="toast" id="toast"></div>
 
 <div class="container">
-    <div class="store-header">
-        <div class="brand">
-            <img src="https://i.postimg.cc/GpR4ctR1/photo-2026-05-31-22-35-50.jpg" alt="ATH Logo">
-            <div class="brand-text">
-                ATH DIGITAL HUB
-                <small>Multi-Product Store</small>
-            </div>
+    <div class="header">
+        <div class="logo">
+            <img src="https://i.postimg.cc/GpR4ctR1/photo-2026-05-31-22-35-50.jpg" alt="Logo">
+            <h1>ATH DIGITAL HUB</h1>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <div class="cart-icon" id="cartIcon">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="cart-count" id="cartCount">0</span>
-            </div>
-            <button class="my-orders-btn" id="myOrdersBtn"><i class="fas fa-list-ul"></i> အော်ဒါများ</button>
+        <div class="cart-btn" id="cartBtn">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="cartCount">0</span>
         </div>
     </div>
     
-    <!-- Category Filter -->
-    <div class="category-bar" id="categoryBar">
-        <button class="category-btn active" data-category="all">အားလုံး</button>
-        <button class="category-btn" data-category="data">📡 Data Plans</button>
-        <button class="category-btn" data-category="topup">💰 Top Up</button>
-        <button class="category-btn" data-category="gift">🎁 Gift Cards</button>
-        <button class="category-btn" data-category="accessory">📱 Accessories</button>
-    </div>
-    
-    <!-- Products Grid -->
+    <div class="categories" id="categories"></div>
     <div class="products-grid" id="productsGrid"></div>
 </div>
 
-<!-- Cart Sidebar -->
-<div id="cartSidebar" class="cart-sidebar">
+<div class="cart-sidebar" id="cartSidebar">
     <div class="cart-header">
         <h3><i class="fas fa-shopping-cart"></i> ဈေးခြင်း</h3>
         <span class="close-cart" id="closeCartBtn">&times;</span>
@@ -411,106 +261,114 @@
     <div id="cartItems"></div>
     <div class="cart-total" id="cartTotal">Total: 0 Ks</div>
     <button class="checkout-btn" id="checkoutBtn"><i class="fas fa-credit-card"></i> မှာယူမည်</button>
-    <button class="clear-cart" id="clearCartBtn"><i class="fas fa-trash"></i> အားလုံးဖျက်မည်</button>
 </div>
 
-<!-- Orders History Panel -->
-<div id="historyPanel" class="history-panel">
-    <div class="cart-header">
-        <h3><i class="fas fa-list-ul"></i> ကျွန်ုပ်၏ အော်ဒါများ</h3>
-        <span class="close-cart" id="closeHistoryBtn">&times;</span>
-    </div>
-    <div id="myOrdersContainer"></div>
-</div>
-
-<!-- Payment Modal -->
-<div id="paymentModal" class="modal-overlay">
-    <div class="modal-card">
-        <div class="cart-header" style="border-bottom: none; padding-bottom: 0;">
-            <h3><i class="fas fa-credit-card"></i> ငွေပေးချေမှု</h3>
-            <span class="close-cart" id="closePaymentBtn">&times;</span>
-        </div>
-        <div class="info-card" style="background:rgba(0,212,255,0.05); border-radius:1rem; padding:14px; margin:15px 0;">
-            <div style="display:flex; justify-content:space-between; padding:5px 0;"><span>ငွေလွှဲနည်းလမ်း</span><span style="color:var(--cyan);">K-Pay / WavePay</span></div>
-            <div style="display:flex; justify-content:space-between; padding:5px 0;"><span>အကောင့်အမည်</span><span style="color:var(--cyan);">AUNG THU HTWE</span></div>
-            <div style="display:flex; justify-content:space-between; padding:5px 0;"><span>ဖုန်းနံပါတ်</span><span style="color:var(--cyan); cursor:pointer;" id="copyPhone">09789999368 📋</span></div>
+<div class="modal" id="paymentModal">
+    <div class="modal-content">
+        <h3 style="margin-bottom:20px; text-align:center;">ငွေပေးချေမှု</h3>
+        <div style="background:rgba(0,212,255,0.1); border-radius:16px; padding:15px; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>ငွေလွှဲနည်းလမ်း</span><span style="color:#00d4ff;">K-Pay / WavePay</span></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>အကောင့်အမည်</span><span style="color:#00d4ff;">AUNG THU HTWE</span></div>
+            <div style="display:flex; justify-content:space-between;"><span>ဖုန်းနံပါတ်</span><span style="color:#00d4ff; cursor:pointer;" id="copyPhone">09789999368 📋</span></div>
         </div>
         <form id="orderForm" enctype="multipart/form-data">
-            <input type="tel" id="customerPhone" class="form-control" placeholder="📱 ဖုန်းနံပါတ် (09xxxxxxxxx)" required>
-            <input type="file" id="slipImage" class="form-control" accept="image/*" required>
-            <button type="submit" class="submit-btn"><i class="fas fa-check"></i> အော်ဒါတင်မည်</button>
+            <input type="tel" id="phone" placeholder="📱 ဖုန်းနံပါတ် (09xxxxxxxxx)" required>
+            <input type="file" id="slip" accept="image/*" required>
+            <button type="submit" style="width:100%; padding:12px; background:#10b981; border:none; border-radius:40px; color:white; font-weight:700; cursor:pointer;">အော်ဒါတင်မည်</button>
         </form>
     </div>
 </div>
 
 <footer>
-    <div class="social-links">
-        <a href="https://www.facebook.com/athdigitalhub/" target="_blank" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://t.me/ATHCustomerService" target="_blank" class="social-icon telegram"><i class="fab fa-telegram-plane"></i></a>
-        <a href="viber://chat?number=09799480995" class="social-icon viber"><i class="fab fa-viber"></i></a>
-        <a href="tel:09789999368" class="social-icon phone"><i class="fas fa-phone-alt"></i></a>
-    </div>
-    <div class="footer-text">© 2026 <strong>ATH DIGITAL HUB</strong> | Multi-Product Store</div>
+    <p>© 2026 ATH DIGITAL HUB | Multi-Product Store</p>
 </footer>
 
 <script>
-    const API_BASE = window.location.origin;
-    
-    // ============ PRODUCTS DATABASE ============
-    const products = [
-        // Data Plans
-        { id: 1, name: "VIP LEVEL - 1", category: "data", price: 15000, icon: "📱", desc: "22GB အမြန်နှုန်းမြင့် + 8,000 မိနစ်" },
-        { id: 2, name: "VIP LEVEL - 2", category: "data", price: 20000, icon: "📡", desc: "40GB အာထရာဒေတာ + 250 မိနစ်" },
-        { id: 3, name: "VIP LEVEL - 3", category: "data", price: 25000, icon: "⚡", desc: "40GB + အပို + 1,400 မိနစ်" },
-        { id: 4, name: "VIP LEVEL - 4 (ULTRA)", category: "data", price: 30000, icon: "👑", desc: "120GB ဂိမ်းဒေတာ + အကန့်အသတ်မရှိ Streaming" },
-        // Top Up
-        { id: 5, name: "MYTEL Top Up 3000", category: "topup", price: 3000, icon: "💰", desc: "MYTEL ငွေဖြည့် 3000 ကျပ်" },
-        { id: 6, name: "MYTEL Top Up 5000", category: "topup", price: 5000, icon: "💰", desc: "MYTEL ငွေဖြည့် 5000 ကျပ်" },
-        { id: 7, name: "MYTEL Top Up 10000", category: "topup", price: 10000, icon: "💰", desc: "MYTEL ငွေဖြည့် 10000 ကျပ်" },
-        { id: 8, name: "MYTEL Top Up 20000", category: "topup", price: 20000, icon: "💰", desc: "MYTEL ငွေဖြည့် 20000 ကျပ်" },
-        // Gift Cards
-        { id: 9, name: "Google Play $5", category: "gift", price: 8500, icon: "🎮", desc: "Google Play Gift Card $5" },
-        { id: 10, name: "Google Play $10", category: "gift", price: 16500, icon: "🎮", desc: "Google Play Gift Card $10" },
-        { id: 11, name: "Steam Wallet $5", category: "gift", price: 9000, icon: "🎯", desc: "Steam Wallet Gift Card $5" },
-        { id: 12, name: "Netflix Premium 1M", category: "gift", price: 12000, icon: "📺", desc: "Netflix Premium 1 Month" },
-        // Accessories
-        { id: 13, name: "Data Cable Type-C", category: "accessory", price: 5000, icon: "🔌", desc: "Original Type-C Cable" },
-        { id: 14, name: "Fast Charger 20W", category: "accessory", price: 15000, icon: "⚡", desc: "USB-C Fast Charger" },
-        { id: 15, name: "Earphone Wired", category: "accessory", price: 8000, icon: "🎧", desc: "High Quality Earphone" },
-        { id: 16, name: "Screen Protector", category: "accessory", price: 3000, icon: "📱", desc: "Tempered Glass" }
+    // Products Data
+    let products = [
+        { id: 1, name: "VIP LEVEL - 1", category: "data", price: 15000, icon: "📱", desc: "22GB + 8,000 မိနစ်" },
+        { id: 2, name: "VIP LEVEL - 2", category: "data", price: 20000, icon: "📡", desc: "40GB + 250 မိနစ်" },
+        { id: 3, name: "VIP LEVEL - 3", category: "data", price: 25000, icon: "⚡", desc: "40GB + 1,400 မိနစ်" },
+        { id: 4, name: "VIP LEVEL - 4 ULTRA", category: "data", price: 30000, icon: "👑", desc: "120GB + Unlimited" },
+        { id: 5, name: "Top Up 3000", category: "topup", price: 3000, icon: "💰", desc: "MYTEL ငွေဖြည့် 3000" },
+        { id: 6, name: "Top Up 5000", category: "topup", price: 5000, icon: "💰", desc: "MYTEL ငွေဖြည့် 5000" },
+        { id: 7, name: "Top Up 10000", category: "topup", price: 10000, icon: "💰", desc: "MYTEL ငွေဖြည့် 10000" },
+        { id: 8, name: "Google Play $5", category: "gift", price: 8500, icon: "🎮", desc: "Google Play Gift Card" },
+        { id: 9, name: "Netflix Premium", category: "gift", price: 12000, icon: "📺", desc: "Netflix 1 Month" },
+        { id: 10, name: "Type-C Cable", category: "accessory", price: 5000, icon: "🔌", desc: "Original Cable" },
+        { id: 11, name: "Fast Charger 20W", category: "accessory", price: 15000, icon: "⚡", desc: "USB-C Charger" }
     ];
     
     let cart = [];
-    let myPhone = localStorage.getItem('myOrderPhone') || '';
-    let allOrders = [];
     let currentCategory = 'all';
     
-    // ============ CART FUNCTIONS ============
+    function renderCategories() {
+        const categories = ['all', 'data', 'topup', 'gift', 'accessory'];
+        const names = { all: 'အားလုံး', data: '📡 Data Plans', topup: '💰 Top Up', gift: '🎁 Gift Cards', accessory: '📱 Accessories' };
+        const container = document.getElementById('categories');
+        container.innerHTML = categories.map(cat => `
+            <button class="cat-btn ${currentCategory === cat ? 'active' : ''}" onclick="setCategory('${cat}')">${names[cat]}</button>
+        `).join('');
+    }
+    
+    function setCategory(cat) {
+        currentCategory = cat;
+        renderCategories();
+        renderProducts();
+    }
+    
+    function renderProducts() {
+        let filtered = products;
+        if (currentCategory !== 'all') {
+            filtered = products.filter(p => p.category === currentCategory);
+        }
+        const container = document.getElementById('productsGrid');
+        container.innerHTML = filtered.map(p => `
+            <div class="product-card">
+                <div class="product-icon">${p.icon}</div>
+                <div class="product-name">${p.name}</div>
+                <div class="product-category">${p.category}</div>
+                <div class="product-desc">${p.desc}</div>
+                <div class="product-price">${p.price.toLocaleString()} Ks</div>
+                <button class="add-btn" onclick="addToCart(${p.id})"><i class="fas fa-cart-plus"></i> ထည့်မည်</button>
+            </div>
+        `).join('');
+    }
+    
+    function addToCart(id) {
+        const product = products.find(p => p.id === id);
+        const existing = cart.find(i => i.id === id);
+        if (existing) {
+            existing.qty++;
+        } else {
+            cart.push({ ...product, qty: 1 });
+        }
+        updateCartUI();
+        showToast(`${product.name} ထည့်သွင်းပြီး`);
+    }
+    
     function updateCartUI() {
-        const cartCount = cart.reduce((sum, item) => sum + item.qty, 0);
-        document.getElementById('cartCount').innerText = cartCount;
+        const count = cart.reduce((s, i) => s + i.qty, 0);
+        document.getElementById('cartCount').innerText = count;
         
-        const cartItemsDiv = document.getElementById('cartItems');
+        const container = document.getElementById('cartItems');
         if (cart.length === 0) {
-            cartItemsDiv.innerHTML = '<div class="empty-msg">🛒 ဈေးခြင်းထဲတွင် ပစ္စည်းမရှိပါ</div>';
+            container.innerHTML = '<div style="text-align:center; padding:20px;">ဈေးခြင်းထဲတွင် ပစ္စည်းမရှိပါ</div>';
             document.getElementById('cartTotal').innerHTML = 'Total: 0 Ks';
             return;
         }
         
         let total = 0;
-        cartItemsDiv.innerHTML = cart.map(item => {
+        container.innerHTML = cart.map(item => {
             total += item.price * item.qty;
             return `
                 <div class="cart-item">
-                    <div class="cart-item-info">
-                        <div class="cart-item-title">${item.name}</div>
-                        <div class="cart-item-price">${item.price.toLocaleString()} Ks</div>
-                    </div>
-                    <div class="cart-item-actions">
-                        <button class="cart-qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
-                        <span class="cart-qty">${item.qty}</span>
-                        <button class="cart-qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
-                        <button class="cart-qty-btn" onclick="removeFromCart(${item.id})" style="background:rgba(244,63,94,0.2);">🗑</button>
+                    <div><strong>${item.name}</strong><br><small>${item.price.toLocaleString()} Ks</small></div>
+                    <div>
+                        <button onclick="updateQty(${item.id}, -1)" style="background:#334155; border:none; width:28px; border-radius:50%; cursor:pointer;">-</button>
+                        <span style="margin:0 10px;">${item.qty}</span>
+                        <button onclick="updateQty(${item.id}, 1)" style="background:#334155; border:none; width:28px; border-radius:50%; cursor:pointer;">+</button>
+                        <button onclick="removeFromCart(${item.id})" style="background:#f43f5e; border:none; width:28px; border-radius:50%; cursor:pointer; margin-left:8px;">🗑</button>
                     </div>
                 </div>
             `;
@@ -518,18 +376,7 @@
         document.getElementById('cartTotal').innerHTML = `Total: ${total.toLocaleString()} Ks`;
     }
     
-    function addToCart(product) {
-        const existing = cart.find(item => item.id === product.id);
-        if (existing) {
-            existing.qty++;
-        } else {
-            cart.push({ ...product, qty: 1 });
-        }
-        updateCartUI();
-        showToast(`✅ ${product.name} ထည့်သွင်းပြီး`);
-    }
-    
-    window.updateQty = function(id, delta) {
+    function updateQty(id, delta) {
         const item = cart.find(i => i.id === id);
         if (item) {
             item.qty += delta;
@@ -540,173 +387,79 @@
         }
     }
     
-    window.removeFromCart = function(id) {
+    function removeFromCart(id) {
         cart = cart.filter(i => i.id !== id);
         updateCartUI();
-        showToast(`🗑 ထုတ်ကုန် ဖယ်ရှားပြီး`);
-    }
-    
-    function clearCart() {
-        cart = [];
-        updateCartUI();
-        showToast(`🗑 ဈေးခြင်းအားလုံး ရှင်းလင်းပြီး`);
-    }
-    
-    // ============ PRODUCTS RENDER ============
-    function renderProducts() {
-        const grid = document.getElementById('productsGrid');
-        let filtered = products;
-        if (currentCategory !== 'all') {
-            filtered = products.filter(p => p.category === currentCategory);
-        }
-        
-        if (filtered.length === 0) {
-            grid.innerHTML = '<div class="empty-msg" style="grid-column:1/-1;">📭 ထုတ်ကုန်မရှိပါ</div>';
-            return;
-        }
-        
-        grid.innerHTML = filtered.map(product => `
-            <div class="product-card">
-                <div class="product-badge">${product.category === 'data' ? 'Data Plan' : product.category === 'topup' ? 'Top Up' : product.category === 'gift' ? 'Gift Card' : 'Accessory'}</div>
-                <div class="product-icon">${product.icon}</div>
-                <div class="product-title">${product.name}</div>
-                <div class="product-category">${product.category === 'data' ? '📡 Data' : product.category === 'topup' ? '💰 Top Up' : product.category === 'gift' ? '🎁 Gift' : '📱 Accessory'}</div>
-                <div class="product-desc">${product.desc}</div>
-                <div class="product-price">${product.price.toLocaleString()} Ks</div>
-                <button class="add-to-cart" onclick="addToCart({
-                    id: ${product.id},
-                    name: '${product.name}',
-                    price: ${product.price},
-                    category: '${product.category}'
-                })"><i class="fas fa-cart-plus"></i> ဈေးခြင်းထဲထည့်ရန်</button>
-            </div>
-        `).join('');
-    }
-    
-    // ============ ORDERS ============
-    async function loadOrders() {
-        if (!myPhone) return;
-        try {
-            const res = await fetch(`${API_BASE}/api/orders/${myPhone}`);
-            const data = await res.json();
-            allOrders = data.orders || [];
-            renderMyOrders();
-        } catch(e) { console.error(e); }
-    }
-    
-    function renderMyOrders() {
-        const container = document.getElementById('myOrdersContainer');
-        if (!myPhone || allOrders.length === 0) {
-            container.innerHTML = '<div class="empty-msg">📭 အော်ဒါမရှိသေးပါ။</div>';
-            return;
-        }
-        container.innerHTML = allOrders.map(order => `
-            <div class="cart-item" style="flex-direction:column; align-items:flex-start;">
-                <div><strong>${order.plan || order.items || 'Order'}</strong></div>
-                <div>💰 ${order.price?.toLocaleString() || 0} Ks</div>
-                <div>📅 ${new Date(order.created_at).toLocaleDateString()}</div>
-                <div>Status: ${order.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : order.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ'}</div>
-            </div>
-        `).join('');
     }
     
     async function placeOrder(phone, file) {
-        const orderItems = cart.map(item => ({ name: item.name, qty: item.qty, price: item.price }));
-        const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-        const orderName = cart.map(i => `${i.name} x${i.qty}`).join(', ');
+        const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        const items = cart.map(i => `${i.name} x${i.qty}`).join(', ');
         
         const fd = new FormData();
         fd.append('phone', phone);
-        fd.append('plan', orderName);
+        fd.append('plan', items);
         fd.append('price', total);
         fd.append('slip', file);
         
-        const res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
+        const res = await fetch('/api/orders', { method: 'POST', body: fd });
         return await res.json();
     }
     
-    // ============ UI EVENTS ============
-    document.getElementById('cartIcon').addEventListener('click', () => {
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const phone = document.getElementById('phone').value.trim();
+        const file = document.getElementById('slip').files[0];
+        
+        if (!phone) { showToast('ဖုန်းနံပါတ်ထည့်ပါ', true); return; }
+        if (!file) { showToast('ငွေလွှဲပြေစာထည့်ပါ', true); return; }
+        if (cart.length === 0) { showToast('ဈေးခြင်းထဲတွင် ပစ္စည်းမရှိပါ', true); return; }
+        
+        const result = await placeOrder(phone, file);
+        if (result.success) {
+            showToast(`အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${result.orderId}`);
+            cart = [];
+            updateCartUI();
+            document.getElementById('paymentModal').classList.remove('active');
+            document.getElementById('orderForm').reset();
+        } else {
+            showToast(`အော်ဒါတင်ရာတွင် အမှား: ${result.error}`, true);
+        }
+    });
+    
+    document.getElementById('cartBtn').addEventListener('click', () => {
         document.getElementById('cartSidebar').classList.add('open');
     });
     document.getElementById('closeCartBtn').addEventListener('click', () => {
         document.getElementById('cartSidebar').classList.remove('open');
     });
-    document.getElementById('clearCartBtn').addEventListener('click', () => clearCart());
-    
-    document.getElementById('myOrdersBtn').addEventListener('click', async () => {
-        if (!myPhone) {
-            showToast('⚠️ ကျေးဇူးပြု၍ အော်ဒါတစ်ခုခု မှာယူပါ', true);
-            return;
-        }
-        await loadOrders();
-        document.getElementById('historyPanel').classList.add('open');
-    });
-    document.getElementById('closeHistoryBtn').addEventListener('click', () => {
-        document.getElementById('historyPanel').classList.remove('open');
-    });
-    
     document.getElementById('checkoutBtn').addEventListener('click', () => {
         if (cart.length === 0) {
-            showToast('⚠️ ဈေးခြင်းထဲတွင် ပစ္စည်းမရှိပါ', true);
+            showToast('ဈေးခြင်းထဲတွင် ပစ္စည်းမရှိပါ', true);
             return;
         }
         document.getElementById('paymentModal').classList.add('active');
     });
-    
-    document.getElementById('closePaymentBtn').addEventListener('click', () => {
-        document.getElementById('paymentModal').classList.remove('active');
-    });
-    
-    document.getElementById('orderForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const phone = document.getElementById('customerPhone').value.trim();
-        const file = document.getElementById('slipImage').files[0];
-        
-        if (!phone) { showToast('⚠️ ဖုန်းနံပါတ်ထည့်ပါ', true); return; }
-        if (!file) { showToast('⚠️ ငွေလွှဲပြေစာထည့်ပါ', true); return; }
-        
-        const result = await placeOrder(phone, file);
-        if (result.success) {
-            myPhone = phone;
-            localStorage.setItem('myOrderPhone', phone);
-            cart = [];
-            updateCartUI();
-            showToast(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${result.orderId}`);
-            document.getElementById('paymentModal').classList.remove('active');
-            document.getElementById('orderForm').reset();
-            await loadOrders();
-        } else {
-            showToast('❌ အော်ဒါတင်ရာတွင် အမှားရှိပါသည်', true);
-        }
-    });
-    
-    // Category filter
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentCategory = btn.dataset.category;
-            renderProducts();
-        });
-    });
-    
     document.getElementById('copyPhone')?.addEventListener('click', () => {
         navigator.clipboard.writeText("09789999368");
-        showToast('📞 ဖုန်းနံပါတ် ကူးယူပြီး');
+        showToast('ဖုန်းနံပါတ် ကူးယူပြီး');
     });
     
     function showToast(msg, isError = false) {
-        const toast = document.getElementById('globalToast');
+        const toast = document.getElementById('toast');
         toast.style.backgroundColor = isError ? '#f43f5e' : '#10b981';
-        toast.innerHTML = msg;
+        toast.innerText = msg;
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 2500);
     }
     
-    // Initialize
+    renderCategories();
     renderProducts();
-    if (myPhone) loadOrders();
+    
+    window.setCategory = setCategory;
+    window.addToCart = addToCart;
+    window.updateQty = updateQty;
+    window.removeFromCart = removeFromCart;
 </script>
 </body>
 </html>
