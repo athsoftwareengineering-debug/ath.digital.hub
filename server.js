@@ -1,10 +1,13 @@
+// server.js - Complete Server with OTP Login & Balance API
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
 const crypto = require('crypto');
-const { supabase, supabaseAdmin } = require('./database');
+const axios = require('axios');
+const session = require('express-session');
+const { supabase, supabaseAdmin, saveOTP, verifyOTP, getUserBalance } = require('./database');
 require('dotenv').config();
 
 const app = express();
@@ -15,6 +18,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
+app.use(session({
+    secret: 'mytel-vip-store-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 24 * 60 * 60 * 1000 } // 1 day
+}));
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -23,246 +32,190 @@ if (!fs.existsSync(uploadsDir)) {
 }
 app.use('/uploads', express.static('uploads'));
 
-// File upload configuration
+// ==================== File Upload Config ====================
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
+    destination: (req, file, cb) => cb(null, 'uploads/'),
     filename: (req, file, cb) => {
         const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
         cb(null, uniqueName);
     }
 });
-const upload = multer({ 
+const upload = multer({
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const allowedTypes = /jpeg|jpg|png|gif|webp/;
         const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
         const mimetype = allowedTypes.test(file.mimetype);
-        if (mimetype && extname) {
-            return cb(null, true);
-        } else {
-            cb(new Error('Only images are allowed'));
-        }
+        if (mimetype && extname) return cb(null, true);
+        cb(new Error('Only images are allowed'));
     }
 });
 
-// ==================== FRAUD DETECTION HELPERS ====================
-function calculateImageHash(fileBuffer) {
-    return crypto.createHash('md5').update(fileBuffer).digest('hex');
-}
-
-async function getUserStats(phone) {
+// ==================== SEND OTP VIA MIATEL SMS API ====================
+async function sendOTP(phone, otp) {
     try {
-        const { data, error } = await supabaseAdmin
-            .from('user_stats')
-            .select('*')
-            .eq('phone', phone)
-            .maybeSingle();
-        
-        if (error && error.code !== 'PGRST116') {
-            console.error('Error getting user stats:', error);
+        // Format phone to international format (remove leading 0)
+        let formattedPhone = phone;
+        if (phone.startsWith('0')) {
+            formattedPhone = '959' + phone.substring(1);
         }
-        return data;
-    } catch (e) {
-        return null;
+        
+        const message = `Your ATH DIGITAL HUB verification code is: ${otp}. Valid for 5 minutes.`;
+        
+        // Miatel Official SMS API
+        const response = await axios.get(process.env.MIATEL_SMS_URL, {
+            params: {
+                username: process.env.MIATEL_SMS_USERNAME,
+                password: process.env.MIATEL_SMS_PASSWORD,
+                to: formattedPhone,
+                text: message
+            },
+            timeout: 10000
+        });
+        
+        console.log(`✅ OTP sent to ${phone}: ${otp}`);
+        return true;
+    } catch (error) {
+        console.error('SMS API Error:', error.message);
+        // Fallback: For testing, return true (in production, fail properly)
+        return false;
     }
 }
 
-async function updateUserStats(phone, isRejected = false) {
+// Generate 6-digit OTP
+function generateOTP() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// ==================== AUTH API ====================
+
+// 1. Send OTP
+app.post('/api/auth/send-otp', async (req, res) => {
     try {
-        const existing = await getUserStats(phone);
+        const { phone } = req.body;
         
-        if (existing) {
-            const updateData = {
-                order_count: (existing.order_count || 0) + 1,
-                updated_at: new Date().toISOString()
-            };
-            if (isRejected) {
-                updateData.reject_count = (existing.reject_count || 0) + 1;
-                const newRejectCount = (existing.reject_count || 0) + 1;
-                const newOrderCount = (existing.order_count || 0) + 1;
-                if (newOrderCount >= 5 && (newRejectCount / newOrderCount) > 0.5) {
-                    updateData.suspect_flag = true;
-                }
+        if (!phone || phone.length < 9) {
+            return res.status(400).json({ success: false, error: 'Valid phone number required' });
+        }
+        
+        const otp = generateOTP();
+        saveOTP(phone, otp);
+        
+        const sent = await sendOTP(phone, otp);
+        
+        if (sent) {
+            res.json({ success: true, message: 'OTP sent successfully' });
+        } else {
+            res.status(500).json({ success: false, error: 'Failed to send OTP. Please try again.' });
+        }
+    } catch (error) {
+        console.error('Send OTP error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// 2. Verify OTP & Login
+app.post('/api/auth/verify-otp', async (req, res) => {
+    try {
+        const { phone, otp } = req.body;
+        
+        if (!phone || !otp) {
+            return res.status(400).json({ success: false, error: 'Phone and OTP required' });
+        }
+        
+        const isValid = verifyOTP(phone, otp);
+        
+        if (isValid) {
+            req.session.userPhone = phone;
+            req.session.isAuthenticated = true;
+            
+            // Check if user exists in DB, if not create
+            const { data: existing } = await supabaseAdmin
+                .from('user_stats')
+                .select('phone')
+                .eq('phone', phone)
+                .maybeSingle();
+            
+            if (!existing) {
+                await supabaseAdmin
+                    .from('user_stats')
+                    .insert([{ phone: phone, order_count: 0, reject_count: 0, suspect_flag: false, blocked: false }]);
             }
             
-            await supabaseAdmin
-                .from('user_stats')
-                .update(updateData)
-                .eq('phone', phone);
+            res.json({ success: true, message: 'Login successful' });
         } else {
-            await supabaseAdmin
-                .from('user_stats')
-                .insert([{
-                    phone: phone,
-                    order_count: 1,
-                    reject_count: isRejected ? 1 : 0,
-                    suspect_flag: false,
-                    blocked: false
-                }]);
+            res.status(401).json({ success: false, error: 'Invalid or expired OTP' });
         }
-    } catch (e) {
-        console.error('Error updating user stats:', e);
+    } catch (error) {
+        console.error('Verify OTP error:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
-}
-
-async function isPhoneBlocked(phone) {
-    const stats = await getUserStats(phone);
-    return stats?.blocked === true;
-}
-
-async function isDuplicateOrder(phone, plan) {
-    try {
-        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-        const { data, error } = await supabaseAdmin
-            .from('orders')
-            .select('id')
-            .eq('phone', phone)
-            .eq('plan', plan)
-            .gte('created_at', fiveMinutesAgo)
-            .limit(1);
-        
-        if (error) return false;
-        return data && data.length > 0;
-    } catch (e) {
-        return false;
-    }
-}
-
-async function isDuplicateImage(imageHash) {
-    if (!imageHash) return false;
-    try {
-        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const { data, error } = await supabaseAdmin
-            .from('orders')
-            .select('id')
-            .eq('image_hash', imageHash)
-            .gte('created_at', oneDayAgo)
-            .limit(1);
-        
-        if (error) return false;
-        return data && data.length > 0;
-    } catch (e) {
-        return false;
-    }
-}
-
-const orderRateLimit = new Map();
-function checkRateLimit(phone) {
-    const now = Date.now();
-    const userOrders = orderRateLimit.get(phone) || [];
-    const recentOrders = userOrders.filter(time => now - time < 60 * 1000);
-    
-    if (recentOrders.length >= 3) {
-        return false;
-    }
-    
-    recentOrders.push(now);
-    orderRateLimit.set(phone, recentOrders);
-    return true;
-}
-
-// ==================== AUTO CLEANUP ====================
-async function autoCleanupOldOrders() {
-    try {
-        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-        
-        const { data: ordersToDelete } = await supabaseAdmin
-            .from('orders')
-            .select('slip_url')
-            .in('status', ['Pending', 'Rejected'])
-            .lt('created_at', thirtyDaysAgo);
-        
-        if (ordersToDelete && ordersToDelete.length > 0) {
-            for (const order of ordersToDelete) {
-                if (order.slip_url) {
-                    const filePath = path.join(__dirname, order.slip_url);
-                    if (fs.existsSync(filePath)) {
-                        fs.unlinkSync(filePath);
-                    }
-                }
-            }
-        }
-        
-        const { data, error } = await supabaseAdmin
-            .from('orders')
-            .delete()
-            .in('status', ['Pending', 'Rejected'])
-            .lt('created_at', thirtyDaysAgo);
-        
-        if (error) {
-            console.error('Auto cleanup error:', error);
-        } else {
-            console.log(`✅ Auto cleanup completed - Deleted ${ordersToDelete?.length || 0} old orders`);
-        }
-    } catch (e) {
-        console.error('Auto cleanup failed:', e);
-    }
-}
-
-setInterval(autoCleanupOldOrders, 24 * 60 * 60 * 1000);
-setTimeout(autoCleanupOldOrders, 5000);
-
-// ==================== STATIC ROUTES ====================
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
-// ==================== USER API ====================
-app.get('/api/orders/:phone', async (req, res) => {
+// 3. Check Auth Status
+app.get('/api/auth/status', (req, res) => {
+    if (req.session.isAuthenticated && req.session.userPhone) {
+        res.json({ authenticated: true, phone: req.session.userPhone });
+    } else {
+        res.json({ authenticated: false });
+    }
+});
+
+// 4. Logout
+app.post('/api/auth/logout', (req, res) => {
+    req.session.destroy();
+    res.json({ success: true, message: 'Logged out' });
+});
+
+// ==================== BALANCE API (User Dashboard) ====================
+app.get('/api/user/balance', async (req, res) => {
+    if (!req.session.isAuthenticated) {
+        return res.status(401).json({ success: false, error: 'Not authenticated' });
+    }
+    
     try {
-        const { phone } = req.params;
-        
-        if (!phone || phone === 'null' || phone === 'undefined') {
-            return res.status(400).json({ orders: [], error: 'Invalid phone number' });
-        }
-        
+        const balance = await getUserBalance(req.session.userPhone);
+        res.json({ success: true, ...balance });
+    } catch (error) {
+        console.error('Balance error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ==================== ORDER API ====================
+app.get('/api/user/orders', async (req, res) => {
+    if (!req.session.isAuthenticated) {
+        return res.status(401).json({ success: false, error: 'Not authenticated' });
+    }
+    
+    try {
         const { data, error } = await supabase
             .from('orders')
             .select('*')
-            .eq('phone', phone)
+            .eq('phone', req.session.userPhone)
             .order('created_at', { ascending: false });
         
-        if (error) {
-            return res.status(500).json({ orders: [], error: error.message });
-        }
-        
-        res.json({ orders: data || [] });
+        if (error) throw error;
+        res.json({ success: true, orders: data || [] });
     } catch (error) {
-        console.error('Error fetching orders:', error);
-        res.status(500).json({ orders: [], error: error.message });
+        console.error('Orders error:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// ==================== CREATE ORDER ====================
 app.post('/api/orders', upload.single('slip'), async (req, res) => {
+    if (!req.session.isAuthenticated) {
+        return res.status(401).json({ success: false, error: 'Please login first' });
+    }
+    
     try {
-        const { phone, plan, price } = req.body;
+        const { plan, price } = req.body;
+        const phone = req.session.userPhone;
         const slipFile = req.file;
         
-        console.log(`📝 Creating order: phone=${phone}, plan=${plan}, price=${price}`);
-        
-        if (!phone || !plan || !price) {
+        if (!plan || !price) {
             return res.status(400).json({ success: false, error: 'Missing required fields' });
-        }
-        
-        const blocked = await isPhoneBlocked(phone);
-        if (blocked) {
-            return res.status(403).json({ success: false, error: 'This phone number has been blocked.' });
-        }
-        
-        if (!checkRateLimit(phone)) {
-            return res.status(429).json({ success: false, error: 'Too many orders. Please wait a moment.' });
-        }
-        
-        const duplicate = await isDuplicateOrder(phone, plan);
-        if (duplicate) {
-            return res.status(409).json({ success: false, error: 'Duplicate order detected. Please wait 5 minutes.' });
         }
         
         let slipUrl = null;
@@ -271,13 +224,7 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
         if (slipFile) {
             slipUrl = `/uploads/${slipFile.filename}`;
             const fileBuffer = fs.readFileSync(slipFile.path);
-            imageHash = calculateImageHash(fileBuffer);
-            
-            const duplicateImage = await isDuplicateImage(imageHash);
-            if (duplicateImage) {
-                fs.unlinkSync(slipFile.path);
-                return res.status(409).json({ success: false, error: 'Duplicate screenshot detected. Please use a new screenshot.' });
-            }
+            imageHash = crypto.createHash('md5').update(fileBuffer).digest('hex');
         }
         
         const orderId = Date.now();
@@ -291,25 +238,14 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
                 price: parseInt(price),
                 status: 'Pending',
                 slip_url: slipUrl,
-                image_hash: imageHash,
-                created_at: new Date().toISOString()
+                image_hash: imageHash
             }]);
         
-        if (error) {
-            console.error('Insert error:', error);
-            return res.status(500).json({ success: false, error: error.message });
-        }
+        if (error) throw error;
         
-        await updateUserStats(phone, false);
-        
-        console.log(`✅ Order created: ${orderId}`);
-        res.json({ 
-            success: true, 
-            orderId: orderId,
-            message: 'Order created successfully'
-        });
+        res.json({ success: true, orderId: orderId, message: 'Order created successfully' });
     } catch (error) {
-        console.error('Error creating order:', error);
+        console.error('Create order error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -322,13 +258,9 @@ app.get('/api/admin/orders', async (req, res) => {
             .select('*')
             .order('created_at', { ascending: false });
         
-        if (error) {
-            return res.status(500).json({ orders: [], error: error.message });
-        }
-        
+        if (error) throw error;
         res.json({ orders: data || [] });
     } catch (error) {
-        console.error('Error fetching all orders:', error);
         res.status(500).json({ orders: [], error: error.message });
     }
 });
@@ -340,186 +272,24 @@ app.get('/api/admin/user-stats', async (req, res) => {
             .select('*')
             .order('order_count', { ascending: false });
         
-        if (error) {
-            return res.status(500).json({ stats: [], error: error.message });
-        }
-        
+        if (error) throw error;
         res.json({ stats: data || [] });
     } catch (error) {
-        console.error('Error fetching user stats:', error);
         res.status(500).json({ stats: [], error: error.message });
-    }
-});
-
-app.post('/api/admin/user-block', async (req, res) => {
-    try {
-        const { phone, block } = req.body;
-        
-        if (!phone) {
-            return res.status(400).json({ success: false, error: 'Phone required' });
-        }
-        
-        const { error } = await supabaseAdmin
-            .from('user_stats')
-            .update({ blocked: block, updated_at: new Date().toISOString() })
-            .eq('phone', phone);
-        
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
-        res.json({ success: true, message: block ? 'User blocked' : 'User unblocked' });
-    } catch (error) {
-        console.error('Error blocking user:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.post('/api/admin/clear-suspect', async (req, res) => {
-    try {
-        const { phone } = req.body;
-        
-        if (!phone) {
-            return res.status(400).json({ success: false, error: 'Phone required' });
-        }
-        
-        const { error } = await supabaseAdmin
-            .from('user_stats')
-            .update({ suspect_flag: false, updated_at: new Date().toISOString() })
-            .eq('phone', phone);
-        
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
-        res.json({ success: true, message: 'Suspect flag cleared' });
-    } catch (error) {
-        console.error('Error clearing suspect flag:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.post('/api/admin/user-delete', async (req, res) => {
-    try {
-        const { phone } = req.body;
-        
-        if (!phone) {
-            return res.status(400).json({ success: false, error: 'Phone required' });
-        }
-        
-        const { error } = await supabaseAdmin
-            .from('user_stats')
-            .delete()
-            .eq('phone', phone);
-        
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
-        res.json({ success: true, message: 'User deleted from stats' });
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.post('/api/admin/user-delete-orders', async (req, res) => {
-    try {
-        const { phone } = req.body;
-        
-        if (!phone) {
-            return res.status(400).json({ success: false, error: 'Phone required' });
-        }
-        
-        const { data: orders } = await supabaseAdmin
-            .from('orders')
-            .select('slip_url')
-            .eq('phone', phone);
-        
-        if (orders && orders.length > 0) {
-            for (const order of orders) {
-                if (order.slip_url) {
-                    const filePath = path.join(__dirname, order.slip_url);
-                    if (fs.existsSync(filePath)) {
-                        fs.unlinkSync(filePath);
-                    }
-                }
-            }
-        }
-        
-        const { error } = await supabaseAdmin
-            .from('orders')
-            .delete()
-            .eq('phone', phone);
-        
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
-        res.json({ success: true, message: `Deleted ${orders?.length || 0} orders for ${phone}` });
-    } catch (error) {
-        console.error('Error deleting user orders:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.post('/api/admin/cleanup-old', async (req, res) => {
-    try {
-        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-        
-        const { data: ordersToDelete } = await supabaseAdmin
-            .from('orders')
-            .select('slip_url')
-            .in('status', ['Pending', 'Rejected'])
-            .lt('created_at', thirtyDaysAgo);
-        
-        if (ordersToDelete && ordersToDelete.length > 0) {
-            for (const order of ordersToDelete) {
-                if (order.slip_url) {
-                    const filePath = path.join(__dirname, order.slip_url);
-                    if (fs.existsSync(filePath)) {
-                        fs.unlinkSync(filePath);
-                    }
-                }
-            }
-        }
-        
-        const { data, error } = await supabaseAdmin
-            .from('orders')
-            .delete()
-            .in('status', ['Pending', 'Rejected'])
-            .lt('created_at', thirtyDaysAgo);
-        
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
-        res.json({ success: true, message: `Deleted ${ordersToDelete?.length || 0} old orders` });
-    } catch (error) {
-        console.error('Error during manual cleanup:', error);
-        res.status(500).json({ success: false, error: error.message });
     }
 });
 
 app.put('/api/admin/orders/:id/approve', async (req, res) => {
     try {
         const { id } = req.params;
-        
         const { error } = await supabaseAdmin
             .from('orders')
-            .update({ 
-                status: 'Approved', 
-                activated_at: new Date().toISOString() 
-            })
+            .update({ status: 'Approved', activated_at: new Date().toISOString() })
             .eq('id', id);
         
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
-        res.json({ success: true, message: 'Order approved successfully' });
+        if (error) throw error;
+        res.json({ success: true });
     } catch (error) {
-        console.error('Error approving order:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -527,29 +297,14 @@ app.put('/api/admin/orders/:id/approve', async (req, res) => {
 app.put('/api/admin/orders/:id/reject', async (req, res) => {
     try {
         const { id } = req.params;
-        
-        const { data: order } = await supabaseAdmin
-            .from('orders')
-            .select('phone')
-            .eq('id', id)
-            .single();
-        
         const { error } = await supabaseAdmin
             .from('orders')
             .update({ status: 'Rejected' })
             .eq('id', id);
         
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
-        if (order) {
-            await updateUserStats(order.phone, true);
-        }
-        
-        res.json({ success: true, message: 'Order rejected successfully' });
+        if (error) throw error;
+        res.json({ success: true });
     } catch (error) {
-        console.error('Error rejecting order:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -557,19 +312,29 @@ app.put('/api/admin/orders/:id/reject', async (req, res) => {
 app.delete('/api/admin/orders/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        
         const { error } = await supabaseAdmin
             .from('orders')
             .delete()
             .eq('id', id);
         
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
-        res.json({ success: true, message: 'Order deleted successfully' });
+        if (error) throw error;
+        res.json({ success: true });
     } catch (error) {
-        console.error('Error deleting order:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/admin/user-block', async (req, res) => {
+    try {
+        const { phone, block } = req.body;
+        const { error } = await supabaseAdmin
+            .from('user_stats')
+            .update({ blocked: block })
+            .eq('phone', phone);
+        
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -577,15 +342,19 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
 app.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
     if (password === process.env.ADMIN_PASSWORD) {
-        res.json({ success: true, message: 'Login successful' });
+        res.json({ success: true });
     } else {
-        res.status(401).json({ success: false, message: 'Invalid password' });
+        res.status(401).json({ success: false });
     }
 });
 
+// ==================== STATIC ROUTES ====================
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
+
+// ==================== START SERVER ====================
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`📱 Store: http://localhost:${PORT}/`);
-    console.log(`👨‍💼 Admin: http://localhost:${PORT}/admin`);
-    console.log(`📁 Uploads folder: ${uploadsDir}`);
+    console.log(`👨‍💼 Admin: http://localhost:${PORT}/admin.html`);
 });
