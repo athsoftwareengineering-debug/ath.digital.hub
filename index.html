@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>ATH DIGITAL HUB - Multi-Product Store</title>
+    <!-- Safe Google Font with Fallback -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -11,7 +12,7 @@
         body {
             background: #0a0c15;
             color: #f1f5f9;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
         }
         .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
@@ -110,12 +111,14 @@
         .product-image {
             width: 100%;
             height: 180px;
-            object-fit: cover;
             border-radius: 12px;
             margin-bottom: 12px;
             background: #1a1c2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
         }
-        .product-icon { font-size: 2rem; margin-bottom: 10px; }
         .product-name { font-size: 1rem; font-weight: 700; margin-bottom: 5px; }
         .product-category { font-size: 0.6rem; color: #00d4ff; margin-bottom: 8px; }
         .product-desc { font-size: 0.7rem; color: #94a3b8; margin-bottom: 12px; }
@@ -292,43 +295,33 @@
 </footer>
 
 <script>
-    // ============ PRODUCTS DATABASE (အဝတ်အထည်၊ ဒေတာ၊ သင်တန်း၊ စာအုပ်၊ အခြား) ============
+    // ============ PRODUCTS DATABASE (Safe Version) ============
     let products = [
-        // Data Plans (ဒေတာ)
-        { id: 1, name: "VIP LEVEL - 1", category: "data", price: 15000, icon: "📱", image: "", desc: "22GB + 8,000 မိနစ်" },
-        { id: 2, name: "VIP LEVEL - 2", category: "data", price: 20000, icon: "📡", image: "", desc: "40GB + 250 မိနစ်" },
-        { id: 3, name: "VIP LEVEL - 3", category: "data", price: 25000, icon: "⚡", image: "", desc: "40GB + 1,400 မိနစ်" },
-        { id: 4, name: "VIP LEVEL - 4 ULTRA", category: "data", price: 30000, icon: "👑", image: "", desc: "120GB + Unlimited" },
-        
-        // Clothing (အဝတ်အထည်)
-        { id: 5, name: "Men's T-Shirt", category: "clothing", price: 15000, icon: "👕", image: "https://via.placeholder.com/300x200?text=T-Shirt", desc: "Cotton T-Shirt, Size S-XXL" },
-        { id: 6, name: "Women's Dress", category: "clothing", price: 35000, icon: "👗", image: "https://via.placeholder.com/300x200?text=Dress", desc: "Summer Dress, Size S-L" },
-        { id: 7, name: "Jacket", category: "clothing", price: 45000, icon: "🧥", image: "https://via.placeholder.com/300x200?text=Jacket", desc: "Winter Jacket, Waterproof" },
-        { id: 8, name: "Jeans", category: "clothing", price: 25000, icon: "👖", image: "https://via.placeholder.com/300x200?text=Jeans", desc: "Denim Jeans, Size 28-36" },
-        
-        // Courses (သင်တန်း)
-        { id: 9, name: "Web Development Bootcamp", category: "course", price: 150000, icon: "💻", image: "https://via.placeholder.com/300x200?text=Web+Dev", desc: "Full Stack, 3 months" },
-        { id: 10, name: "Digital Marketing Course", category: "course", price: 80000, icon: "📈", image: "https://via.placeholder.com/300x200?text=Marketing", desc: "SEO, Social Media, Ads" },
-        { id: 11, name: "English Speaking Course", category: "course", price: 50000, icon: "🇬🇧", image: "https://via.placeholder.com/300x200?text=English", desc: "Beginner to Advanced" },
-        { id: 12, name: "Python Programming", category: "course", price: 120000, icon: "🐍", image: "https://via.placeholder.com/300x200?text=Python", desc: "From Zero to Hero" },
-        
-        // Books (စာအုပ်)
-        { id: 13, name: "Rich Dad Poor Dad", category: "book", price: 8000, icon: "📚", image: "https://via.placeholder.com/300x200?text=Rich+Dad", desc: "Robert Kiyosaki" },
-        { id: 14, name: "Atomic Habits", category: "book", price: 12000, icon: "📖", image: "https://via.placeholder.com/300x200?text=Atomic+Habits", desc: "James Clear" },
-        { id: 15, name: "Think and Grow Rich", category: "book", price: 10000, icon: "📕", image: "https://via.placeholder.com/300x200?text=Think+Grow", desc: "Napoleon Hill" },
-        { id: 16, name: "The Psychology of Money", category: "book", price: 15000, icon: "💰", image: "https://via.placeholder.com/300x200?text=Psychology+Money", desc: "Morgan Housel" },
-        
-        // Others (အခြား)
-        { id: 17, name: "Smartphone", category: "other", price: 250000, icon: "📱", image: "https://via.placeholder.com/300x200?text=Phone", desc: "6GB RAM, 128GB Storage" },
-        { id: 18, name: "Headphone", category: "other", price: 25000, icon: "🎧", image: "https://via.placeholder.com/300x200?text=Headphone", desc: "Wireless Bluetooth" },
-        { id: 19, name: "Watch", category: "other", price: 35000, icon: "⌚", image: "https://via.placeholder.com/300x200?text=Watch", desc: "Smart Watch" },
-        { id: 20, name: "Backpack", category: "other", price: 20000, icon: "🎒", image: "https://via.placeholder.com/300x200?text=Backpack", desc: "Waterproof, 20L" }
+        { id: 1, name: "VIP LEVEL - 1", category: "data", price: 15000, icon: "📱", desc: "22GB + 8,000 မိနစ်" },
+        { id: 2, name: "VIP LEVEL - 2", category: "data", price: 20000, icon: "📡", desc: "40GB + 250 မိနစ်" },
+        { id: 3, name: "VIP LEVEL - 3", category: "data", price: 25000, icon: "⚡", desc: "40GB + 1,400 မိနစ်" },
+        { id: 4, name: "VIP LEVEL - 4 ULTRA", category: "data", price: 30000, icon: "👑", desc: "120GB + Unlimited" },
+        { id: 5, name: "Men's T-Shirt", category: "clothing", price: 15000, icon: "👕", desc: "Cotton T-Shirt, Size S-XXL" },
+        { id: 6, name: "Women's Dress", category: "clothing", price: 35000, icon: "👗", desc: "Summer Dress, Size S-L" },
+        { id: 7, name: "Jacket", category: "clothing", price: 45000, icon: "🧥", desc: "Winter Jacket" },
+        { id: 8, name: "Jeans", category: "clothing", price: 25000, icon: "👖", desc: "Denim Jeans" },
+        { id: 9, name: "Web Development Bootcamp", category: "course", price: 150000, icon: "💻", desc: "Full Stack, 3 months" },
+        { id: 10, name: "Digital Marketing Course", category: "course", price: 80000, icon: "📈", desc: "SEO, Social Media, Ads" },
+        { id: 11, name: "English Speaking Course", category: "course", price: 50000, icon: "🇬🇧", desc: "Beginner to Advanced" },
+        { id: 12, name: "Python Programming", category: "course", price: 120000, icon: "🐍", desc: "From Zero to Hero" },
+        { id: 13, name: "Rich Dad Poor Dad", category: "book", price: 8000, icon: "📚", desc: "Robert Kiyosaki" },
+        { id: 14, name: "Atomic Habits", category: "book", price: 12000, icon: "📖", desc: "James Clear" },
+        { id: 15, name: "Think and Grow Rich", category: "book", price: 10000, icon: "📕", desc: "Napoleon Hill" },
+        { id: 16, name: "The Psychology of Money", category: "book", price: 15000, icon: "💰", desc: "Morgan Housel" },
+        { id: 17, name: "Smartphone", category: "other", price: 250000, icon: "📱", desc: "6GB RAM, 128GB Storage" },
+        { id: 18, name: "Headphone", category: "other", price: 25000, icon: "🎧", desc: "Wireless Bluetooth" },
+        { id: 19, name: "Watch", category: "other", price: 35000, icon: "⌚", desc: "Smart Watch" },
+        { id: 20, name: "Backpack", category: "other", price: 20000, icon: "🎒", desc: "Waterproof, 20L" }
     ];
     
     let cart = [];
     let currentCategory = 'all';
     
-    // Category Names
     const categoryNames = {
         all: 'အားလုံး',
         data: '📡 Data Plans',
@@ -360,7 +353,9 @@
         const container = document.getElementById('productsGrid');
         container.innerHTML = filtered.map(p => `
             <div class="product-card">
-                ${p.image ? `<img src="${p.image}" class="product-image" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">` : `<div class="product-icon">${p.icon}</div>`}
+                <div class="product-image">
+                    ${p.icon}
+                </div>
                 <div class="product-name">${p.name}</div>
                 <div class="product-category">${categoryNames[p.category] || p.category}</div>
                 <div class="product-desc">${p.desc}</div>
