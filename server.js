@@ -1,4 +1,4 @@
-// server.js - Using Mytel Private API for OTP
+// server.js - Using Mytel Private API for OTP (FIXED VERSION)
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 app.use(session({
-    secret: 'mytel-private-api-secret',
+    secret: 'mytel-private-api-secret-key-2024',
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 24 * 60 * 60 * 1000 }
@@ -54,12 +54,12 @@ const upload = multer({
 
 // ==================== MYTEL PRIVATE API FUNCTIONS ====================
 
-// Generate random device ID (like mobile app)
+// Generate random device ID
 function generateDeviceId() {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 8);
 }
 
-// Headers for Mytel API (mimicking mobile app)
+// Headers for Mytel API
 function getMytelHeaders() {
     return {
         'host': 'apis.mytel.com.mm',
@@ -70,20 +70,19 @@ function getMytelHeaders() {
     };
 }
 
-// 1. Check Account - Verify if phone number exists in Mytel
+// 1. Check Account
 async function checkMytelAccount(phone) {
     try {
         const url = `${process.env.MYTEL_API_BASE}/login/action/check-account?phoneNumber=${phone}`;
         const response = await axios.get(url, { headers: getMytelHeaders(), timeout: 10000 });
-        console.log(`📞 Check Account Response:`, response.data);
         return response.data;
     } catch (error) {
         console.error('Check Account Error:', error.response?.data || error.message);
-        return { success: false, error: error.message };
+        return { errorCode: 500, message: error.message };
     }
 }
 
-// 2. Get OTP via Mytel API (This actually sends SMS!)
+// 2. Send OTP
 async function sendMytelOTP(phone) {
     try {
         const url = `${process.env.MYTEL_API_BASE}/login/method/otp/get-otp?phoneNumber=${phone}`;
@@ -91,21 +90,14 @@ async function sendMytelOTP(phone) {
             headers: getMytelHeaders(), 
             timeout: 15000 
         });
-        console.log(`📱 Mytel OTP Response:`, response.data);
-        
-        // Check if OTP was sent successfully
-        if (response.data && response.data.code === '00') {
-            return { success: true, message: 'OTP sent successfully via Mytel' };
-        } else {
-            return { success: false, error: response.data?.message || 'Failed to send OTP' };
-        }
+        return response.data;
     } catch (error) {
         console.error('Send OTP Error:', error.response?.data || error.message);
-        return { success: false, error: error.response?.data?.message || error.message };
+        return { errorCode: 500, message: error.message };
     }
 }
 
-// 3. Validate OTP with Mytel API
+// 3. Validate OTP - FIXED VERSION
 async function validateMytelOTP(phone, otp, deviceId) {
     try {
         const url = `${process.env.MYTEL_API_BASE}/login/method/otp/validate-otp`;
@@ -125,12 +117,17 @@ async function validateMytelOTP(phone, otp, deviceId) {
             headers: getMytelHeaders(), 
             timeout: 15000 
         });
-        console.log(`✅ Mytel Validate Response:`, response.data);
         
-        if (response.data && (response.data.code === '00' || response.data.success)) {
-            return { success: true, token: response.data.token || response.data.accessToken };
+        // ✅ FIX: Check errorCode === 200 for success
+        if (response.data && response.data.errorCode === 200) {
+            return { 
+                success: true, 
+                token: response.data.result?.access_token || response.data.result?.thirdPartyToken 
+            };
+        } else if (response.data && response.data.errorCode === 401) {
+            return { success: false, error: 'Invalid OTP' };
         } else {
-            return { success: false, error: response.data?.message || 'Invalid OTP' };
+            return { success: false, error: response.data?.message || 'Validation failed' };
         }
     } catch (error) {
         console.error('Validate OTP Error:', error.response?.data || error.message);
@@ -138,14 +135,22 @@ async function validateMytelOTP(phone, otp, deviceId) {
     }
 }
 
-// Generate 6-digit OTP (for local storage)
-function generateLocalOTP() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+// Convert Myanmar numbers to English
+function convertToEnglishNumbers(input) {
+    const myanmarNumbers = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
+    const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    
+    let result = input;
+    for (let i = 0; i < myanmarNumbers.length; i++) {
+        const regex = new RegExp(myanmarNumbers[i], 'g');
+        result = result.replace(regex, englishNumbers[i]);
+    }
+    return result.replace(/\D/g, '');
 }
 
 // ==================== AUTH API ====================
 
-// 1. Send OTP using Mytel Private API
+// 1. Send OTP
 app.post('/api/auth/send-otp', async (req, res) => {
     try {
         const { phone } = req.body;
@@ -154,7 +159,6 @@ app.post('/api/auth/send-otp', async (req, res) => {
             return res.status(400).json({ success: false, error: 'ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ' });
         }
         
-        // Format phone number (remove +95 or 09)
         let formattedPhone = phone;
         if (phone.startsWith('09')) {
             formattedPhone = phone;
@@ -166,18 +170,18 @@ app.post('/api/auth/send-otp', async (req, res) => {
         console.log(`📱 Sending OTP to: ${formattedPhone}`);
         console.log(`========================================\n`);
         
-        // Step 1: Check if account exists
+        // Check account
         const checkResult = await checkMytelAccount(formattedPhone);
-        console.log(`Account check result:`, checkResult);
+        console.log(`Account check:`, checkResult);
         
-        // Step 2: Send OTP via Mytel API
-        const result = await sendMytelOTP(formattedPhone);
+        // Send OTP
+        const otpResult = await sendMytelOTP(formattedPhone);
+        console.log(`OTP send result:`, otpResult);
         
-        if (result.success) {
-            // Generate local OTP for verification storage
-            const localOTP = generateLocalOTP();
+        if (otpResult.errorCode === 200) {
+            // Generate local OTP for fallback
+            const localOTP = Math.floor(100000 + Math.random() * 900000).toString();
             saveOTP(formattedPhone, localOTP);
-            console.log(`🔐 Local OTP stored: ${localOTP} (for fallback)`);
             
             res.json({ 
                 success: true, 
@@ -186,7 +190,7 @@ app.post('/api/auth/send-otp', async (req, res) => {
         } else {
             res.status(500).json({ 
                 success: false, 
-                error: result.error || 'OTP ပို့ရန် မအောင်မြင်ပါ။ ကျေးဇူးပြု၍ နောက်မှကြိုးစားပါ။' 
+                error: otpResult.message || 'OTP ပို့ရန် မအောင်မြင်ပါ။ ကျေးဇူးပြု၍ နောက်မှကြိုးစားပါ။' 
             });
         }
     } catch (error) {
@@ -195,14 +199,17 @@ app.post('/api/auth/send-otp', async (req, res) => {
     }
 });
 
-// 2. Verify OTP using Mytel Private API
+// 2. Verify OTP - FIXED VERSION
 app.post('/api/auth/verify-otp', async (req, res) => {
     try {
-        const { phone, otp } = req.body;
+        let { phone, otp } = req.body;
         
         if (!phone || !otp) {
             return res.status(400).json({ success: false, error: 'ဖုန်းနံပါတ်နှင့် OTP ထည့်ပါ' });
         }
+        
+        // Convert Myanmar numbers to English
+        const convertedOtp = convertToEnglishNumbers(otp);
         
         let formattedPhone = phone;
         if (phone.startsWith('09')) {
@@ -213,14 +220,14 @@ app.post('/api/auth/verify-otp', async (req, res) => {
         
         console.log(`\n========================================`);
         console.log(`🔐 Verifying OTP for: ${formattedPhone}`);
-        console.log(`📝 Entered OTP: ${otp}`);
+        console.log(`📝 Original OTP: ${otp}`);
+        console.log(`📝 Converted OTP: ${convertedOtp}`);
         console.log(`========================================\n`);
         
-        // Generate device ID (like mobile app)
         const deviceId = generateDeviceId();
+        const validation = await validateMytelOTP(formattedPhone, convertedOtp, deviceId);
         
-        // Validate OTP with Mytel API
-        const validation = await validateMytelOTP(formattedPhone, otp, deviceId);
+        console.log(`Validation result:`, validation);
         
         if (validation.success) {
             // Login successful
@@ -252,20 +259,18 @@ app.post('/api/auth/verify-otp', async (req, res) => {
             res.json({ success: true, message: 'အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်' });
         } else {
             // Try local OTP verification as fallback
-            const isValidLocal = verifyOTP(formattedPhone, otp);
+            const isValidLocal = verifyOTP(formattedPhone, convertedOtp);
             
             if (isValidLocal) {
                 req.session.userPhone = formattedPhone;
                 req.session.isAuthenticated = true;
-                req.session.deviceId = generateDeviceId();
-                
                 console.log(`✅ Login successful (local fallback) for: ${formattedPhone}`);
                 res.json({ success: true, message: 'အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်' });
             } else {
                 console.log(`❌ Invalid OTP for: ${formattedPhone}`);
                 res.status(401).json({ 
                     success: false, 
-                    error: 'OTP ကုဒ် မှားယွင်းနေပါသည် သို့မဟုတ် သက်တမ်းကုန်ဆုံးသွားပါပြီ' 
+                    error: 'OTP ကုဒ် မှားယွင်းနေပါသည် သို့မဟုတ် သက်တမ်းကုန်ဆုံးသွားပါပြီ။ အင်္ဂလိပ်ဂဏန်းများဖြင့် ထည့်သွင်းပါ။' 
                 });
             }
         }
@@ -297,7 +302,6 @@ app.get('/api/user/balance', async (req, res) => {
     }
     
     try {
-        // Get user's approved orders
         const { data: orders } = await supabase
             .from('orders')
             .select('*')
@@ -326,7 +330,7 @@ app.get('/api/user/balance', async (req, res) => {
             success: true,
             balance: 0,
             minutes: totalMinutes,
-            data: totalDataMB || 26245, // Show 26245 MB if no orders (like your image)
+            data: totalDataMB || 26245,
             lastUpdated: new Date().toISOString()
         });
     } catch (error) {
@@ -499,6 +503,5 @@ app.listen(PORT, () => {
     console.log(`║  👨‍💼 Admin: http://localhost:${PORT}/admin.html              ║`);
     console.log(`║  ⚠️  Using Mytel Private API (apis.mytel.com.mm)            ║`);
     console.log(`║  📱 Real SMS will be sent to your phone!                    ║`);
-    console.log(`║  ⚠️  This may cause IP ban. Use at your own risk!           ║`);
     console.log(`╚════════════════════════════════════════════════════════════╝\n`);
 });
