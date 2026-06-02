@@ -49,7 +49,6 @@
         }
         .logout-btn:hover, .orders-btn:hover { background: #00d4ff; color: #030712; }
         
-        /* Login Card - OTP Form ကို အတူတူပြမယ် */
         .login-container {
             display: flex;
             justify-content: center;
@@ -110,7 +109,6 @@
             background: linear-gradient(135deg, #10b981, #059669);
             margin-top: 5px;
         }
-        /* OTP Section - ပုံမှန်ပြမယ် (hide မလုပ်တော့ဘူး) */
         .otp-section {
             margin-top: 20px;
             padding-top: 20px;
@@ -133,7 +131,6 @@
         }
         .hidden { display: none; }
         
-        /* Balance Dashboard */
         .dashboard { margin-bottom: 30px; }
         .balance-card {
             background: linear-gradient(135deg, #1e293b, #0f172a);
@@ -174,7 +171,6 @@
             margin-top: 15px;
         }
         
-        /* Plan Cards */
         .pack-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
@@ -203,7 +199,6 @@
             cursor: pointer;
         }
         
-        /* Orders Panel */
         .orders-panel {
             position: fixed;
             top: 0;
@@ -237,7 +232,6 @@
             border: 1px solid rgba(0,212,255,0.1);
         }
         
-        /* Loading Spinner */
         .spinner {
             display: inline-block;
             width: 16px;
@@ -249,7 +243,6 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -281,25 +274,22 @@
         </div>
     </div>
     
-    <!-- Login Section - OTP Field ကို အမြဲမြင်ရအောင် ပြင်ထား -->
     <div id="loginSection" class="login-container">
         <div class="login-card">
             <i class="fas fa-mobile-alt" style="font-size: 3rem; color: #00d4ff;"></i>
             <h2>OTP ဖြင့် ဝင်ရောက်ပါ</h2>
             <div class="subtitle">OTP ကုဒ်အား သင့်ဖုန်းနံပါတ်သို့ ပို့ပေးပါမည်</div>
             
-            <!-- Phone Number Input -->
-            <input type="tel" id="phoneInput" class="login-input" placeholder="📱 09xxxxxxxxx" value="09678140245">
+            <input type="tel" id="phoneInput" class="login-input" placeholder="📱 09xxxxxxxxx">
             <button class="login-btn" id="sendOtpBtn" onclick="sendOTP()">
                 <i class="fas fa-paper-plane"></i> OTP ပို့ရန်
             </button>
             
-            <!-- OTP Section - ဒီနေရာကို အမြဲမြင်ရမယ် (မဝှက်တော့ဘူး) -->
             <div class="otp-section" id="otpSection">
                 <div class="info-msg" id="otpInfoMsg">
-                    <i class="fas fa-info-circle"></i> OTP ပို့ရန် နှိပ်ပြီးနောက် SMS ရောက်ပါက အောက်ပါအတိုင်း ထည့်ပါ။
+                    <i class="fas fa-info-circle"></i> OTP ကုဒ်ကို အင်္ဂလိပ်ဂဏန်းများဖြင့် ထည့်ပါ (ဥပမာ - 123456)
                 </div>
-                <input type="text" id="otpInput" class="login-input" placeholder="6 လုံးပါ OTP ကုဒ်">
+                <input type="text" id="otpInput" class="login-input" placeholder="6 လုံးပါ OTP ကုဒ် (အင်္ဂလိပ်ဂဏန်း)">
                 <button class="login-btn login-btn-secondary" onclick="verifyOTP()" id="verifyBtn">
                     <i class="fas fa-check-circle"></i> အတည်ပြုပြီး ဝင်ရောက်မည်
                 </button>
@@ -309,7 +299,6 @@
         </div>
     </div>
     
-    <!-- Dashboard (After Login) -->
     <div id="dashboardSection" style="display: none;">
         <div class="dashboard">
             <div class="balance-card">
@@ -341,7 +330,6 @@
     </div>
 </div>
 
-<!-- Orders Panel -->
 <div id="ordersPanel" class="orders-panel">
     <div class="orders-header">
         <h3><i class="fas fa-list-ul"></i> ကျွန်ုပ်၏ အော်ဒါများ</h3>
@@ -413,14 +401,13 @@
                 currentPhone = phone;
                 showToast('OTP ကုဒ် ပို့ပြီးပါပြီ။ သင့် SMS ကို စစ်ဆေးပါ။');
                 document.getElementById('loginMessage').innerHTML = '<div class="success-msg">✓ OTP ကုဒ် ပို့ပြီးပါပြီ။ သင့် SMS ကို စစ်ဆေးပါ။</div>';
-                // Focus on OTP input
                 document.getElementById('otpInput').focus();
             } else {
                 showToast(data.error || 'OTP ပို့ရန် မအောင်မြင်ပါ', true);
                 document.getElementById('loginMessage').innerHTML = `<div class="error-msg">✗ ${data.error || 'OTP ပို့ရန် မအောင်မြင်ပါ'}</div>`;
             }
         } catch (error) {
-            showToast('Network error - အင်တာနက်ချိတ်ဆက်မှု စစ်ဆေးပါ', true);
+            showToast('Network error', true);
         } finally {
             sendBtn.innerHTML = originalText;
             sendBtn.disabled = false;
@@ -458,7 +445,6 @@
                 isLoggedIn = true;
                 currentPhone = phone;
                 
-                // Hide login, show dashboard
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('dashboardSection').style.display = 'block';
                 document.getElementById('mainHeader').style.display = 'flex';
@@ -487,7 +473,6 @@
             if (data.success) {
                 document.getElementById('balanceAmount').innerHTML = data.balance?.toLocaleString() || '0';
                 document.getElementById('minutesAmount').innerHTML = data.minutes?.toLocaleString() || '0';
-                // Show 26245 MB if data is 0 (like your image)
                 const dataValue = data.data || 26245;
                 document.getElementById('dataAmount').innerHTML = dataValue.toLocaleString();
             }
@@ -588,7 +573,6 @@
         showToast('ထွက်ရန် အောင်မြင်ပါသည်');
     }
     
-    // Event listeners
     document.getElementById('logoutBtn').addEventListener('click', logout);
     document.getElementById('myOrdersBtn').addEventListener('click', () => {
         if (isLoggedIn) {
@@ -608,7 +592,6 @@
         if (e.key === 'Enter') verifyOTP();
     });
     
-    // Check existing session
     async function checkSession() {
         try {
             const res = await fetch('/api/auth/status');
@@ -627,7 +610,6 @@
         }
     }
     
-    // Initialize
     renderPlans();
     checkSession();
 </script>
