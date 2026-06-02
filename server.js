@@ -1,4 +1,4 @@
-// server.js - MYTEL REAL API (UPDATED - FIXED URL)
+// server.js - MYTEL REAL BALANCE API (COMPLETE)
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -13,15 +13,18 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy for Render
 app.set('trust proxy', 1);
 
+// Middleware
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
+// Session
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'mytel-real-api-secret',
+    secret: process.env.SESSION_SECRET || 'mytel-real-balance-secret',
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -32,10 +35,12 @@ app.use(session({
     }
 }));
 
+// Uploads directory
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 app.use('/uploads', express.static('uploads'));
 
+// File upload config
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'uploads/'),
     filename: (req, file, cb) => {
@@ -46,8 +51,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 // ==================== MYTEL API CONFIGURATION ====================
-// ✅ FIXED: Correct API Base URL (myd → myid)
-const MYTEL_AUTH_BASE = process.env.MYTEL_API_BASE || 'https://apis.mytel.com.mm/myid/authen/v1.0';
+const MYTEL_AUTH_BASE = 'https://apis.mytel.com.mm/myid/authen/v1.0';
 const MYTEL_ACCOUNT_BASE = 'https://apis.mytel.com.mm/account-detail/api/v1.2/individual';
 
 function generateDeviceId() {
@@ -87,7 +91,6 @@ async function checkMytelAccount(phone) {
         const response = await axios.get(url, { headers: getMytelHeaders(), timeout: 15000 });
         return response.data;
     } catch (error) {
-        console.error('Check Account Error:', error.response?.status);
         return { errorCode: error.response?.status || 500, message: error.message };
     }
 }
@@ -96,14 +99,9 @@ async function sendMytelOTP(phone) {
     try {
         const url = `${MYTEL_AUTH_BASE}/login/method/otp/get-otp?phoneNumber=${phone}`;
         console.log(`📡 [SEND OTP] ${url}`);
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(), 
-            timeout: 20000
-        });
-        console.log(`📡 [OTP RESPONSE]`, response.status, response.data);
+        const response = await axios.get(url, { headers: getMytelHeaders(), timeout: 20000 });
         return response.data;
     } catch (error) {
-        console.error('Send OTP Error:', error.response?.status, error.response?.data || error.message);
         return { errorCode: error.response?.status || 500, message: error.message };
     }
 }
@@ -133,22 +131,27 @@ async function validateMytelOTP(phone, otp, deviceId) {
         }
         return { success: false, error: response.data?.message };
     } catch (error) {
-        console.error('Validate Error:', error.response?.status);
         return { success: false, error: error.message };
     }
 }
 
-// ==================== BALANCE APIS ====================
+// ==================== REAL BALANCE APIS ====================
 
 async function getRealAccountBalance(accessToken) {
     try {
         const url = `${MYTEL_ACCOUNT_BASE}/account-balance`;
-        const response = await axios.get(url, { headers: getMytelHeaders(accessToken), timeout: 10000 });
-        if (response.data && response.data.errorCode === 200) {
-            return { success: true, balance: response.data.result?.balance || 0 };
+        console.log(`📡 [BALANCE] Calling...`);
+        const response = await axios.get(url, { 
+            headers: getMytelHeaders(accessToken), 
+            timeout: 10000 
+        });
+        console.log(`📡 [BALANCE] Response:`, JSON.stringify(response.data));
+        if (response.data && response.data.errorCode === 200 && response.data.result) {
+            return { success: true, balance: response.data.result.balance || 0 };
         }
         return { success: false, balance: 0 };
     } catch (error) {
+        console.error(`❌ Balance Error:`, error.response?.status, error.response?.data || error.message);
         return { success: false, balance: 0 };
     }
 }
@@ -156,13 +159,20 @@ async function getRealAccountBalance(accessToken) {
 async function getRealDataUsage(accessToken) {
     try {
         const url = `${MYTEL_ACCOUNT_BASE}/data-usage`;
-        const response = await axios.get(url, { headers: getMytelHeaders(accessToken), timeout: 10000 });
+        console.log(`📡 [DATA] Calling...`);
+        const response = await axios.get(url, { 
+            headers: getMytelHeaders(accessToken), 
+            timeout: 10000 
+        });
+        console.log(`📡 [DATA] Response:`, JSON.stringify(response.data));
         if (response.data && response.data.errorCode === 200 && response.data.result) {
             let data = response.data.result.remainingData || response.data.result.remaining || 0;
+            if (data < 100 && response.data.result.unit === 'GB') data = data * 1024;
             return { success: true, data: Math.round(data) };
         }
         return { success: false, data: 0 };
     } catch (error) {
+        console.error(`❌ Data Error:`, error.response?.status, error.response?.data || error.message);
         return { success: false, data: 0 };
     }
 }
@@ -170,12 +180,18 @@ async function getRealDataUsage(accessToken) {
 async function getRealVoiceUsage(accessToken) {
     try {
         const url = `${MYTEL_ACCOUNT_BASE}/voice-usage`;
-        const response = await axios.get(url, { headers: getMytelHeaders(accessToken), timeout: 10000 });
+        console.log(`📡 [VOICE] Calling...`);
+        const response = await axios.get(url, { 
+            headers: getMytelHeaders(accessToken), 
+            timeout: 10000 
+        });
+        console.log(`📡 [VOICE] Response:`, JSON.stringify(response.data));
         if (response.data && response.data.errorCode === 200 && response.data.result) {
             return { success: true, minutes: response.data.result.remainingMinutes || 0 };
         }
         return { success: false, minutes: 0 };
     } catch (error) {
+        console.error(`❌ Voice Error:`, error.response?.status, error.response?.data || error.message);
         return { success: false, minutes: 0 };
     }
 }
@@ -183,12 +199,18 @@ async function getRealVoiceUsage(accessToken) {
 async function getRealSmsUsage(accessToken) {
     try {
         const url = `${MYTEL_ACCOUNT_BASE}/sms-usage`;
-        const response = await axios.get(url, { headers: getMytelHeaders(accessToken), timeout: 10000 });
+        console.log(`📡 [SMS] Calling...`);
+        const response = await axios.get(url, { 
+            headers: getMytelHeaders(accessToken), 
+            timeout: 10000 
+        });
+        console.log(`📡 [SMS] Response:`, JSON.stringify(response.data));
         if (response.data && response.data.errorCode === 200 && response.data.result) {
             return { success: true, sms: response.data.result.remainingSMS || 0 };
         }
         return { success: false, sms: 0 };
     } catch (error) {
+        console.error(`❌ SMS Error:`, error.response?.status, error.response?.data || error.message);
         return { success: false, sms: 0 };
     }
 }
@@ -196,13 +218,19 @@ async function getRealSmsUsage(accessToken) {
 async function getRealPoints(accessToken) {
     try {
         const url = `${MYTEL_ACCOUNT_BASE}/account-main`;
-        const response = await axios.get(url, { headers: getMytelHeaders(accessToken), timeout: 10000 });
+        console.log(`📡 [POINTS] Calling...`);
+        const response = await axios.get(url, { 
+            headers: getMytelHeaders(accessToken), 
+            timeout: 10000 
+        });
+        console.log(`📡 [POINTS] Response:`, JSON.stringify(response.data));
         if (response.data && response.data.errorCode === 200 && response.data.result) {
             const points = response.data.result.loyaltyPoints || response.data.result.points || 0;
             return { success: true, points: points };
         }
         return { success: false, points: 0 };
     } catch (error) {
+        console.error(`❌ Points Error:`, error.response?.status, error.response?.data || error.message);
         return { success: false, points: 0 };
     }
 }
@@ -270,6 +298,7 @@ app.post('/api/auth/verify-otp', async (req, res) => {
                     .insert([{ phone: formattedPhone, order_count: 0, reject_count: 0, suspect_flag: false, blocked: false }]);
             }
             
+            console.log(`✅ Login successful: ${formattedPhone}`);
             res.json({ success: true, message: 'အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်' });
         } else {
             const isValidLocal = verifyOTP(formattedPhone, convertedOtp);
@@ -278,7 +307,7 @@ app.post('/api/auth/verify-otp', async (req, res) => {
                 req.session.isAuthenticated = true;
                 res.json({ success: true, message: 'အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်' });
             } else {
-                res.status(401).json({ success: false, error: 'OTP ကုဒ် မှားယွင်းနေပါသည်။' });
+                res.status(401).json({ success: false, error: 'OTP ကုဒ် မှားယွင်းနေပါသည်။ အင်္ဂလိပ်ဂဏန်းဖြင့် ထည့်ပါ။' });
             }
         }
     } catch (error) {
@@ -299,15 +328,20 @@ app.post('/api/auth/logout', (req, res) => {
     res.json({ success: true });
 });
 
-// ==================== BALANCE API ====================
+// ==================== REAL BALANCE API ====================
 app.get('/api/user/balance', async (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ success: false, error: 'ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ' });
     }
     
     const accessToken = req.session.accessToken;
+    const userPhone = req.session.userPhone;
+    
+    console.log(`\n📊 [REAL BALANCE] Fetching for: ${userPhone}`);
+    console.log(`📊 Token exists: ${accessToken ? 'YES' : 'NO'}`);
+    
     if (!accessToken) {
-        return res.json({ success: true, balance: 0, minutes: 0, data: 0, sms: 0, points: 0 });
+        return res.json({ success: false, balance: 0, data: 0, minutes: 0, sms: 0, points: 0, error: 'no-token' });
     }
     
     try {
@@ -319,7 +353,7 @@ app.get('/api/user/balance', async (req, res) => {
             getRealPoints(accessToken)
         ]);
         
-        res.json({
+        const responseData = {
             success: true,
             balance: balanceResult.balance || 0,
             minutes: voiceResult.minutes || 0,
@@ -328,9 +362,14 @@ app.get('/api/user/balance', async (req, res) => {
             points: pointsResult.points || 0,
             lastUpdated: new Date().toISOString(),
             source: 'mytel-real-api'
-        });
+        };
+        
+        console.log(`\n✅ FINAL: Balance=${responseData.balance}, Data=${responseData.data}MB, Minutes=${responseData.minutes}, SMS=${responseData.sms}, Points=${responseData.points}\n`);
+        res.json(responseData);
+        
     } catch (error) {
-        res.json({ success: true, balance: 0, minutes: 0, data: 0, sms: 0, points: 0 });
+        console.error('❌ Balance API error:', error);
+        res.json({ success: false, balance: 0, data: 0, minutes: 0, sms: 0, points: 0, error: error.message });
     }
 });
 
@@ -448,11 +487,12 @@ app.get('/api/health', (req, res) => {
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 
+// ==================== START SERVER ====================
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n╔════════════════════════════════════════════════════════════╗`);
-    console.log(`║  🚀 MYTEL REAL API SERVER (UPDATED)                      ║`);
-    console.log(`║  📡 AUTH BASE: ${MYTEL_AUTH_BASE}`);
+    console.log(`║  🚀 MYTEL REAL BALANCE API                               ║`);
     console.log(`║  💰 Balance | 📶 Data | 📞 Minutes | 💬 SMS | ⭐ Points   ║`);
     console.log(`║  📱 Store: https://ath-digital-hub.onrender.com/         ║`);
+    console.log(`║  📡 Fetching REAL data from Mytel servers                ║`);
     console.log(`╚════════════════════════════════════════════════════════════╝\n`);
 });
