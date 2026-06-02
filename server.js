@@ -1,10 +1,11 @@
-// server.js - RENDER FIXED VERSION
+// server.js - MYTEL REAL API VERSION (Render Ready)
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
 const crypto = require('crypto');
+const axios = require('axios');
 const session = require('express-session');
 const { supabase, supabaseAdmin, saveOTP, verifyOTP } = require('./database');
 require('dotenv').config();
@@ -12,7 +13,7 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ==================== IMPORTANT: Render Trust Proxy ====================
+// Trust proxy for Render
 app.set('trust proxy', 1);
 
 // Middleware
@@ -24,9 +25,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
-// Session configuration for Render
+// Session
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'mytel-secret-key-for-render',
+    secret: process.env.SESSION_SECRET || 'mytel-real-api-secret',
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -37,7 +38,7 @@ app.use(session({
     }
 }));
 
-// Ensure uploads directory exists
+// Uploads directory
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
@@ -54,43 +55,126 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
-// ==================== HELPER FUNCTIONS ====================
-function generateOTP() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+// ==================== MYTEL REAL API FUNCTIONS ====================
+
+const MYTEL_API_BASE = process.env.MYTEL_API_BASE || 'https://apis.mytel.com.mm/myid/authen/v1.0';
+
+function generateDeviceId() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 8);
 }
 
-function convertToEnglish(input) {
-    const myanmar = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
-    const english = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+function getMytelHeaders() {
+    return {
+        'host': 'apis.mytel.com.mm',
+        'accept-language': 'en',
+        'accept-encoding': 'gzip',
+        'user-agent': 'okhttp/4.12.0',
+        'content-type': 'application/json; charset=UTF-8'
+    };
+}
+
+// 1. Check Account
+async function checkMytelAccount(phone) {
+    try {
+        const url = `${MYTEL_API_BASE}/login/action/check-account?phoneNumber=${phone}`;
+        console.log(`📡 Checking account: ${url}`);
+        const response = await axios.get(url, { 
+            headers: getMytelHeaders(), 
+            timeout: 15000,
+            // Important: Don't follow redirects, handle real response
+            maxRedirects: 0,
+            validateStatus: status => status < 500
+        });
+        console.log(`📡 Check account response:`, response.status, response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Check Account Error:', error.response?.status, error.response?.data || error.message);
+        return { errorCode: error.response?.status || 500, message: error.message };
+    }
+}
+
+// 2. Send OTP (REAL SMS)
+async function sendMytelOTP(phone) {
+    try {
+        const url = `${MYTEL_API_BASE}/login/method/otp/get-otp?phoneNumber=${phone}`;
+        console.log(`📡 Sending OTP request: ${url}`);
+        const response = await axios.get(url, { 
+            headers: getMytelHeaders(), 
+            timeout: 20000,
+            maxRedirects: 0,
+            validateStatus: status => status < 500
+        });
+        console.log(`📡 Send OTP response:`, response.status, response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Send OTP Error:', error.response?.status, error.response?.data || error.message);
+        return { errorCode: error.response?.status || 500, message: error.message };
+    }
+}
+
+// 3. Validate OTP
+async function validateMytelOTP(phone, otp, deviceId) {
+    try {
+        const url = `${MYTEL_API_BASE}/login/method/otp/validate-otp`;
+        const payload = {
+            appVersion: "2.0.16",
+            buildVersionApp: "300",
+            deviceId: deviceId,
+            imei: deviceId,
+            os: "ANDROID",
+            osApp: "ANDROID",
+            password: otp,
+            phoneNumber: phone,
+            version: "8.1"
+        };
+        
+        console.log(`📡 Validating OTP for: ${phone}`);
+        const response = await axios.post(url, payload, { 
+            headers: getMytelHeaders(), 
+            timeout: 15000,
+            maxRedirects: 0
+        });
+        
+        console.log(`📡 Validate response:`, response.status, response.data);
+        
+        if (response.data && response.data.errorCode === 200) {
+            return { 
+                success: true, 
+                token: response.data.result?.access_token || response.data.result?.thirdPartyToken 
+            };
+        } else {
+            return { success: false, error: response.data?.message || 'Invalid OTP' };
+        }
+    } catch (error) {
+        console.error('Validate OTP Error:', error.response?.status, error.response?.data || error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+// Convert Myanmar numbers to English
+function convertToEnglishNumbers(input) {
+    const myanmarNumbers = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
+    const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
     let result = input;
-    for (let i = 0; i < myanmar.length; i++) {
-        result = result.replace(new RegExp(myanmar[i], 'g'), english[i]);
+    for (let i = 0; i < myanmarNumbers.length; i++) {
+        result = result.replace(new RegExp(myanmarNumbers[i], 'g'), englishNumbers[i]);
     }
     return result.replace(/\D/g, '');
-}
-
-// Send OTP (Log to console for Render)
-async function sendOTP(phone, otp) {
-    console.log('\n╔══════════════════════════════════════════════════════╗');
-    console.log(`║  📱 Phone: ${phone}`);
-    console.log(`║  🔐 OTP CODE: ${otp}`);
-    console.log(`║  ⏰ Valid for 5 minutes`);
-    console.log(`║  💡 Enter this code in the website`);
-    console.log('╚══════════════════════════════════════════════════════╝\n');
-    return true;
 }
 
 // ==================== AUTH API ====================
 
 // 1. Send OTP
 app.post('/api/auth/send-otp', async (req, res) => {
-    console.log('📨 Send OTP request received:', req.body);
+    console.log('\n========================================');
+    console.log('📨 POST /api/auth/send-otp');
+    console.log('Request body:', req.body);
+    console.log('========================================\n');
     
     try {
         const { phone } = req.body;
         
         if (!phone || phone.length < 9) {
-            console.log('❌ Invalid phone:', phone);
             return res.status(400).json({ success: false, error: 'ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ' });
         }
         
@@ -101,17 +185,33 @@ app.post('/api/auth/send-otp', async (req, res) => {
             formattedPhone = '0' + phone.substring(2);
         }
         
-        const otp = generateOTP();
-        saveOTP(formattedPhone, otp);
+        console.log(`📞 Target phone: ${formattedPhone}`);
         
-        await sendOTP(formattedPhone, otp);
+        // Step 1: Check account
+        const checkResult = await checkMytelAccount(formattedPhone);
+        console.log('✅ Account check result:', JSON.stringify(checkResult));
         
-        console.log(`✅ OTP sent successfully for: ${formattedPhone}`);
-        res.json({ 
-            success: true, 
-            message: 'OTP ကုဒ် ပို့ပြီးပါပြီ။ Render Logs မှာ OTP ကုဒ်ကို ကြည့်ပါ။' 
-        });
+        // Step 2: Send OTP
+        const otpResult = await sendMytelOTP(formattedPhone);
+        console.log('✅ Send OTP result:', JSON.stringify(otpResult));
         
+        if (otpResult.errorCode === 200) {
+            // Store local OTP for fallback verification
+            const localOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            saveOTP(formattedPhone, localOTP);
+            
+            res.json({ 
+                success: true, 
+                message: 'OTP ကုဒ် ပို့ပြီးပါပြီ။ သင့် SMS ကို စစ်ဆေးပါ။',
+                debug: { otpSent: true, apiResponse: otpResult.message }
+            });
+        } else {
+            res.status(500).json({ 
+                success: false, 
+                error: otpResult.message || 'OTP ပို့ရန် မအောင်မြင်ပါ။ ကျေးဇူးပြု၍ နောက်မှကြိုးစားပါ။',
+                debug: { apiResponse: otpResult }
+            });
+        }
     } catch (error) {
         console.error('❌ Send OTP error:', error);
         res.status(500).json({ success: false, error: 'Server error: ' + error.message });
@@ -120,7 +220,10 @@ app.post('/api/auth/send-otp', async (req, res) => {
 
 // 2. Verify OTP
 app.post('/api/auth/verify-otp', async (req, res) => {
-    console.log('🔐 Verify OTP request received:', req.body);
+    console.log('\n========================================');
+    console.log('🔐 POST /api/auth/verify-otp');
+    console.log('Request body:', req.body);
+    console.log('========================================\n');
     
     try {
         let { phone, otp } = req.body;
@@ -129,7 +232,7 @@ app.post('/api/auth/verify-otp', async (req, res) => {
             return res.status(400).json({ success: false, error: 'ဖုန်းနံပါတ်နှင့် OTP ထည့်ပါ' });
         }
         
-        const convertedOtp = convertToEnglish(otp);
+        const convertedOtp = convertToEnglishNumbers(otp);
         
         let formattedPhone = phone;
         if (phone.startsWith('09')) {
@@ -138,45 +241,54 @@ app.post('/api/auth/verify-otp', async (req, res) => {
             formattedPhone = '0' + phone.substring(2);
         }
         
-        console.log(`Verifying: ${formattedPhone} with OTP: ${convertedOtp}`);
+        console.log(`🔐 Phone: ${formattedPhone}, OTP: ${convertedOtp}`);
         
-        const isValid = verifyOTP(formattedPhone, convertedOtp);
+        const deviceId = generateDeviceId();
+        const validation = await validateMytelOTP(formattedPhone, convertedOtp, deviceId);
         
-        if (isValid) {
+        console.log('Validation result:', validation);
+        
+        if (validation.success) {
             req.session.userPhone = formattedPhone;
             req.session.isAuthenticated = true;
+            req.session.mytelToken = validation.token;
             
-            // Create user if not exists
-            try {
-                const { data: existing } = await supabaseAdmin
+            // Create user in DB
+            const { data: existing } = await supabaseAdmin
+                .from('user_stats')
+                .select('phone')
+                .eq('phone', formattedPhone)
+                .maybeSingle();
+            
+            if (!existing) {
+                await supabaseAdmin
                     .from('user_stats')
-                    .select('phone')
-                    .eq('phone', formattedPhone)
-                    .maybeSingle();
-                
-                if (!existing) {
-                    await supabaseAdmin
-                        .from('user_stats')
-                        .insert([{ 
-                            phone: formattedPhone, 
-                            order_count: 0, 
-                            reject_count: 0, 
-                            suspect_flag: false, 
-                            blocked: false 
-                        }]);
-                }
-            } catch (dbError) {
-                console.error('DB error but continuing:', dbError.message);
+                    .insert([{ 
+                        phone: formattedPhone, 
+                        order_count: 0, 
+                        reject_count: 0, 
+                        suspect_flag: false, 
+                        blocked: false 
+                    }]);
             }
             
             console.log(`✅ Login successful: ${formattedPhone}`);
             res.json({ success: true, message: 'အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်' });
         } else {
-            console.log(`❌ Invalid OTP for: ${formattedPhone}`);
-            res.status(401).json({ 
-                success: false, 
-                error: 'OTP ကုဒ် မှားယွင်းနေပါသည်။ Render Logs ရှိ OTP ကုဒ်ကို ထည့်ပါ။' 
-            });
+            // Try local fallback
+            const isValidLocal = verifyOTP(formattedPhone, convertedOtp);
+            if (isValidLocal) {
+                req.session.userPhone = formattedPhone;
+                req.session.isAuthenticated = true;
+                console.log(`✅ Login successful (local fallback): ${formattedPhone}`);
+                res.json({ success: true, message: 'အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်' });
+            } else {
+                console.log(`❌ Invalid OTP: ${formattedPhone}`);
+                res.status(401).json({ 
+                    success: false, 
+                    error: 'OTP ကုဒ် မှားယွင်းနေပါသည်။ အင်္ဂလိပ်ဂဏန်းများဖြင့် ထည့်သွင်းပါ။' 
+                });
+            }
         }
     } catch (error) {
         console.error('❌ Verify OTP error:', error);
@@ -186,13 +298,9 @@ app.post('/api/auth/verify-otp', async (req, res) => {
 
 // 3. Check Auth Status
 app.get('/api/auth/status', (req, res) => {
-    try {
-        if (req.session.isAuthenticated && req.session.userPhone) {
-            res.json({ authenticated: true, phone: req.session.userPhone });
-        } else {
-            res.json({ authenticated: false });
-        }
-    } catch (error) {
+    if (req.session.isAuthenticated && req.session.userPhone) {
+        res.json({ authenticated: true, phone: req.session.userPhone });
+    } else {
         res.json({ authenticated: false });
     }
 });
@@ -216,7 +324,7 @@ app.get('/api/user/balance', async (req, res) => {
             .eq('phone', req.session.userPhone)
             .eq('status', 'Approved');
         
-        let totalDataMB = 26245; // Default like your image
+        let totalDataMB = 26245;
         let totalMinutes = 0;
         
         const planMapping = {
@@ -245,14 +353,7 @@ app.get('/api/user/balance', async (req, res) => {
             lastUpdated: new Date().toISOString()
         });
     } catch (error) {
-        console.error('Balance error:', error);
-        res.json({
-            success: true,
-            balance: 0,
-            minutes: 0,
-            data: 26245,
-            lastUpdated: new Date().toISOString()
-        });
+        res.json({ success: true, balance: 0, minutes: 0, data: 26245 });
     }
 });
 
@@ -272,7 +373,6 @@ app.get('/api/user/orders', async (req, res) => {
         if (error) throw error;
         res.json({ success: true, orders: data || [] });
     } catch (error) {
-        console.error('Orders error:', error);
         res.json({ success: true, orders: [] });
     }
 });
@@ -310,7 +410,6 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
         
         res.json({ success: true, orderId: orderId, message: 'အော်ဒါအောင်မြင်ပါသည်' });
     } catch (error) {
-        console.error('Create order error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -346,11 +445,10 @@ app.get('/api/admin/user-stats', async (req, res) => {
 
 app.put('/api/admin/orders/:id/approve', async (req, res) => {
     try {
-        const { id } = req.params;
         await supabaseAdmin
             .from('orders')
             .update({ status: 'Approved', activated_at: new Date().toISOString() })
-            .eq('id', id);
+            .eq('id', req.params.id);
         res.json({ success: true });
     } catch (error) {
         res.json({ success: false });
@@ -359,11 +457,10 @@ app.put('/api/admin/orders/:id/approve', async (req, res) => {
 
 app.put('/api/admin/orders/:id/reject', async (req, res) => {
     try {
-        const { id } = req.params;
         await supabaseAdmin
             .from('orders')
             .update({ status: 'Rejected' })
-            .eq('id', id);
+            .eq('id', req.params.id);
         res.json({ success: true });
     } catch (error) {
         res.json({ success: false });
@@ -372,11 +469,10 @@ app.put('/api/admin/orders/:id/reject', async (req, res) => {
 
 app.delete('/api/admin/orders/:id', async (req, res) => {
     try {
-        const { id } = req.params;
         await supabaseAdmin
             .from('orders')
             .delete()
-            .eq('id', id);
+            .eq('id', req.params.id);
         res.json({ success: true });
     } catch (error) {
         res.json({ success: false });
@@ -384,8 +480,7 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
 });
 
 app.post('/api/admin/login', (req, res) => {
-    const { password } = req.body;
-    if (password === process.env.ADMIN_PASSWORD) {
+    if (req.body.password === process.env.ADMIN_PASSWORD) {
         res.json({ success: true });
     } else {
         res.status(401).json({ success: false });
@@ -404,9 +499,10 @@ app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'admin.ht
 // ==================== START SERVER ====================
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n╔════════════════════════════════════════════════════════════╗`);
-    console.log(`║  🚀 Server Running on port ${PORT}                          ║`);
-    console.log(`║  📱 Store: https://ath-digital-hub.onrender.com/           ║`);
-    console.log(`║  💡 OTP will appear in Render Logs!                        ║`);
-    console.log(`║  🔍 Check: https://dashboard.render.com/                   ║`);
+    console.log(`║  🚀 MYTEL REAL API SERVER                                ║`);
+    console.log(`║  📡 API Base: ${MYTEL_API_BASE}`);
+    console.log(`║  📱 Store: https://ath-digital-hub.onrender.com/         ║`);
+    console.log(`║  💡 REAL SMS will be sent to your phone!                 ║`);
+    console.log(`║  🔍 Check Render Logs for details                        ║`);
     console.log(`╚════════════════════════════════════════════════════════════╝\n`);
 });
