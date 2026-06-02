@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATH Admin Panel</title>
+    <title>ATH Admin - Digital Products</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -16,27 +16,44 @@
         .app { display: flex; min-height: 100vh; }
         
         .sidebar {
-            width: 260px;
+            width: 280px;
             background: linear-gradient(180deg, #0a0a12, #12121f);
             border-right: 1px solid rgba(0,212,255,0.1);
             position: fixed;
             height: 100vh;
+            overflow-y: auto;
         }
-        .logo { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; }
-        .logo img { width: 40px; border-radius: 10px; }
+        .logo {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo img { width: 45px; height: 45px; border-radius: 12px; }
+        .logo h2 { font-size: 1.1rem; background: linear-gradient(135deg, #00d4ff, #8b5cf6); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        
         .nav-item {
             padding: 12px 20px;
             margin: 4px 12px;
             border-radius: 12px;
             cursor: pointer;
             color: #94a3b8;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
         .nav-item:hover, .nav-item.active {
             background: rgba(0,212,255,0.15);
             color: #00d4ff;
         }
         
-        .main-content { flex: 1; margin-left: 260px; padding: 20px 30px; }
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px 30px;
+        }
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -45,6 +62,7 @@
             padding-bottom: 15px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
+        .page-title { font-size: 1.5rem; font-weight: 600; }
         .logout-btn {
             background: rgba(244,63,94,0.2);
             border: none;
@@ -72,20 +90,24 @@
             background: rgba(18,22,35,0.8);
             border-radius: 16px;
             overflow-x: auto;
+            margin-bottom: 30px;
         }
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 15px; background: rgba(0,0,0,0.3); color: #00d4ff; }
         td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
         .btn {
             padding: 6px 12px;
             border-radius: 6px;
             border: none;
             cursor: pointer;
             font-size: 0.7rem;
+            margin: 2px;
         }
+        .btn-primary { background: #00d4ff; color: #030712; }
         .btn-edit { background: rgba(0,212,255,0.2); color: #00d4ff; }
         .btn-delete { background: rgba(244,63,94,0.2); color: #fb7185; }
-        .btn-add { background: #10b981; color: white; padding: 10px 20px; }
+        .btn-add { background: #10b981; color: white; padding: 8px 16px; }
         
         .modal {
             position: fixed;
@@ -110,7 +132,9 @@
             border-radius: 24px;
             padding: 25px;
             width: 90%;
-            max-width: 450px;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
         }
         .modal input, .modal select, .modal textarea {
             width: 100%;
@@ -151,6 +175,26 @@
             display: none;
         }
         .toast.show { display: block; }
+        
+        .category-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+        }
+        .category-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+        }
+        .product-type-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            background: rgba(0,212,255,0.2);
+            color: #00d4ff;
+        }
     </style>
 </head>
 <body>
@@ -158,63 +202,102 @@
     <i class="fas fa-lock" style="font-size: 2rem; color: #00d4ff;"></i>
     <h2>Admin Access</h2>
     <input type="password" id="adminPassword" placeholder="Enter Password">
-    <button onclick="login()" style="background:#00d4ff; border:none; padding:12px 20px; border-radius:8px; cursor:pointer; width:100%;">Login</button>
+    <button onclick="login()" style="background:#00d4ff; border:none; padding:12px; border-radius:8px; cursor:pointer; width:100%;">Login</button>
 </div>
 
 <div id="mainApp" class="app" style="display:none;">
     <div class="sidebar">
         <div class="logo">
             <img src="https://i.postimg.cc/GpR4ctR1/photo-2026-05-31-22-35-50.jpg" alt="Logo">
+            <h2>ATH Admin</h2>
         </div>
-        <div class="nav-item active" onclick="switchTab('dashboard')">📊 Dashboard</div>
-        <div class="nav-item" onclick="switchTab('orders')">🛒 Orders</div>
-        <div class="nav-item" onclick="switchTab('users')">👥 Users</div>
-        <div class="nav-item" onclick="switchTab('products')">📦 Products</div>
+        <div class="nav-item active" onclick="switchTab('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</div>
+        <div class="nav-item" onclick="switchTab('orders')"><i class="fas fa-shopping-cart"></i> Orders</div>
+        <div class="nav-item" onclick="switchTab('users')"><i class="fas fa-users"></i> Users</div>
+        <div class="nav-item" onclick="switchTab('products')"><i class="fas fa-box"></i> Products</div>
+        <div class="nav-item" onclick="switchTab('categories')"><i class="fas fa-tags"></i> Categories</div>
     </div>
     
     <div class="main-content">
         <div class="top-bar">
-            <h1 id="pageTitle">Dashboard</h1>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+            <h1 class="page-title" id="pageTitle">Dashboard</h1>
+            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
         
         <div id="dashboardTab">
             <div class="stats-grid" id="statsGrid"></div>
-            <div class="table-container"><table><thead><tr><th>Recent Orders</th><th>Phone</th><th>Amount</th><th>Status</th></tr></thead><tbody id="recentOrders"></tbody></table></div>
+            <div class="table-container">
+                <table><thead><tr><th>Recent Orders</th><th>Phone</th><th>Amount</th><th>Status</th></tr></thead><tbody id="recentOrders"></tbody></table>
+            </div>
         </div>
         
         <div id="ordersTab" class="hidden">
             <div style="margin-bottom:20px;"><button class="btn btn-add" onclick="refreshData()">🔄 Refresh</button></div>
-            <div class="table-container"><table><thead><tr><th>ID</th><th>Phone</th><th>Items</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead><tbody id="ordersList"></tbody></table></div>
+            <div class="table-container">
+                <table><thead><tr><th>ID</th><th>Phone</th><th>Items</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead><tbody id="ordersList"></tbody></table>
+            </div>
         </div>
         
         <div id="usersTab" class="hidden">
-            <div class="table-container"><table><thead><tr><th>Phone</th><th>Orders</th><th>Rejected</th><th>Rate</th><th>Status</th><th>Actions</th></tr></thead><tbody id="usersList"></tbody></table></div>
+            <div class="table-container">
+                <table><thead><tr><th>Phone</th><th>Orders</th><th>Rejected</th><th>Rate</th><th>Status</th><th>Actions</th></tr></thead><tbody id="usersList"></tbody></table>
+            </div>
         </div>
         
         <div id="productsTab" class="hidden">
-            <div style="margin-bottom:20px; text-align:right;"><button class="btn btn-add" onclick="openProductModal()">+ Add Product</button></div>
-            <div class="table-container"><table><thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Actions</th></tr></thead><tbody id="productsList"></tbody></table></div>
+            <div style="margin-bottom:20px; text-align:right;">
+                <button class="btn btn-add" onclick="openProductModal()"><i class="fas fa-plus"></i> Add Product</button>
+            </div>
+            <div class="table-container">
+                <table><thead><tr><th>ID</th><th>Icon</th><th>Name</th><th>Category</th><th>Type</th><th>Price</th><th>Actions</th></tr></thead><tbody id="productsList"></tbody></table>
+            </div>
+        </div>
+        
+        <div id="categoriesTab" class="hidden">
+            <div style="margin-bottom:20px; text-align:right;">
+                <button class="btn btn-add" onclick="openCategoryModal()"><i class="fas fa-plus"></i> Add Category</button>
+            </div>
+            <div class="table-container">
+                <table><thead><tr><th>ID</th><th>Name</th><th>Icon</th><th>Color</th><th>Product Count</th><th>Actions</th></tr></thead><tbody id="categoriesList"></tbody></table>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Product Modal -->
 <div id="productModal" class="modal">
     <div class="modal-content">
-        <h3 id="modalTitle">Add Product</h3>
+        <h3 id="productModalTitle">Add Product</h3>
         <input type="hidden" id="productId">
         <input type="text" id="productName" placeholder="Product Name">
-        <select id="productCategory">
-            <option value="data">Data Plans</option>
-            <option value="topup">Top Up</option>
-            <option value="gift">Gift Cards</option>
-            <option value="accessory">Accessories</option>
+        <select id="productCategory"></select>
+        <select id="productType">
+            <option value="standard">Standard Product</option>
+            <option value="digital">Digital Product (Download)</option>
+            <option value="course">Course (Video/Lesson)</option>
+            <option value="game">Game Item</option>
+            <option value="pdf">PDF/E-Book</option>
+            <option value="video">Video Content</option>
         </select>
         <input type="number" id="productPrice" placeholder="Price (MMK)">
         <input type="text" id="productIcon" placeholder="Icon (emoji)" value="📦">
         <textarea id="productDesc" placeholder="Description" rows="2"></textarea>
-        <button onclick="saveProduct()" style="background:#10b981; border:none; padding:10px; border-radius:8px; color:white; cursor:pointer; width:100%;">Save</button>
-        <button onclick="closeProductModal()" style="background:#334155; border:none; padding:10px; border-radius:8px; color:white; cursor:pointer; width:100%; margin-top:10px;">Cancel</button>
+        <input type="text" id="productLink" placeholder="Download Link / Video URL (optional)">
+        <button onclick="saveProduct()" class="btn btn-primary" style="width:100%;">Save</button>
+        <button onclick="closeProductModal()" style="width:100%; margin-top:10px; background:#334155; border:none; padding:8px; border-radius:8px; color:white; cursor:pointer;">Cancel</button>
+    </div>
+</div>
+
+<!-- Category Modal -->
+<div id="categoryModal" class="modal">
+    <div class="modal-content">
+        <h3 id="categoryModalTitle">Add Category</h3>
+        <input type="hidden" id="categoryId">
+        <input type="text" id="categoryName" placeholder="Category Name (e.g., Electronics)">
+        <input type="text" id="categoryIcon" placeholder="Icon (emoji or code)" value="📦">
+        <input type="color" id="categoryColor" value="#00d4ff">
+        <button onclick="saveCategory()" class="btn btn-primary" style="width:100%;">Save</button>
+        <button onclick="closeCategoryModal()" style="width:100%; margin-top:10px; background:#334155; border:none; padding:8px; border-radius:8px; color:white; cursor:pointer;">Cancel</button>
     </div>
 </div>
 
@@ -224,29 +307,89 @@
     let token = localStorage.getItem('adminToken');
     let allOrders = [];
     let allUsers = [];
-    let products = [
-        { id: 1, name: "VIP LEVEL - 1", category: "data", price: 15000, icon: "📱", desc: "22GB + 8000 mins" },
-        { id: 2, name: "VIP LEVEL - 2", category: "data", price: 20000, icon: "📡", desc: "40GB + 250 mins" },
-        { id: 3, name: "VIP LEVEL - 3", category: "data", price: 25000, icon: "⚡", desc: "40GB + 1400 mins" },
-        { id: 4, name: "VIP LEVEL - 4 ULTRA", category: "data", price: 30000, icon: "👑", desc: "120GB + Unlimited" },
-        { id: 5, name: "Top Up 3000", category: "topup", price: 3000, icon: "💰", desc: "MYTEL Top Up" },
-        { id: 6, name: "Top Up 5000", category: "topup", price: 5000, icon: "💰", desc: "MYTEL Top Up" },
-        { id: 7, name: "Top Up 10000", category: "topup", price: 10000, icon: "💰", desc: "MYTEL Top Up" },
-        { id: 8, name: "Google Play $5", category: "gift", price: 8500, icon: "🎮", desc: "Gift Card" },
-        { id: 9, name: "Netflix Premium", category: "gift", price: 12000, icon: "📺", desc: "1 Month" },
-        { id: 10, name: "Type-C Cable", category: "accessory", price: 5000, icon: "🔌", desc: "Original" },
-        { id: 11, name: "Fast Charger", category: "accessory", price: 15000, icon: "⚡", desc: "20W USB-C" }
+    
+    // ============ CATEGORIES (Digital Products အပါအဝင်) ============
+    let categories = [
+        { id: "data", name: "Data Plans", icon: "📡", color: "#00d4ff" },
+        { id: "clothing", name: "Clothing", icon: "👕", color: "#10b981" },
+        { id: "digital_product", name: "Digital Products", icon: "🖥️", color: "#8b5cf6" },
+        { id: "digital_course", name: "Digital Courses", icon: "🎓", color: "#e11d48" },
+        { id: "game_items", name: "Game Items", icon: "🎮", color: "#f59e0b" },
+        { id: "language_course", name: "Language Courses", icon: "🌐", color: "#06b6d4" },
+        { id: "pdf_books", name: "PDF Books", icon: "📘", color: "#22c55e" },
+        { id: "video_content", name: "Video Content", icon: "🎬", color: "#ec4899" },
+        { id: "other", name: "Others", icon: "🎁", color: "#64748b" }
     ];
     
-    function loadProducts() { const stored = localStorage.getItem('store_products'); if(stored) products = JSON.parse(stored); }
-    function saveProducts() { localStorage.setItem('store_products', JSON.stringify(products)); }
-    loadProducts();
+    // ============ PRODUCTS (Digital Products အပါအဝင်) ============
+    let products = [
+        // Data Plans
+        { id: 1, name: "VIP LEVEL - 1", categoryId: "data", type: "standard", price: 15000, icon: "📱", desc: "22GB + 8,000 မိနစ်", link: "" },
+        { id: 2, name: "VIP LEVEL - 2", categoryId: "data", type: "standard", price: 20000, icon: "📡", desc: "40GB + 250 မိနစ်", link: "" },
+        // Digital Products
+        { id: 3, name: "Windows 11 Pro License", categoryId: "digital_product", type: "digital", price: 25000, icon: "🪟", desc: "Original License Key", link: "https://example.com/download/windows11" },
+        { id: 4, name: "Adobe Photoshop 2024", categoryId: "digital_product", type: "digital", price: 35000, icon: "🎨", desc: "Professional Photo Editing", link: "https://example.com/download/photoshop" },
+        // Digital Courses
+        { id: 5, name: "Full Stack Web Development", categoryId: "digital_course", type: "course", price: 150000, icon: "💻", desc: "Complete Web Dev Course", link: "https://example.com/course/webdev" },
+        { id: 6, name: "UI/UX Design Masterclass", categoryId: "digital_course", type: "course", price: 120000, icon: "🎨", desc: "Figma + Adobe XD", link: "https://example.com/course/uiux" },
+        // Game Items
+        { id: 7, name: "Free Fire 500 Diamonds", categoryId: "game_items", type: "game", price: 15000, icon: "🔥", desc: "FF Diamonds Top Up", link: "" },
+        { id: 8, name: "Mobile Legends 1000 Diamonds", categoryId: "game_items", type: "game", price: 25000, icon: "⚔️", desc: "MLBB Diamonds", link: "" },
+        // Language Courses
+        { id: 9, name: "English Speaking Course", categoryId: "language_course", type: "course", price: 50000, icon: "🇬🇧", desc: "Beginner to Advanced", link: "https://example.com/course/english" },
+        { id: 10, name: "Japanese Language N5", categoryId: "language_course", type: "course", price: 60000, icon: "🇯🇵", desc: "Learn Japanese", link: "https://example.com/course/japanese" },
+        // PDF Books
+        { id: 11, name: "Rich Dad Poor Dad (PDF)", categoryId: "pdf_books", type: "pdf", price: 8000, icon: "📚", desc: "Robert Kiyosaki", link: "https://example.com/pdf/richdad" },
+        { id: 12, name: "Atomic Habits (PDF)", categoryId: "pdf_books", type: "pdf", price: 12000, icon: "📖", desc: "James Clear", link: "https://example.com/pdf/atomichabits" },
+        // Video Content
+        { id: 13, name: "Python Tutorial Video Series", categoryId: "video_content", type: "video", price: 45000, icon: "🐍", desc: "10+ Hours Video Course", link: "https://example.com/video/python" },
+        { id: 14, name: "Digital Marketing Video Course", categoryId: "video_content", type: "video", price: 55000, icon: "📈", desc: "SEO, Social Media, Ads", link: "https://example.com/video/digitalmarketing" },
+        // Clothing
+        { id: 15, name: "Men's T-Shirt", categoryId: "clothing", type: "standard", price: 15000, icon: "👕", desc: "Cotton T-Shirt", link: "" },
+        // Others
+        { id: 16, name: "Smartphone", categoryId: "other", type: "standard", price: 250000, icon: "📱", desc: "6GB RAM, 128GB", link: "" }
+    ];
     
+    function saveToLocalStorage() {
+        localStorage.setItem('store_categories', JSON.stringify(categories));
+        localStorage.setItem('store_products', JSON.stringify(products));
+    }
+    
+    function loadFromLocalStorage() {
+        const savedCats = localStorage.getItem('store_categories');
+        const savedProds = localStorage.getItem('store_products');
+        if (savedCats) categories = JSON.parse(savedCats);
+        if (savedProds) products = JSON.parse(savedProds);
+    }
+    loadFromLocalStorage();
+    
+    function getCategoryName(catId) {
+        const cat = categories.find(c => c.id === catId);
+        return cat ? `${cat.icon} ${cat.name}` : catId;
+    }
+    
+    function getProductTypeBadge(type) {
+        const badges = {
+            standard: '📦 Standard',
+            digital: '💾 Digital',
+            course: '🎓 Course',
+            game: '🎮 Game Item',
+            pdf: '📘 PDF',
+            video: '🎬 Video'
+        };
+        return badges[type] || type;
+    }
+    
+    // ============ LOGIN ============
     async function login() {
         const pwd = document.getElementById('adminPassword').value;
-        const res = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pwd }) });
+        const res = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pwd })
+        });
         const data = await res.json();
-        if(data.success) {
+        if (data.success) {
             localStorage.setItem('adminToken', 'logged_in');
             token = 'logged_in';
             document.getElementById('loginBox').style.display = 'none';
@@ -257,13 +400,21 @@
     
     function logout() { localStorage.removeItem('adminToken'); location.reload(); }
     
-    async function loadAllData() { await loadOrders(); await loadUsers(); renderDashboard(); renderOrders(); renderUsers(); renderProducts(); }
+    async function loadAllData() {
+        await loadOrders();
+        await loadUsers();
+        renderDashboard();
+        renderOrders();
+        renderUsers();
+        renderProducts();
+        renderCategoriesTable();
+    }
     
     async function loadOrders() {
         try {
             const res = await fetch('/api/admin/orders');
             const data = await res.json();
-            if(data.orders) allOrders = data.orders;
+            if (data.orders) allOrders = data.orders;
         } catch(e) {}
     }
     
@@ -271,7 +422,7 @@
         try {
             const res = await fetch('/api/admin/user-stats');
             const data = await res.json();
-            if(data.stats) allUsers = data.stats;
+            if (data.stats) allUsers = data.stats;
         } catch(e) {}
     }
     
@@ -286,17 +437,18 @@
             <div class="stat-card"><div class="stat-value">${approved}</div><div>Approved</div></div>
             <div class="stat-card"><div class="stat-value">${revenue.toLocaleString()}K</div><div>Revenue</div></div>
             <div class="stat-card"><div class="stat-value">${products.length}</div><div>Products</div></div>
-            <div class="stat-card"><div class="stat-value">${allUsers.length}</div><div>Users</div></div>
+            <div class="stat-card"><div class="stat-value">${categories.length}</div><div>Categories</div></div>
         `;
         const recent = allOrders.slice(0,5);
-        document.getElementById('recentOrders').innerHTML = recent.map(o => `<tr><td>${o.plan?.substring(0,30)}</td><td>${o.phone}</td><td>${o.price?.toLocaleString()}K</td><td>${o.status}</td></tr>`).join('');
+        document.getElementById('recentOrders').innerHTML = recent.map(o => `<tr><td>${o.plan?.substring(0,30)}</td><td>${o.phone}</td><td>${o.price?.toLocaleString()}K</td><td>${o.status}</td>`).join('');
     }
     
     function renderOrders() {
         const tbody = document.getElementById('ordersList');
         tbody.innerHTML = allOrders.map(o => `
             <tr>
-                <td>${o.id}</td><td>${o.phone}</td><td>${o.plan?.substring(0,40)}</td><td>${o.price?.toLocaleString()}K</td>
+                <td>${o.id}</td><td>${o.phone}</td><td>${o.plan?.substring(0,40)}</td>
+                <td>${o.price?.toLocaleString()}K</td>
                 <td><span style="background:${o.status==='Pending'?'#f59e0b':o.status==='Approved'?'#10b981':'#f43f5e'}; padding:2px 8px; border-radius:20px;">${o.status}</span></td>
                 <td>
                     ${o.status === 'Pending' ? `<button class="btn btn-edit" onclick="approveOrder(${o.id})">Approve</button>
@@ -312,46 +464,147 @@
         tbody.innerHTML = allUsers.map(u => {
             const rate = u.order_count > 0 ? ((u.reject_count / u.order_count) * 100).toFixed(0) : 0;
             return `<tr>
-                <td>${u.phone}</td><td>${u.order_count}</td><td>${u.reject_count}</td><td style="color:${rate>=50?'#f43f5e':rate>=30?'#f59e0b':'#10b981'}">${rate}%</td>
+                <td>${u.phone}</td><td>${u.order_count}</td><td>${u.reject_count}</td>
+                <td style="color:${rate>=50?'#f43f5e':rate>=30?'#f59e0b':'#10b981'}">${rate}%</td>
                 <td>${u.blocked ? 'Blocked' : (u.suspect_flag ? 'Suspect' : 'Normal')}</td>
                 <td>
                     ${!u.blocked ? `<button class="btn btn-delete" onclick="blockUser('${u.phone}', true)">Block</button>` : `<button class="btn btn-edit" onclick="blockUser('${u.phone}', false)">Unblock</button>`}
                     <button class="btn btn-delete" onclick="deleteUser('${u.phone}')">Delete</button>
-                </td>
+                 </td>
             </tr>`;
         }).join('');
     }
     
     function renderProducts() {
         const tbody = document.getElementById('productsList');
-        tbody.innerHTML = products.map(p => `
-            <tr>
-                <td>${p.id}</td><td>${p.icon} ${p.name}</td><td>${p.category}</td><td>${p.price.toLocaleString()}K</td>
+        tbody.innerHTML = products.map(p => {
+            const cat = categories.find(c => c.id === p.categoryId);
+            return `<tr>
+                <td>${p.id}</td><td style="font-size:1.3rem;">${p.icon}</td>
+                <td>${p.name}</td>
+                <td>${cat ? `${cat.icon} ${cat.name}` : p.categoryId}</td>
+                <td><span class="product-type-badge">${getProductTypeBadge(p.type)}</span></td>
+                <td>${p.price.toLocaleString()}K</td>
                 <td>
                     <button class="btn btn-edit" onclick="editProduct(${p.id})">Edit</button>
                     <button class="btn btn-delete" onclick="deleteProduct(${p.id})">Delete</button>
-                </td>
-            </tr>
-        `).join('');
+                 </td>
+            </tr>`;
+        }).join('');
     }
     
+    function renderCategoriesTable() {
+        const tbody = document.getElementById('categoriesList');
+        tbody.innerHTML = categories.map(cat => {
+            const productCount = products.filter(p => p.categoryId === cat.id).length;
+            return `<tr>
+                <td>${cat.id}</td>
+                <td><div class="category-row"><div class="category-color" style="background:${cat.color};"></div>${cat.icon} ${cat.name}</div></td>
+                <td style="font-size:1.3rem;">${cat.icon}</td>
+                <td><div style="background:${cat.color}; width:30px; height:30px; border-radius:8px;"></div></td>
+                <td>${productCount}</td>
+                <td>
+                    <button class="btn btn-edit" onclick="editCategory('${cat.id}')">Edit</button>
+                    <button class="btn btn-delete" onclick="deleteCategory('${cat.id}')">Delete</button>
+                 </td>
+            </tr>`;
+        }).join('');
+    }
+    
+    function refreshCategorySelect() {
+        const select = document.getElementById('productCategory');
+        select.innerHTML = categories.map(cat => `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('');
+    }
+    
+    // ============ CATEGORY CRUD ============
+    function openCategoryModal(category = null) {
+        if (category) {
+            document.getElementById('categoryModalTitle').innerText = 'Edit Category';
+            document.getElementById('categoryId').value = category.id;
+            document.getElementById('categoryName').value = category.name;
+            document.getElementById('categoryIcon').value = category.icon;
+            document.getElementById('categoryColor').value = category.color;
+        } else {
+            document.getElementById('categoryModalTitle').innerText = 'Add Category';
+            document.getElementById('categoryId').value = '';
+            document.getElementById('categoryName').value = '';
+            document.getElementById('categoryIcon').value = '📦';
+            document.getElementById('categoryColor').value = '#00d4ff';
+        }
+        document.getElementById('categoryModal').classList.add('active');
+    }
+    
+    function closeCategoryModal() {
+        document.getElementById('categoryModal').classList.remove('active');
+    }
+    
+    function saveCategory() {
+        const id = document.getElementById('categoryId').value;
+        const name = document.getElementById('categoryName').value.trim();
+        const icon = document.getElementById('categoryIcon').value.trim() || '📦';
+        const color = document.getElementById('categoryColor').value;
+        
+        if (!name) { showToast('Category name required', true); return; }
+        
+        if (id) {
+            const index = categories.findIndex(c => c.id === id);
+            if (index !== -1) {
+                categories[index] = { ...categories[index], name, icon, color };
+            }
+        } else {
+            const newId = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now();
+            categories.push({ id: newId, name, icon, color });
+        }
+        saveToLocalStorage();
+        renderCategoriesTable();
+        refreshCategorySelect();
+        closeCategoryModal();
+        showToast('Category saved');
+    }
+    
+    function editCategory(catId) {
+        const cat = categories.find(c => c.id === catId);
+        if (cat) openCategoryModal(cat);
+    }
+    
+    function deleteCategory(catId) {
+        const productCount = products.filter(p => p.categoryId === catId).length;
+        if (productCount > 0) {
+            showToast(`Cannot delete: ${productCount} products in this category`, true);
+            return;
+        }
+        if (confirm(`Delete category "${catId}"?`)) {
+            categories = categories.filter(c => c.id !== catId);
+            saveToLocalStorage();
+            renderCategoriesTable();
+            refreshCategorySelect();
+            showToast('Category deleted');
+        }
+    }
+    
+    // ============ PRODUCT CRUD ============
     function openProductModal(product = null) {
-        if(product) {
-            document.getElementById('modalTitle').innerText = 'Edit Product';
+        refreshCategorySelect();
+        if (product) {
+            document.getElementById('productModalTitle').innerText = 'Edit Product';
             document.getElementById('productId').value = product.id;
             document.getElementById('productName').value = product.name;
-            document.getElementById('productCategory').value = product.category;
+            document.getElementById('productCategory').value = product.categoryId;
+            document.getElementById('productType').value = product.type || 'standard';
             document.getElementById('productPrice').value = product.price;
             document.getElementById('productIcon').value = product.icon;
             document.getElementById('productDesc').value = product.desc;
+            document.getElementById('productLink').value = product.link || '';
         } else {
-            document.getElementById('modalTitle').innerText = 'Add Product';
+            document.getElementById('productModalTitle').innerText = 'Add Product';
             document.getElementById('productId').value = '';
             document.getElementById('productName').value = '';
-            document.getElementById('productCategory').value = 'data';
+            document.getElementById('productCategory').value = categories[0]?.id || '';
+            document.getElementById('productType').value = 'standard';
             document.getElementById('productPrice').value = '';
             document.getElementById('productIcon').value = '📦';
             document.getElementById('productDesc').value = '';
+            document.getElementById('productLink').value = '';
         }
         document.getElementById('productModal').classList.add('active');
     }
@@ -363,46 +616,128 @@
         const product = {
             id: id ? parseInt(id) : Date.now(),
             name: document.getElementById('productName').value,
-            category: document.getElementById('productCategory').value,
-            price: parseInt(document.getElementById('productPrice').value),
-            icon: document.getElementById('productIcon').value,
-            desc: document.getElementById('productDesc').value
+            categoryId: document.getElementById('productCategory').value,
+            type: document.getElementById('productType').value,
+            price: parseInt(document.getElementById('productPrice').value) || 0,
+            icon: document.getElementById('productIcon').value || '📦',
+            desc: document.getElementById('productDesc').value,
+            link: document.getElementById('productLink').value || ''
         };
-        if(id) {
+        if (id) {
             const index = products.findIndex(p => p.id === parseInt(id));
-            if(index !== -1) products[index] = product;
-        } else products.push(product);
-        saveProducts();
+            if (index !== -1) products[index] = product;
+        } else {
+            products.push(product);
+        }
+        saveToLocalStorage();
         renderProducts();
         closeProductModal();
         showToast('Product saved');
     }
     
-    function editProduct(id) { const product = products.find(p => p.id === id); if(product) openProductModal(product); }
-    function deleteProduct(id) { if(confirm('Delete product?')) { products = products.filter(p => p.id !== id); saveProducts(); renderProducts(); showToast('Product deleted'); } }
-    
-    async function approveOrder(id) { await fetch(`/api/admin/orders/${id}/approve`, { method: 'PUT' }); await loadAllData(); }
-    async function rejectOrder(id) { await fetch(`/api/admin/orders/${id}/reject`, { method: 'PUT' }); await loadAllData(); }
-    async function deleteOrder(id) { if(confirm('Delete order?')) { await fetch(`/api/admin/orders/${id}`, { method: 'DELETE' }); await loadAllData(); } }
-    async function blockUser(phone, block) { await fetch('/api/admin/user-block', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone, block }) }); await loadUsers(); renderUsers(); }
-    async function deleteUser(phone) { if(confirm('Delete user?')) { await fetch('/api/admin/user-delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) }); await loadUsers(); renderUsers(); } }
-    function refreshData() { loadAllData(); showToast('Data refreshed'); }
-    function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
-    
-    function switchTab(tab) {
-        document.querySelectorAll('.nav-item').forEach((item, i) => item.classList.toggle('active', i === ['dashboard','orders','users','products'].indexOf(tab)));
-        ['dashboardTab','ordersTab','usersTab','productsTab'].forEach(t => document.getElementById(t).classList.add('hidden'));
-        document.getElementById(`${tab}Tab`).classList.remove('hidden');
-        document.getElementById('pageTitle').innerText = tab.charAt(0).toUpperCase() + tab.slice(1);
+    function editProduct(id) {
+        const product = products.find(p => p.id === id);
+        if (product) openProductModal(product);
     }
     
-    if(token === 'logged_in') {
+    function deleteProduct(id) {
+        if (confirm('Delete product?')) {
+            products = products.filter(p => p.id !== id);
+            saveToLocalStorage();
+            renderProducts();
+            showToast('Product deleted');
+        }
+    }
+    
+    // ============ ORDER ACTIONS ============
+    async function approveOrder(id) {
+        await fetch(`/api/admin/orders/${id}/approve`, { method: 'PUT' });
+        await loadAllData();
+        showToast('Order approved');
+    }
+    async function rejectOrder(id) {
+        await fetch(`/api/admin/orders/${id}/reject`, { method: 'PUT' });
+        await loadAllData();
+        showToast('Order rejected');
+    }
+    async function deleteOrder(id) {
+        if (confirm('Delete order?')) {
+            await fetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
+            await loadAllData();
+            showToast('Order deleted');
+        }
+    }
+    
+    // ============ USER ACTIONS ============
+    async function blockUser(phone, block) {
+        await fetch('/api/admin/user-block', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, block })
+        });
+        await loadUsers();
+        renderUsers();
+        showToast(block ? 'User blocked' : 'User unblocked');
+    }
+    async function deleteUser(phone) {
+        if (confirm(`Delete user ${phone}?`)) {
+            await fetch('/api/admin/user-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone })
+            });
+            await loadUsers();
+            renderUsers();
+            showToast('User deleted');
+        }
+    }
+    
+    function refreshData() { loadAllData(); showToast('Data refreshed'); }
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.style.backgroundColor = isError ? '#f43f5e' : '#10b981';
+        toast.innerText = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+    
+    function switchTab(tab) {
+        const tabs = ['dashboard', 'orders', 'users', 'products', 'categories'];
+        document.querySelectorAll('.nav-item').forEach((item, i) => {
+            item.classList.toggle('active', tabs[i] === tab);
+        });
+        tabs.forEach(t => document.getElementById(`${t}Tab`).classList.add('hidden'));
+        document.getElementById(`${tab}Tab`).classList.remove('hidden');
+        document.getElementById('pageTitle').innerText = tab.charAt(0).toUpperCase() + tab.slice(1);
+        if (tab === 'categories') renderCategoriesTable();
+        if (tab === 'products') renderProducts();
+    }
+    
+    window.switchTab = switchTab;
+    window.approveOrder = approveOrder;
+    window.rejectOrder = rejectOrder;
+    window.deleteOrder = deleteOrder;
+    window.blockUser = blockUser;
+    window.deleteUser = deleteUser;
+    window.refreshData = refreshData;
+    window.openProductModal = openProductModal;
+    window.closeProductModal = closeProductModal;
+    window.saveProduct = saveProduct;
+    window.editProduct = editProduct;
+    window.deleteProduct = deleteProduct;
+    window.openCategoryModal = () => openCategoryModal();
+    window.closeCategoryModal = closeCategoryModal;
+    window.saveCategory = saveCategory;
+    window.editCategory = editCategory;
+    window.deleteCategory = deleteCategory;
+    
+    if (token === 'logged_in') {
         document.getElementById('loginBox').style.display = 'none';
         document.getElementById('mainApp').style.display = 'flex';
         loadAllData();
     }
     
-    setInterval(() => { if(token === 'logged_in') loadAllData(); }, 30000);
+    setInterval(() => { if (token === 'logged_in') { loadOrders(); loadUsers(); renderDashboard(); renderOrders(); renderUsers(); } }, 30000);
 </script>
 </body>
 </html>
