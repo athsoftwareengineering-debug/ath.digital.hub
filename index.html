@@ -2,129 +2,541 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATH Digital Hub - Live Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>ATH Digital Hub - Customer Support</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #f0f0f0; }
-        .container { max-width: 600px; margin: 0 auto; background: white; height: 100vh; display: flex; flex-direction: column; }
-        .chat-header { background: #007bff; color: white; padding: 15px; text-align: center; }
-        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; }
-        .message { margin-bottom: 12px; display: flex; }
-        .message.customer { justify-content: flex-end; }
-        .message.admin { justify-content: flex-start; }
-        .message-content { max-width: 70%; padding: 10px 14px; border-radius: 18px; }
-        .message.customer .message-content { background: #007bff; color: white; }
-        .message.admin .message-content { background: #e9ecef; color: black; }
-        .message-time { font-size: 10px; margin-top: 5px; opacity: 0.7; }
-        .chat-input { display: flex; padding: 12px; border-top: 1px solid #ddd; background: white; gap: 10px; }
-        .chat-input input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 25px; font-size: 16px; }
-        .chat-input button { padding: 12px 24px; background: #007bff; color: white; border: none; border-radius: 25px; cursor: pointer; }
-        .user-id { padding: 8px; background: #f8f9fa; font-size: 11px; text-align: center; border-bottom: 1px solid #eee; }
-        .status { font-size: 11px; color: #28a745; margin-left: 8px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f7fb;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* Header */
+        .chat-header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 16px 20px;
+            text-align: center;
+        }
+
+        .chat-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chat-header p {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        /* User Info Bar */
+        .user-info {
+            background: #f8f9fa;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .user-id {
+            color: #6c757d;
+            font-family: monospace;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28a745;
+        }
+
+        .status-dot.disconnected {
+            background: #dc3545;
+        }
+
+        .status-text {
+            color: #6c757d;
+        }
+
+        /* Chat Messages Area */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #f8f9fa;
+        }
+
+        /* Message Bubbles */
+        .message {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.customer {
+            justify-content: flex-end;
+        }
+
+        .message.admin {
+            justify-content: flex-start;
+        }
+
+        .bubble {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .message.customer .bubble {
+            background: #007bff;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.admin .bubble {
+            background: white;
+            color: #1a1a1a;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .message-time {
+            font-size: 10px;
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+
+        .message.customer .message-time {
+            text-align: right;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 18px;
+            width: fit-content;
+        }
+
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background: #adb5bd;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* Input Area */
+        .chat-input-area {
+            background: white;
+            border-top: 1px solid #e9ecef;
+            padding: 12px 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input-area input:focus {
+            border-color: #007bff;
+        }
+
+        .chat-input-area button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .chat-input-area button:hover {
+            background: #0056b3;
+        }
+
+        .chat-input-area button:disabled {
+            background: #adb5bd;
+            cursor: not-allowed;
+        }
+
+        /* Welcome Message */
+        .welcome-message {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .welcome-message .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .welcome-message h3 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .welcome-message p {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        /* Scrollbar */
+        .chat-messages::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="chat-container">
         <div class="chat-header">
-            <h3>💬 ATH Digital Hub Support</h3>
+            <h2>💬 ATH Digital Hub</h2>
+            <p>Customer Support • 24/7</p>
         </div>
-        <div class="user-id">
-            🆔 Your ID: <span id="userId"></span>
-            <span class="status" id="status">● Connected</span>
-        </div>
-        <div class="chat-messages" id="chatMessages">
-            <div class="message admin">
-                <div class="message-content">
-                    Welcome to ATH Digital Hub! 👋<br>
-                    How can we help you today?
-                </div>
+
+        <div class="user-info">
+            <span class="user-id">🆔 <span id="userId">Loading...</span></span>
+            <div class="connection-status">
+                <div class="status-dot" id="statusDot"></div>
+                <span class="status-text" id="statusText">Connecting...</span>
             </div>
         </div>
-        <div class="chat-input">
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <div class="icon">👋</div>
+                <h3>Welcome to ATH Digital Hub!</h3>
+                <p>How can we help you today?</p>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
             <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
-            <button onclick="sendMessage()">Send 📤</button>
+            <button id="sendBtn" onclick="sendMessage()">Send</button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // ============= CONFIGURATION =============
         const SUPABASE_URL = 'https://yubbfbmfoycvdxfaecbh.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1YmJmYm1mb3ljdmR4ZmFlY2JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNDQyODIsImV4cCI6MjA5NTcyMDI4Mn0.hYNmdWDour1ZF9if37h8uoOR_ejZjoyqY9qjs7pHEoY';
         
+        // ============= INITIALIZATION =============
         const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        let userId = localStorage.getItem('ath_chat_user_id');
-        if (!userId) {
-            userId = 'user_' + Math.random().toString(36).substr(2, 8);
-            localStorage.setItem('ath_chat_user_id', userId);
+        // Get or create user ID
+        let currentUserId = localStorage.getItem('ath_user_id');
+        if (!currentUserId) {
+            currentUserId = 'cust_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+            localStorage.setItem('ath_user_id', currentUserId);
         }
-        document.getElementById('userId').innerText = userId;
+        document.getElementById('userId').textContent = currentUserId.slice(-12);
         
-        async function loadMessages() {
-            const { data, error } = await supabase
-                .from('chat_messages')
-                .select('*')
-                .order('created_at', { ascending: true });
+        // DOM elements
+        const messagesContainer = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        
+        // State
+        let isConnected = false;
+        let messageChannel = null;
+        
+        // ============= HELPER FUNCTIONS =============
+        function updateConnectionStatus(connected) {
+            isConnected = connected;
+            if (connected) {
+                statusDot.classList.remove('disconnected');
+                statusText.textContent = 'Connected';
+            } else {
+                statusDot.classList.add('disconnected');
+                statusText.textContent = 'Connecting...';
+            }
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function formatTime(date) {
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // ============= DISPLAY MESSAGES =============
+        function displayMessages(messages) {
+            // Remove welcome message if there are messages
+            const welcomeMsg = messagesContainer.querySelector('.welcome-message');
             
-            if (error) {
-                console.error('Load error:', error);
+            if (!messages || messages.length === 0) {
+                if (!welcomeMsg) {
+                    messagesContainer.innerHTML = `
+                        <div class="welcome-message">
+                            <div class="icon">👋</div>
+                            <h3>Welcome to ATH Digital Hub!</h3>
+                            <p>How can we help you today?</p>
+                        </div>
+                    `;
+                }
                 return;
             }
             
-            const messagesDiv = document.getElementById('chatMessages');
-            messagesDiv.innerHTML = '';
+            // Clear container but keep scroll position
+            const oldScrollHeight = messagesContainer.scrollHeight;
+            const oldScrollTop = messagesContainer.scrollTop;
+            const isNearBottom = (oldScrollHeight - oldScrollTop - messagesContainer.clientHeight) < 100;
             
-            if (!data || data.length === 0) {
-                messagesDiv.innerHTML = `<div class="message admin"><div class="message-content">Welcome! 👋 How can we help?</div></div>`;
-                return;
-            }
+            messagesContainer.innerHTML = '';
             
-            data.forEach(msg => {
-                const isCurrentUser = msg.user_id === userId;
-                const div = document.createElement('div');
-                div.className = `message ${isCurrentUser ? 'customer' : 'admin'}`;
-                const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                div.innerHTML = `<div class="message-content"><div>${escapeHtml(msg.message)}</div><div class="message-time">${time}</div></div>`;
-                messagesDiv.appendChild(div);
+            messages.forEach(msg => {
+                const isCustomer = msg.user_id === currentUserId;
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isCustomer ? 'customer' : 'admin'}`;
+                messageDiv.innerHTML = `
+                    <div class="bubble">
+                        ${escapeHtml(msg.message)}
+                        <div class="message-time">${formatTime(new Date(msg.created_at))}</div>
+                    </div>
+                `;
+                messagesContainer.appendChild(messageDiv);
             });
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            // Auto scroll to bottom if was near bottom
+            if (isNearBottom || messages.length > 0) {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
         }
         
-        async function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            if (!message) return;
+        // ============= LOAD MESSAGES FROM DATABASE =============
+        async function loadMessages() {
+            try {
+                const { data, error } = await supabase
+                    .from('chat_messages')
+                    .select('*')
+                    .order('created_at', { ascending: true });
+                
+                if (error) {
+                    console.error('Load messages error:', error);
+                    return;
+                }
+                
+                displayMessages(data);
+            } catch (err) {
+                console.error('Load messages exception:', err);
+            }
+        }
+        
+        // ============= SEND MESSAGE =============
+        window.sendMessage = async function() {
+            const message = messageInput.value.trim();
             
-            const { error } = await supabase
-                .from('chat_messages')
-                .insert([{ message, user_id: userId, role: 'customer', created_at: new Date().toISOString() }]);
-            
-            if (error) {
-                alert('Error: ' + error.message);
+            if (!message) {
                 return;
             }
-            input.value = '';
-        }
+            
+            // Disable button while sending
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            
+            try {
+                const { error } = await supabase
+                    .from('chat_messages')
+                    .insert({
+                        message: message,
+                        user_id: currentUserId,
+                        role: 'customer',
+                        created_at: new Date().toISOString()
+                    });
+                
+                if (error) {
+                    console.error('Send error:', error);
+                    alert('Failed to send message: ' + error.message);
+                    return;
+                }
+                
+                // Clear input
+                messageInput.value = '';
+                
+                // Will show via realtime subscription
+                
+            } catch (err) {
+                console.error('Send exception:', err);
+                alert('Failed to send message');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send';
+                messageInput.focus();
+            }
+        };
         
+        // ============= HANDLE ENTER KEY =============
+        window.handleKeyPress = function(event) {
+            if (event.key === 'Enter') {
+                window.sendMessage();
+            }
+        };
+        
+        // ============= SETUP REALTIME =============
         function setupRealtime() {
-            supabase
-                .channel('chat_messages_channel')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, () => loadMessages())
+            if (messageChannel) {
+                supabase.removeChannel(messageChannel);
+            }
+            
+            messageChannel = supabase
+                .channel('chat_realtime')
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'chat_messages'
+                }, (payload) => {
+                    console.log('New message received:', payload.new);
+                    // Reload messages when new message arrives
+                    loadMessages();
+                })
                 .subscribe((status) => {
-                    const statusEl = document.getElementById('status');
+                    console.log('Realtime status:', status);
                     if (status === 'SUBSCRIBED') {
-                        statusEl.textContent = '● Connected';
-                        statusEl.style.color = '#28a745';
+                        updateConnectionStatus(true);
+                    } else if (status === 'CHANNEL_ERROR') {
+                        updateConnectionStatus(false);
                     }
                 });
         }
         
-        function handleKeyPress(e) { if (e.key === 'Enter') sendMessage(); }
-        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+        // ============= TEST CONNECTION =============
+        async function testConnection() {
+            try {
+                const { data, error } = await supabase
+                    .from('chat_messages')
+                    .select('count')
+                    .limit(1);
+                
+                if (error) {
+                    console.error('Connection test failed:', error);
+                    updateConnectionStatus(false);
+                    return false;
+                }
+                
+                console.log('Connection test successful');
+                updateConnectionStatus(true);
+                return true;
+            } catch (err) {
+                console.error('Connection test exception:', err);
+                updateConnectionStatus(false);
+                return false;
+            }
+        }
         
-        loadMessages();
-        setupRealtime();
+        // ============= INITIALIZE =============
+        async function init() {
+            // Test connection first
+            await testConnection();
+            
+            // Load messages
+            await loadMessages();
+            
+            // Setup realtime subscription
+            setupRealtime();
+            
+            // Focus input
+            messageInput.focus();
+            
+            // Refresh messages every 10 seconds as backup
+            setInterval(() => {
+                if (!isConnected) {
+                    testConnection();
+                }
+                loadMessages();
+            }, 10000);
+        }
+        
+        // Start the app
+        init();
     </script>
 </body>
 </html>
