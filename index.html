@@ -1,542 +1,1002 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>ATH Digital Hub - Customer Support</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>ATH DIGITAL HUB | MYTEL VIP Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-deep: #0a0c15;
+            --cyan: #00d4ff;
+            --violet: #8b5cf6;
+            --emerald: #10b981;
+            --rose: #f43f5e;
+            --amber: #f59e0b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
         }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #f5f7fb;
-            height: 100vh;
+            background: #0a0c15;
+            color: var(--text-primary);
+            font-family: 'Noto Sans Myanmar', 'Inter', sans-serif;
+            min-height: 100vh;
+            background-image: radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.12) 0%, transparent 50%),
+                              radial-gradient(circle at 85% 70%, rgba(0,212,255,0.08) 0%, transparent 55%);
+        }
+        .container { max-width: 1320px; margin: 0 auto; padding: 16px; }
+        
+        /* ============ HEADER ============ */
+        .store-header {
+            backdrop-filter: blur(20px);
+            background: rgba(10,12,21,0.6);
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 1.5rem;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand img {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+        .brand-text {
+            font-family: 'Space Grotesk', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff, #94a3b8, var(--cyan));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .brand-text small {
+            font-size: 0.65rem;
+            display: block;
+            color: #64748b;
+        }
+        
+        .lang-switcher {
+            display: flex;
+            gap: 8px;
+            background: rgba(0,212,255,0.1);
+            padding: 4px;
+            border-radius: 60px;
+            border: 1px solid rgba(0,212,255,0.2);
+        }
+        .lang-btn {
+            background: transparent;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        .lang-btn.active {
+            background: var(--cyan);
+            color: #030712;
+            box-shadow: 0 0 10px rgba(0,212,255,0.3);
+        }
+        
+        .my-orders-btn {
+            background: rgba(139,92,246,0.2);
+            border: 1px solid rgba(139,92,246,0.5);
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #c4b5fd;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .my-orders-btn:hover { background: var(--violet); color: white; }
+        
+        /* ============ HERO ============ */
+        .hero { text-align: center; margin: 16px 0 20px; }
+        .hero h1 { font-size: 1.8rem; font-weight: 700; background: linear-gradient(to right, #fff, var(--cyan)); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        @media (min-width: 768px) { .hero h1 { font-size: 2.5rem; } }
+        .hero p { color: var(--text-secondary); font-size: 0.8rem; margin-top: 8px; }
+        
+        /* ============ PACKAGES GRID ============ */
+        .pack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+            gap: 20px;
+            margin: 32px 0 40px;
+        }
+        .pack-card {
+            background: linear-gradient(145deg, #11131e, #0c0e16);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(34,197,94,0.2);
+            border-radius: 24px;
+            padding: 1.2rem;
+            transition: all 0.3s;
+            position: relative;
             overflow: hidden;
         }
-
-        .chat-container {
-            max-width: 500px;
-            margin: 0 auto;
+        .pack-card:hover { transform: translateY(-6px); border-color: rgba(34,197,94,0.5); }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .flag-badge { font-size: 0.65rem; font-weight: 800; padding: 3px 10px; border-radius: 40px; color: white; }
+        .tier-name { font-size: 0.75rem; font-weight: 700; color: var(--cyan); letter-spacing: 1px; }
+        .pack-price { font-size: 1.3rem; font-weight: 800; }
+        .feature-list { list-style: none; margin: 12px 0 20px; }
+        .feature-list li { margin-bottom: 8px; font-size: 0.7rem; display: flex; align-items: flex-start; gap: 8px; color: #cbd5e1; line-height: 1.4; }
+        .feature-list li i { width: 16px; font-size: 0.7rem; margin-top: 2px; flex-shrink: 0; color: #10b981; }
+        .feature-number { font-weight: 600; color: var(--cyan); margin-right: 4px; }
+        .buy-btn {
+            width: 100%;
+            padding: 10px 0;
+            border: none;
+            border-radius: 60px;
+            font-weight: 700;
             background: white;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            color: #0f172a;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
         }
-
-        /* Header */
-        .chat-header {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            padding: 16px 20px;
-            text-align: center;
+        .buy-btn:hover { background: var(--cyan); transform: scale(0.98); color: #030712; }
+        .divider { margin: 12px 0; border-top: 1px solid rgba(255,255,255,0.08); }
+        
+        /* ============ HISTORY PANEL (SIDEBAR) ============ */
+        .history-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 90%;
+            max-width: 500px;
+            height: 100%;
+            background: rgba(8,12,22,0.98);
+            backdrop-filter: blur(24px);
+            border-left: 1px solid rgba(0,212,255,0.3);
+            z-index: 1500;
+            transition: right 0.35s ease;
+            padding: 16px;
+            overflow-y: auto;
         }
-
-        .chat-header h2 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .chat-header p {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-top: 4px;
-        }
-
-        /* User Info Bar */
-        .user-info {
-            background: #f8f9fa;
-            padding: 8px 16px;
+        .history-panel.open { right: 0; }
+        .history-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 11px;
-            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(0,212,255,0.3);
         }
-
-        .user-id {
-            color: #6c757d;
-            font-family: monospace;
+        .history-header h3 { font-size: 1.1rem; color: var(--cyan); }
+        .close-history { font-size: 1.5rem; cursor: pointer; padding: 0 8px; }
+        .close-history:hover { color: var(--rose); }
+        
+        /* ============ SEARCH SECTION ============ */
+        .search-section {
+            background: rgba(0,212,255,0.05);
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 1rem;
+            padding: 14px;
+            margin-bottom: 20px;
         }
-
-        .connection-status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #28a745;
-        }
-
-        .status-dot.disconnected {
-            background: #dc3545;
-        }
-
-        .status-text {
-            color: #6c757d;
-        }
-
-        /* Chat Messages Area */
-        .chat-messages {
+        .search-title { font-size: 0.85rem; font-weight: 600; color: var(--cyan); margin-bottom: 10px; }
+        .search-input-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .search-input {
             flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background: #f8f9fa;
-        }
-
-        /* Message Bubbles */
-        .message {
-            display: flex;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message.customer {
-            justify-content: flex-end;
-        }
-
-        .message.admin {
-            justify-content: flex-start;
-        }
-
-        .bubble {
-            max-width: 75%;
-            padding: 10px 14px;
-            border-radius: 18px;
-            position: relative;
-            word-wrap: break-word;
-        }
-
-        .message.customer .bubble {
-            background: #007bff;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 60px;
+            padding: 10px 16px;
             color: white;
-            border-bottom-right-radius: 4px;
+            font-size: 0.8rem;
         }
-
-        .message.admin .bubble {
-            background: white;
-            color: #1a1a1a;
-            border-bottom-left-radius: 4px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .message-time {
-            font-size: 10px;
-            margin-top: 4px;
-            opacity: 0.7;
-        }
-
-        .message.customer .message-time {
-            text-align: right;
-        }
-
-        /* Typing Indicator */
-        .typing-indicator {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 8px 12px;
-            background: white;
-            border-radius: 18px;
-            width: fit-content;
-        }
-
-        .typing-indicator span {
-            width: 6px;
-            height: 6px;
-            background: #adb5bd;
-            border-radius: 50%;
-            animation: typing 1.4s infinite;
-        }
-
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typing {
-            0%, 60%, 100% {
-                transform: translateY(0);
-            }
-            30% {
-                transform: translateY(-8px);
-            }
-        }
-
-        /* Input Area */
-        .chat-input-area {
-            background: white;
-            border-top: 1px solid #e9ecef;
-            padding: 12px 16px;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .chat-input-area input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid #dee2e6;
-            border-radius: 25px;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .chat-input-area input:focus {
-            border-color: #007bff;
-        }
-
-        .chat-input-area button {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 15px;
+        .search-input:focus { border-color: var(--cyan); outline: none; }
+        .search-btn, .clear-search-btn {
+            padding: 10px 20px;
+            border-radius: 60px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            font-size: 0.75rem;
+            transition: all 0.2s;
         }
-
-        .chat-input-area button:hover {
-            background: #0056b3;
+        .search-btn { background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; color: white; }
+        .clear-search-btn { background: #334155; border: none; color: white; }
+        
+        /* ============ ORDERS CARDS ============ */
+        .orders-card {
+            border-radius: 1rem;
+            margin-bottom: 20px;
+            overflow: hidden;
         }
-
-        .chat-input-area button:disabled {
-            background: #adb5bd;
-            cursor: not-allowed;
+        .orders-card.my-orders {
+            background: rgba(0,212,255,0.03);
+            border: 1px solid rgba(0,212,255,0.4);
         }
-
-        /* Welcome Message */
-        .welcome-message {
-            text-align: center;
-            padding: 30px 20px;
+        .orders-card.my-orders .card-header {
+            background: rgba(0,212,255,0.15);
+            border-bottom: 1px solid rgba(0,212,255,0.3);
+            color: var(--cyan);
         }
-
-        .welcome-message .icon {
-            font-size: 48px;
-            margin-bottom: 12px;
+        .orders-card.others-orders {
+            background: rgba(139,92,246,0.03);
+            border: 1px solid rgba(139,92,246,0.3);
         }
-
-        .welcome-message h3 {
-            color: #333;
+        .orders-card.others-orders .card-header {
+            background: rgba(139,92,246,0.1);
+            border-bottom: 1px solid rgba(139,92,246,0.2);
+            color: #c4b5fd;
+        }
+        .card-header { padding: 12px 16px; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .card-content { padding: 16px; max-height: 500px; overflow-y: auto; }
+        
+        .live-badge {
+            background: rgba(244,63,94,0.2);
+            color: #f43f5e;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 40px;
+            margin-left: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            animation: liveBlink 1s step-end infinite;
+        }
+        @keyframes liveBlink {
+            0%,100% { background: rgba(244,63,94,0.2); color: #f43f5e; }
+            50% { background: rgba(244,63,94,0.8); color: white; }
+        }
+        
+        .stack-container { display: flex; flex-direction: column; gap: 10px; }
+        .stack-item {
+            background: linear-gradient(135deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
+            border-radius: 12px;
+            padding: 14px;
+            border-left: 3px solid var(--violet);
+            transition: all 0.3s ease;
+        }
+        .stack-item:hover { transform: translateX(4px); border-left-color: var(--cyan); }
+        .stack-item.new-order { border-left-color: var(--cyan); background: rgba(0,212,255,0.08); }
+        .new-badge {
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+            color: white;
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 40px;
+            display: inline-block;
             margin-bottom: 8px;
         }
-
-        .welcome-message p {
-            color: #6c757d;
-            font-size: 14px;
+        .stack-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+        .stack-plan { font-size: 0.8rem; font-weight: 700; color: var(--cyan); }
+        .stack-status { padding: 3px 10px; border-radius: 40px; font-size: 0.6rem; font-weight: 600; }
+        .stack-status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .stack-status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
+        .stack-status.rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        .stack-details { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
+        .stack-phone { font-size: 0.7rem; font-family: monospace; color: var(--amber); }
+        .stack-price { font-size: 0.75rem; font-weight: 600; color: var(--emerald); }
+        .feed-countdown { font-size: 0.6rem; color: var(--cyan); margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .status-bar { display: flex; justify-content: flex-start; margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.6rem; color: #64748b; }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; animation: pulse 1.5s infinite; display: inline-block; margin-right: 4px; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+        
+        .order-item {
+            background: linear-gradient(135deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255,255,255,0.08);
         }
-
-        /* Scrollbar */
-        .chat-messages::-webkit-scrollbar {
-            width: 5px;
+        .order-item:hover { transform: translateX(3px); border-color: rgba(0,212,255,0.3); }
+        .order-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .order-plan { font-size: 0.75rem; font-weight: 700; color: var(--cyan); }
+        .status-badge { padding: 3px 8px; border-radius: 40px; font-size: 0.55rem; font-weight: 700; }
+        .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
+        .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        .info-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 8px; }
+        .info-item { background: rgba(0,0,0,0.25); border-radius: 10px; padding: 6px 8px; }
+        .info-label { font-size: 0.5rem; color: #64748b; }
+        .info-value { font-size: 0.7rem; font-weight: 600; }
+        .info-value.price { color: var(--emerald); }
+        .date-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+        .date-box { flex: 1; background: rgba(0,0,0,0.25); border-radius: 10px; padding: 6px 8px; text-align: center; }
+        .date-label { font-size: 0.5rem; color: #64748b; }
+        .date-value { font-size: 0.7rem; font-weight: 600; }
+        .date-value.start { color: var(--cyan); }
+        .date-value.expired { color: var(--amber); }
+        .countdown-timer { background: rgba(0,212,255,0.08); padding: 6px 10px; border-radius: 30px; margin-top: 8px; text-align: center; font-size: 0.65rem; font-family: monospace; }
+        .view-slip-btn {
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            cursor: pointer;
+            color: var(--cyan);
         }
-
-        .chat-messages::-webkit-scrollbar-track {
-            background: #f1f1f1;
+        
+        /* ============ PAYMENT MODAL ============ */
+        .modal-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(3,7,18,0.94); backdrop-filter: blur(20px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: 0.25s; z-index: 2000;
         }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 5px;
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-card {
+            background: linear-gradient(145deg, rgba(18,22,35,0.98), rgba(10,12,21,0.98));
+            border: 1px solid rgba(0,212,255,0.4);
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 480px;
+            padding: 1.5rem;
+            position: relative;
         }
+        .modal-close {
+            position: absolute; right: 16px; top: 16px;
+            font-size: 1.3rem; cursor: pointer; color: var(--text-secondary);
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+        }
+        .modal-close:hover { color: var(--rose); background: rgba(244,63,94,0.1); }
+        .modal-icon { text-align: center; margin-bottom: 16px; }
+        .modal-icon i { font-size: 2rem; color: var(--cyan); background: rgba(0,212,255,0.1); padding: 12px; border-radius: 60px; }
+        .modal-title { text-align: center; font-size: 1.2rem; font-weight: 600; margin-bottom: 20px; }
+        .info-card {
+            background: rgba(0,212,255,0.05);
+            border: 1px solid rgba(0,212,255,0.15);
+            border-radius: 1rem;
+            padding: 14px;
+            margin-bottom: 20px;
+        }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-size: 0.7rem; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+        .info-value { font-size: 0.75rem; font-weight: 600; background: rgba(6,182,212,0.12); padding: 4px 10px; border-radius: 40px; color: var(--cyan); }
+        .phone-copy { cursor: pointer; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { font-size: 0.7rem; display: block; margin-bottom: 6px; color: var(--text-secondary); }
+        .form-control {
+            width: 100%;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 60px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 0.85rem;
+        }
+        .form-control:focus { border-color: var(--cyan); outline: none; }
+        .file-input-wrapper input[type="file"] {
+            width: 100%;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 60px;
+            padding: 10px 16px;
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 60px;
+            font-weight: 800;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--emerald), #059669);
+            color: white;
+            border: none;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .submit-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.05); }
+        .submit-btn:disabled { cursor: not-allowed; opacity: 0.6; }
+        
+        .image-modal {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.96); backdrop-filter: blur(20px);
+            z-index: 10000; display: flex; align-items: center; justify-content: center;
+            visibility: hidden; opacity: 0; transition: all 0.3s ease;
+        }
+        .image-modal.active { visibility: visible; opacity: 1; }
+        .image-modal-content { max-width: 90%; max-height: 90%; background: rgba(18,22,35,0.95); border-radius: 24px; padding: 10px; border: 1px solid rgba(0,212,255,0.5); }
+        .image-modal-content img { max-width: 100%; max-height: 70vh; border-radius: 16px; }
+        
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding: 20px;
+        }
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .social-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .social-icon:hover { transform: translateY(-3px); }
+        .social-icon i { font-size: 1.2rem; color: white; }
+        .social-icon.facebook { background: #1877f2; }
+        .social-icon.telegram { background: #0088cc; }
+        .social-icon.viber { background: #7360f2; }
+        .social-icon.phone { background: #25d366; }
+        .footer-text { font-size: 0.65rem; color: #64748b; margin-top: 10px; }
+        
+        .toast {
+            position: fixed;
+            top: -80px;
+            right: 16px;
+            background: var(--emerald);
+            color: #030712;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-weight: 700;
+            z-index: 3000;
+            transition: top 0.3s;
+            display: none;
+        }
+        .toast.show { display: block; top: 20px; }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 4px; }
+        .empty-msg { text-align: center; color: var(--text-secondary); padding: 30px; font-size: 0.7rem; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-header">
-            <h2>💬 ATH Digital Hub</h2>
-            <p>Customer Support • 24/7</p>
-        </div>
-
-        <div class="user-info">
-            <span class="user-id">🆔 <span id="userId">Loading...</span></span>
-            <div class="connection-status">
-                <div class="status-dot" id="statusDot"></div>
-                <span class="status-text" id="statusText">Connecting...</span>
+<div class="toast" id="globalToast">✅ အော်ဒါအောင်မြင်ပါပြီ။</div>
+<div class="container">
+    <div class="store-header">
+        <div class="brand">
+            <img src="https://i.postimg.cc/GpR4ctR1/photo-2026-05-31-22-35-50.jpg" alt="ATH Logo">
+            <div class="brand-text">
+                ATH DIGITAL HUB
+                <small>MYTEL VIP Store</small>
             </div>
         </div>
-
-        <div class="chat-messages" id="chatMessages">
-            <div class="welcome-message">
-                <div class="icon">👋</div>
-                <h3>Welcome to ATH Digital Hub!</h3>
-                <p>How can we help you today?</p>
-            </div>
+        <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="my">🇲🇲 မြန်မာ</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 English</button>
         </div>
-
-        <div class="chat-input-area">
-            <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
-            <button id="sendBtn" onclick="sendMessage()">Send</button>
+        <button class="my-orders-btn" id="myOrdersBtn"><i class="fas fa-list-ul"></i> <span id="myOrdersBtnText">အော်ဒါများ</span></button>
+    </div>
+    <div class="hero">
+        <h1>MYTEL DATA ELITE 5G+</h1>
+        <p id="heroSubtitle">မြန်ဆန်သော Data & Voice Plan များ — VIP အတွေ့အကြုံ</p>
+    </div>
+    
+    <div class="pack-grid">
+        <div class="pack-card">
+            <div class="card-header-row">
+                <span class="flag-badge" style="background:linear-gradient(135deg,#fbbf24,#d97706);">🔥BS</span>
+                <span class="tier-name">TIER V1</span>
+                <span class="pack-price">15,000 <small>MMK</small></span>
+            </div>
+            <div class="divider"></div>
+            <ul class="feature-list">
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">22GB</span> <span class="f1">အမြန်နှုန်းမြင့်</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">8,000</span> <span class="f2">မိနစ် (ကွန်ရက်တွင်း)</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">5,000</span> <span class="f3">SMS</span></span></li>
+            </ul>
+            <div class="divider"></div>
+            <button class="buy-btn" data-plan="VIP LEVEL - 1" data-price="15000"><span class="buy-text">ဝယ်ယူမည်</span></button>
+        </div>
+        
+        <div class="pack-card">
+            <div class="card-header-row">
+                <span class="flag-badge" style="background:linear-gradient(135deg,#00d4ff,#0891b2);">⭐POP</span>
+                <span class="tier-name">TIER V2</span>
+                <span class="pack-price">20,000 <small>MMK</small></span>
+            </div>
+            <div class="divider"></div>
+            <ul class="feature-list">
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">40GB</span> <span class="f1">အာထရာဒေတာ</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">250</span> <span class="f2">မိနစ် (ကွန်ရက်တွင်း)</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">25</span> <span class="f3">မိနစ် (အခြားကွန်ရက်)</span></span></li>
+            </ul>
+            <div class="divider"></div>
+            <button class="buy-btn" data-plan="VIP LEVEL - 2" data-price="20000"><span class="buy-text">ဝယ်ယူမည်</span></button>
+        </div>
+        
+        <div class="pack-card">
+            <div class="card-header-row">
+                <span class="flag-badge" style="background:linear-gradient(135deg,#22c55e,#15803d);">⭐VAL</span>
+                <span class="tier-name">TIER V3</span>
+                <span class="pack-price">25,000 <small>MMK</small></span>
+            </div>
+            <div class="divider"></div>
+            <ul class="feature-list">
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">40GB</span> <span class="f1">အမြန်နှုန်း + အပို</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">1,400</span> <span class="f2">မိနစ် (ကွန်ရက်တွင်း)</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">8,000</span> <span class="f3">SMS အကန့်အသတ်မရှိ</span></span></li>
+            </ul>
+            <div class="divider"></div>
+            <button class="buy-btn" data-plan="VIP LEVEL - 3" data-price="25000"><span class="buy-text">ဝယ်ယူမည်</span></button>
+        </div>
+        
+        <div class="pack-card">
+            <div class="card-header-row">
+                <span class="flag-badge" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">👑TOP</span>
+                <span class="tier-name">TIER V4 (ULTRA)</span>
+                <span class="pack-price">30,000 <small>MMK</small></span>
+            </div>
+            <div class="divider"></div>
+            <ul class="feature-list">
+                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">120GB</span> <span class="f1">ဂိမ်းဒေတာ</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="f2">အကန့်အသတ်မရှိ Streaming</span></span></li>
+                <li><i class="fas fa-check-circle"></i> <span><span class="f3">ဦးစားပေး ပံ့ပိုးမှု</span></span></li>
+            </ul>
+            <div class="divider"></div>
+            <button class="buy-btn" data-plan="VIP LEVEL - 4 (ULTRA)" data-price="30000"><span class="buy-text">ဝယ်ယူမည်</span></button>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // ============= CONFIGURATION =============
-        const SUPABASE_URL = 'https://yubbfbmfoycvdxfaecbh.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1YmJmYm1mb3ljdmR4ZmFlY2JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNDQyODIsImV4cCI6MjA5NTcyMDI4Mn0.hYNmdWDour1ZF9if37h8uoOR_ejZjoyqY9qjs7pHEoY';
-        
-        // ============= INITIALIZATION =============
-        const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // Get or create user ID
-        let currentUserId = localStorage.getItem('ath_user_id');
-        if (!currentUserId) {
-            currentUserId = 'cust_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-            localStorage.setItem('ath_user_id', currentUserId);
+<div id="historyPanel" class="history-panel">
+    <div class="history-header">
+        <h3><i class="fas fa-list-ul"></i> <span id="dashboardTitle">အော်ဒါများ</span></h3>
+        <span class="close-history" id="closeHistoryBtn">&times;</span>
+    </div>
+    <div class="search-section">
+        <div class="search-title"><i class="fas fa-search"></i> <span id="searchTitle">ရှာဖွေရန်</span></div>
+        <div class="search-input-group">
+            <input type="tel" id="searchPhoneInput" class="search-input" placeholder="📱 09xxxxxxxxx">
+            <button id="searchBtn" class="search-btn"><i class="fas fa-search"></i> <span id="searchBtnText">ရှာမည်</span></button>
+            <button id="clearSearchBtn" class="clear-search-btn"><i class="fas fa-times"></i> <span id="clearBtnText">ရှင်းမည်</span></button>
+        </div>
+    </div>
+    <div class="orders-card my-orders">
+        <div class="card-header"><i class="fas fa-user-circle"></i> <span id="myOrdersHeader">ကျွန်ုပ်၏ အော်ဒါများ</span></div>
+        <div class="card-content" id="myOrdersContainer"><div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading...</div></div>
+    </div>
+    <div class="orders-card others-orders">
+        <div class="card-header"><i class="fas fa-globe"></i> <span id="liveFeedHeader">အခြားသူများ၏ အော်ဒါများ</span> <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span></div>
+        <div class="card-content stack-container" id="stackContainer"><div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading feed...</div></div>
+        <div class="status-bar"><span class="status-dot"></span> <span id="liveUpdateText">အလိုအလျောက်: 30s</span></div>
+    </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div id="paymentModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-close" id="closeModalBtn">&times;</div>
+        <div class="modal-icon"><i class="fas fa-credit-card"></i></div>
+        <h3 class="modal-title" id="paymentTitle">ငွေပေးချေမှု</h3>
+        <div class="info-card">
+            <div class="info-row"><span class="info-label"><i class="fas fa-university"></i> ငွေလွှဲနည်းလမ်း</span><span class="info-value">K-Pay / WavePay</span></div>
+            <div class="info-row"><span class="info-label"><i class="fas fa-user-circle"></i> အကောင့်အမည်</span><span class="info-value">AUNG THU HTWE</span></div>
+            <div class="info-row"><span class="info-label"><i class="fas fa-phone-alt"></i> ဖုန်းနံပါတ်</span><span class="info-value phone-copy" id="clickablePhone">09789999368 📋</span></div>
+        </div>
+        <form id="orderForm" enctype="multipart/form-data">
+            <div class="form-group"><label id="phoneLabel"><i class="fas fa-mobile-alt"></i> ဖုန်းနံပါတ် *</label><input type="tel" id="customerPhone" class="form-control" placeholder="09XXXXXXXXX" required></div>
+            <div class="form-group"><label id="slipLabel"><i class="fas fa-image"></i> ငွေလွှဲပြေစာ</label><div class="file-input-wrapper"><input type="file" id="slipImage" accept="image/*" required></div></div>
+            <button type="submit" class="submit-btn" id="submitOrderBtn"><span id="submitBtnText">✅ အော်ဒါတင်မည်</span></button>
+        </form>
+    </div>
+</div>
+
+<div id="screenshotModal" class="image-modal" onclick="closeImageModal()">
+    <div class="image-modal-content" onclick="event.stopPropagation()">
+        <div class="img-modal-header" style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid rgba(0,212,255,0.2);">
+            <span><i class="fas fa-image"></i> <span id="screenshotTitle">ငွေလွှဲပြေစာ</span></span>
+            <button class="close-img-modal" onclick="closeImageModal()" style="background:rgba(255,255,255,0.1);border:none;color:white;width:30px;height:30px;border-radius:50%;cursor:pointer;">&times;</button>
+        </div>
+        <img id="modalImage" src="" alt="Screenshot" style="max-width:100%;max-height:70vh;border-radius:16px;">
+        <div class="img-modal-footer" style="padding:10px;font-size:0.65rem;color:#64748b;text-align:center;"><i class="fas fa-info-circle"></i> <span id="modalFooterText">အပြင်ဘက်နှိပ်ပါ သို့မဟုတ် ✕ နှိပ်ပါ</span></div>
+    </div>
+</div>
+
+<footer>
+    <div class="social-links">
+        <a href="https://www.facebook.com/athdigitalhub/" target="_blank" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://t.me/ATHCustomerService" target="_blank" class="social-icon telegram"><i class="fab fa-telegram-plane"></i></a>
+        <a href="viber://chat?number=09799480995" class="social-icon viber"><i class="fab fa-viber"></i></a>
+        <a href="tel:09789999368" class="social-icon phone"><i class="fas fa-phone-alt"></i></a>
+    </div>
+    <div class="footer-text">© 2026 <strong>ATH DIGITAL HUB</strong> | Developed by AUNG THU HTWE</div>
+</footer>
+
+<script>
+    let currentLang = localStorage.getItem('app_language') || 'my';
+    const API_BASE = window.location.origin;
+    let selectedPlan = "", selectedPrice = 0;
+    let allOrdersData = [];
+    let myPhone = localStorage.getItem('myOrderPhone') || '';
+    let currentSearchPhone = '';
+    let autoRefreshInterval = null, refreshCountdown = null, refreshSec = 30;
+    let countdownIntervals = {};
+    let liveCountdownIntervals = {};
+    let stackOrders = [], lastHash = '';
+    const ROTATE_MS = 10000, NEW_TIMEOUT = 120000;
+    
+    const isNewOrder = (o) => Date.now() - new Date(o.created_at).getTime() < NEW_TIMEOUT;
+    const maskPhone = (p) => p && p.length >= 8 ? p.substring(0,5)+'***'+p.substring(p.length-3) : p;
+    const formatDate = (d) => d ? new Date(d).toISOString().split('T')[0] : 'N/A';
+    const expiredDate = (act) => act ? new Date(new Date(act).getTime()+30*86400000).toISOString().split('T')[0] : null;
+    
+    const remainingTime = (act) => {
+        if (!act) return null;
+        let remain = new Date(act).getTime() + 30*86400000 - Date.now();
+        if (remain <= 0) return "Expired";
+        const days = Math.floor(remain / 86400000);
+        const hours = Math.floor((remain % 86400000) / 3600000);
+        const minutes = Math.floor((remain % 3600000) / 60000);
+        const seconds = Math.floor((remain % 60000) / 1000);
+        return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    };
+    
+    const translations = {
+        my: {
+            myOrdersBtn: 'အော်ဒါများ', heroSubtitle: 'မြန်ဆန်သော Data & Voice Plan များ — VIP အတွေ့အကြုံ',
+            dashboard: 'အော်ဒါများ', autoRefresh: 'အလိုအလျောက်: 30s',
+            searchTitle: 'ရှာဖွေရန်', searchBtn: 'ရှာမည်', clearBtn: 'ရှင်းမည်',
+            myOrdersHeader: 'ကျွန်ုပ်၏ အော်ဒါများ', liveFeedHeader: 'အခြားသူများ၏ အော်ဒါများ',
+            liveUpdate: 'အလိုအလျောက်: 30s', loading: 'Loading...',
+            noOrders: '📭 အော်ဒါမရှိသေးပါ။<br>စောင့်ဆိုင်းနေပါသည်...',
+            noMyOrders: '📭 သင့်အော်ဒါမရှိသေးပါ။', placeFirst: 'အော်ဒါအသစ်တင်ပါ။',
+            paymentTitle: 'ငွေပေးချေမှု', phoneLabel: '📱 ဖုန်းနံပါတ် *', slipLabel: '🧾 ငွေလွှဲပြေစာ',
+            submitBtn: '✅ အော်ဒါတင်မည်',
+            orderSuccess: '✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ', orderError: 'အော်ဒါတင်ရာတွင် အမှားရှိပါသည်',
+            searchPrompt: '⚠️ ဖုန်းနံပါတ် ထည့်ပါ', searchInvalid: '⚠️ ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ',
+            searching: '🔍 ရှာဖွေနေပါသည်...', searchCleared: '🔍 ရှာဖွေမှု ရှင်းလင်းပြီးပါပြီ။',
+            phoneCopied: '📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။',
+            pending: '⏳ စောင့်ဆိုင်းဆဲ', approved: '✅ အတည်ပြုပြီး', rejected: '❌ ပယ်ဖျက်ခံရ',
+            awaiting: '⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ', expired: 'သက်တမ်းကုန်', remaining: 'ကျန်ရက်',
+            startDate: 'စတင်ရက်', expiryDate: 'ကုန်ဆုံးရက်', orderDate: 'အော်ဒါရက်', status: 'အခြေအနေ',
+            phone: 'ဖုန်း', amount: 'ပမာဏ', orderId: 'အော်ဒါအမှတ်', viewReceipt: '🧾 ပြေစာကြည့်ရန်',
+            newBadge: 'NEW', buyNow: 'ဝယ်ယူမည်',
+            c1f1:'အမြန်နှုန်းမြင့်',c1f2:'မိနစ် (ကွန်ရက်တွင်း)',c1f3:'SMS',
+            c2f1:'အာထရာဒေတာ',c2f2:'မိနစ် (ကွန်ရက်တွင်း)',c2f3:'မိနစ် (အခြားကွန်ရက်)',
+            c3f1:'အမြန်နှုန်း + အပို',c3f2:'မိနစ် (ကွန်ရက်တွင်း)',c3f3:'SMS အကန့်အသတ်မရှိ',
+            c4f1:'ဂိမ်းဒေတာ',c4f2:'အကန့်အသတ်မရှိ Streaming',c4f3:'ဦးစားပေး ပံ့ပိုးမှု'
+        },
+        en: {
+            myOrdersBtn: 'Orders', heroSubtitle: 'High-speed Data & Voice Plans — VIP Experience',
+            dashboard: 'Orders', autoRefresh: 'Auto: 30s',
+            searchTitle: 'Search', searchBtn: 'Search', clearBtn: 'Clear',
+            myOrdersHeader: 'My Orders', liveFeedHeader: 'Live Orders Feed',
+            liveUpdate: 'Auto: 30s', loading: 'Loading...',
+            noOrders: '📭 No orders yet<br>Waiting for first order...',
+            noMyOrders: '📭 No orders found.', placeFirst: 'Place your first order.',
+            paymentTitle: 'Payment', phoneLabel: '📱 Phone Number *', slipLabel: '🧾 Payment Screenshot',
+            submitBtn: '✅ Place Order',
+            orderSuccess: '✅ Order placed! Order ID: ', orderError: 'Failed to place order',
+            searchPrompt: '⚠️ Please enter a phone number', searchInvalid: '⚠️ Please enter a valid phone number',
+            searching: '🔍 Searching...', searchCleared: '🔍 Search cleared',
+            phoneCopied: '📞 Phone number copied',
+            pending: '⏳ Pending', approved: '✅ Approved', rejected: '❌ Rejected',
+            awaiting: '⏳ Please wait for approval', expired: 'Expired', remaining: 'Remaining',
+            startDate: 'Start Date', expiryDate: 'Expiry Date', orderDate: 'Order Date', status: 'Status',
+            phone: 'Phone', amount: 'Amount', orderId: 'Order ID', viewReceipt: '🧾 View Receipt',
+            newBadge: 'NEW', buyNow: 'Purchase Now',
+            c1f1:'Extreme Speed',c1f2:'On-Net Mins',c1f3:'SMS',
+            c2f1:'Ultra Data',c2f2:'On-Net Mins',c2f3:'Any Net Mins',
+            c3f1:'High-Speed + Extra',c3f2:'On-Net Mins',c3f3:'SMS Unlimited',
+            c4f1:'Gamer Data',c4f2:'Unlimited Streaming',c4f3:'Priority Support'
         }
-        document.getElementById('userId').textContent = currentUserId.slice(-12);
-        
-        // DOM elements
-        const messagesContainer = document.getElementById('chatMessages');
-        const messageInput = document.getElementById('messageInput');
-        const sendBtn = document.getElementById('sendBtn');
-        const statusDot = document.getElementById('statusDot');
-        const statusText = document.getElementById('statusText');
-        
-        // State
-        let isConnected = false;
-        let messageChannel = null;
-        
-        // ============= HELPER FUNCTIONS =============
-        function updateConnectionStatus(connected) {
-            isConnected = connected;
-            if (connected) {
-                statusDot.classList.remove('disconnected');
-                statusText.textContent = 'Connected';
+    };
+    
+    function updateUI() {
+        const t = translations[currentLang];
+        document.getElementById('myOrdersBtnText').innerHTML = t.myOrdersBtn;
+        document.getElementById('heroSubtitle').innerHTML = t.heroSubtitle;
+        document.getElementById('dashboardTitle').innerHTML = t.dashboard;
+        document.getElementById('searchTitle').innerHTML = t.searchTitle;
+        document.getElementById('searchBtnText').innerHTML = t.searchBtn;
+        document.getElementById('clearBtnText').innerHTML = t.clearBtn;
+        document.getElementById('myOrdersHeader').innerHTML = t.myOrdersHeader;
+        document.getElementById('liveFeedHeader').innerHTML = t.liveFeedHeader;
+        document.getElementById('liveUpdateText').innerHTML = t.liveUpdate;
+        document.getElementById('paymentTitle').innerHTML = t.paymentTitle;
+        document.getElementById('phoneLabel').innerHTML = t.phoneLabel;
+        document.getElementById('slipLabel').innerHTML = t.slipLabel;
+        document.getElementById('submitBtnText').innerHTML = t.submitBtn;
+        document.getElementById('screenshotTitle').innerHTML = t.screenshotTitle;
+        document.getElementById('modalFooterText').innerHTML = t.modalFooter;
+        document.querySelectorAll('.buy-text').forEach(el => el.innerHTML = t.buyNow);
+        const cards = document.querySelectorAll('.pack-card');
+        if(cards[0]){cards[0].querySelectorAll('.f1')[0].innerHTML=t.c1f1;cards[0].querySelectorAll('.f2')[0].innerHTML=t.c1f2;cards[0].querySelectorAll('.f3')[0].innerHTML=t.c1f3;}
+        if(cards[1]){cards[1].querySelectorAll('.f1')[0].innerHTML=t.c2f1;cards[1].querySelectorAll('.f2')[0].innerHTML=t.c2f2;cards[1].querySelectorAll('.f3')[0].innerHTML=t.c2f3;}
+        if(cards[2]){cards[2].querySelectorAll('.f1')[0].innerHTML=t.c3f1;cards[2].querySelectorAll('.f2')[0].innerHTML=t.c3f2;cards[2].querySelectorAll('.f3')[0].innerHTML=t.c3f3;}
+        if(cards[3]){cards[3].querySelectorAll('.f1')[0].innerHTML=t.c4f1;cards[3].querySelectorAll('.f2')[0].innerHTML=t.c4f2;cards[3].querySelectorAll('.f3')[0].innerHTML=t.c4f3;}
+        document.querySelectorAll('.lang-btn').forEach(btn=>{if(btn.dataset.lang===currentLang)btn.classList.add('active');else btn.classList.remove('active');});
+        renderMyOrders();
+        renderStack();
+    }
+    
+    function startCountdown(id, act) {
+        if(countdownIntervals[id])clearInterval(countdownIntervals[id]);
+        const fn=()=>{
+            const el=document.getElementById(`cd-${id}`);
+            if(!el){clearInterval(countdownIntervals[id]);return;}
+            const remain=remainingTime(act);
+            if(remain==="Expired"){
+                el.innerHTML=`<i class="fas fa-calendar-times"></i> ${translations[currentLang].expired}`;
+                el.style.color="#f43f5e";
+                clearInterval(countdownIntervals[id]);
+            }else{
+                el.innerHTML=`<i class="fas fa-hourglass-half"></i> ${translations[currentLang].remaining}: ${remain}`;
+            }
+        };
+        fn();countdownIntervals[id]=setInterval(fn,1000);
+    }
+    
+    function startLiveCountdown(orderId, activatedAt) {
+        if (liveCountdownIntervals[orderId]) clearInterval(liveCountdownIntervals[orderId]);
+        const fn = () => {
+            const el = document.getElementById(`live-cd-${orderId}`);
+            if (!el) { clearInterval(liveCountdownIntervals[orderId]); return; }
+            const remain = remainingTime(activatedAt);
+            const t = translations[currentLang];
+            if (remain === "Expired") {
+                el.innerHTML = `<i class="fas fa-calendar-times"></i> ${t.expired}`;
+                el.style.color = "#f43f5e";
+                clearInterval(liveCountdownIntervals[orderId]);
             } else {
-                statusDot.classList.add('disconnected');
-                statusText.textContent = 'Connecting...';
+                el.innerHTML = `<i class="fas fa-hourglass-half"></i> ${t.remaining}: ${remain}`;
             }
+        };
+        fn();
+        liveCountdownIntervals[orderId] = setInterval(fn, 1000);
+    }
+    
+    function renderOrderItem(o,showFull,showSlip){
+        const t=translations[currentLang];
+        let statClass="status-pending",statText=t.pending;
+        if(o.status==="Approved"){statClass="status-approved";statText=t.approved;}
+        if(o.status==="Rejected"){statClass="status-rejected";statText=t.rejected;}
+        let waitMsg=(o.status==="Pending")?`<div class="waiting-badge" style="background:rgba(245,158,11,0.15);padding:5px 10px;border-radius:20px;font-size:0.6rem;color:#fbbf24;margin-top:6px;text-align:center;">${t.awaiting}</div>`:'';
+        let dateHtml='',cdHtml='';
+        if(o.status==="Approved"&&o.activated_at){
+            let exp=expiredDate(o.activated_at);
+            dateHtml=`<div class="date-row"><div class="date-box"><div class="date-label">${t.startDate}</div><div class="date-value start">${formatDate(o.created_at)}</div></div><div class="date-box"><div class="date-label">${t.expiryDate}</div><div class="date-value expired">${exp||'N/A'}</div></div></div>`;
+            let remain=remainingTime(o.activated_at);
+            cdHtml=`<div class="countdown-timer" id="cd-${o.id}"><i class="fas fa-hourglass-half"></i> ${t.remaining}: ${remain}</div>`;
+        }else{
+            dateHtml=`<div class="date-row"><div class="date-box"><div class="date-label">${t.orderDate}</div><div class="date-value start">${formatDate(o.created_at)}</div></div><div class="date-box"><div class="date-label">${t.status}</div><div class="date-value" style="color:var(--amber);">${o.status==='Pending'?t.pending:(o.status==='Rejected'?t.rejected:'N/A')}</div></div></div>`;
         }
+        let slipBtn = (showSlip && o.slip_url && o.slip_url !== 'null') ? `<button class="view-slip-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> ${t.viewReceipt}</button>` : '';
         
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        function formatTime(date) {
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-        
-        // ============= DISPLAY MESSAGES =============
-        function displayMessages(messages) {
-            // Remove welcome message if there are messages
-            const welcomeMsg = messagesContainer.querySelector('.welcome-message');
-            
-            if (!messages || messages.length === 0) {
-                if (!welcomeMsg) {
-                    messagesContainer.innerHTML = `
-                        <div class="welcome-message">
-                            <div class="icon">👋</div>
-                            <h3>Welcome to ATH Digital Hub!</h3>
-                            <p>How can we help you today?</p>
-                        </div>
-                    `;
-                }
-                return;
-            }
-            
-            // Clear container but keep scroll position
-            const oldScrollHeight = messagesContainer.scrollHeight;
-            const oldScrollTop = messagesContainer.scrollTop;
-            const isNearBottom = (oldScrollHeight - oldScrollTop - messagesContainer.clientHeight) < 100;
-            
-            messagesContainer.innerHTML = '';
-            
-            messages.forEach(msg => {
-                const isCustomer = msg.user_id === currentUserId;
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${isCustomer ? 'customer' : 'admin'}`;
-                messageDiv.innerHTML = `
-                    <div class="bubble">
-                        ${escapeHtml(msg.message)}
-                        <div class="message-time">${formatTime(new Date(msg.created_at))}</div>
+        return `<div class="order-item">
+            <div class="order-header">
+                <span class="order-plan"><i class="fas fa-sim-card"></i> ${o.plan}</span>
+                <span class="status-badge ${statClass}">${statText}</span>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">${t.phone}</div>
+                    <div class="info-value">${showFull?o.phone:maskPhone(o.phone)}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">${t.amount}</div>
+                    <div class="info-value price">${o.price.toLocaleString()} KS</div>
+                </div>
+                <div class="info-item" style="grid-column: span 2;">
+                    <div class="info-label">${t.orderId} <span class="copy-id" onclick="copyOrderId('${o.id}')" style="cursor:pointer;">📋</span></div>
+                    <div class="info-value" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <span style="font-family: monospace;">${o.id}</span>
+                        ${slipBtn}
                     </div>
-                `;
-                messagesContainer.appendChild(messageDiv);
-            });
+                </div>
+            </div>
+            ${dateHtml}
+            ${waitMsg}
+            ${cdHtml}
+        </div>`;
+    }
+    
+    function renderMyOrders(){
+        let container=document.getElementById('myOrdersContainer'),t=translations[currentLang];
+        if(!myPhone){container.innerHTML=`<div class="empty-msg"><i class="fas fa-info-circle"></i><br>${t.noMyOrders}<br>${t.placeFirst}</div>`;return;}
+        let orders=allOrdersData.filter(o=>o.phone===myPhone);
+        if(currentSearchPhone)orders=orders.filter(o=>o.phone===currentSearchPhone);
+        if(!orders.length){container.innerHTML=`<div class="empty-msg">📭 ${t.noMyOrders}</div>`;return;}
+        container.innerHTML=orders.map(o=>renderOrderItem(o,true,true)).join('');
+        orders.forEach(o=>{if(o.status==='Approved'&&o.activated_at)startCountdown(o.id,o.activated_at);});
+    }
+    
+    function renderStack(){
+        let container=document.getElementById('stackContainer'),t=translations[currentLang];
+        if(!stackOrders.length){container.innerHTML=`<div class="empty-msg">${t.noOrders}</div>`;return;}
+        let html='<div class="stack-container">';
+        stackOrders.forEach(order=>{
+            let isNew=isNewOrder(order);
+            let statClass="pending",statText=t.pending;
+            if(order.status==="Approved"){statClass="approved";statText=t.approved;}
+            if(order.status==="Rejected"){statClass="rejected";statText=t.rejected;}
             
-            // Auto scroll to bottom if was near bottom
-            if (isNearBottom || messages.length > 0) {
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            let countdownHtml='';
+            if(order.status==='Approved'&&order.activated_at){
+                countdownHtml=`<div class="feed-countdown" id="live-cd-${order.id}"><i class="fas fa-hourglass-half"></i> ${t.remaining}: ...</div>`;
+            }
+            html+=`<div class="stack-item ${isNew?'new-order':''}">
+                ${isNew?`<div class="new-badge"><i class="fas fa-fire"></i> ${t.newBadge}</div>`:''}
+                <div class="stack-header">
+                    <span class="stack-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
+                    <span class="stack-status ${statClass}">${statText}</span>
+                </div>
+                <div class="stack-details">
+                    <span class="stack-phone"><i class="fas fa-mobile-alt"></i> ${maskPhone(order.phone)}</span>
+                    <span class="stack-price"><i class="fas fa-coins"></i> ${order.price.toLocaleString()} KS</span>
+                </div>
+                ${countdownHtml}
+            </div>`;
+        });
+        container.innerHTML=html+'</div>';
+        
+        stackOrders.forEach(order => {
+            if (order.status === 'Approved' && order.activated_at) {
+                startLiveCountdown(order.id, order.activated_at);
+            }
+        });
+    }
+    
+    function rotateStack() {
+        if (stackOrders.length > 1) {
+            const lastItem = stackOrders.pop();
+            stackOrders.unshift(lastItem);
+            renderStack();
+        }
+    }
+    
+    function updateStack(orders){
+        let others=orders.filter(o=>o.phone!==myPhone);
+        if(!others.length){if(stackOrders.length){stackOrders=[];renderStack();}return;}
+        let sorted=[...others].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+        let hash=JSON.stringify(sorted.map(o=>({id:o.id,status:o.status})));
+        
+        if (hash !== lastHash) {
+            lastHash=hash;
+            let currIds=stackOrders.map(o=>o.id),newOnes=sorted.filter(o=>!currIds.includes(o.id));
+            if(newOnes.length){
+                stackOrders=[...newOnes,...stackOrders].slice(0,30);
+                renderStack();
+            } else {
+                let upd=[];
+                sorted.forEach(o=>{if(currIds.includes(o.id))upd.push(o);});
+                stackOrders.forEach(o=>{if(!upd.find(x=>x.id===o.id))upd.push(o);});
+                stackOrders=upd.slice(0,30);
+                renderStack();
             }
         }
+    }
+    
+    async function loadData(){
+        try{
+            let res=await fetch(`${API_BASE}/api/admin/orders`),data=await res.json();
+            if(data.orders){allOrdersData=data.orders;renderMyOrders();updateStack(allOrdersData);}
+        }catch(e){console.error(e);}
+    }
+    
+    function searchPhone(){
+        let phone=document.getElementById('searchPhoneInput').value.trim(),t=translations[currentLang];
+        if(!phone){showToast(t.searchPrompt,true);return;}
+        if(phone.length<8){showToast(t.searchInvalid,true);return;}
+        currentSearchPhone=phone;renderMyOrders();renderStack();
+        showToast(`${t.searching} ${maskPhone(phone)}`);
+    }
+    function clearSearch(){currentSearchPhone='';document.getElementById('searchPhoneInput').value='';renderMyOrders();renderStack();showToast(translations[currentLang].searchCleared);}
+    
+    async function addOrder(phone,plan,price,file){
+        let fd=new FormData();fd.append('phone',phone);fd.append('plan',plan);fd.append('price',price);fd.append('slip',file);
+        return await fetch(`${API_BASE}/api/orders`,{method:'POST',body:fd}).then(r=>r.json());
+    }
+    
+    function startAutoRefresh(){
+        if(autoRefreshInterval)clearInterval(autoRefreshInterval);
+        if(refreshCountdown)clearInterval(refreshCountdown);
+        refreshSec=30;
+        autoRefreshInterval=setInterval(()=>{if(document.getElementById('historyPanel').classList.contains('open')){loadData();refreshSec=30;}},30000);
+    }
+    
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('submitOrderBtn');
+        const btnText = document.getElementById('submitBtnText');
+        const phone = document.getElementById('customerPhone').value.trim();
+        const file = document.getElementById('slipImage').files[0];
+        const t = translations[currentLang];
         
-        // ============= LOAD MESSAGES FROM DATABASE =============
-        async function loadMessages() {
-            try {
-                const { data, error } = await supabase
-                    .from('chat_messages')
-                    .select('*')
-                    .order('created_at', { ascending: true });
-                
-                if (error) {
-                    console.error('Load messages error:', error);
-                    return;
-                }
-                
-                displayMessages(data);
-            } catch (err) {
-                console.error('Load messages exception:', err);
-            }
+        if (!phone) { showToast(t.searchPrompt, true); return; }
+        if (!file) { showToast("📎 ငွေလွှဲပြေစာ ထည့်ပါ", true); return; }
+        
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
+        btnText.innerHTML = '⏳ အော်ဒါတင်နေပါသည်...';
+        
+        const result = await addOrder(phone, selectedPlan, selectedPrice, file);
+        
+        if (result.success) {
+            btnText.innerHTML = '✅ အော်ဒါအောင်မြင်ပါပြီ';
+            showToast(`${t.orderSuccess}${result.orderId}`);
+            myPhone = phone;
+            localStorage.setItem('myOrderPhone', phone);
+            document.getElementById('paymentModal').classList.remove('active');
+            document.getElementById('orderForm').reset();
+            if (document.getElementById('historyPanel').classList.contains('open')) loadData();
+            
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                btnText.innerHTML = t.submitBtn;
+            }, 2000);
+        } else {
+            btnText.innerHTML = '❌ ' + t.orderError;
+            showToast(t.orderError, true);
+            
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                btnText.innerHTML = t.submitBtn;
+            }, 2000);
         }
-        
-        // ============= SEND MESSAGE =============
-        window.sendMessage = async function() {
-            const message = messageInput.value.trim();
-            
-            if (!message) {
-                return;
-            }
-            
-            // Disable button while sending
-            sendBtn.disabled = true;
-            sendBtn.textContent = 'Sending...';
-            
-            try {
-                const { error } = await supabase
-                    .from('chat_messages')
-                    .insert({
-                        message: message,
-                        user_id: currentUserId,
-                        role: 'customer',
-                        created_at: new Date().toISOString()
-                    });
-                
-                if (error) {
-                    console.error('Send error:', error);
-                    alert('Failed to send message: ' + error.message);
-                    return;
-                }
-                
-                // Clear input
-                messageInput.value = '';
-                
-                // Will show via realtime subscription
-                
-            } catch (err) {
-                console.error('Send exception:', err);
-                alert('Failed to send message');
-            } finally {
-                sendBtn.disabled = false;
-                sendBtn.textContent = 'Send';
-                messageInput.focus();
-            }
-        };
-        
-        // ============= HANDLE ENTER KEY =============
-        window.handleKeyPress = function(event) {
-            if (event.key === 'Enter') {
-                window.sendMessage();
-            }
-        };
-        
-        // ============= SETUP REALTIME =============
-        function setupRealtime() {
-            if (messageChannel) {
-                supabase.removeChannel(messageChannel);
-            }
-            
-            messageChannel = supabase
-                .channel('chat_realtime')
-                .on('postgres_changes', {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'chat_messages'
-                }, (payload) => {
-                    console.log('New message received:', payload.new);
-                    // Reload messages when new message arrives
-                    loadMessages();
-                })
-                .subscribe((status) => {
-                    console.log('Realtime status:', status);
-                    if (status === 'SUBSCRIBED') {
-                        updateConnectionStatus(true);
-                    } else if (status === 'CHANNEL_ERROR') {
-                        updateConnectionStatus(false);
-                    }
-                });
-        }
-        
-        // ============= TEST CONNECTION =============
-        async function testConnection() {
-            try {
-                const { data, error } = await supabase
-                    .from('chat_messages')
-                    .select('count')
-                    .limit(1);
-                
-                if (error) {
-                    console.error('Connection test failed:', error);
-                    updateConnectionStatus(false);
-                    return false;
-                }
-                
-                console.log('Connection test successful');
-                updateConnectionStatus(true);
-                return true;
-            } catch (err) {
-                console.error('Connection test exception:', err);
-                updateConnectionStatus(false);
-                return false;
-            }
-        }
-        
-        // ============= INITIALIZE =============
-        async function init() {
-            // Test connection first
-            await testConnection();
-            
-            // Load messages
-            await loadMessages();
-            
-            // Setup realtime subscription
-            setupRealtime();
-            
-            // Focus input
-            messageInput.focus();
-            
-            // Refresh messages every 10 seconds as backup
-            setInterval(() => {
-                if (!isConnected) {
-                    testConnection();
-                }
-                loadMessages();
-            }, 10000);
-        }
-        
-        // Start the app
-        init();
-    </script>
+    });
+    
+    document.querySelectorAll('.buy-btn').forEach(btn=>btn.addEventListener('click',()=>{selectedPlan=btn.dataset.plan;selectedPrice=parseInt(btn.dataset.price);document.getElementById('paymentModal').classList.add('active');}));
+    document.getElementById('closeModalBtn').addEventListener('click',()=>document.getElementById('paymentModal').classList.remove('active'));
+    window.addEventListener('click',(e)=>{if(e.target===document.getElementById('paymentModal'))document.getElementById('paymentModal').classList.remove('active');});
+    document.getElementById('myOrdersBtn').addEventListener('click',()=>{document.getElementById('historyPanel').classList.add('open');loadData();startAutoRefresh();if(window.rotateInterval)clearInterval(window.rotateInterval);window.rotateInterval=setInterval(()=>{if(document.getElementById('historyPanel').classList.contains('open'))rotateStack();},ROTATE_MS);clearSearch();});
+    document.getElementById('closeHistoryBtn').addEventListener('click',()=>{document.getElementById('historyPanel').classList.remove('open');if(autoRefreshInterval)clearInterval(autoRefreshInterval);if(refreshCountdown)clearInterval(refreshCountdown);if(window.rotateInterval)clearInterval(window.rotateInterval);});
+    document.getElementById('searchBtn').addEventListener('click',searchPhone);
+    document.getElementById('clearSearchBtn').addEventListener('click',clearSearch);
+    document.getElementById('searchPhoneInput').addEventListener('keypress',(e)=>{if(e.key==='Enter')searchPhone();});
+    document.getElementById('clickablePhone').addEventListener('click',()=>{navigator.clipboard.writeText("09789999368");showToast(translations[currentLang].phoneCopied);});
+    document.getElementById('screenshotModal').addEventListener('click',(e)=>{if(e.target===e.currentTarget)closeImageModal();});
+    document.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeImageModal();});
+    document.querySelectorAll('.lang-btn').forEach(btn=>btn.addEventListener('click',()=>{currentLang=btn.dataset.lang;localStorage.setItem('app_language',currentLang);updateUI();}));
+    
+    function showToast(msg, isError) {
+        const toast = document.getElementById('globalToast');
+        toast.style.backgroundColor = isError ? '#f43f5e' : '#10b981';
+        toast.innerHTML = isError ? `⚠️ ${msg}` : `✅ ${msg}`;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+    
+    function openScreenshot(url){
+        let modal=document.getElementById('screenshotModal'),img=document.getElementById('modalImage');
+        img.src=(url&&url!=='null')?(url.startsWith('/')?API_BASE+url:url):'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Screenshot%3C/text%3E%3C/svg%3E';
+        modal.classList.add('active');
+    }
+    function closeImageModal(){document.getElementById('screenshotModal').classList.remove('active');}
+    function copyOrderId(id){navigator.clipboard.writeText(id);showToast(`📋 Order ID: ${id} copied`);}
+    
+    window.openScreenshot=openScreenshot;window.closeImageModal=closeImageModal;window.copyOrderId=copyOrderId;
+    
+    updateUI();
+    if(myPhone)console.log("Loaded phone:",maskPhone(myPhone));
+</script>
 </body>
 </html>
