@@ -1,4 +1,4 @@
-// database.js - Supabase Client with OTP Store
+// database.js - Supabase Client
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
@@ -9,7 +9,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-// OTP Storage (for session management)
+// Session store for OTP
 const otpStore = new Map();
 
 function saveOTP(phone, otp) {
