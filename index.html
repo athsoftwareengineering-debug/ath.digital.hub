@@ -5,119 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ATH Digital Hub - Live Chat</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: #f0f0f0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .chat-header {
-            background: #007bff;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-        .chat-header h3 {
-            font-size: 18px;
-        }
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-        }
-        .message {
-            margin-bottom: 12px;
-            display: flex;
-        }
-        .message.customer {
-            justify-content: flex-end;
-        }
-        .message.admin {
-            justify-content: flex-start;
-        }
-        .message-content {
-            max-width: 70%;
-            padding: 10px 14px;
-            border-radius: 18px;
-        }
-        .message.customer .message-content {
-            background: #007bff;
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-        .message.admin .message-content {
-            background: #e9ecef;
-            color: black;
-            border-bottom-left-radius: 4px;
-        }
-        .message-time {
-            font-size: 10px;
-            margin-top: 5px;
-            opacity: 0.7;
-        }
-        .message.customer .message-time {
-            text-align: right;
-        }
-        .chat-input {
-            display: flex;
-            padding: 12px;
-            border-top: 1px solid #ddd;
-            background: white;
-            gap: 10px;
-        }
-        .chat-input input {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            font-size: 16px;
-            outline: none;
-        }
-        .chat-input input:focus {
-            border-color: #007bff;
-        }
-        .chat-input button {
-            padding: 12px 24px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .chat-input button:hover {
-            background: #0056b3;
-        }
-        .user-id {
-            padding: 8px;
-            background: #f8f9fa;
-            font-size: 11px;
-            color: #666;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-        }
-        .status {
-            font-size: 11px;
-            color: #28a745;
-            margin-left: 8px;
-        }
-        @media (max-width: 600px) {
-            .chat-input button {
-                padding: 12px 20px;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f0f0; }
+        .container { max-width: 600px; margin: 0 auto; background: white; height: 100vh; display: flex; flex-direction: column; }
+        .chat-header { background: #007bff; color: white; padding: 15px; text-align: center; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; }
+        .message { margin-bottom: 12px; display: flex; }
+        .message.customer { justify-content: flex-end; }
+        .message.admin { justify-content: flex-start; }
+        .message-content { max-width: 70%; padding: 10px 14px; border-radius: 18px; }
+        .message.customer .message-content { background: #007bff; color: white; }
+        .message.admin .message-content { background: #e9ecef; color: black; }
+        .message-time { font-size: 10px; margin-top: 5px; opacity: 0.7; }
+        .chat-input { display: flex; padding: 12px; border-top: 1px solid #ddd; background: white; gap: 10px; }
+        .chat-input input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 25px; font-size: 16px; }
+        .chat-input button { padding: 12px 24px; background: #007bff; color: white; border: none; border-radius: 25px; cursor: pointer; }
+        .user-id { padding: 8px; background: #f8f9fa; font-size: 11px; text-align: center; border-bottom: 1px solid #eee; }
+        .status { font-size: 11px; color: #28a745; margin-left: 8px; }
     </style>
 </head>
 <body>
@@ -134,7 +38,6 @@
                 <div class="message-content">
                     Welcome to ATH Digital Hub! 👋<br>
                     How can we help you today?
-                    <div class="message-time">Just now</div>
                 </div>
             </div>
         </div>
@@ -146,191 +49,82 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // ========== SUPABASE CONFIG (ခင်ဗျားရဲ့ credentials) ==========
         const SUPABASE_URL = 'https://yubbfbmfoycvdxfaecbh.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1YmJmYm1mb3ljdmR4ZmFlY2JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNDQyODIsImV4cCI6MjA5NTcyMDI4Mn0.hYNmdWDour1ZF9if37h8uoOR_ejZjoyqY9qjs7pHEoY';
         
         const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // User ID (local storage မှာ သိမ်းမယ်)
         let userId = localStorage.getItem('ath_chat_user_id');
         if (!userId) {
-            userId = 'user_' + Math.random().toString(36).substr(2, 8) + Date.now().toString(36);
+            userId = 'user_' + Math.random().toString(36).substr(2, 8);
             localStorage.setItem('ath_chat_user_id', userId);
         }
         document.getElementById('userId').innerText = userId;
         
-        // Load messages from database
         async function loadMessages() {
-            try {
-                const { data, error } = await supabase
-                    .from('chat_messages')
-                    .select('*')
-                    .order('created_at', { ascending: true })
-                    .limit(100);
-                
-                if (error) {
-                    console.error('Load error:', error);
-                    return;
-                }
-                
-                const messagesDiv = document.getElementById('chatMessages');
-                messagesDiv.innerHTML = '';
-                
-                if (!data || data.length === 0) {
-                    // Show welcome message if no messages
-                    messagesDiv.innerHTML = `
-                        <div class="message admin">
-                            <div class="message-content">
-                                Welcome to ATH Digital Hub! 👋<br>
-                                How can we help you today?
-                                <div class="message-time">Just now</div>
-                            </div>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                data.forEach(msg => {
-                    const isCurrentUser = msg.user_id === userId;
-                    const isAdmin = msg.role === 'admin';
-                    
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = `message ${isCurrentUser ? 'customer' : 'admin'}`;
-                    
-                    const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    
-                    messageDiv.innerHTML = `
-                        <div class="message-content">
-                            <div>${escapeHtml(msg.message)}</div>
-                            <div class="message-time">${time}</div>
-                        </div>
-                    `;
-                    
-                    messagesDiv.appendChild(messageDiv);
-                });
-                
-                // Auto scroll to bottom
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            } catch (err) {
-                console.error('Load messages error:', err);
+            const { data, error } = await supabase
+                .from('chat_messages')
+                .select('*')
+                .order('created_at', { ascending: true });
+            
+            if (error) {
+                console.error('Load error:', error);
+                return;
             }
+            
+            const messagesDiv = document.getElementById('chatMessages');
+            messagesDiv.innerHTML = '';
+            
+            if (!data || data.length === 0) {
+                messagesDiv.innerHTML = `<div class="message admin"><div class="message-content">Welcome! 👋 How can we help?</div></div>`;
+                return;
+            }
+            
+            data.forEach(msg => {
+                const isCurrentUser = msg.user_id === userId;
+                const div = document.createElement('div');
+                div.className = `message ${isCurrentUser ? 'customer' : 'admin'}`;
+                const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                div.innerHTML = `<div class="message-content"><div>${escapeHtml(msg.message)}</div><div class="message-time">${time}</div></div>`;
+                messagesDiv.appendChild(div);
+            });
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
         
-        // Send message
         async function sendMessage() {
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
-            
             if (!message) return;
             
-            // Disable button temporarily
-            const sendBtn = document.querySelector('.chat-input button');
-            sendBtn.disabled = true;
-            sendBtn.textContent = 'Sending...';
+            const { error } = await supabase
+                .from('chat_messages')
+                .insert([{ message, user_id: userId, role: 'customer', created_at: new Date().toISOString() }]);
             
-            try {
-                const { error } = await supabase
-                    .from('chat_messages')
-                    .insert([
-                        {
-                            message: message,
-                            user_id: userId,
-                            role: 'customer',
-                            created_at: new Date().toISOString()
-                        }
-                    ]);
-                
-                if (error) {
-                    console.error('Send error:', error);
-                    alert('Error sending message: ' + error.message);
-                    return;
-                }
-                
-                input.value = '';
-                // Message will appear via realtime subscription
-                
-            } catch (err) {
-                console.error('Send error:', err);
-                alert('Failed to send message');
-            } finally {
-                sendBtn.disabled = false;
-                sendBtn.textContent = 'Send 📤';
+            if (error) {
+                alert('Error: ' + error.message);
+                return;
             }
+            input.value = '';
         }
         
-        // Realtime subscription (messages appear instantly)
-        let channel = null;
-        
         function setupRealtime() {
-            if (channel) {
-                supabase.removeChannel(channel);
-            }
-            
-            channel = supabase
+            supabase
                 .channel('chat_messages_channel')
-                .on('postgres_changes', 
-                    { 
-                        event: 'INSERT', 
-                        schema: 'public', 
-                        table: 'chat_messages' 
-                    },
-                    (payload) => {
-                        console.log('New message:', payload.new);
-                        loadMessages(); // Reload messages
-                    }
-                )
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, () => loadMessages())
                 .subscribe((status) => {
-                    console.log('Realtime status:', status);
                     const statusEl = document.getElementById('status');
                     if (status === 'SUBSCRIBED') {
                         statusEl.textContent = '● Connected';
                         statusEl.style.color = '#28a745';
-                    } else {
-                        statusEl.textContent = '● Connecting...';
-                        statusEl.style.color = '#ffc107';
                     }
                 });
         }
         
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
+        function handleKeyPress(e) { if (e.key === 'Enter') sendMessage(); }
+        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
         
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        // Create table if not exists (run this once in Supabase SQL Editor)
-        async function initDatabase() {
-            try {
-                // Test connection
-                const { error } = await supabase.from('chat_messages').select('count').limit(1);
-                if (error && error.message.includes('does not exist')) {
-                    console.warn('Table may not exist. Please run the SQL script in Supabase.');
-                    document.getElementById('status').textContent = '⚠️ Table not ready';
-                    document.getElementById('status').style.color = '#dc3545';
-                } else {
-                    console.log('Database ready');
-                }
-            } catch (err) {
-                console.error('Init error:', err);
-            }
-        }
-        
-        // Start app
         loadMessages();
         setupRealtime();
-        initDatabase();
-        
-        // Refresh messages every 30 seconds as backup
-        setInterval(() => {
-            loadMessages();
-        }, 30000);
     </script>
 </body>
 </html>
