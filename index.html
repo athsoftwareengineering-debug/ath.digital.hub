@@ -476,6 +476,7 @@
         <div class="menu-item" id="darkModeMenuItem"><i class="fas fa-moon"></i> Dark Mode</div>
         <div class="menu-item" id="langMenuItem"><i class="fas fa-globe"></i> Language</div>
         <div class="menu-item" data-page="rate"><i class="fas fa-star"></i> Rate App</div>
+        <div class="menu-item" id="adminMenuItem" style="display:none;" data-page="admin"><i class="fas fa-cog"></i> Admin Panel</div>
     </div>
     <div class="drawer-footer">
         <div class="version">v3.0.0</div>
@@ -580,7 +581,7 @@
 <script>
     // ========== SUPABASE CONFIG ==========
     const SUPABASE_URL = 'https://yubbfbmfoycvdxfaecbh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1YmJmYm1mb3ljdmR4ZmFlY2JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNDQyODIsImV4cCI6MjA5NTcyMDI4Mn0.hYNmdWDour1ZF9if37h8uoOR_ejZjoyqY9qjs7pHEoY';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1YmJmYm1mb3ljdmR4ZmFlY2JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNDQyODIsImV4cCI6MjA5NTcyMDI4Mn0.hYNmdWDour1ZF9if37h8uoOR_ejZjoyqY9qjs7pHEoY';  // ← Replace with your anon key
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     // ========== GLOBALS ==========
@@ -833,6 +834,8 @@
             showToast('❓ FAQ page coming soon', false);
         } else if (page === 'rate') {
             showToast('⭐ Thank you for rating!', false);
+        } else if (page === 'admin') {
+            window.location.href = '/admin.html';
         }
     }
     
@@ -883,11 +886,17 @@
         en: { heroSubtitle: 'High-speed Data & Voice Plans — VIP Experience', buyNow: 'Purchase Now' }
     };
     
+    // Check admin
+    if (localStorage.getItem('adminToken') === 'logged_in') {
+        document.getElementById('adminMenuItem').style.display = 'flex';
+    }
+    
     // ========== INIT ==========
     function init() {
         setTheme();
         loadProducts();
         
+        // Event Listeners
         document.getElementById('hamburgerBtn').addEventListener('click', openDrawer);
         document.getElementById('closeDrawerBtn').addEventListener('click', closeDrawer);
         document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
