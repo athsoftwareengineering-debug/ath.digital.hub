@@ -1,5 +1,5 @@
 // ============================================================
-// ATH DIGITAL HUB - SERVER (Auto-Increment ID + CSP Fixed)
+// ATH DIGITAL HUB - SERVER (Complete)
 // ============================================================
 
 const express = require('express');
@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3000;
 // ========== TRUST PROXY ==========
 app.set('trust proxy', 1);
 
-// ========== SECURITY MIDDLEWARE (FULL CSP FOR TAWK.TO) ==========
+// ========== SECURITY MIDDLEWARE ==========
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -105,6 +105,50 @@ const upload = multer({
 
 // ========== CRON JOB SECURITY ==========
 const CRON_API_KEY = '21cef185318d538e47385bdd44d00e6231f59370fd792a6c5709f8d4aa48f82e';
+
+// ========== ORDER ID GENERATOR ==========
+async function getNextOrderId() {
+    try {
+        const { count, error: countError } = await supabase
+            .from('orders')
+            .select('*', { count: 'exact', head: true });
+        
+        if (countError) {
+            console.error('Count error:', countError);
+            return 1;
+        }
+        
+        if (count === 0) {
+            console.log('📝 No orders found - starting from ID 1');
+            return 1;
+        }
+        
+        const { data, error } = await supabase
+            .from('orders')
+            .select('id')
+            .order('id', { ascending: false })
+            .limit(1);
+        
+        if (error) {
+            console.error('Max ID error:', error);
+            return 1;
+        }
+        
+        if (!data || data.length === 0) {
+            return 1;
+        }
+        
+        const maxId = data[0].id;
+        const nextId = maxId + 1;
+        
+        console.log(`📝 Current max ID: ${maxId} → Next ID: ${nextId}`);
+        return nextId;
+        
+    } catch (err) {
+        console.error('❌ ID generation error:', err);
+        return Math.floor(Date.now() / 1000);
+    }
+}
 
 // ========== SUPABASE STORAGE HELPERS ==========
 
@@ -638,7 +682,7 @@ app.post('/api/admin/reset-system', async (req, res) => {
     }
 });
 
-// ========== CREATE ORDER (Database Auto-Increment ID) ==========
+// ========== CREATE ORDER ==========
 app.post('/api/orders', upload.single('slip'), [
     body('phone').isMobilePhone().withMessage('Invalid phone number'),
     body('plan').notEmpty().withMessage('Plan is required'),
@@ -689,10 +733,12 @@ app.post('/api/orders', upload.single('slip'), [
             );
         }
         
-        // Let Supabase auto-generate the ID (no manual ID needed)
+        const orderId = await getNextOrderId();
+        
         const { data, error } = await supabase
             .from('orders')
             .insert([{
+                id: orderId,
                 phone: phone,
                 plan: plan,
                 price: parseInt(price),
@@ -700,8 +746,7 @@ app.post('/api/orders', upload.single('slip'), [
                 slip_url: slipUrl,
                 image_hash: imageHash
             }])
-            .select('id')
-            .single();
+            .select();
         
         if (error) {
             console.error('Insert error:', error);
@@ -710,10 +755,10 @@ app.post('/api/orders', upload.single('slip'), [
         
         await updateUserStats(phone, false);
         
-        console.log(`✅ Order created: ${data.id}`);
+        console.log(`✅ Order created: ${orderId}`);
         res.json({ 
             success: true, 
-            orderId: data.id,
+            orderId: orderId,
             message: 'Order created successfully'
         });
         
@@ -806,6 +851,127 @@ app.post('/api/admin/login', (req, res) => {
     }
 });
 
+// ========== CHAT API (Private Chat - Customer to Admin) ==========
+
+// Get messages for a specific customer
+app.get('/api/chat/messages/:phone', async (req, res) => {
+    try {
+        const { phone } = req.params;
+        
+        if (!phone || phone === 'null' || phone === 'undefined') {
+            return res.status(400).json({ success: false, messages: [], error: 'Invalid phone' });
+        }
+        
+        const { data, error } = await supabase
+            .from('chat_messages')
+            .select('*')
+            .or(`sender_id.eq.${phone},sender_id.eq.admin`)
+            .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        res.json({ success: true, messages: data || [] });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Send message (customer or admin)
+app.post('/api/chat/send', async (req, res) => {
+    try {
+        const { sender_type, sender_id, sender_name, message } = req.body;
+        
+        if (!sender_type || !sender_id || !message) {
+            return res.status(400).json({ success: false, error: 'Missing required fields' });
+        }
+        
+        const { data, error } = await supabase
+            .from('chat_messages')
+            .insert([{
+                sender_type: sender_type,
+                sender_id: sender_id,
+                sender_name: sender_name || (sender_type === 'admin' ? 'Admin' : sender_id),
+                message: message,
+                is_read: false
+            }])
+            .select();
+        
+        if (error) throw error;
+        
+        res.json({ success: true, message: data[0] });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get all messages for admin (grouped by customer)
+app.get('/api/chat/admin/all', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('chat_messages')
+            .select('*')
+            .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        
+        // Group by customer
+        const customers = {};
+        (data || []).forEach(msg => {
+            if (msg.sender_type === 'customer') {
+                if (!customers[msg.sender_id]) {
+                    customers[msg.sender_id] = {
+                        phone: msg.sender_id,
+                        name: msg.sender_name,
+                        messages: []
+                    };
+                }
+                customers[msg.sender_id].messages.push(msg);
+            } else if (msg.sender_type === 'admin') {
+                // Add to last customer
+                const lastCustomer = Object.values(customers).pop();
+                if (lastCustomer) lastCustomer.messages.push(msg);
+            }
+        });
+        
+        res.json({ success: true, customers: customers });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Mark messages as read
+app.put('/api/chat/mark-read', async (req, res) => {
+    try {
+        const { sender_id } = req.body;
+        
+        const { error } = await supabase
+            .from('chat_messages')
+            .update({ is_read: true })
+            .eq('is_read', false)
+            .neq('sender_id', sender_id);
+        
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get unread count
+app.get('/api/chat/unread-count', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('chat_messages')
+            .select('id', { count: 'exact' })
+            .eq('is_read', false)
+            .eq('sender_type', 'customer');
+        
+        if (error) throw error;
+        res.json({ success: true, count: data?.length || 0 });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 app.use('/uploads', express.static('uploads'));
 
 // ========== START SERVER ==========
@@ -813,6 +979,5 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📱 Store: /index.html`);
     console.log(`👨‍💼 Admin: /admin.html`);
-    console.log(`🔢 Order ID: Database Auto-Increment`);
-    console.log(`🗑️ System Reset: Will delete ALL storage files, orders, and user stats`);
+    console.log(`💬 Private Chat: Customer ↔ Admin`);
 });
