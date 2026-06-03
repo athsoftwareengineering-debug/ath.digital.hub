@@ -1,567 +1,282 @@
-// server.js - MYTEL REAL BALANCE API (ONLY MYTEL API - NO FALLBACK)
+// server.js - Express Server (Optimized)
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
-const crypto = require('crypto');
-const axios = require('axios');
-const session = require('express-session');
-const rateLimit = require('express-rate-limit');
 const { supabase, supabaseAdmin } = require('./database');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Trust proxy for Render
-app.set('trust proxy', 1);
-
-// ==================== RATE LIMITING ====================
-const mytelApiLimiter = rateLimit({
-    windowMs: 60 * 1000,
-    max: 3,
-    message: { success: false, error: 'Too many requests. Please wait a moment.' },
-    keyGenerator: (req) => req.body.phone || req.ip,
-});
-
-const balanceApiLimiter = rateLimit({
-    windowMs: 30 * 1000,
-    max: 2,
-    message: { success: false, error: 'Please wait before checking balance again.' },
-});
-
-// ==================== MIDDLEWARE ====================
-app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Middleware (Increased limits for handling large Base64/Images safely)
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(__dirname));
 
-// ==================== SESSION ====================
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'mytel-real-balance-secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
-        sameSite: 'lax'
-    }
-}));
-
-// ==================== UPLOADS ====================
+// Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
 app.use('/uploads', express.static('uploads'));
 
+// File upload configuration
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'uploads/'),
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
     filename: (req, file, cb) => {
         const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
         cb(null, uniqueName);
     }
 });
-const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
-
-// ==================== MYTEL API CONFIGURATION ====================
-const MYTEL_AUTH_BASE = process.env.MYTEL_AUTH_BASE || 'https://apis.mytel.com.mm/myid/authen/v1.0';
-const MYTEL_ACCOUNT_BASE = process.env.MYTEL_ACCOUNT_BASE || 'https://apis.mytel.com.mm/account-detail/api/v1.2/individual';
-
-// Rotating device IDs
-const deviceIdPool = [];
-for (let i = 0; i < 10; i++) {
-    deviceIdPool.push(crypto.randomBytes(16).toString('hex'));
-}
-let deviceIdIndex = 0;
-
-function getNextDeviceId() {
-    const deviceId = deviceIdPool[deviceIdIndex % deviceIdPool.length];
-    deviceIdIndex++;
-    return deviceId;
-}
-
-function getMytelHeaders(accessToken = null) {
-    const headers = {
-        'host': 'apis.mytel.com.mm',
-        'accept-language': 'en',
-        'accept-encoding': 'gzip',
-        'user-agent': 'okhttp/4.12.0',
-        'content-type': 'application/json; charset=UTF-8',
-        'connection': 'Keep-Alive'
-    };
-    if (accessToken) {
-        headers['authorization'] = `Bearer ${accessToken}`;
-    }
-    return headers;
-}
-
-function convertToEnglishNumbers(input) {
-    if (!input) return '';
-    const myanmarNumbers = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
-    const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-    let result = input.toString();
-    for (let i = 0; i < myanmarNumbers.length; i++) {
-        result = result.replace(new RegExp(myanmarNumbers[i], 'g'), englishNumbers[i]);
-    }
-    return result.replace(/\D/g, '');
-}
-
-function formatPhone(phone) {
-    let cleaned = phone.toString().replace(/\s/g, '');
-    if (cleaned.startsWith('+95')) {
-        cleaned = '0' + cleaned.substring(3);
-    } else if (cleaned.startsWith('959')) {
-        cleaned = '0' + cleaned.substring(2);
-    }
-    if (!cleaned.startsWith('09')) {
-        cleaned = '09' + cleaned;
-    }
-    return cleaned;
-}
-
-// ==================== MYTEL API FUNCTIONS ====================
-
-async function sendMytelOTP(phone) {
-    try {
-        const url = `${MYTEL_AUTH_BASE}/login/method/otp/get-otp?phoneNumber=${phone}`;
-        console.log(`📡 [SEND OTP] ${phone}`);
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(), 
-            timeout: 20000 
-        });
-        
-        if (response.data && response.data.errorCode === 200) {
-            return { success: true, message: 'OTP sent successfully' };
-        }
-        return { success: false, error: response.data?.message || 'OTP send failed' };
-    } catch (error) {
-        console.error(`❌ Send OTP failed:`, error.response?.status);
-        return { success: false, error: error.message };
-    }
-}
-
-async function validateMytelOTP(phone, otp, deviceId) {
-    try {
-        const url = `${MYTEL_AUTH_BASE}/login/method/otp/validate-otp`;
-        const payload = {
-            appVersion: "2.0.16",
-            buildVersionApp: "300",
-            deviceId: deviceId,
-            imei: deviceId,
-            os: "ANDROID",
-            osApp: "ANDROID",
-            password: otp,
-            phoneNumber: phone,
-            version: "8.1"
-        };
-        
-        console.log(`📡 [VALIDATE OTP] ${phone} | Device: ${deviceId.substring(0, 8)}...`);
-        const response = await axios.post(url, payload, { 
-            headers: getMytelHeaders(), 
-            timeout: 15000 
-        });
-        
-        if (response.data && response.data.errorCode === 200) {
-            const accessToken = response.data.result?.access_token;
-            return { 
-                success: true, 
-                accessToken: accessToken,
-                refreshToken: response.data.result?.refresh_token
-            };
-        }
-        return { success: false, error: response.data?.message || 'Invalid OTP' };
-    } catch (error) {
-        console.error(`❌ Validate OTP failed:`, error.response?.status);
-        return { success: false, error: error.message };
-    }
-}
-
-async function refreshAccessToken(refreshToken) {
-    try {
-        const url = `${MYTEL_AUTH_BASE}/token/refresh`;
-        const payload = { refreshToken: refreshToken };
-        const response = await axios.post(url, payload, { 
-            headers: getMytelHeaders(), 
-            timeout: 10000 
-        });
-        
-        if (response.data && response.data.errorCode === 200) {
-            return { success: true, accessToken: response.data.result?.access_token };
-        }
-        return { success: false };
-    } catch (error) {
-        return { success: false };
-    }
-}
-
-async function getRealAccountBalance(accessToken) {
-    try {
-        const url = `${MYTEL_ACCOUNT_BASE}/account-balance`;
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(accessToken), 
-            timeout: 10000 
-        });
-        
-        if (response.data && response.data.errorCode === 200 && response.data.result) {
-            return { success: true, balance: response.data.result.balance || 0 };
-        }
-        return { success: false, balance: 0 };
-    } catch (error) {
-        return { success: false, balance: 0 };
-    }
-}
-
-async function getRealDataUsage(accessToken) {
-    try {
-        const url = `${MYTEL_ACCOUNT_BASE}/data-usage`;
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(accessToken), 
-            timeout: 10000 
-        });
-        
-        if (response.data && response.data.errorCode === 200 && response.data.result) {
-            let data = response.data.result.remainingData || response.data.result.remaining || 0;
-            if (data < 100 && response.data.result.unit === 'GB') data = data * 1024;
-            return { success: true, data: Math.round(data) };
-        }
-        return { success: false, data: 0 };
-    } catch (error) {
-        return { success: false, data: 0 };
-    }
-}
-
-async function getRealVoiceUsage(accessToken) {
-    try {
-        const url = `${MYTEL_ACCOUNT_BASE}/voice-usage`;
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(accessToken), 
-            timeout: 10000 
-        });
-        
-        if (response.data && response.data.errorCode === 200 && response.data.result) {
-            return { success: true, minutes: response.data.result.remainingMinutes || 0 };
-        }
-        return { success: false, minutes: 0 };
-    } catch (error) {
-        return { success: false, minutes: 0 };
-    }
-}
-
-async function getRealSmsUsage(accessToken) {
-    try {
-        const url = `${MYTEL_ACCOUNT_BASE}/sms-usage`;
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(accessToken), 
-            timeout: 10000 
-        });
-        
-        if (response.data && response.data.errorCode === 200 && response.data.result) {
-            return { success: true, sms: response.data.result.remainingSMS || 0 };
-        }
-        return { success: false, sms: 0 };
-    } catch (error) {
-        return { success: false, sms: 0 };
-    }
-}
-
-async function getRealPoints(accessToken) {
-    try {
-        const url = `${MYTEL_ACCOUNT_BASE}/account-main`;
-        const response = await axios.get(url, { 
-            headers: getMytelHeaders(accessToken), 
-            timeout: 10000 
-        });
-        
-        if (response.data && response.data.errorCode === 200 && response.data.result) {
-            const points = response.data.result.loyaltyPoints || response.data.result.points || 0;
-            return { success: true, points: points };
-        }
-        return { success: false, points: 0 };
-    } catch (error) {
-        return { success: false, points: 0 };
-    }
-}
-
-// ==================== AUTH API ====================
-
-app.post('/api/auth/send-otp', mytelApiLimiter, async (req, res) => {
-    console.log('\n📨 POST /api/auth/send-otp');
-    
-    try {
-        const { phone } = req.body;
-        if (!phone || phone.length < 9) {
-            return res.status(400).json({ success: false, error: 'ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ' });
-        }
-        
-        const formattedPhone = formatPhone(phone);
-        const result = await sendMytelOTP(formattedPhone);
-        
-        if (result.success) {
-            req.session.pendingPhone = formattedPhone;
-            req.session.deviceId = getNextDeviceId();
-            
-            res.json({ 
-                success: true, 
-                message: 'OTP ကုဒ် ပို့ပြီးပါပြီ။ သင့် SMS ကို စစ်ဆေးပါ။',
-                expiresIn: 300 
-            });
-        } else {
-            res.status(500).json({ success: false, error: result.error || 'OTP ပို့ရန် မအောင်မြင်ပါ။ ထပ်မံကြိုးစားပါ။' });
-        }
-    } catch (error) {
-        res.status(500).json({ success: false, error: 'Server error' });
-    }
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB Limit
 });
 
-app.post('/api/auth/verify-otp', mytelApiLimiter, async (req, res) => {
-    console.log('\n🔐 POST /api/auth/verify-otp');
-    
+// Serve frontend views
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+// Submit Order API
+app.post('/api/orders', upload.single('screenshot'), async (req, res) => {
     try {
-        let { phone, otp } = req.body;
-        if (!phone || !otp) {
-            return res.status(400).json({ success: false, error: 'ဖုန်းနံပါတ်နှင့် OTP ထည့်ပါ' });
+        const { orderId, phone, planCode, planName, price } = req.body;
+        
+        if (!orderId || !phone || !planCode || !planName || !price) {
+            return res.status(400).json({ success: false, error: 'Missing required fields' });
         }
-        
-        const convertedOtp = convertToEnglishNumbers(otp);
-        const formattedPhone = formatPhone(phone);
-        const deviceId = req.session.deviceId || getNextDeviceId();
-        
-        const validation = await validateMytelOTP(formattedPhone, convertedOtp, deviceId);
-        
-        if (validation.success) {
-            req.session.userPhone = formattedPhone;
-            req.session.isAuthenticated = true;
-            req.session.accessToken = validation.accessToken;
-            req.session.refreshToken = validation.refreshToken;
-            req.session.tokenExpiry = Date.now() + 55 * 60 * 1000;
-            delete req.session.pendingPhone;
-            delete req.session.deviceId;
-            
-            const { data: existing } = await supabaseAdmin
-                .from('user_stats')
-                .select('phone')
-                .eq('phone', formattedPhone)
-                .maybeSingle();
-            
-            if (!existing) {
-                await supabaseAdmin
-                    .from('user_stats')
-                    .insert([{ phone: formattedPhone, order_count: 0, reject_count: 0, suspect_flag: false, blocked: false }]);
-            }
-            
-            console.log(`✅ Login successful: ${formattedPhone}`);
-            res.json({ 
-                success: true, 
-                message: 'အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်',
-                user: { phone: formattedPhone }
-            });
-        } else {
-            res.status(401).json({ 
-                success: false, 
-                error: 'OTP ကုဒ် မှားယွင်းနေပါသည်။ အင်္ဂလိပ်ဂဏန်း ၆ လုံးဖြင့် ထပ်မံကြိုးစားပါ။' 
-            });
+
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'Payment screenshot is required' });
         }
-    } catch (error) {
-        res.status(500).json({ success: false, error: 'Server error' });
-    }
-});
 
-app.get('/api/auth/status', async (req, res) => {
-    if (req.session.isAuthenticated && req.session.userPhone) {
-        if (req.session.tokenExpiry && Date.now() > req.session.tokenExpiry) {
-            if (req.session.refreshToken) {
-                const refreshResult = await refreshAccessToken(req.session.refreshToken);
-                if (refreshResult.success) {
-                    req.session.accessToken = refreshResult.accessToken;
-                    req.session.tokenExpiry = Date.now() + 55 * 60 * 1000;
-                } else {
-                    req.session.isAuthenticated = false;
-                    return res.json({ authenticated: false });
-                }
-            }
+        // Check if user is blocked
+        const { data: userStat } = await supabase
+            .from('user_stats')
+            .select('blocked')
+            .eq('phone', phone)
+            .single();
+
+        if (userStat && userStat.blocked) {
+            // Delete uploaded file if user is blocked
+            fs.unlinkSync(req.file.path);
+            return res.status(403).json({ success: false, error: 'Your phone number has been suspended.' });
         }
-        res.json({ authenticated: true, phone: req.session.userPhone });
-    } else {
-        res.json({ authenticated: false });
-    }
-});
 
-app.post('/api/auth/logout', (req, res) => {
-    req.session.destroy();
-    res.json({ success: true, message: 'Logout အောင်မြင်ပါသည်' });
-});
+        const screenshotUrl = `/uploads/${req.file.filename}`;
 
-// ==================== REAL BALANCE API ====================
-
-app.get('/api/user/balance', balanceApiLimiter, async (req, res) => {
-    if (!req.session.isAuthenticated) {
-        return res.status(401).json({ success: false, error: 'ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ', requireLogin: true });
-    }
-    
-    const accessToken = req.session.accessToken;
-    
-    if (!accessToken) {
-        return res.json({ success: false, error: 'Session expired. Please login again.', requireLogin: true });
-    }
-    
-    try {
-        const [balanceResult, dataResult, voiceResult, smsResult, pointsResult] = await Promise.all([
-            getRealAccountBalance(accessToken),
-            getRealDataUsage(accessToken),
-            getRealVoiceUsage(accessToken),
-            getRealSmsUsage(accessToken),
-            getRealPoints(accessToken)
-        ]);
-        
-        res.json({
-            success: true,
-            balance: balanceResult.balance || 0,
-            minutes: voiceResult.minutes || 0,
-            data: dataResult.data || 0,
-            sms: smsResult.sms || 0,
-            points: pointsResult.points || 0,
-            lastUpdated: new Date().toISOString(),
-            source: 'mytel-real-api'
-        });
-    } catch (error) {
-        res.json({ success: false, error: 'Unable to fetch balance', requireLogin: false });
-    }
-});
-
-// ==================== ORDERS API ====================
-
-app.get('/api/user/orders', async (req, res) => {
-    if (!req.session.isAuthenticated) {
-        return res.status(401).json({ success: false, error: 'ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ' });
-    }
-    
-    try {
-        const { data, error } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('phone', req.session.userPhone)
-            .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        res.json({ success: true, orders: data || [] });
-    } catch (error) {
-        res.json({ success: true, orders: [] });
-    }
-});
-
-app.post('/api/orders', upload.single('slip'), async (req, res) => {
-    if (!req.session.isAuthenticated) {
-        return res.status(401).json({ success: false, error: 'ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ' });
-    }
-    
-    try {
-        const { plan, price } = req.body;
-        const phone = req.session.userPhone;
-        const slipFile = req.file;
-        
-        let slipUrl = slipFile ? `/uploads/${slipFile.filename}` : null;
-        const orderId = Date.now();
-        
-        const { error } = await supabase
+        // Insert order into Supabase
+        const { error: orderError } = await supabase
             .from('orders')
             .insert([{
                 id: orderId,
-                phone: phone,
-                plan: plan,
-                price: parseInt(price),
-                status: 'Pending',
-                slip_url: slipUrl,
-                created_at: new Date().toISOString()
+                phone,
+                plan_code: planCode,
+                plan_name: planName,
+                price: parseFloat(price),
+                screenshot_url: screenshotUrl,
+                status: 'pending'
             }]);
+
+        if (orderError) {
+            if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+            return res.status(500).json({ success: false, error: orderError.message });
+        }
+
+        // Upsert user stats
+        const { data: existingUser } = await supabase
+            .from('user_stats')
+            .select('order_count')
+            .eq('phone', phone)
+            .single();
+
+        if (existingUser) {
+            await supabase
+                .from('user_stats')
+                .update({ order_count: existingUser.order_count + 1, updated_at: new Date() })
+                .eq('phone', phone);
+        } else {
+            await supabase
+                .from('user_stats')
+                .insert([{ phone, order_count: 1 }]);
+        }
+
+        res.json({ success: true, message: 'Order submitted successfully' });
+    } catch (error) {
+        console.error('Error submitting order:', error);
+        if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Check Phone Status (Blocked/Suspect)
+app.get('/api/user-status/:phone', async (req, res) => {
+    try {
+        const { phone } = req.params;
+        const { data, error } = await supabase
+            .from('user_stats')
+            .select('*')
+            .eq('phone', phone)
+            .single();
+            
+        if (error && error.code !== 'PGRST116') {
+            return res.status(500).json({ success: false, error: error.message });
+        }
         
-        if (error) throw error;
-        res.json({ success: true, orderId: orderId, message: 'အော်ဒါအောင်မြင်ပါသည်' });
+        res.json({ success: true, status: data || { blocked: false, suspect_flag: false } });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// ==================== ADMIN API ====================
-
+// Fetch Active Orders for Admin
 app.get('/api/admin/orders', async (req, res) => {
     try {
-        const { data } = await supabaseAdmin.from('orders').select('*').order('created_at', { ascending: false });
-        res.json({ orders: data || [] });
+        const { data, error } = await supabaseAdmin
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: false });
+            
+        if (error) return res.status(500).json({ success: false, error: error.message });
+        res.json(data);
     } catch (error) {
-        res.json({ orders: [] });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.get('/api/admin/user-stats', async (req, res) => {
+// Fetch Users for Admin
+app.get('/api/admin/users', async (req, res) => {
     try {
-        const { data } = await supabaseAdmin.from('user_stats').select('*').order('order_count', { ascending: false });
-        res.json({ stats: data || [] });
+        const { data, error } = await supabaseAdmin
+            .from('user_stats')
+            .select('*')
+            .order('updated_at', { ascending: false });
+            
+        if (error) return res.status(500).json({ success: false, error: error.message });
+        res.json(data);
     } catch (error) {
-        res.json({ stats: [] });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.put('/api/admin/orders/:id/approve', async (req, res) => {
+// Approve Order
+app.post('/api/admin/orders/:id/approve', async (req, res) => {
     try {
-        await supabaseAdmin.from('orders').update({ status: 'Approved', activated_at: new Date().toISOString() }).eq('id', req.params.id);
-        res.json({ success: true });
+        const { id } = req.params;
+        const { error } = await supabaseAdmin
+            .from('orders')
+            .update({ status: 'approved', updated_at: new Date() })
+            .eq('id', id);
+            
+        if (error) return res.status(500).json({ success: false, error: error.message });
+        res.json({ success: true, message: 'Order approved' });
     } catch (error) {
-        res.json({ success: false });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.put('/api/admin/orders/:id/reject', async (req, res) => {
+// Reject Order
+app.post('/api/admin/orders/:id/reject', async (req, res) => {
     try {
-        await supabaseAdmin.from('orders').update({ status: 'Rejected' }).eq('id', req.params.id);
-        res.json({ success: true });
+        const { id } = req.params;
+        
+        const { data: order } = await supabaseAdmin
+            .from('orders')
+            .select('phone')
+            .eq('id', id)
+            .single();
+
+        const { error } = await supabaseAdmin
+            .from('orders')
+            .update({ status: 'rejected', updated_at: new Date() })
+            .eq('id', id);
+            
+        if (error) return res.status(500).json({ success: false, error: error.message });
+
+        if (order) {
+            const { data: userStat } = await supabaseAdmin
+                .from('user_stats')
+                .select('reject_count')
+                .eq('phone', order.phone)
+                .single();
+
+            if (userStat) {
+                const newRejectCount = userStat.reject_count + 1;
+                const flagSuspect = newRejectCount >= 3;
+                await supabaseAdmin
+                    .from('user_stats')
+                    .update({ 
+                        reject_count: newRejectCount, 
+                        suspect_flag: flagSuspect,
+                        updated_at: new Date() 
+                    })
+                    .eq('phone', order.phone);
+            }
+        }
+        res.json({ success: true, message: 'Order rejected' });
     } catch (error) {
-        res.json({ success: false });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
+// Update User Status (Block/Unblock/Clear)
+app.post('/api/admin/users/:phone/status', async (req, res) => {
+    try {
+        const { phone } = req.params;
+        const { blocked, suspect_flag, clear_rejects } = req.body;
+        
+        let updateData = { updated_at: new Date() };
+        if (blocked !== undefined) updateData.blocked = blocked;
+        if (suspect_flag !== undefined) updateData.suspect_flag = suspect_flag;
+        if (clear_rejects) {
+            updateData.reject_count = 0;
+            updateData.suspect_flag = false;
+        }
+
+        const { error } = await supabaseAdmin
+            .from('user_stats')
+            .update(updateData)
+            .eq('phone', phone);
+
+        if (error) return res.status(500).json({ success: false, error: error.message });
+        res.json({ success: true, message: 'User updated successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete Order API
 app.delete('/api/admin/orders/:id', async (req, res) => {
     try {
-        await supabaseAdmin.from('orders').delete().eq('id', req.params.id);
-        res.json({ success: true });
+        const { id } = req.params;
+        const { error } = await supabaseAdmin.from('orders').delete().eq('id', id);
+        if (error) return res.status(500).json({ success: false, error: error.message });
+        res.json({ success: true, message: 'Order deleted successfully' });
     } catch (error) {
-        res.json({ success: false });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
+// Admin Login
 app.post('/api/admin/login', (req, res) => {
-    if (req.body.password === process.env.ADMIN_PASSWORD) {
-        res.json({ success: true });
+    const { password } = req.body;
+    if (password === process.env.ADMIN_PASSWORD) {
+        res.json({ success: true, message: 'Login successful' });
     } else {
-        res.status(401).json({ success: false });
+        res.status(401).json({ success: false, message: 'Invalid password' });
     }
 });
 
-// ==================== HEALTH CHECK ====================
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// ==================== STATIC ROUTES ====================
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
-
-// ==================== START SERVER ====================
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`
-╔══════════════════════════════════════════════════════════════════════════╗
-║                                                                          ║
-║   🚀 MYTEL REAL BALANCE API - PRODUCTION READY                          ║
-║                                                                          ║
-║   ✅ Mytel API Only (No Fallback)                                        ║
-║   ✅ Rate Limiting Enabled (3 req/min for OTP)                           ║
-║   ✅ Rotating Device IDs                                                 ║
-║   ✅ Token Refresh Support                                               ║
-║   ✅ Session Management                                                  ║
-║                                                                          ║
-║   📱 Store:  https://ath-digital-hub.onrender.com                        ║
-║   👨‍💼 Admin:  https://ath-digital-hub.onrender.com/admin.html            ║
-║                                                                          ║
-╚══════════════════════════════════════════════════════════════════════════╝
-    `);
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
