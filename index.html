@@ -1,236 +1,236 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Login | ATH DIGITAL HUB</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mytel VIP Store</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary-color: #007aff;
+            --bg-color: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-color: #1d1d1f;
+        }
+        
         body {
-            background: linear-gradient(135deg, #0a0c15 0%, #1a1f2e 100%);
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
             padding: 20px;
+            display: flex;
+            justify-content: center;
         }
-        .login-card {
-            background: rgba(18,22,35,0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(0,212,255,0.3);
-            border-radius: 28px;
-            padding: 40px 32px;
+
+        .container {
+            width: 100%;
             max-width: 450px;
-            width: 100%;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-        .logo { text-align: center; margin-bottom: 32px; }
-        .logo h1 { background: linear-gradient(135deg, #fff, #00d4ff); background-clip: text; -webkit-background-clip: text; color: transparent; }
-        .step { display: none; animation: fadeIn 0.3s ease; }
-        .step.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .form-group { margin-bottom: 20px; }
-        label { font-size: 0.75rem; color: #94a3b8; margin-bottom: 8px; display: block; }
-        input {
-            width: 100%;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #2d3a5e;
-            border-radius: 14px;
-            padding: 14px 16px;
-            color: white;
-            font-size: 1rem;
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--primary-color);
         }
-        input:focus { outline: none; border-color: #00d4ff; }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"], select, input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d2d2d7;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background-color: #fafafa;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #fff;
+        }
+
         button {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #00d4ff, #0891b2);
+            background-color: var(--primary-color);
+            color: white;
             border: none;
-            border-radius: 14px;
-            font-weight: 600;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.2s;
+            margin-top: 10px;
         }
-        button:hover { transform: translateY(-2px); filter: brightness(1.05); }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
-        .timer { text-align: center; font-size: 0.7rem; color: #64748b; margin-top: 16px; }
-        .message { font-size: 0.7rem; text-align: center; margin-top: 12px; padding: 8px; border-radius: 10px; }
-        .message.error { color: #f43f5e; background: rgba(244,63,94,0.1); }
-        .message.success { color: #10b981; background: rgba(16,185,129,0.1); }
-        .spinner { width: 18px; height: 18px; border: 2px solid rgba(3,7,18,0.3); border-top-color: #030712; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .footer { text-align: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
-        .footer a { color: #64748b; font-size: 0.7rem; text-decoration: none; }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .admin-btn {
+            background-color: #34c759;
+            margin-top: 15px;
+        }
+
+        .admin-btn:hover {
+            background-color: #28a745;
+        }
+
+        /* Admin Section Styling */
+        .admin-section {
+            display: none;
+            margin-top: 25px;
+            border-top: 2px dashed #d2d2d7;
+            padding-top: 20px;
+        }
+
+        .order-card {
+            background: #f5f5f7;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .order-card img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
-<div class="login-card">
-    <div class="logo"><h1><i class="fas fa-bolt"></i> ATH DIGITAL HUB</h1><p style="color:#94a3b8; font-size:0.7rem">MyTel VIP Store</p></div>
-    
-    <div id="stepPhone" class="step active">
-        <div class="form-group"><label>📱 ဖုန်းနံပါတ်</label><input type="tel" id="phoneInput" placeholder="09xxxxxxxxx" autocomplete="off"></div>
-        <button id="sendOtpBtn">📨 OTP ကုဒ်ရယူမည်</button>
-        <div id="phoneMessage" class="message"></div>
+
+<div class="container">
+    <div id="user-view">
+        <h2>Mytel VIP Data Store</h2>
+        <form id="orderForm">
+            <div class="form-group">
+                <label for="phone">Mytel ဖုန်းနံပါတ်</label>
+                <input type="text" id="phone" placeholder="0996xxxxxxx" required>
+            </div>
+
+            <div class="form-group">
+                <label for="plan">Data Plan ရွေးချယ်ရန်</label>
+                <select id="plan" required>
+                    <option value="5GB - 1500 Ks">5GB (7 Days) - 1500 Ks</option>
+                    <option value="10GB - 2500 Ks">10GB (30 Days) - 2500 Ks</option>
+                    <option value="20GB - 4500 Ks">20GB (30 Days) - 4500 Ks</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="slip">KPay / Wave Slip ဓာတ်ပုံတင်ရန်</label>
+                <input type="file" id="slip" accept="image/*" required>
+            </div>
+
+            <button type="submit">ဝယ်ယူမည် (Submit Order)</button>
+        </form>
     </div>
-    
-    <div id="stepOtp" class="step">
-        <div class="form-group"><label>🔑 OTP ကုဒ် (၆လုံး)</label><input type="text" id="otpInput" placeholder="000000" maxlength="6" autocomplete="off"></div>
-        <button id="verifyBtn">✅ အတည်ပြုမည်</button>
-        <div id="timer" class="timer"></div>
-        <button id="resendBtn" style="margin-top:12px; background:transparent; color:#00d4ff">⟳ OTP ပြန်ပို့မည်</button>
-        <div id="otpMessage" class="message"></div>
+
+    <div id="admin-view" class="admin-section">
+        <h2>Admin Dashboard (အော်ဒါများ)</h2>
+        <div id="order-list">
+            <p style="text-align:center; color:#86868b;">ဝင်လာသော အော်ဒါမရှိသေးပါ</p>
+        </div>
     </div>
-    
-    <div class="footer"><a href="/">← စတိုးသို့ ပြန်သွားရန်</a></div>
 </div>
 
 <script>
-    const API_BASE = window.location.origin;
-    let currentPhone = '';
-    let otpTimer = null;
-    let timeLeft = 60;
-    
-    const stepPhone = document.getElementById('stepPhone');
-    const stepOtp = document.getElementById('stepOtp');
-    const phoneInput = document.getElementById('phoneInput');
-    const otpInput = document.getElementById('otpInput');
-    const sendOtpBtn = document.getElementById('sendOtpBtn');
-    const verifyBtn = document.getElementById('verifyBtn');
-    const resendBtn = document.getElementById('resendBtn');
-    const timerEl = document.getElementById('timer');
-    const phoneMessage = document.getElementById('phoneMessage');
-    const otpMessage = document.getElementById('otpMessage');
-    
-    function showMessage(element, msg, type) {
-        element.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${msg}`;
-        element.className = `message ${type}`;
-        setTimeout(() => { if (element.innerHTML === msg || element.innerHTML.includes(msg)) element.innerHTML = ''; }, 5000);
+    // LocalStorage သုံးပြီး ဒေတာများကို ဖုန်းထဲမှာပဲ ခဏသိမ်းထားမယ့် Logic
+    const orderForm = document.getElementById('orderForm');
+    const orderList = document.getElementById('order-list');
+
+    // လမ်းကြောင်း (URL) ကို စစ်ဆေးပြီး Admin App ဆိုရင် Admin Dashboard တန်းပြပေးရန်
+    if (window.location.pathname.endsWith('/admin') || window.location.hash === '#admin') {
+        document.getElementById('user-view').style.display = 'none';
+        document.getElementById('admin-view').style.display = 'block';
+        displayOrders();
     }
-    
-    function startTimer() {
-        timeLeft = 60;
-        if (otpTimer) clearInterval(otpTimer);
-        otpTimer = setInterval(() => {
-            if (timeLeft <= 0) {
-                clearInterval(otpTimer);
-                timerEl.innerHTML = '⏰ OTP သက်တမ်းကုန်ပါပြီ။ OTP အသစ် ရယူပါ။';
-                resendBtn.style.display = 'block';
-            } else {
-                timerEl.innerHTML = `⏱️ OTP သက်တမ်းကုန်ရန်: ${timeLeft} စက္ကန့်`;
-                timeLeft--;
-            }
-        }, 1000);
-    }
-    
-    function resetTimer() {
-        if (otpTimer) clearInterval(otpTimer);
-        resendBtn.style.display = 'none';
-        startTimer();
-    }
-    
-    sendOtpBtn.addEventListener('click', async () => {
-        const phone = phoneInput.value.trim();
-        if (!phone || phone.length < 9) {
-            showMessage(phoneMessage, '⚠️ ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)', 'error');
+
+    // အော်ဒါတင်ခြင်း စနစ်
+    orderForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const phone = document.getElementById('phone').value;
+        const plan = document.getElementById('plan').value;
+        const slipFile = document.getElementById('slip').files[0];
+
+        if (slipFile) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const slipBase64 = event.target.result;
+
+                const newOrder = {
+                    id: Date.now(),
+                    phone: phone,
+                    plan: plan,
+                    slip: slipBase64,
+                    time: new Date().toLocaleString()
+                };
+
+                // အဟောင်းထဲကို အသစ်ထည့်ခြင်း
+                let orders = JSON.parse(localStorage.getItem('mytel_orders')) || [];
+                orders.unshift(newOrder);
+                localStorage.setItem('mytel_orders', JSON.stringify(orders));
+
+                alert('အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်။ Admin မှ မကြာမီ ထည့်သွင်းပေးပါလိမ့်မည်။');
+                orderForm.reset();
+            };
+            reader.readAsDataURL(slipFile);
+        }
+    });
+
+    // Admin ဘက်မှာ အော်ဒါများ ပြသပေးခြင်း စနစ်
+    function displayOrders() {
+        let orders = JSON.parse(localStorage.getItem('mytel_orders')) || [];
+        if (orders.length === 0) {
+            orderList.innerHTML = '<p style="text-align:center; color:#86868b;">ဝင်လာသော အော်ဒါမရှိသေးပါ</p>';
             return;
         }
-        
-        sendOtpBtn.disabled = true;
-        sendOtpBtn.innerHTML = '<div class="spinner"></div> ပို့နေပါသည်...';
-        
-        try {
-            const res = await fetch(`${API_BASE}/api/auth/send-otp`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone }),
-                credentials: 'include'
-            });
-            const data = await res.json();
-            
-            if (data.success) {
-                currentPhone = phone;
-                stepPhone.classList.remove('active');
-                stepOtp.classList.add('active');
-                otpInput.value = '';
-                resetTimer();
-                showMessage(otpMessage, '✅ OTP ကုဒ် ပို့ပြီးပါပြီ။ သင့် SMS ကို စစ်ဆေးပါ။', 'success');
-            } else {
-                showMessage(phoneMessage, '❌ ' + (data.error || 'OTP ပို့ရာတွင် အမှားရှိပါသည်။'), 'error');
-            }
-        } catch (err) {
-            showMessage(phoneMessage, '❌ ဆာဗာအမှား၊ ထပ်မံကြိုးစားပါ။', 'error');
-        } finally {
-            sendOtpBtn.disabled = false;
-            sendOtpBtn.innerHTML = '📨 OTP ကုဒ်ရယူမည်';
+
+        orderList.innerHTML = '';
+        orders.forEach(order => {
+            const card = document.createElement('div');
+            card.className = 'order-card';
+            card.innerHTML = `
+                <div><strong>ဖုန်းနံပါတ်:</strong> ${order.phone}</div>
+                <div><strong>ဝယ်ယူသည့် Plan:</strong> ${order.plan}</div>
+                <div><strong>အချိန်:</strong> ${order.time}</div>
+                <div><strong>ငွေလွှဲပြေစာ (Slip):</strong></div>
+                <img src="${order.slip}" alt="KPay Slip">
+                <button onclick="deleteOrder(${order.id})" style="background-color:#ff3b30; padding:6px; margin-top:10px; font-size:12px; width:auto; border-radius:6px;">အော်ဒါဖျက်မည်</button>
+            `;
+            orderList.appendChild(card);
+        });
+    }
+
+    // အော်ဒါများ လုပ်ဆောင်ပြီးရင် ဖျက်ပစ်နိုင်ရန်
+    window.deleteOrder = function(id) {
+        if(confirm('ဒီအော်ဒါကို ဖြည့်သွင်းပြီးလို့ ဖျက်ပစ်မှာ သေချာပါသလား?')) {
+            let orders = JSON.parse(localStorage.getItem('mytel_orders')) || [];
+            orders = orders.filter(order => order.id !== id);
+            localStorage.setItem('mytel_orders', JSON.stringify(orders));
+            displayOrders();
         }
-    });
-    
-    verifyBtn.addEventListener('click', async () => {
-        const otp = otpInput.value.trim();
-        if (!otp || otp.length !== 6) {
-            showMessage(otpMessage, '⚠️ OTP ကုဒ် ၆ လုံး ထည့်ပါ', 'error');
-            return;
-        }
-        
-        verifyBtn.disabled = true;
-        verifyBtn.innerHTML = '<div class="spinner"></div> စစ်ဆေးနေပါသည်...';
-        
-        try {
-            const res = await fetch(`${API_BASE}/api/auth/verify-otp`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: currentPhone, otp }),
-                credentials: 'include'
-            });
-            const data = await res.json();
-            
-            if (data.success) {
-                showMessage(otpMessage, '✅ အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်။ စတိုးသို့ ပြန်ညွှန်းနေပါသည်...', 'success');
-                setTimeout(() => { window.location.href = '/'; }, 1500);
-            } else {
-                showMessage(otpMessage, '❌ ' + (data.error || 'OTP ကုဒ် မှားယွင်းနေပါသည်။'), 'error');
-                otpInput.value = '';
-            }
-        } catch (err) {
-            showMessage(otpMessage, '❌ ဆာဗာအမှား၊ ထပ်မံကြိုးစားပါ။', 'error');
-        } finally {
-            verifyBtn.disabled = false;
-            verifyBtn.innerHTML = '✅ အတည်ပြုမည်';
-        }
-    });
-    
-    resendBtn.addEventListener('click', async () => {
-        resendBtn.disabled = true;
-        resendBtn.innerHTML = '<div class="spinner"></div> ပို့နေပါသည်...';
-        
-        try {
-            const res = await fetch(`${API_BASE}/api/auth/send-otp`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: currentPhone }),
-                credentials: 'include'
-            });
-            const data = await res.json();
-            
-            if (data.success) {
-                resetTimer();
-                otpInput.value = '';
-                showMessage(otpMessage, '✅ OTP ကုဒ်အသစ် ပို့ပြီးပါပြီ။', 'success');
-            } else {
-                showMessage(otpMessage, '❌ ' + (data.error || 'OTP ပြန်ပို့ရာတွင် အမှားရှိပါသည်။'), 'error');
-            }
-        } catch (err) {
-            showMessage(otpMessage, '❌ ဆာဗာအမှား', 'error');
-        } finally {
-            resendBtn.disabled = false;
-            resendBtn.innerHTML = '⟳ OTP ပြန်ပို့မည်';
-        }
-    });
-    
-    phoneInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendOtpBtn.click(); });
-    otpInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') verifyBtn.click(); });
+    }
 </script>
+
 </body>
 </html>
