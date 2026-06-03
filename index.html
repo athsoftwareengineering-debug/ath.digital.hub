@@ -242,27 +242,12 @@
             background: rgba(251,191,36,0.15);
             box-shadow: 0 0 20px rgba(251,191,36,0.5);
         }
-        /* 🟠 Orange Glow Animation */
         @keyframes orangeGlow {
-            0% { 
-                border-color: rgba(245, 158, 11, 0);
-                box-shadow: 0 0 0px rgba(245, 158, 11, 0);
-                background: rgba(245, 158, 11, 0);
-            }
-            50% { 
-                border-color: #f59e0b;
-                box-shadow: 0 0 20px #f59e0b;
-                background: rgba(245, 158, 11, 0.25);
-            }
-            100% { 
-                border-color: rgba(245, 158, 11, 0);
-                box-shadow: 0 0 0px rgba(245, 158, 11, 0);
-                background: rgba(245, 158, 11, 0);
-            }
+            0% { border-color: rgba(245,158,11,0); box-shadow: 0 0 0px rgba(245,158,11,0); background: rgba(245,158,11,0); }
+            50% { border-color: #f59e0b; box-shadow: 0 0 20px #f59e0b; background: rgba(245,158,11,0.25); }
+            100% { border-color: rgba(245,158,11,0); box-shadow: 0 0 0px rgba(245,158,11,0); background: rgba(245,158,11,0); }
         }
-        .stack-item.glow {
-            animation: orangeGlow 0.5s ease-in-out;
-        }
+        .stack-item.glow { animation: orangeGlow 0.5s ease-in-out; }
         
         .new-badge {
             background: linear-gradient(135deg, #f43f5e, #e11d48);
@@ -506,25 +491,29 @@
             outline: none;
             box-shadow: 0 0 10px rgba(0,212,255,0.2);
         }
-        .file-input-wrapper input[type="file"] {
-            width: 100%;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #2d3a5e;
-            border-radius: 60px;
-            padding: 10px 16px;
-            color: white;
-            font-size: 0.8rem;
-            cursor: pointer;
-        }
-        .file-input-wrapper input[type="file"]::file-selector-button {
+        /* ★★★ BUTTON STYLE FOR FILE UPLOAD ★★★ */
+        .file-upload-btn {
             background: rgba(0,212,255,0.15);
-            border: none;
-            border-radius: 40px;
-            padding: 6px 16px;
-            margin-right: 12px;
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 12px 16px;
+            border-radius: 60px;
+            width: 100%;
+            cursor: pointer;
             color: var(--cyan);
             font-weight: 600;
-            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .file-upload-btn:hover {
+            background: rgba(0,212,255,0.25);
+            transform: translateY(-1px);
+        }
+        .file-name-display {
+            font-size: 0.65rem;
+            color: #64748b;
+            margin-top: 8px;
+            text-align: center;
         }
         .submit-btn {
             width: 100%;
@@ -638,7 +627,6 @@
             text-decoration: underline;
         }
         
-        /* Toast hidden by default */
         .toast {
             position: fixed;
             top: -80px;
@@ -771,7 +759,7 @@
     </div>
 </div>
 
-<!-- ==================== PROFESSIONAL PAYMENT MODAL ==================== -->
+<!-- ==================== PAYMENT MODAL WITH BUTTON ==================== -->
 <div id="paymentModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-close" id="closeModalBtn">&times;</div>
@@ -805,9 +793,12 @@
             </div>
             <div class="form-group">
                 <label id="slipLabel"><i class="fas fa-image"></i> ငွေလွှဲပြေစာ</label>
-                <div class="file-input-wrapper">
-                    <input type="file" id="slipImage" accept="image/*" required>
-                </div>
+                <!-- ★★★ BUTTON FOR FILE UPLOAD (WebView Friendly) ★★★ -->
+                <button type="button" id="chooseFileBtn" class="file-upload-btn">
+                    <i class="fas fa-camera"></i> 📸 Screenshot ရွေးရန်
+                </button>
+                <input type="file" id="slipImage" accept="image/*" style="display: none;" required>
+                <div id="fileNameDisplay" class="file-name-display"></div>
             </div>
             <button type="submit" class="submit-btn" id="submitOrderBtn">
                 <span id="submitBtnText">✅ အော်ဒါတင်မည်</span>
@@ -856,6 +847,26 @@
     let liveCountdownIntervals = {};
     let stackOrders = [], rotateInterval = null, lastHash = '';
     const ROTATE_MS = 10000, NEW_TIMEOUT = 120000;
+    
+    // ★★★ FILE UPLOAD BUTTON HANDLER (Key for WebView) ★★★
+    const chooseFileBtn = document.getElementById('chooseFileBtn');
+    const slipImageInput = document.getElementById('slipImage');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    
+    if (chooseFileBtn && slipImageInput) {
+        chooseFileBtn.addEventListener('click', function() {
+            slipImageInput.click();
+        });
+        
+        slipImageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                fileNameDisplay.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> ရွေးထားသည်: ${this.files[0].name}`;
+                fileNameDisplay.style.color = '#10b981';
+            } else {
+                fileNameDisplay.innerHTML = '';
+            }
+        });
+    }
     
     const isNewOrder = (o) => Date.now() - new Date(o.created_at).getTime() < NEW_TIMEOUT;
     const maskPhone = (p) => p && p.length >= 8 ? p.substring(0,5)+'***'+p.substring(p.length-3) : p;
@@ -945,7 +956,6 @@
         document.getElementById('phoneLabel').innerHTML = t.phoneLabel;
         document.getElementById('slipLabel').innerHTML = t.slipLabel;
         document.getElementById('submitBtnText').innerHTML = t.submitBtn;
-        document.getElementById('footnoteText').innerHTML = t.footnote;
         document.getElementById('screenshotTitle').innerHTML = t.screenshotTitle;
         document.getElementById('modalFooterText').innerHTML = t.modalFooter;
         document.querySelectorAll('.buy-text').forEach(el => el.innerHTML = t.buyNow);
@@ -1208,6 +1218,9 @@
             localStorage.setItem('myOrderPhone', phone);
             document.getElementById('paymentModal').classList.remove('active');
             document.getElementById('orderForm').reset();
+            if (document.getElementById('fileNameDisplay')) {
+                document.getElementById('fileNameDisplay').innerHTML = '';
+            }
             if (document.getElementById('historyPanel').classList.contains('open')) loadData();
             
             setTimeout(() => {
