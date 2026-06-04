@@ -374,16 +374,6 @@
             gap: 6px;
             color: var(--cyan);
         }
-        .proof-text {
-            background: rgba(16,185,129,0.1);
-            border-radius: 40px;
-            padding: 6px 12px;
-            font-size: 0.65rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
         
         .users-list {
             display: flex;
@@ -620,7 +610,7 @@
     <div class="fab-container" id="fabContainer" style="display: none;">
         <button class="fab" onclick="manualRefresh()" title="Sync Now"><i class="fas fa-sync-alt"></i></button>
         <button class="fab" onclick="window.location.href='/'" title="Go to Store"><i class="fas fa-store"></i></button>
-        <button class="fab logout" onclick="logout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+        <button class="fab.logout" onclick="logout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
     </div>
     
     <div id="loginBox" class="login-box">
@@ -1002,19 +992,25 @@
                 `;
             }
             
-            // Proof section - Show screenshot button OR text proof
+            // 🔥 PROOF SECTION - Sender Name & Last 5 Digits Display 🔥
             let proofHtml = '';
             if (o.slip_url) {
-                proofHtml = `<button class="screenshot-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> View Slip</button>`;
+                proofHtml = `<button class="screenshot-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> 📸 View Slip</button>`;
             } else if (o.sender_name && o.last5_digits) {
                 proofHtml = `
-                    <div class="proof-text">
-                        <span><i class="fas fa-user"></i> Sender: <strong>${escapeHtml(o.sender_name)}</strong></span>
-                        <span><i class="fas fa-credit-card"></i> Last 5: <strong>${escapeHtml(o.last5_digits)}</strong></span>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: center;">
+                        <span style="background: rgba(0,212,255,0.15); padding: 6px 14px; border-radius: 40px;">
+                            <i class="fas fa-user" style="color: #00d4ff;"></i> 
+                            <strong>Sender:</strong> ${escapeHtml(o.sender_name)}
+                        </span>
+                        <span style="background: rgba(16,185,129,0.15); padding: 6px 14px; border-radius: 40px;">
+                            <i class="fas fa-credit-card" style="color: #10b981;"></i> 
+                            <strong>Last 5:</strong> ${escapeHtml(o.last5_digits)}
+                        </span>
                     </div>
                 `;
             } else {
-                proofHtml = '<span style="font-size:0.6rem;color:#64748b;">No proof</span>';
+                proofHtml = '<span style="font-size:0.6rem;color:#64748b;">⚠️ No proof</span>';
             }
             
             html += `
@@ -1051,9 +1047,12 @@
                             <div class="detail-value" style="font-size:0.65rem;">${new Date(o.created_at).toLocaleDateString()}</div>
                         </div>
                     </div>
-                    <div class="proof-section" style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+                    
+                    <!-- 🔥 PROOF SECTION DISPLAY 🔥 -->
+                    <div class="proof-section" style="margin-top: 8px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 12px; text-align: center;">
                         ${proofHtml}
                     </div>
+                    
                     ${countdownHtml}
                     <div class="order-actions">
                         ${o.status === 'Pending' ? `
