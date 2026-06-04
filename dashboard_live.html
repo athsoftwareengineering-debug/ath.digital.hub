@@ -230,6 +230,23 @@
             color: #fb7185;
         }
         
+        /* search result container - ရှာဖွေတွေ့ရှိမှသာ ပြမယ် */
+        .search-result-container {
+            display: none;
+            margin-bottom: 20px;
+        }
+        .search-result-container.active {
+            display: block;
+        }
+        .search-result-title {
+            font-size: 0.75rem;
+            color: var(--amber);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
         .section-title {
             display: flex;
             justify-content: space-between;
@@ -278,7 +295,7 @@
         .date { font-size: 0.6rem; color: var(--text-secondary); margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
         .countdown { background: rgba(0,212,255,0.08); border-radius: 40px; padding: 6px 12px; margin-top: 10px; font-size: 0.65rem; text-align: center; }
         
-        /* 🟠 လိမ္မော်ရောင် မှိတ်တုတ် effect (search result blink) */
+        /* 🟠 လိမ္မော်ရောင် မှိတ်တုတ် effect */
         @keyframes orangeBlink {
             0% { border-color: rgba(245,158,11,0.3); box-shadow: 0 0 0px rgba(245,158,11,0); background: linear-gradient(135deg, #0f111a, #131725); }
             30% { border-color: #f59e0b; box-shadow: 0 0 25px #f59e0b; background: rgba(245,158,11,0.25); }
@@ -445,8 +462,16 @@
             <div id="searchMessage" class="search-message" style="display: none;"></div>
         </div>
 
-        <!-- MY PLANS -->
-        <div class="section-title">
+        <!-- SEARCH RESULT CONTAINER (ရှာမှသာ ပြမယ်၊ ကျန်တာဖျောက်) -->
+        <div id="searchResultContainer" class="search-result-container">
+            <div class="search-result-title">
+                <i class="fas fa-mobile-alt"></i> 🔍 ရှာဖွေတွေ့ရှိသူ၏ Plan များ
+            </div>
+            <div id="searchResultOrders"></div>
+        </div>
+
+        <!-- MY PLANS (ကျွန်ုပ်၏ Plan များ) -->
+        <div class="section-title" id="myPlansTitle">
             <h2><i class="fas fa-ticket-alt"></i> ကျွန်ုပ်၏ Plan များ</h2>
             <span id="myCount" style="background:#1e293b; padding:4px 12px; border-radius:40px; font-size:0.65rem;">0</span>
         </div>
@@ -513,7 +538,6 @@
     let lastOrderIds = [];
     let autoRefreshInterval = null, rotateInterval = null, timerInterval = null;
     let refreshSec = 30;
-    let externalSearchPhone = '';
     let renewMode = 'self';
 
     // Collapsible info section
@@ -554,7 +578,6 @@
         } catch(e) { return []; }
     }
     
-    // LIVE orders from admin DB (all orders except current user)
     async function fetchLiveOrders(excludePhone) {
         try {
             let res = await fetch(`${API_BASE}/api/admin/orders`);
@@ -568,12 +591,57 @@
         } catch(e) { return []; }
     }
 
-    function renderMyPlans(orders, searchPhoneForDisplay = '', isSearchResult = false) {
+    // ရှာဖွေတွေ့ရှိသူ၏ Plan များကို သီးသန့် container မှာပြမယ်
+    function renderSearchResult(orders, searchedPhone) {
+        const container = document.getElementById('searchResultContainer');
+        const ordersContainer = document.getElementById('searchResultOrders');
+        
+        if(!orders.length) {
+            container.classList.remove('active');
+            return;
+        }
+        
+        container.classList.add('active');
+        let html = '';
+        for(let o of orders) {
+            let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+            let statusText = o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
+            let countdownHtml = '';
+            if(o.status === 'Approved' && o.activated_at) {
+                let remain = remainingTime(o.activated_at);
+                countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
+            }
+            html += `
+                <div class="my-card search-orange-blink" data-order-id="${o.id}">
+                    <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                        <span class="plan"><i class="fas fa-gem"></i> ${o.plan}</span>
+                        <span class="status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div><span class="price">${o.price.toLocaleString()} MMK</span></div>
+                    <div class="date"><i class="fas fa-calendar-alt"></i> ဝယ်ရက်: ${formatDate(o.created_at)}</div>
+                    ${countdownHtml}
+                </div>
+            `;
+        }
+        ordersContainer.innerHTML = html;
+        
+        // scroll to search result
+        setTimeout(() => {
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
+
+    function hideSearchResult() {
+        const container = document.getElementById('searchResultContainer');
+        container.classList.remove('active');
+        document.getElementById('searchResultOrders').innerHTML = '';
+    }
+
+    function renderMyPlans(orders) {
         let container = document.getElementById('myOrdersContainer');
         let countSpan = document.getElementById('myCount');
-        let displayPhone = searchPhoneForDisplay || currentUserPhone;
         
-        if(!displayPhone) {
+        if(!currentUserPhone) {
             container.innerHTML = '<div class="empty"><i class="fas fa-search"></i> ဖုန်းနံပါတ်ရှာပါ</div>';
             countSpan.innerText = '0';
             return;
@@ -606,15 +674,6 @@
             `;
         }
         container.innerHTML = html;
-        
-        // 🟠 လိမ္မော်ရောင် မှိတ်တုတ် effect (search result)
-        if(isSearchResult && orders.length > 0) {
-            const cards = document.querySelectorAll('#myOrdersContainer .my-card');
-            cards.forEach(card => {
-                card.classList.add('search-orange-blink');
-                setTimeout(() => card.classList.remove('search-orange-blink'), 2600);
-            });
-        }
     }
 
     function renderLiveFeed(orders, isNewOrder = false) {
@@ -662,12 +721,7 @@
         lastOrderIds = newIds;
         liveOrders = live;
         
-        if(externalSearchPhone) {
-            let searchedOrders = await fetchMyOrders(externalSearchPhone);
-            renderMyPlans(searchedOrders, externalSearchPhone, true);
-        } else {
-            renderMyPlans(my, currentUserPhone, false);
-        }
+        renderMyPlans(my);
         renderLiveFeed(live, hasNew);
     }
 
@@ -713,15 +767,15 @@
         const msgDiv = document.getElementById('searchMessage');
         
         if(phone === '') {
-            externalSearchPhone = '';
             msgDiv.style.display = 'none';
-            await refreshMyAndLive();
+            hideSearchResult();
             return;
         }
         if(phone.length < 9) {
             msgDiv.style.display = 'block';
             msgDiv.className = 'search-message error';
             msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)';
+            hideSearchResult();
             return;
         }
         
@@ -734,21 +788,18 @@
         if(searchedOrders.length === 0) {
             msgDiv.className = 'search-message error';
             msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
-            externalSearchPhone = '';
-            renderMyPlans([], currentUserPhone, false);
+            hideSearchResult();
         } else {
             msgDiv.className = 'search-message success';
             msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။ 🟠 လိမ္မော်ရောင် မှိတ်တုတ်ပြသပါမည်။';
-            externalSearchPhone = phone;
-            renderMyPlans(searchedOrders, phone, true);
+            renderSearchResult(searchedOrders, phone);
         }
     }
     
     function clearExternalSearch() {
         document.getElementById('searchPhone').value = '';
-        externalSearchPhone = '';
         document.getElementById('searchMessage').style.display = 'none';
-        refreshMyAndLive();
+        hideSearchResult();
     }
 
     async function submitRenewOrder(phone, plan, price, file) {
@@ -835,10 +886,6 @@
             renewSlip.value = '';
             renewFileName.innerHTML = '';
             await refreshMyAndLive();
-            if(renewMode === 'other' && externalSearchPhone === phone) {
-                let searchedOrders = await fetchMyOrders(phone);
-                renderMyPlans(searchedOrders, phone, true);
-            }
         } else {
             alert('❌ အော်ဒါတင်ရာတွင် အမှားရှိပါသည်။ ' + (result.error || ''));
         }
@@ -865,7 +912,6 @@
     function logout() {
         localStorage.removeItem('myPhone');
         currentUserPhone = '';
-        externalSearchPhone = '';
         if(autoRefreshInterval) clearInterval(autoRefreshInterval);
         if(timerInterval) clearInterval(timerInterval);
         if(rotateInterval) clearInterval(rotateInterval);
@@ -873,6 +919,7 @@
         document.getElementById('dashboardContent').style.display = 'none';
         document.getElementById('searchPhone').value = '';
         document.getElementById('searchMessage').style.display = 'none';
+        hideSearchResult();
     }
 
     document.getElementById('modalPhoneCopy').addEventListener('click', () => {
