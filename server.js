@@ -217,6 +217,9 @@ app.get('/index.html', (req, res) => {
 app.get('/admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
 });
+app.get('/dashboard_live.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dashboard_live.html'));
+});
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -435,13 +438,15 @@ app.post('/api/admin/cleanup-old', async (req, res) => {
     }
 });
 
-// ==================== CREATE ORDER ====================
+// ==================== CREATE ORDER (UPDATED with sender_name & last5_digits) ====================
 app.post('/api/orders', upload.single('slip'), async (req, res) => {
     try {
-        const { phone, plan, price } = req.body;
+        const { phone, plan, price, sender_name, last5_digits } = req.body;
         const slipFile = req.file;
         
         console.log(`📝 Creating order: phone=${phone}, plan=${plan}, price=${price}`);
+        if (sender_name) console.log(`   📝 Text proof - Sender: ${sender_name}, Last5: ${last5_digits}`);
+        if (slipFile) console.log(`   📸 Screenshot proof - File: ${slipFile.filename}`);
         
         if (!phone || !plan || !price) {
             return res.status(400).json({ success: false, error: 'Missing required fields' });
@@ -478,6 +483,7 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
         
         const orderId = Date.now();
         
+        // Insert order with sender_name and last5_digits (for text proof)
         const { error } = await supabase
             .from('orders')
             .insert([{
@@ -487,7 +493,9 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
                 price: parseInt(price),
                 status: 'Pending',
                 slip_url: slipUrl,
-                image_hash: imageHash
+                image_hash: imageHash,
+                sender_name: sender_name || null,
+                last5_digits: last5_digits || null
             }]);
         
         if (error) {
@@ -513,6 +521,13 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
 app.put('/api/admin/orders/:id/approve', async (req, res) => {
     try {
         const { id } = req.params;
+        
+        // Get order details first
+        const { data: order } = await supabaseAdmin
+            .from('orders')
+            .select('phone')
+            .eq('id', id)
+            .single();
         
         const { error } = await supabaseAdmin
             .from('orders')
@@ -567,6 +582,20 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
     try {
         const { id } = req.params;
         
+        // Get slip_url to delete file if exists
+        const { data: order } = await supabaseAdmin
+            .from('orders')
+            .select('slip_url')
+            .eq('id', id)
+            .single();
+        
+        if (order && order.slip_url) {
+            const filePath = path.join(__dirname, order.slip_url);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+        
         const { error } = await supabaseAdmin
             .from('orders')
             .delete()
@@ -598,6 +627,7 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`📱 User Store: http://localhost:${PORT}/index.html`);
     console.log(`👨‍💼 Admin Panel: http://localhost:${PORT}/admin.html`);
+    console.log(`📊 Dashboard Live: http://localhost:${PORT}/dashboard_live.html`);
     console.log(`📁 Uploads folder: ${uploadsDir}`);
     console.log(`🗑️ Auto cleanup: Pending/Rejected orders older than 30 days will be deleted daily`);
 });
