@@ -441,12 +441,20 @@ app.post('/api/admin/cleanup-old', async (req, res) => {
 // ==================== CREATE ORDER (UPDATED with sender_name & last5_digits) ====================
 app.post('/api/orders', upload.single('slip'), async (req, res) => {
     try {
+        // ✅ IMPORTANT: Extract sender_name and last5_digits from request body
         const { phone, plan, price, sender_name, last5_digits } = req.body;
         const slipFile = req.file;
         
         console.log(`📝 Creating order: phone=${phone}, plan=${plan}, price=${price}`);
-        if (sender_name) console.log(`   📝 Text proof - Sender: ${sender_name}, Last5: ${last5_digits}`);
-        if (slipFile) console.log(`   📸 Screenshot proof - File: ${slipFile.filename}`);
+        
+        // Log text proof if present
+        if (sender_name && last5_digits) {
+            console.log(`   📝 TEXT PROOF - Sender: ${sender_name}, Last5: ${last5_digits}`);
+        }
+        
+        if (slipFile) {
+            console.log(`   📸 SCREENSHOT PROOF - File: ${slipFile.filename}`);
+        }
         
         if (!phone || !plan || !price) {
             return res.status(400).json({ success: false, error: 'Missing required fields' });
@@ -483,7 +491,7 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
         
         const orderId = Date.now();
         
-        // Insert order with sender_name and last5_digits (for text proof)
+        // ✅ IMPORTANT: Insert sender_name and last5_digits into database
         const { error } = await supabase
             .from('orders')
             .insert([{
@@ -575,7 +583,6 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
     try {
         const { id } = req.params;
         
-        // Get slip_url to delete file if exists
         const { data: order } = await supabaseAdmin
             .from('orders')
             .select('slip_url')
