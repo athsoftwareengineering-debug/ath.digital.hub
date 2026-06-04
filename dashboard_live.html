@@ -364,7 +364,7 @@
         .separator { height: 2px; background: linear-gradient(90deg, transparent, rgba(0,212,255,0.3), transparent); margin: 16px 0 8px; }
         .footer { text-align: center; font-size: 0.6rem; color: #475569; margin-top: 32px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); }
         
-        /* Tab Buttons for payment method (K-Pay / WavePay) */
+        /* Payment Method Tabs (KBZ Pay / WavePay) */
         .payment-tab-buttons {
             display: flex;
             gap: 10px;
@@ -378,6 +378,10 @@
             cursor: pointer;
             transition: all 0.3s ease;
             text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         .payment-tab-btn.kpay-tab {
             background: rgba(30,136,229,0.15);
@@ -399,8 +403,13 @@
             border: none;
             color: white;
         }
+        .payment-tab-btn img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+        }
         
-        /* proof method tabs (screenshot / text) */
+        /* Proof Method Tabs (Screenshot / Text) */
         .proof-tab-buttons {
             display: flex;
             gap: 10px;
@@ -621,25 +630,27 @@
     </div>
 </div>
 
-<!-- Payment Modal with K-Pay / WavePay Tab -->
+<!-- Payment Modal with KBZ Pay / WavePay Tabs -->
 <div id="paymentModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-close" id="closeModalBtn">&times;</div>
         <h3 style="text-align:center; margin-bottom:16px;"><i class="fas fa-credit-card"></i> <span id="modalTitle">ထပ်မံဝယ်ယူရန်</span></h3>
         
-        <!-- K-Pay / WavePay Selection Tab -->
+        <!-- KBZ Pay / WavePay Selection Tab -->
         <div class="payment-tab-buttons">
             <button type="button" id="kpayTabBtn" class="payment-tab-btn kpay-tab active">
-                <i class="fas fa-university"></i> K-Pay
+                <img src="https://i.ibb.co/CpyBHvrS/1000011452.jpg" alt="KBZ Pay" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                <span>KBZ Pay</span>
             </button>
             <button type="button" id="wavepayTabBtn" class="payment-tab-btn wavepay-tab">
-                <i class="fas fa-waveform"></i> WavePay
+                <i class="fas fa-waveform"></i>
+                <span>WavePay</span>
             </button>
         </div>
         
         <!-- Dynamic Account Info based on selection -->
         <div class="info-card" id="accountInfo">
-            <div class="info-row"><span>ငွေလွှဲနည်းလမ်း</span><span id="paymentMethodName">K-Pay</span></div>
+            <div class="info-row"><span>ငွေလွှဲနည်းလမ်း</span><span id="paymentMethodName">KBZ Pay</span></div>
             <div class="info-row"><span>အကောင့်အမည်</span><span>AUNG THU HTWE</span></div>
             <div class="info-row"><span>ဖုန်းနံပါတ်</span><span id="accountPhone">09789999368 📋</span></div>
         </div>
@@ -676,7 +687,7 @@
             <div class="form-group">
                 <label><i class="fas fa-credit-card"></i> ငွေလွှဲအကောင့်နောက်ဆုံး ၅ လုံး *</label>
                 <input type="text" id="last5Digits" class="form-control" placeholder="ဥပမာ - 12345" maxlength="5">
-                <div class="note-text">※ K-Pay / WavePay အကောင့်နံပါတ်ရဲ့ နောက်ဆုံးဂဏန်း ၅ လုံး</div>
+                <div class="note-text">※ KBZ Pay / WavePay အကောင့်နံပါတ်ရဲ့ နောက်ဆုံးဂဏန်း ၅ လုံး</div>
             </div>
         </div>
         
@@ -740,20 +751,17 @@
             return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
         }
 
-        // Account info based on payment method
+        // Update account info based on selected payment method
         function updateAccountInfo() {
             const paymentMethodName = document.getElementById('paymentMethodName');
-            const accountPhoneSpan = document.getElementById('accountPhone');
             if (selectedPaymentMethod === 'kpay') {
-                if (paymentMethodName) paymentMethodName.innerText = 'K-Pay';
-                if (accountPhoneSpan) accountPhoneSpan.innerHTML = '09789999368 📋';
+                if (paymentMethodName) paymentMethodName.innerText = 'KBZ Pay';
             } else {
                 if (paymentMethodName) paymentMethodName.innerText = 'WavePay';
-                if (accountPhoneSpan) accountPhoneSpan.innerHTML = '09789999368 📋';
             }
         }
         
-        // K-Pay / WavePay Tab switching
+        // KBZ Pay / WavePay Tab switching
         const kpayTab = document.getElementById('kpayTabBtn');
         const wavepayTab = document.getElementById('wavepayTabBtn');
         
