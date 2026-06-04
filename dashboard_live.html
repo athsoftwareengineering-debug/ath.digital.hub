@@ -16,6 +16,8 @@
             --emerald: #10b981;
             --rose: #f43f5e;
             --amber: #f59e0b;
+            --kpay: #1e88e5;
+            --wavepay: #43a047;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
         }
@@ -30,6 +32,7 @@
         }
         .container { max-width: 600px; margin: 0 auto; }
         
+        /* login screen */
         .login-section {
             max-width: 350px;
             margin: 80px auto;
@@ -62,6 +65,7 @@
             font-size: 1rem;
         }
         
+        /* main dashboard */
         .dashboard-header {
             backdrop-filter: blur(20px);
             background: rgba(10,12,21,0.6);
@@ -101,6 +105,7 @@
             font-size: 0.7rem;
         }
         
+        /* collapsible info section */
         .info-toggle {
             background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(139,92,246,0.05));
             border-radius: 1rem;
@@ -142,6 +147,7 @@
         .info-text i.fa-chart-line { color: var(--cyan); margin-right: 8px; width: 18px; }
         .info-text i.fa-lightbulb { color: #fbbf24; margin-right: 8px; width: 18px; }
         
+        /* warning toggle */
         .warning-toggle { margin-bottom: 20px; }
         .warning-header {
             background: rgba(244,63,94,0.1);
@@ -167,6 +173,7 @@
         }
         .warning-content span { font-size: 0.65rem; color: #fb7185; line-height: 1.5; }
         
+        /* renew buttons */
         .renew-buttons {
             display: flex;
             gap: 12px;
@@ -188,6 +195,7 @@
         .renew-btn.self { background: linear-gradient(135deg, var(--cyan), #0891b2); }
         .renew-btn:hover { transform: scale(0.98); filter: brightness(1.05); }
         
+        /* search section */
         .search-section {
             background: rgba(0,212,255,0.05);
             backdrop-filter: blur(10px);
@@ -235,6 +243,7 @@
         .search-message.success { background: rgba(16,185,129,0.15); color: #34d399; }
         .search-message.error { background: rgba(244,63,94,0.15); color: #fb7185; }
         
+        /* search result container */
         .search-result-container {
             display: none;
             margin-bottom: 20px;
@@ -268,6 +277,7 @@
             50% { background: rgba(244,63,94,0.9); color: white; }
         }
         
+        /* MY PLANS card */
         .my-card {
             background: linear-gradient(135deg, #0f111a, #131725);
             border-radius: 1rem;
@@ -297,6 +307,7 @@
         .date { font-size: 0.6rem; color: var(--text-secondary); margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
         .countdown { background: rgba(0,212,255,0.08); border-radius: 40px; padding: 6px 12px; margin-top: 10px; font-size: 0.65rem; text-align: center; }
         
+        /* search result card */
         .search-result-card {
             background: linear-gradient(135deg, #0f111a, #131725);
             border-radius: 1rem;
@@ -318,6 +329,7 @@
         .search-result-card .plan { font-weight: 700; color: var(--amber); }
         .search-result-card .phone-masked { font-size: 0.7rem; font-family: monospace; color: var(--text-secondary); margin-top: 4px; }
         
+        /* LIVE card */
         .live-card {
             background: linear-gradient(135deg, #0f111a, #131725);
             border-radius: 1rem;
@@ -352,12 +364,13 @@
         .separator { height: 2px; background: linear-gradient(90deg, transparent, rgba(0,212,255,0.3), transparent); margin: 16px 0 8px; }
         .footer { text-align: center; font-size: 0.6rem; color: #475569; margin-top: 32px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); }
         
-        .tab-buttons {
+        /* Tab Buttons for payment method (K-Pay / WavePay) */
+        .payment-tab-buttons {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
         }
-        .tab-btn {
+        .payment-tab-btn {
             flex: 1;
             padding: 12px;
             border-radius: 60px;
@@ -366,22 +379,70 @@
             transition: all 0.3s ease;
             text-align: center;
         }
-        .tab-btn.screenshot-tab {
-            background: linear-gradient(135deg, #00d4ff, #0891b2);
+        .payment-tab-btn.kpay-tab {
+            background: rgba(30,136,229,0.15);
+            border: 1px solid rgba(30,136,229,0.5);
+            color: #64b5f6;
+        }
+        .payment-tab-btn.kpay-tab.active {
+            background: linear-gradient(135deg, #1e88e5, #1565c0);
             border: none;
             color: white;
         }
-        .tab-btn.text-tab {
+        .payment-tab-btn.wavepay-tab {
+            background: rgba(67,160,71,0.15);
+            border: 1px solid rgba(67,160,71,0.5);
+            color: #81c784;
+        }
+        .payment-tab-btn.wavepay-tab.active {
+            background: linear-gradient(135deg, #43a047, #2e7d32);
+            border: none;
+            color: white;
+        }
+        
+        /* proof method tabs (screenshot / text) */
+        .proof-tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .proof-tab-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .proof-tab-btn.screenshot-tab {
             background: rgba(0,212,255,0.15);
             border: 1px solid rgba(0,212,255,0.3);
             color: var(--cyan);
         }
+        .proof-tab-btn.screenshot-tab.active {
+            background: linear-gradient(135deg, #00d4ff, #0891b2);
+            border: none;
+            color: white;
+        }
+        .proof-tab-btn.text-tab {
+            background: rgba(245,158,11,0.15);
+            border: 1px solid rgba(245,158,11,0.3);
+            color: var(--amber);
+        }
+        .proof-tab-btn.text-tab.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none;
+            color: white;
+        }
+        
         .method-panel { animation: fadeIn 0.3s ease; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
+        /* payment modal */
         .modal-overlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
             background: rgba(3,7,18,0.96); backdrop-filter: blur(20px);
@@ -396,6 +457,8 @@
             width: 90%;
             max-width: 480px;
             padding: 1.5rem;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .modal-close {
             float: right;
@@ -448,6 +511,7 @@
         }
         .note-text { font-size: 0.6rem; color: var(--text-secondary); text-align: center; margin-top: 12px; }
         
+        /* custom toast message */
         .toast-message {
             position: fixed;
             bottom: 30px;
@@ -477,6 +541,7 @@
 </head>
 <body>
 <div class="container" id="app">
+    <!-- Login Screen -->
     <div id="loginScreen" class="login-section">
         <i class="fas fa-mobile-alt" style="font-size: 2.5rem; color: var(--cyan); margin-bottom: 1rem;"></i>
         <h3 style="margin-bottom: 8px;">ATH DIGITAL HUB</h3>
@@ -485,6 +550,7 @@
         <button class="login-btn" id="doLoginBtn"><i class="fas fa-sign-in-alt"></i> ဝင်ရောက်မည်</button>
     </div>
 
+    <!-- Dashboard (after login) -->
     <div id="dashboardContent" style="display: none;">
         <div class="dashboard-header">
             <div class="brand"><i class="fas fa-chart-line"></i> ATH DIGITAL HUB</div>
@@ -555,32 +621,53 @@
     </div>
 </div>
 
+<!-- Payment Modal with K-Pay / WavePay Tab -->
 <div id="paymentModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-close" id="closeModalBtn">&times;</div>
         <h3 style="text-align:center; margin-bottom:16px;"><i class="fas fa-credit-card"></i> <span id="modalTitle">ထပ်မံဝယ်ယူရန်</span></h3>
         
-        <div class="info-card">
-            <div class="info-row"><span>ငွေလွှဲနည်းလမ်း</span><span>K-Pay / WavePay</span></div>
+        <!-- K-Pay / WavePay Selection Tab -->
+        <div class="payment-tab-buttons">
+            <button type="button" id="kpayTabBtn" class="payment-tab-btn kpay-tab active">
+                <i class="fas fa-university"></i> K-Pay
+            </button>
+            <button type="button" id="wavepayTabBtn" class="payment-tab-btn wavepay-tab">
+                <i class="fas fa-waveform"></i> WavePay
+            </button>
+        </div>
+        
+        <!-- Dynamic Account Info based on selection -->
+        <div class="info-card" id="accountInfo">
+            <div class="info-row"><span>ငွေလွှဲနည်းလမ်း</span><span id="paymentMethodName">K-Pay</span></div>
             <div class="info-row"><span>အကောင့်အမည်</span><span>AUNG THU HTWE</span></div>
-            <div class="info-row"><span>ဖုန်းနံပါတ်</span><span id="modalPhoneCopy">09789999368 📋</span></div>
+            <div class="info-row"><span>ဖုန်းနံပါတ်</span><span id="accountPhone">09789999368 📋</span></div>
         </div>
         
-        <div class="tab-buttons">
-            <button type="button" id="screenshotTabBtn" class="tab-btn screenshot-tab"><i class="fas fa-camera"></i> 📸 Screenshot</button>
-            <button type="button" id="textTabBtn" class="tab-btn text-tab"><i class="fas fa-keyboard"></i> ✏️ စာသားဖြည့်</button>
+        <!-- Proof Method Tabs (Screenshot / Text) -->
+        <div class="proof-tab-buttons">
+            <button type="button" id="screenshotTabBtn" class="proof-tab-btn screenshot-tab active">
+                <i class="fas fa-camera"></i> 📸 Screenshot
+            </button>
+            <button type="button" id="textTabBtn" class="proof-tab-btn text-tab">
+                <i class="fas fa-keyboard"></i> ✏️ စာသားဖြည့်
+            </button>
         </div>
         
+        <!-- Screenshot Method Panel -->
         <div id="screenshotPanel" class="method-panel">
             <div class="form-group">
                 <label><i class="fas fa-image"></i> ငွေလွှဲပြေစာ (Screenshot)</label>
-                <button type="button" id="chooseFileBtn" class="file-upload-btn"><i class="fas fa-camera"></i> Screenshot ရွေးရန်</button>
+                <button type="button" id="chooseFileBtn" class="file-upload-btn">
+                    <i class="fas fa-camera"></i> Screenshot ရွေးရန်
+                </button>
                 <input type="file" id="slipImage" accept="image/*" style="display:none;">
                 <div id="fileNameDisplay" class="file-name-display"></div>
                 <div class="note-text" style="margin-top: 8px;">※ ငွေလွှဲပြေစာကို Screenshot ရိုက်ပြီး တင်ပေးပါ။</div>
             </div>
         </div>
         
+        <!-- Text Method Panel -->
         <div id="textPanel" class="method-panel" style="display: none;">
             <div class="form-group">
                 <label><i class="fas fa-user"></i> ငွေလွှဲသူအမည် *</label>
@@ -589,7 +676,7 @@
             <div class="form-group">
                 <label><i class="fas fa-credit-card"></i> ငွေလွှဲအကောင့်နောက်ဆုံး ၅ လုံး *</label>
                 <input type="text" id="last5Digits" class="form-control" placeholder="ဥပမာ - 12345" maxlength="5">
-                <div class="note-text">※ K-Pay / WavePay / KBZ Pay အကောင့်နံပါတ်ရဲ့ နောက်ဆုံးဂဏန်း ၅ လုံး</div>
+                <div class="note-text">※ K-Pay / WavePay အကောင့်နံပါတ်ရဲ့ နောက်ဆုံးဂဏန်း ၅ လုံး</div>
             </div>
         </div>
         
@@ -618,381 +705,638 @@
 </div>
 
 <script>
-    // Simple version - ensure buttons work
     (function() {
-        // Wait for DOM to be ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
+        // DOM Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const dashboardContent = document.getElementById('dashboardContent');
+        const loginPhoneInput = document.getElementById('loginPhone');
+        const doLoginBtn = document.getElementById('doLoginBtn');
+        const displayPhoneSpan = document.getElementById('displayPhone');
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        // Payment method variables
+        let selectedPaymentMethod = 'kpay'; // 'kpay' or 'wavepay'
+        
+        const API_BASE = window.location.origin;
+        let currentUserPhone = localStorage.getItem('myPhone') || '';
+        let liveOrders = [];
+        let lastOrderIds = [];
+        let autoRefreshInterval = null, rotateInterval = null, timerInterval = null;
+        let refreshSec = 30;
+        let renewMode = 'self';
+        let externalSearchPhone = '';
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toastMsg');
+            const toastText = document.getElementById('toastText');
+            toastText.innerText = message;
+            toast.style.background = isError ? '#f43f5e' : '#10b981';
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        function maskPhone(phone) {
+            if (!phone || phone.length < 8) return phone || '';
+            return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
+        }
+
+        // Account info based on payment method
+        function updateAccountInfo() {
+            const paymentMethodName = document.getElementById('paymentMethodName');
+            const accountPhoneSpan = document.getElementById('accountPhone');
+            if (selectedPaymentMethod === 'kpay') {
+                if (paymentMethodName) paymentMethodName.innerText = 'K-Pay';
+                if (accountPhoneSpan) accountPhoneSpan.innerHTML = '09789999368 📋';
+            } else {
+                if (paymentMethodName) paymentMethodName.innerText = 'WavePay';
+                if (accountPhoneSpan) accountPhoneSpan.innerHTML = '09789999368 📋';
+            }
         }
         
-        function init() {
-            // Login button
-            const loginBtn = document.getElementById('doLoginBtn');
-            const loginPhone = document.getElementById('loginPhone');
-            const loginScreen = document.getElementById('loginScreen');
-            const dashboardContent = document.getElementById('dashboardContent');
-            const displayPhone = document.getElementById('displayPhone');
-            const logoutBtn = document.getElementById('logoutBtn');
+        // K-Pay / WavePay Tab switching
+        const kpayTab = document.getElementById('kpayTabBtn');
+        const wavepayTab = document.getElementById('wavepayTabBtn');
+        
+        if (kpayTab) {
+            kpayTab.addEventListener('click', function() {
+                selectedPaymentMethod = 'kpay';
+                kpayTab.classList.add('active');
+                wavepayTab.classList.remove('active');
+                updateAccountInfo();
+            });
+        }
+        if (wavepayTab) {
+            wavepayTab.addEventListener('click', function() {
+                selectedPaymentMethod = 'wavepay';
+                wavepayTab.classList.add('active');
+                kpayTab.classList.remove('active');
+                updateAccountInfo();
+            });
+        }
+        
+        // Proof method tabs
+        const screenshotTab = document.getElementById('screenshotTabBtn');
+        const textTab = document.getElementById('textTabBtn');
+        const screenshotPanel = document.getElementById('screenshotPanel');
+        const textPanel = document.getElementById('textPanel');
+        
+        function switchToScreenshot() {
+            if (screenshotPanel) screenshotPanel.style.display = 'block';
+            if (textPanel) textPanel.style.display = 'none';
+            if (screenshotTab) screenshotTab.classList.add('active');
+            if (textTab) textTab.classList.remove('active');
+        }
+        
+        function switchToText() {
+            if (textPanel) textPanel.style.display = 'block';
+            if (screenshotPanel) screenshotPanel.style.display = 'none';
+            if (textTab) textTab.classList.add('active');
+            if (screenshotTab) screenshotTab.classList.remove('active');
+        }
+        
+        if (screenshotTab) screenshotTab.addEventListener('click', switchToScreenshot);
+        if (textTab) textTab.addEventListener('click', switchToText);
+        
+        // Login function
+        async function login(phone) {
+            if(!phone || phone.length < 9) {
+                showToast("ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)", true);
+                return false;
+            }
+            currentUserPhone = phone;
+            localStorage.setItem('myPhone', phone);
+            loginScreen.style.display = 'none';
+            dashboardContent.style.display = 'block';
+            displayPhoneSpan.innerHTML = maskPhone(phone);
             
-            if (loginBtn) {
-                loginBtn.onclick = function() {
-                    const phone = loginPhone ? loginPhone.value.trim() : '';
-                    if (!phone || phone.length < 9) {
-                        alert('ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)');
-                        return;
-                    }
-                    localStorage.setItem('myPhone', phone);
-                    if (loginScreen) loginScreen.style.display = 'none';
-                    if (dashboardContent) dashboardContent.style.display = 'block';
-                    if (displayPhone) {
-                        // mask phone for display
-                        let masked = phone;
-                        if (phone.length >= 8) masked = phone.substring(0,5) + '***' + phone.substring(phone.length-3);
-                        displayPhone.innerText = masked;
-                    }
-                    // Reload data
-                    setTimeout(() => { location.reload(); }, 100);
-                };
+            await refreshMyAndLive();
+            startAutoRefresh();
+            showToast("အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်။", false);
+            return true;
+        }
+        
+        function logout() {
+            localStorage.removeItem('myPhone');
+            currentUserPhone = '';
+            externalSearchPhone = '';
+            if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+            if(timerInterval) clearInterval(timerInterval);
+            if(rotateInterval) clearInterval(rotateInterval);
+            loginScreen.style.display = 'block';
+            dashboardContent.style.display = 'none';
+            if(document.getElementById('searchPhone')) document.getElementById('searchPhone').value = '';
+            if(document.getElementById('searchMessage')) document.getElementById('searchMessage').style.display = 'none';
+            hideSearchResult();
+            showToast("ထွက်ရန် အောင်မြင်ပါသည်။", false);
+        }
+        
+        // Warning Toggle
+        const warningToggle = document.getElementById('warningToggle');
+        const warningContent = document.getElementById('warningContent');
+        const warningIcon = document.getElementById('warningIcon');
+        if (warningToggle) {
+            warningToggle.addEventListener('click', function() {
+                if (warningContent.style.display === 'none' || warningContent.style.display === '') {
+                    warningContent.style.display = 'block';
+                    if (warningIcon) warningIcon.style.transform = 'rotate(180deg)';
+                } else {
+                    warningContent.style.display = 'none';
+                    if (warningIcon) warningIcon.style.transform = 'rotate(0deg)';
+                }
+            });
+        }
+        
+        // Collapsible info section
+        const infoToggle = document.getElementById('infoToggle');
+        const infoHeader = infoToggle.querySelector('.info-header');
+        const infoBody = infoToggle.querySelector('.info-body');
+        if (infoHeader) {
+            infoHeader.addEventListener('click', () => {
+                infoBody.classList.toggle('open');
+                infoHeader.classList.toggle('open');
+            });
+        }
+        
+        function formatDate(d) {
+            if(!d) return '';
+            let date = new Date(d);
+            return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
+        }
+        
+        function remainingTime(activatedAt) {
+            if (!activatedAt) return null;
+            let end = new Date(activatedAt).getTime() + (30 * 24 * 60 * 60 * 1000);
+            let remain = end - Date.now();
+            if (remain <= 0) return '✅ သက်တမ်းကုန်';
+            let days = Math.floor(remain / 86400000);
+            let hours = Math.floor((remain % 86400000) / 3600000);
+            let mins = Math.floor((remain % 3600000) / 60000);
+            return `${days}ရက် ${hours}နာရီ ${mins}မိနစ်`;
+        }
+        
+        async function fetchMyOrders(phone) {
+            if(!phone) return [];
+            try {
+                let res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(phone)}`);
+                let data = await res.json();
+                return data.orders || [];
+            } catch(e) { 
+                showToast("ဆာဗာချိတ်ဆက်မှု အမှား။ နောက်မှထပ်စမ်းပါ။", true);
+                return []; 
+            }
+        }
+        
+        async function fetchLiveOrders(excludePhone) {
+            try {
+                let res = await fetch(`${API_BASE}/api/admin/orders`);
+                let data = await res.json();
+                if(data.orders) {
+                    let filtered = data.orders.filter(o => o.phone !== excludePhone);
+                    filtered.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                    return filtered.slice(0, 30);
+                }
+                return [];
+            } catch(e) { 
+                showToast("LIVE feed ရယူရာတွင် အမှား။", true);
+                return []; 
+            }
+        }
+        
+        function renderMyPlans(orders) {
+            let container = document.getElementById('myOrdersContainer');
+            let countSpan = document.getElementById('myCount');
+            
+            if(!currentUserPhone) {
+                if(container) container.innerHTML = '<div class="empty"><i class="fas fa-search"></i> ဖုန်းနံပါတ်ရှာပါ</div>';
+                if(countSpan) countSpan.innerText = '0';
+                return;
+            }
+            if(!orders || orders.length === 0) {
+                if(container) container.innerHTML = '<div class="empty"><i class="fas fa-inbox"></i> အော်ဒါမရှိသေးပါ</div>';
+                if(countSpan) countSpan.innerText = '0';
+                return;
+            }
+            if(countSpan) countSpan.innerText = orders.length;
+            let html = '';
+            for(let o of orders) {
+                let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+                let statusText = o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
+                let countdownHtml = '';
+                if(o.status === 'Approved' && o.activated_at) {
+                    let remain = remainingTime(o.activated_at);
+                    countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
+                }
+                html += `
+                    <div class="my-card" data-order-id="${o.id}">
+                        <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                            <span class="plan"><i class="fas fa-gem"></i> ${o.plan}</span>
+                            <span class="status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="phone-full"><i class="fas fa-phone-alt"></i> ${o.phone}</div>
+                        <div><span class="price">${o.price.toLocaleString()} MMK</span></div>
+                        <div class="date"><i class="fas fa-calendar-alt"></i> ဝယ်ရက်: ${formatDate(o.created_at)}</div>
+                        ${countdownHtml}
+                    </div>
+                `;
+            }
+            if(container) container.innerHTML = html;
+        }
+        
+        function renderSearchResult(orders) {
+            const container = document.getElementById('searchResultContainer');
+            const ordersContainer = document.getElementById('searchResultOrders');
+            
+            if(!orders || !orders.length) {
+                if(container) container.classList.remove('active');
+                return;
             }
             
-            if (logoutBtn) {
-                logoutBtn.onclick = function() {
-                    localStorage.removeItem('myPhone');
-                    location.reload();
-                };
+            if(container) container.classList.add('active');
+            let html = '';
+            for(let o of orders) {
+                let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+                let statusText = o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
+                let countdownHtml = '';
+                if(o.status === 'Approved' && o.activated_at) {
+                    let remain = remainingTime(o.activated_at);
+                    countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
+                }
+                html += `
+                    <div class="search-result-card search-orange-blink" data-order-id="${o.id}">
+                        <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                            <span class="plan"><i class="fas fa-gem"></i> ${o.plan}</span>
+                            <span class="status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="phone-masked"><i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}</div>
+                        <div><span class="price">${o.price.toLocaleString()} MMK</span></div>
+                        <div class="date"><i class="fas fa-calendar-alt"></i> ဝယ်ရက်: ${formatDate(o.created_at)}</div>
+                        ${countdownHtml}
+                    </div>
+                `;
+            }
+            if(ordersContainer) ordersContainer.innerHTML = html;
+            
+            setTimeout(() => {
+                if(container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+        
+        function hideSearchResult() {
+            const container = document.getElementById('searchResultContainer');
+            if(container) container.classList.remove('active');
+            const ordersContainer = document.getElementById('searchResultOrders');
+            if(ordersContainer) ordersContainer.innerHTML = '';
+        }
+        
+        function renderLiveFeed(orders, isNewOrder = false) {
+            let container = document.getElementById('liveContainer');
+            if(!orders || !orders.length) {
+                if(container) container.innerHTML = '<div class="empty"><i class="fas fa-eye-slash"></i> လက်ရှိ LIVE အော်ဒါမရှိ</div>';
+                return;
+            }
+            let html = '';
+            for(let o of orders) {
+                let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+                let statusText = o.status === 'Pending' ? 'Pending' : (o.status === 'Approved' ? 'Approved' : 'Rejected');
+                let remainHtml = '';
+                if(o.status === 'Approved' && o.activated_at) {
+                    let remain = remainingTime(o.activated_at);
+                    remainHtml = `<div class="countdown" style="margin-top:6px;"><i class="fas fa-hourglass-start"></i> ${remain}</div>`;
+                }
+                html += `
+                    <div class="live-card" data-order-id="${o.id}">
+                        <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <span class="plan"><i class="fas fa-mobile-alt"></i> ${o.plan}</span>
+                            <span class="status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="phone-masked"><i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}</div>
+                        <div><span class="price">${o.price.toLocaleString()}K</span></div>
+                        <div class="date"><i class="fas fa-clock"></i> ${new Date(o.created_at).toLocaleTimeString()}</div>
+                        ${remainHtml}
+                    </div>
+                `;
+            }
+            if(container) container.innerHTML = html;
+            
+            if(isNewOrder && orders.length > 0) {
+                const firstCard = document.querySelector('.live-card');
+                if(firstCard) firstCard.classList.add('blink-live');
+                setTimeout(() => firstCard?.classList.remove('blink-live'), 1000);
+            }
+        }
+        
+        async function refreshMyAndLive() {
+            if(!currentUserPhone) return;
+            let my = await fetchMyOrders(currentUserPhone);
+            let live = await fetchLiveOrders(currentUserPhone);
+            let newIds = live.map(o => o.id);
+            let hasNew = (lastOrderIds.length > 0 && newIds.length > 0 && newIds[0] !== lastOrderIds[0]);
+            lastOrderIds = newIds;
+            liveOrders = live;
+            
+            if(externalSearchPhone) {
+                let searchedOrders = await fetchMyOrders(externalSearchPhone);
+                renderSearchResult(searchedOrders);
+            } else {
+                hideSearchResult();
+                renderMyPlans(my);
+            }
+            renderLiveFeed(live, hasNew);
+        }
+        
+        function rotateLiveOrders() {
+            if(liveOrders.length <= 1) return;
+            const lastItem = liveOrders.pop();
+            liveOrders.unshift(lastItem);
+            renderLiveFeed(liveOrders, false);
+            const firstCard = document.querySelector('.live-card');
+            if(firstCard) {
+                firstCard.classList.add('blink-rotate');
+                setTimeout(() => firstCard.classList.remove('blink-rotate'), 800);
+            }
+        }
+        
+        function startAutoRefresh() {
+            if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+            if(timerInterval) clearInterval(timerInterval);
+            if(rotateInterval) clearInterval(rotateInterval);
+            
+            refreshSec = 30;
+            const timerSpan = document.getElementById('liveTimer');
+            const updateTimer = () => {
+                if(timerSpan) timerSpan.innerText = `auto ${refreshSec}s`;
+                refreshSec--;
+                if(refreshSec < 0) refreshSec = 30;
+            };
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            autoRefreshInterval = setInterval(async () => {
+                await refreshMyAndLive();
+                refreshSec = 30;
+                if(timerSpan) timerSpan.innerText = 'auto 30s';
+            }, 30000);
+            
+            rotateInterval = setInterval(() => {
+                if(liveOrders.length > 1) rotateLiveOrders();
+            }, 10000);
+        }
+        
+        async function searchOtherUser() {
+            let phone = document.getElementById('searchPhone').value.trim();
+            const msgDiv = document.getElementById('searchMessage');
+            
+            if(phone === '') {
+                externalSearchPhone = '';
+                if(msgDiv) msgDiv.style.display = 'none';
+                await refreshMyAndLive();
+                return;
+            }
+            if(phone.length < 9) {
+                if(msgDiv) {
+                    msgDiv.style.display = 'block';
+                    msgDiv.className = 'search-message error';
+                    msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)';
+                }
+                return;
             }
             
-            // Check if already logged in
-            const savedPhone = localStorage.getItem('myPhone');
-            if (savedPhone && savedPhone.length > 8) {
-                if (loginScreen) loginScreen.style.display = 'none';
-                if (dashboardContent) dashboardContent.style.display = 'block';
-                if (displayPhone) {
-                    let masked = savedPhone;
-                    if (savedPhone.length >= 8) masked = savedPhone.substring(0,5) + '***' + savedPhone.substring(savedPhone.length-3);
-                    displayPhone.innerText = masked;
+            if(msgDiv) {
+                msgDiv.style.display = 'block';
+                msgDiv.className = 'search-message';
+                msgDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ရှာဖွေနေသည်...';
+            }
+            
+            let searchedOrders = await fetchMyOrders(phone);
+            
+            if(searchedOrders.length === 0) {
+                if(msgDiv) {
+                    msgDiv.className = 'search-message error';
+                    msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
+                }
+                externalSearchPhone = '';
+                hideSearchResult();
+                renderMyPlans(await fetchMyOrders(currentUserPhone));
+            } else {
+                if(msgDiv) {
+                    msgDiv.className = 'search-message success';
+                    msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။ 🟠 လိမ္မော်ရောင် မှိတ်တုတ်ပြသပါမည်။';
+                }
+                externalSearchPhone = phone;
+                renderSearchResult(searchedOrders);
+                renderMyPlans([]);
+            }
+        }
+        
+        function clearExternalSearch() {
+            document.getElementById('searchPhone').value = '';
+            externalSearchPhone = '';
+            document.getElementById('searchMessage').style.display = 'none';
+            refreshMyAndLive();
+        }
+        
+        async function submitRenewOrder(phone, plan, price) {
+            let fd = new FormData();
+            fd.append('phone', phone);
+            fd.append('plan', plan);
+            fd.append('price', price);
+            fd.append('payment_method', selectedPaymentMethod);
+            
+            const isScreenshotMode = screenshotPanel && screenshotPanel.style.display !== 'none';
+            
+            if (isScreenshotMode) {
+                const file = document.getElementById('slipImage').files[0];
+                if (!file) {
+                    showToast("ငွေလွှဲပြေစာ ထည့်ပါ", true);
+                    return null;
+                }
+                fd.append('slip', file);
+            } else {
+                const senderName = document.getElementById('senderName').value.trim();
+                const last5Digits = document.getElementById('last5Digits').value.trim();
+                
+                if (!senderName) {
+                    showToast("ငွေလွှဲသူအမည် ထည့်ပါ", true);
+                    return null;
+                }
+                if (!last5Digits || last5Digits.length !== 5) {
+                    showToast("အကောင့်နောက်ဆုံး ၅ လုံး အတိအကျ ထည့်ပါ", true);
+                    return null;
+                }
+                
+                fd.append('sender_name', senderName);
+                fd.append('last5_digits', last5Digits);
+            }
+            
+            let res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
+            return await res.json();
+        }
+        
+        // Modal handlers
+        const modal = document.getElementById('paymentModal');
+        const renewPhone = document.getElementById('renewPhone');
+        const renewPlan = document.getElementById('renewPlan');
+        const renewSlip = document.getElementById('renewSlip');
+        const chooseFileBtn = document.getElementById('chooseFileBtn');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const modalTitle = document.getElementById('modalTitle');
+        const phoneNote = document.getElementById('phoneNote');
+        
+        if(chooseFileBtn) {
+            chooseFileBtn.addEventListener('click', () => renewSlip.click());
+        }
+        if(renewSlip) {
+            renewSlip.addEventListener('change', () => {
+                if(renewSlip.files.length > 0 && fileNameDisplay) {
+                    fileNameDisplay.innerHTML = `<i class="fas fa-check-circle"></i> ${renewSlip.files[0].name}`;
+                }
+            });
+        }
+        
+        function openRenewModal(mode) {
+            renewMode = mode;
+            if(mode === 'self') {
+                if(modalTitle) modalTitle.innerText = 'ကိုယ်တိုင် ထပ်ဝယ်ရန်';
+                if(renewPhone) {
+                    renewPhone.value = currentUserPhone;
+                    renewPhone.readOnly = true;
+                }
+                if(phoneNote) {
+                    phoneNote.innerHTML = '※ သင့်ကိုယ်ပိုင်နံပါတ်';
+                    phoneNote.style.color = '#10b981';
+                }
+            } else {
+                if(modalTitle) modalTitle.innerText = 'အခြားသူအတွက် ထပ်ဝယ်ပေးရန်';
+                if(renewPhone) {
+                    renewPhone.value = '';
+                    renewPhone.readOnly = false;
+                }
+                if(phoneNote) {
+                    phoneNote.innerHTML = '※ လက်ခံမည့်သူ၏ ဖုန်းနံပါတ် (သက်တမ်းတိုးခံရမည့်သူ)';
+                    phoneNote.style.color = '#f59e0b';
                 }
             }
-            
-            // Info toggle
-            const infoToggle = document.getElementById('infoToggle');
-            if (infoToggle) {
-                const infoHeader = infoToggle.querySelector('.info-header');
-                const infoBody = infoToggle.querySelector('.info-body');
-                if (infoHeader) {
-                    infoHeader.onclick = function() {
-                        infoBody.classList.toggle('open');
-                        infoHeader.classList.toggle('open');
-                    };
+            if(renewSlip) renewSlip.value = '';
+            if(fileNameDisplay) fileNameDisplay.innerHTML = '';
+            const senderNameInput = document.getElementById('senderName');
+            const last5DigitsInput = document.getElementById('last5Digits');
+            if(senderNameInput) senderNameInput.value = '';
+            if(last5DigitsInput) last5DigitsInput.value = '';
+            switchToScreenshot();
+            if(modal) modal.classList.add('active');
+        }
+        
+        const openSelfRenewBtn = document.getElementById('openSelfRenewBtn');
+        const openOtherRenewBtn = document.getElementById('openOtherRenewBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        
+        if(openSelfRenewBtn) openSelfRenewBtn.addEventListener('click', () => openRenewModal('self'));
+        if(openOtherRenewBtn) openOtherRenewBtn.addEventListener('click', () => openRenewModal('other'));
+        if(closeModalBtn) closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
+        if(modal) {
+            window.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('active'); });
+        }
+        
+        const renewForm = document.getElementById('renewForm');
+        if(renewForm) {
+            renewForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const phone = renewPhone ? renewPhone.value.trim() : '';
+                const plan = renewPlan ? renewPlan.value : '';
+                let price = 0;
+                if(plan === 'VIP LEVEL - 1') price = 15000;
+                else if(plan === 'VIP LEVEL - 2') price = 20000;
+                else if(plan === 'VIP LEVEL - 3') price = 25000;
+                else if(plan === 'VIP LEVEL - 4 (ULTRA)') price = 30000;
+                
+                if(!phone || phone.length < 9) {
+                    showToast("ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)", true);
+                    return;
                 }
-            }
-            
-            // Warning toggle
-            const warningToggle = document.getElementById('warningToggle');
-            if (warningToggle) {
-                const warningHeader = warningToggle.querySelector('.warning-header');
-                const warningContent = document.getElementById('warningContent');
-                const warningIcon = document.getElementById('warningIcon');
-                if (warningHeader) {
-                    warningHeader.onclick = function() {
-                        if (warningContent) {
-                            if (warningContent.style.display === 'none' || warningContent.style.display === '') {
-                                warningContent.style.display = 'block';
-                                if (warningIcon) warningIcon.style.transform = 'rotate(180deg)';
-                            } else {
-                                warningContent.style.display = 'none';
-                                if (warningIcon) warningIcon.style.transform = 'rotate(0deg)';
-                            }
-                        }
-                    };
+                
+                const submitBtn = renewForm.querySelector('.submit-btn');
+                if(submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '⏳ အော်ဒါတင်နေပါသည်...';
                 }
-            }
-            
-            // Tab switching
-            const screenshotTab = document.getElementById('screenshotTabBtn');
-            const textTab = document.getElementById('textTabBtn');
-            const screenshotPanel = document.getElementById('screenshotPanel');
-            const textPanel = document.getElementById('textPanel');
-            
-            if (screenshotTab && textTab) {
-                screenshotTab.onclick = function() {
-                    if (screenshotPanel) screenshotPanel.style.display = 'block';
-                    if (textPanel) textPanel.style.display = 'none';
-                    screenshotTab.className = 'tab-btn screenshot-tab';
-                    textTab.className = 'tab-btn text-tab';
-                };
-                textTab.onclick = function() {
-                    if (textPanel) textPanel.style.display = 'block';
-                    if (screenshotPanel) screenshotPanel.style.display = 'none';
-                    textTab.className = 'tab-btn screenshot-tab';
-                    screenshotTab.className = 'tab-btn text-tab';
-                };
-            }
-            
-            // Renew buttons - open modal
-            const openSelfBtn = document.getElementById('openSelfRenewBtn');
-            const openOtherBtn = document.getElementById('openOtherRenewBtn');
-            const modal = document.getElementById('paymentModal');
-            const closeModalBtn = document.getElementById('closeModalBtn');
-            const modalTitle = document.getElementById('modalTitle');
-            const renewPhoneInput = document.getElementById('renewPhone');
-            const phoneNoteSpan = document.getElementById('phoneNote');
-            
-            if (openSelfBtn) {
-                openSelfBtn.onclick = function() {
-                    if (modalTitle) modalTitle.innerText = 'ကိုယ်တိုင် ထပ်ဝယ်ရန်';
-                    if (renewPhoneInput) {
-                        renewPhoneInput.value = localStorage.getItem('myPhone') || '';
-                        renewPhoneInput.readOnly = true;
-                    }
-                    if (phoneNoteSpan) {
-                        phoneNoteSpan.innerHTML = '※ သင့်ကိုယ်ပိုင်နံပါတ်';
-                        phoneNoteSpan.style.color = '#10b981';
-                    }
-                    if (modal) modal.classList.add('active');
-                    // reset to screenshot mode
-                    if (screenshotPanel && textPanel) {
-                        screenshotPanel.style.display = 'block';
-                        textPanel.style.display = 'none';
-                        if (screenshotTab && textTab) {
-                            screenshotTab.className = 'tab-btn screenshot-tab';
-                            textTab.className = 'tab-btn text-tab';
-                        }
-                    }
-                };
-            }
-            
-            if (openOtherBtn) {
-                openOtherBtn.onclick = function() {
-                    if (modalTitle) modalTitle.innerText = 'အခြားသူအတွက် ထပ်ဝယ်ပေးရန်';
-                    if (renewPhoneInput) {
-                        renewPhoneInput.value = '';
-                        renewPhoneInput.readOnly = false;
-                    }
-                    if (phoneNoteSpan) {
-                        phoneNoteSpan.innerHTML = '※ လက်ခံမည့်သူ၏ ဖုန်းနံပါတ် (သက်တမ်းတိုးခံရမည့်သူ)';
-                        phoneNoteSpan.style.color = '#f59e0b';
-                    }
-                    if (modal) modal.classList.add('active');
-                    if (screenshotPanel && textPanel) {
-                        screenshotPanel.style.display = 'block';
-                        textPanel.style.display = 'none';
-                        if (screenshotTab && textTab) {
-                            screenshotTab.className = 'tab-btn screenshot-tab';
-                            textTab.className = 'tab-btn text-tab';
-                        }
-                    }
-                };
-            }
-            
-            if (closeModalBtn) {
-                closeModalBtn.onclick = function() {
-                    if (modal) modal.classList.remove('active');
-                };
-            }
-            
-            if (modal) {
-                window.onclick = function(e) {
-                    if (e.target === modal) modal.classList.remove('active');
-                };
-            }
-            
-            // File upload button
-            const chooseFileBtn = document.getElementById('chooseFileBtn');
-            const slipImage = document.getElementById('slipImage');
-            const fileNameDisplay = document.getElementById('fileNameDisplay');
-            
-            if (chooseFileBtn && slipImage) {
-                chooseFileBtn.onclick = function() { slipImage.click(); };
-                slipImage.onchange = function() {
-                    if (fileNameDisplay && slipImage.files.length > 0) {
-                        fileNameDisplay.innerHTML = '<i class="fas fa-check-circle"></i> ' + slipImage.files[0].name;
-                    }
-                };
-            }
-            
-            // Search buttons
-            const searchBtn = document.getElementById('searchBtn');
-            const clearSearchBtn = document.getElementById('clearSearchBtn');
-            const searchPhoneInput = document.getElementById('searchPhone');
-            const searchMessage = document.getElementById('searchMessage');
-            const searchResultContainer = document.getElementById('searchResultContainer');
-            const searchResultOrders = document.getElementById('searchResultOrders');
-            
-            if (searchBtn) {
-                searchBtn.onclick = async function() {
-                    const phone = searchPhoneInput ? searchPhoneInput.value.trim() : '';
-                    if (!phone || phone.length < 9) {
-                        if (searchMessage) {
-                            searchMessage.style.display = 'block';
-                            searchMessage.className = 'search-message error';
-                            searchMessage.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)';
-                        }
-                        return;
-                    }
-                    if (searchMessage) {
-                        searchMessage.style.display = 'block';
-                        searchMessage.className = 'search-message';
-                        searchMessage.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ရှာဖွေနေသည်...';
-                    }
-                    try {
-                        const res = await fetch(`/api/orders/${encodeURIComponent(phone)}`);
-                        const data = await res.json();
-                        if (data.orders && data.orders.length > 0) {
-                            if (searchMessage) {
-                                searchMessage.className = 'search-message success';
-                                searchMessage.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။';
-                            }
-                            // render search result
-                            let html = '';
-                            for (let o of data.orders) {
-                                let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
-                                let statusText = o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
-                                let countdownHtml = '';
-                                if (o.status === 'Approved' && o.activated_at) {
-                                    let end = new Date(o.activated_at).getTime() + (30 * 24 * 60 * 60 * 1000);
-                                    let remain = end - Date.now();
-                                    if (remain > 0) {
-                                        let days = Math.floor(remain / 86400000);
-                                        let hours = Math.floor((remain % 86400000) / 3600000);
-                                        let mins = Math.floor((remain % 3600000) / 60000);
-                                        countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${days}ရက် ${hours}နာရီ ${mins}မိနစ်</div>`;
-                                    } else {
-                                        countdownHtml = `<div class="countdown"><i class="fas fa-calendar-times"></i> သက်တမ်းကုန်</div>`;
-                                    }
-                                }
-                                // mask phone for others
-                                let maskedPhone = phone;
-                                if (phone.length >= 8) maskedPhone = phone.substring(0,5) + '***' + phone.substring(phone.length-3);
-                                html += `
-                                    <div class="search-result-card search-orange-blink">
-                                        <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                                            <span class="plan"><i class="fas fa-gem"></i> ${o.plan}</span>
-                                            <span class="status ${statusClass}">${statusText}</span>
-                                        </div>
-                                        <div class="phone-masked"><i class="fas fa-phone-alt"></i> ${maskedPhone}</div>
-                                        <div><span class="price">${o.price.toLocaleString()} MMK</span></div>
-                                        <div class="date"><i class="fas fa-calendar-alt"></i> ဝယ်ရက်: ${new Date(o.created_at).toLocaleDateString()}</div>
-                                        ${countdownHtml}
-                                    </div>
-                                `;
-                            }
-                            if (searchResultOrders) searchResultOrders.innerHTML = html;
-                            if (searchResultContainer) searchResultContainer.classList.add('active');
-                        } else {
-                            if (searchMessage) {
-                                searchMessage.className = 'search-message error';
-                                searchMessage.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
-                            }
-                            if (searchResultContainer) searchResultContainer.classList.remove('active');
-                        }
-                    } catch(e) {
-                        if (searchMessage) {
-                            searchMessage.className = 'search-message error';
-                            searchMessage.innerHTML = '<i class="fas fa-exclamation-circle"></i> ချိတ်ဆက်မှုအမှား';
-                        }
-                    }
-                };
-            }
-            
-            if (clearSearchBtn) {
-                clearSearchBtn.onclick = function() {
-                    if (searchPhoneInput) searchPhoneInput.value = '';
-                    if (searchMessage) searchMessage.style.display = 'none';
-                    if (searchResultContainer) searchResultContainer.classList.remove('active');
-                    if (searchResultOrders) searchResultOrders.innerHTML = '';
-                };
-            }
-            
-            // Renew form submit
-            const renewForm = document.getElementById('renewForm');
-            if (renewForm) {
-                renewForm.onsubmit = async function(e) {
-                    e.preventDefault();
-                    const phone = renewPhoneInput ? renewPhoneInput.value.trim() : '';
-                    const planSelect = document.getElementById('renewPlan');
-                    const plan = planSelect ? planSelect.value : '';
-                    let price = 0;
-                    if (plan === 'VIP LEVEL - 1') price = 15000;
-                    else if (plan === 'VIP LEVEL - 2') price = 20000;
-                    else if (plan === 'VIP LEVEL - 3') price = 25000;
-                    else if (plan === 'VIP LEVEL - 4 (ULTRA)') price = 30000;
-                    
-                    if (!phone || phone.length < 9) {
-                        alert('ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ');
-                        return;
-                    }
-                    
-                    const isScreenshotMode = screenshotPanel && screenshotPanel.style.display !== 'none';
-                    let fd = new FormData();
-                    fd.append('phone', phone);
-                    fd.append('plan', plan);
-                    fd.append('price', price);
-                    
-                    if (isScreenshotMode) {
-                        const file = slipImage ? slipImage.files[0] : null;
-                        if (!file) {
-                            alert('ငွေလွှဲပြေစာ ထည့်ပါ');
-                            return;
-                        }
-                        fd.append('slip', file);
-                    } else {
-                        const senderName = document.getElementById('senderName') ? document.getElementById('senderName').value.trim() : '';
-                        const last5Digits = document.getElementById('last5Digits') ? document.getElementById('last5Digits').value.trim() : '';
-                        if (!senderName) {
-                            alert('ငွေလွှဲသူအမည် ထည့်ပါ');
-                            return;
-                        }
-                        if (!last5Digits || last5Digits.length !== 5) {
-                            alert('အကောင့်နောက်ဆုံး ၅ လုံး အတိအကျ ထည့်ပါ');
-                            return;
-                        }
-                        fd.append('sender_name', senderName);
-                        fd.append('last5_digits', last5Digits);
-                    }
-                    
-                    const submitBtn = renewForm.querySelector('.submit-btn');
-                    if (submitBtn) {
-                        submitBtn.disabled = true;
-                        submitBtn.innerHTML = '⏳ အော်ဒါတင်နေပါသည်...';
-                    }
-                    
-                    try {
-                        const res = await fetch('/api/orders', { method: 'POST', body: fd });
-                        const result = await res.json();
-                        if (result.success) {
-                            alert('✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ' + result.orderId);
-                            if (modal) modal.classList.remove('active');
-                            if (slipImage) slipImage.value = '';
-                            if (fileNameDisplay) fileNameDisplay.innerHTML = '';
-                            const senderNameInput = document.getElementById('senderName');
-                            const last5DigitsInput = document.getElementById('last5Digits');
-                            if (senderNameInput) senderNameInput.value = '';
-                            if (last5DigitsInput) last5DigitsInput.value = '';
-                        } else {
-                            alert('❌ အော်ဒါတင်ရာတွင် အမှားရှိပါသည်။ ' + (result.error || ''));
-                        }
-                    } catch(e) {
-                        alert('❌ ချိတ်ဆက်မှုအမှား');
-                    }
-                    if (submitBtn) {
+                
+                const result = await submitRenewOrder(phone, plan, price);
+                
+                if (result === null) {
+                    if(submitBtn) {
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = '<i class="fas fa-check"></i> အော်ဒါတင်မည်';
                     }
-                };
-            }
-            
-            // Copy phone in modal
-            const modalPhoneCopy = document.getElementById('modalPhoneCopy');
-            if (modalPhoneCopy) {
-                modalPhoneCopy.onclick = function() {
-                    navigator.clipboard.writeText('09789999368');
-                    alert('📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ');
-                };
-            }
+                    return;
+                }
+                
+                if(result.success) {
+                    showToast(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${result.orderId}`, false);
+                    if(modal) modal.classList.remove('active');
+                    if(renewSlip) renewSlip.value = '';
+                    if(fileNameDisplay) fileNameDisplay.innerHTML = '';
+                    const senderNameInput = document.getElementById('senderName');
+                    const last5DigitsInput = document.getElementById('last5Digits');
+                    if(senderNameInput) senderNameInput.value = '';
+                    if(last5DigitsInput) last5DigitsInput.value = '';
+                    await refreshMyAndLive();
+                } else {
+                    showToast("အော်ဒါတင်ရာတွင် အမှားရှိပါသည်။ " + (result.error || ''), true);
+                }
+                if(submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check"></i> အော်ဒါတင်မည်';
+                }
+            });
         }
+        
+        const modalPhoneCopy = document.getElementById('accountPhone');
+        if(modalPhoneCopy) {
+            modalPhoneCopy.addEventListener('click', () => {
+                navigator.clipboard.writeText('09789999368');
+                showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ", false);
+            });
+        }
+        
+        const searchBtn = document.getElementById('searchBtn');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        const searchPhoneInput = document.getElementById('searchPhone');
+        
+        if(searchBtn) searchBtn.addEventListener('click', searchOtherUser);
+        if(clearSearchBtn) clearSearchBtn.addEventListener('click', clearExternalSearch);
+        if(searchPhoneInput) {
+            searchPhoneInput.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') searchOtherUser();
+            });
+        }
+        
+        if(doLoginBtn) {
+            doLoginBtn.addEventListener('click', () => {
+                const phone = loginPhoneInput ? loginPhoneInput.value.trim() : '';
+                login(phone);
+            });
+        }
+        if(loginPhoneInput) {
+            loginPhoneInput.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') {
+                    const phone = loginPhoneInput.value.trim();
+                    login(phone);
+                }
+            });
+        }
+        if(logoutBtn) logoutBtn.addEventListener('click', logout);
+        
+        if(currentUserPhone && currentUserPhone.length > 8) {
+            loginScreen.style.display = 'none';
+            dashboardContent.style.display = 'block';
+            displayPhoneSpan.innerHTML = maskPhone(currentUserPhone);
+            refreshMyAndLive();
+            startAutoRefresh();
+        } else {
+            loginScreen.style.display = 'block';
+            dashboardContent.style.display = 'none';
+        }
+        
+        updateAccountInfo();
     })();
 </script>
 </body>
