@@ -16,6 +16,8 @@
             --emerald: #10b981;
             --rose: #f43f5e;
             --amber: #f59e0b;
+            --kpay: #1e88e5;
+            --wavepay: #43a047;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
         }
@@ -247,13 +249,6 @@
             box-shadow: 0 0 20px rgba(251,191,36,0.5);
             animation: blinkGlow 1s ease-in-out 2;
         }
-        .user-card.search-highlight {
-            border: 2px solid #fbbf24;
-            background: rgba(251,191,36,0.15);
-            box-shadow: 0 0 20px rgba(251,191,36,0.5);
-            animation: blinkGlow 1s ease-in-out 2;
-        }
-        
         @keyframes blinkGlow {
             0% { border-color: rgba(251,191,36,0); box-shadow: 0 0 0px rgba(251,191,36,0); background: rgba(251,191,36,0); }
             25% { border-color: #fbbf24; box-shadow: 0 0 20px #fbbf24; background: rgba(251,191,36,0.25); }
@@ -290,6 +285,10 @@
         .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
         .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        
+        .payment-badge {
+            margin-bottom: 8px;
+        }
         
         .order-details {
             display: flex;
@@ -373,6 +372,16 @@
             align-items: center;
             gap: 6px;
             color: var(--cyan);
+        }
+        .proof-text {
+            background: rgba(16,185,129,0.1);
+            border-radius: 40px;
+            padding: 6px 12px;
+            font-size: 0.65rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         
         .users-list {
@@ -610,7 +619,7 @@
     <div class="fab-container" id="fabContainer" style="display: none;">
         <button class="fab" onclick="manualRefresh()" title="Sync Now"><i class="fas fa-sync-alt"></i></button>
         <button class="fab" onclick="window.location.href='/'" title="Go to Store"><i class="fas fa-store"></i></button>
-        <button class="fab.logout" onclick="logout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+        <button class="fab logout" onclick="logout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
     </div>
     
     <div id="loginBox" class="login-box">
@@ -992,21 +1001,25 @@
                 `;
             }
             
-            // 🔥 PROOF SECTION - Sender Name & Last 5 Digits Display 🔥
+            // Payment Method Badge
+            let paymentBadge = '';
+            if (o.payment_method === 'kpay') {
+                paymentBadge = '<span style="background: rgba(30,136,229,0.2); color: #64b5f6; padding: 4px 12px; border-radius: 40px; font-size: 0.6rem;"><i class="fas fa-university"></i> K-Pay</span>';
+            } else if (o.payment_method === 'wavepay') {
+                paymentBadge = '<span style="background: rgba(67,160,71,0.2); color: #81c784; padding: 4px 12px; border-radius: 40px; font-size: 0.6rem;"><i class="fas fa-waveform"></i> WavePay</span>';
+            } else {
+                paymentBadge = '<span style="background: rgba(100,100,100,0.2); color: #aaa; padding: 4px 12px; border-radius: 40px; font-size: 0.6rem;"><i class="fas fa-credit-card"></i> Unknown</span>';
+            }
+            
+            // Proof section
             let proofHtml = '';
             if (o.slip_url) {
                 proofHtml = `<button class="screenshot-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> 📸 View Slip</button>`;
             } else if (o.sender_name && o.last5_digits) {
                 proofHtml = `
-                    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: center;">
-                        <span style="background: rgba(0,212,255,0.15); padding: 6px 14px; border-radius: 40px;">
-                            <i class="fas fa-user" style="color: #00d4ff;"></i> 
-                            <strong>Sender:</strong> ${escapeHtml(o.sender_name)}
-                        </span>
-                        <span style="background: rgba(16,185,129,0.15); padding: 6px 14px; border-radius: 40px;">
-                            <i class="fas fa-credit-card" style="color: #10b981;"></i> 
-                            <strong>Last 5:</strong> ${escapeHtml(o.last5_digits)}
-                        </span>
+                    <div class="proof-text">
+                        <span><i class="fas fa-user"></i> Sender: <strong>${escapeHtml(o.sender_name)}</strong></span>
+                        <span><i class="fas fa-credit-card"></i> Last 5: <strong>${escapeHtml(o.last5_digits)}</strong></span>
                     </div>
                 `;
             } else {
@@ -1018,6 +1031,9 @@
                     <div class="order-header">
                         <span class="order-id"><i class="fas fa-hashtag"></i> ${o.id}</span>
                         <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="payment-badge">
+                        ${paymentBadge}
                     </div>
                     <div class="order-details">
                         <div class="detail-item">
@@ -1047,12 +1063,9 @@
                             <div class="detail-value" style="font-size:0.65rem;">${new Date(o.created_at).toLocaleDateString()}</div>
                         </div>
                     </div>
-                    
-                    <!-- 🔥 PROOF SECTION DISPLAY 🔥 -->
-                    <div class="proof-section" style="margin-top: 8px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 12px; text-align: center;">
+                    <div class="proof-section" style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 12px;">
                         ${proofHtml}
                     </div>
-                    
                     ${countdownHtml}
                     <div class="order-actions">
                         ${o.status === 'Pending' ? `
