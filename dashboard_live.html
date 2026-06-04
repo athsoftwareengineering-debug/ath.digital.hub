@@ -22,7 +22,6 @@
             max-width: 600px;
             margin: 0 auto;
         }
-        /* header */
         .header {
             text-align: center;
             margin-bottom: 20px;
@@ -38,7 +37,6 @@
             font-size: 0.7rem;
             color: #94a3b8;
         }
-        /* search box */
         .search-box {
             background: rgba(0,212,255,0.08);
             border-radius: 60px;
@@ -70,7 +68,6 @@
             background: #334155;
             color: white;
         }
-        /* section title */
         .section-title {
             display: flex;
             justify-content: space-between;
@@ -94,7 +91,6 @@
             0% { opacity: 0.6; }
             100% { opacity: 1; }
         }
-        /* cards */
         .card {
             background: linear-gradient(145deg, #11131e, #0c0e16);
             border-radius: 1.2rem;
@@ -179,23 +175,20 @@
         <div class="sub">ဝယ်ထားသော Plan များနှင့် LIVE အော်ဒါများ</div>
     </div>
 
-    <!-- search section -->
     <div class="search-box">
         <input type="tel" id="searchPhone" placeholder="📱 ဖုန်းနံပါတ်ရိုက်ထည့်ပါ (09...)" value="">
         <button id="searchBtn"><i class="fas fa-search"></i> ရှာ</button>
         <button id="clearBtn" class="clear"><i class="fas fa-times"></i></button>
     </div>
 
-    <!-- MY PLANS (purchased) -->
     <div class="section-title">
         <h2><i class="fas fa-ticket-alt"></i> ဝယ်ထားသော Plan များ</h2>
         <span id="myCount" style="font-size:0.65rem;">0</span>
     </div>
     <div id="myOrdersContainer">
-        <div class="empty"><i class="fas fa-spinner fa-pulse"></i> နံပါတ်ရှာပါ</div>
+        <div class="empty"><i class="fas fa-search"></i> ဖုန်းနံပါတ်ရှာပါ</div>
     </div>
 
-    <!-- LIVE FEED (other users) -->
     <div class="section-title">
         <h2><i class="fas fa-broadcast-tower"></i> LIVE အော်ဒါများ <span class="live-badge">LIVE</span></h2>
         <span id="liveTimer" style="font-size:0.6rem;">auto 30s</span>
@@ -209,11 +202,9 @@
 <script>
     const API_BASE = window.location.origin;
     let currentSearchPhone = "";
-    let allOrdersData = [];
     let liveOrders = [];
     let autoInterval = null, countdownSec = 30, timerInterval = null;
 
-    // helpers
     function maskPhone(p) {
         if (!p || p.length < 8) return p;
         return p.substring(0,5) + "***" + p.substring(p.length-3);
@@ -233,11 +224,9 @@
         let days = Math.floor(remain / 86400000);
         let hours = Math.floor((remain % 86400000) / 3600000);
         let mins = Math.floor((remain % 3600000) / 60000);
-        let secs = Math.floor((remain % 60000) / 1000);
         return `${days}ရက် ${hours}နာရီ ${mins}မိနစ်`;
     }
 
-    // fetch user orders by phone
     async function fetchMyOrders(phone) {
         if(!phone) return [];
         try {
@@ -249,7 +238,6 @@
         }
     }
 
-    // fetch all orders for live feed (exclude current searched phone)
     async function fetchLiveOrders(excludePhone) {
         try {
             let res = await fetch(`${API_BASE}/api/admin/orders`);
@@ -265,7 +253,6 @@
         }
     }
 
-    // render MY PLANS
     function renderMyPlans(orders, searchPhone) {
         let container = document.getElementById('myOrdersContainer');
         let countSpan = document.getElementById('myCount');
@@ -304,7 +291,6 @@
         container.innerHTML = html;
     }
 
-    // render LIVE FEED
     function renderLiveFeed(orders, searchPhone) {
         let container = document.getElementById('liveContainer');
         if(!orders.length) {
@@ -335,10 +321,8 @@
         container.innerHTML = html;
     }
 
-    // main refresh
     async function refreshData() {
         if(!currentSearchPhone) {
-            // just refresh live feed without my orders
             let live = await fetchLiveOrders("");
             liveOrders = live;
             renderLiveFeed(liveOrders, currentSearchPhone);
@@ -346,16 +330,12 @@
             document.getElementById('myCount').innerText = "0";
             return;
         }
-        // fetch both
         let my = await fetchMyOrders(currentSearchPhone);
         let live = await fetchLiveOrders(currentSearchPhone);
-        allOrdersData = my;
-        liveOrders = live;
         renderMyPlans(my, currentSearchPhone);
         renderLiveFeed(live, currentSearchPhone);
     }
 
-    // auto refresh for live feed only
     function startAutoRefresh() {
         if(autoInterval) clearInterval(autoInterval);
         if(timerInterval) clearInterval(timerInterval);
@@ -368,7 +348,6 @@
         };
         timerInterval = setInterval(updateTimer, 1000);
         autoInterval = setInterval(async () => {
-            // refresh live feed only (so my orders don't reset)
             if(currentSearchPhone) {
                 let live = await fetchLiveOrders(currentSearchPhone);
                 liveOrders = live;
@@ -383,7 +362,6 @@
         }, 30000);
     }
 
-    // search action
     async function searchPhone() {
         let input = document.getElementById('searchPhone').value.trim();
         if(input === "") {
@@ -405,14 +383,12 @@
         refreshData();
     }
 
-    // event binding
     document.getElementById('searchBtn').addEventListener('click', searchPhone);
     document.getElementById('clearBtn').addEventListener('click', clearSearch);
     document.getElementById('searchPhone').addEventListener('keypress', (e) => {
         if(e.key === 'Enter') searchPhone();
     });
 
-    // initial load: show live feed only
     (async () => {
         startAutoRefresh();
         let live = await fetchLiveOrders("");
