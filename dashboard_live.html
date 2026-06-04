@@ -2,9 +2,10 @@
 <html lang="my">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>My Plans & LIVE | ATH</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>My Dashboard | ATH DIGITAL HUB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
@@ -12,39 +13,85 @@
             padding: 0;
             box-sizing: border-box;
         }
+        :root {
+            --bg-deep: #0a0c15;
+            --cyan: #00d4ff;
+            --violet: #8b5cf6;
+            --emerald: #10b981;
+            --rose: #f43f5e;
+            --amber: #f59e0b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
         body {
             background: #0a0c15;
-            font-family: 'Inter', sans-serif;
-            padding: 16px;
-            color: #f1f5f9;
+            color: var(--text-primary);
+            font-family: 'Noto Sans Myanmar', 'Inter', sans-serif;
+            min-height: 100vh;
+            /* 🌌 Space Background - Animation နဲ့ Gradient ထည့်ထားတယ် */
+            background-image: 
+                radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.15) 0%, transparent 60%),
+                radial-gradient(circle at 85% 70%, rgba(0,212,255,0.1) 0%, transparent 55%),
+                repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 2px);
+            background-size: 100% 100%, 100% 100%, 100% 100%;
+            padding: 20px 16px 40px;
         }
         .container {
             max-width: 600px;
             margin: 0 auto;
         }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
+        /* animated header */
+        .dashboard-header {
+            backdrop-filter: blur(20px);
+            background: rgba(10,12,21,0.6);
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 1.5rem;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+            transition: all 0.3s;
         }
-        .header h1 {
-            font-size: 1.4rem;
-            background: linear-gradient(135deg, #fff, #00d4ff);
+        .brand {
+            font-family: 'Space Grotesk', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff, #94a3b8, var(--cyan));
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .sub {
-            font-size: 0.7rem;
-            color: #94a3b8;
+        .brand i {
+            background: none;
+            color: var(--cyan);
+            animation: pulse 2s infinite;
         }
+        @keyframes pulse {
+            0% { text-shadow: 0 0 0px rgba(0,212,255,0); }
+            50% { text-shadow: 0 0 8px rgba(0,212,255,0.8); }
+            100% { text-shadow: 0 0 0px rgba(0,212,255,0); }
+        }
+        /* search box with glassmorphism */
         .search-box {
             background: rgba(0,212,255,0.08);
+            backdrop-filter: blur(10px);
             border-radius: 60px;
             padding: 6px;
             display: flex;
             gap: 8px;
             margin-bottom: 24px;
             border: 1px solid rgba(0,212,255,0.2);
+            transition: 0.2s;
+        }
+        .search-box:focus-within {
+            border-color: var(--cyan);
+            box-shadow: 0 0 12px rgba(0,212,255,0.3);
         }
         .search-box input {
             flex: 1;
@@ -56,18 +103,24 @@
             outline: none;
         }
         .search-box button {
-            background: #00d4ff;
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
             border: none;
             padding: 8px 18px;
             border-radius: 40px;
             font-weight: bold;
             color: #030712;
             cursor: pointer;
+            transition: 0.2s;
+        }
+        .search-box button:hover {
+            transform: scale(0.96);
+            filter: brightness(1.05);
         }
         .search-box button.clear {
             background: #334155;
             color: white;
         }
+        /* section */
         .section-title {
             display: flex;
             justify-content: space-between;
@@ -82,24 +135,39 @@
         }
         .live-badge {
             font-size: 0.6rem;
-            background: #f43f5e;
-            padding: 2px 8px;
+            background: rgba(244,63,94,0.2);
+            color: #f43f5e;
+            padding: 3px 10px;
             border-radius: 40px;
-            animation: pulse 1s infinite;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            animation: liveBlink 1s step-end infinite;
         }
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            100% { opacity: 1; }
+        @keyframes liveBlink {
+            0%,100% { background: rgba(244,63,94,0.2); color: #f43f5e; }
+            50% { background: rgba(244,63,94,0.8); color: white; }
         }
+        /* Cards with hover & glow */
         .card {
-            background: linear-gradient(145deg, #11131e, #0c0e16);
+            background: linear-gradient(145deg, rgba(18,22,35,0.9), rgba(10,12,21,0.95));
+            backdrop-filter: blur(10px);
             border-radius: 1.2rem;
             padding: 14px;
             margin-bottom: 12px;
-            border-left: 3px solid #00d4ff;
+            border-left: 3px solid var(--cyan);
+            transition: all 0.2s ease;
+        }
+        .card:hover {
+            transform: translateX(5px);
+            border-left-color: var(--violet);
+            box-shadow: 0 8px 20px rgba(0,212,255,0.1);
         }
         .card.live-card {
-            border-left-color: #f59e0b;
+            border-left-color: var(--amber);
+        }
+        .card.live-card:hover {
+            border-left-color: #f97316;
         }
         .card-header {
             display: flex;
@@ -109,7 +177,7 @@
         }
         .plan {
             font-weight: 700;
-            color: #00d4ff;
+            color: var(--cyan);
         }
         .status {
             font-size: 0.65rem;
@@ -123,11 +191,11 @@
         .price {
             font-size: 0.9rem;
             font-weight: 700;
-            color: #10b981;
+            color: var(--emerald);
         }
         .date {
             font-size: 0.6rem;
-            color: #64748b;
+            color: var(--text-secondary);
             margin-top: 6px;
         }
         .countdown {
@@ -150,7 +218,7 @@
         .empty {
             text-align: center;
             padding: 32px;
-            color: #64748b;
+            color: var(--text-secondary);
             font-size: 0.8rem;
         }
         .footer {
@@ -158,21 +226,20 @@
             font-size: 0.6rem;
             color: #475569;
             margin-top: 32px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 20px;
         }
-        hr {
-            border-color: #1e293b;
-            margin: 8px 0;
-        }
-        i {
-            margin-right: 4px;
-        }
+        /* scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 4px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <h1><i class="fas fa-sim-card"></i> ATH MY PLANS</h1>
-        <div class="sub">ဝယ်ထားသော Plan များနှင့် LIVE အော်ဒါများ</div>
+    <div class="dashboard-header">
+        <div class="brand"><i class="fas fa-chart-line"></i> ATH Dashboard</div>
+        <a href="/" style="background:rgba(0,212,255,0.15);padding:6px 14px;border-radius:40px;font-size:0.7rem;text-decoration:none;color:var(--cyan);"><i class="fas fa-store"></i> စတိုး</a>
     </div>
 
     <div class="search-box">
@@ -190,7 +257,7 @@
     </div>
 
     <div class="section-title">
-        <h2><i class="fas fa-broadcast-tower"></i> LIVE အော်ဒါများ <span class="live-badge">LIVE</span></h2>
+        <h2><i class="fas fa-broadcast-tower"></i> LIVE အော်ဒါများ <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span></h2>
         <span id="liveTimer" style="font-size:0.6rem;">auto 30s</span>
     </div>
     <div id="liveContainer">
@@ -203,19 +270,17 @@
     const API_BASE = window.location.origin;
     let currentSearchPhone = "";
     let liveOrders = [];
-    let autoInterval = null, countdownSec = 30, timerInterval = null;
+    let autoInterval = null, timerInterval = null;
 
     function maskPhone(p) {
         if (!p || p.length < 8) return p;
         return p.substring(0,5) + "***" + p.substring(p.length-3);
     }
-
     function formatDate(d) {
         if(!d) return "";
         let date = new Date(d);
         return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
     }
-
     function remainingTime(activatedAt) {
         if (!activatedAt) return null;
         let end = new Date(activatedAt).getTime() + (30 * 24 * 60 * 60 * 1000);
@@ -233,11 +298,8 @@
             let res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(phone)}`);
             let data = await res.json();
             return data.orders || [];
-        } catch(e) {
-            return [];
-        }
+        } catch(e) { return []; }
     }
-
     async function fetchLiveOrders(excludePhone) {
         try {
             let res = await fetch(`${API_BASE}/api/admin/orders`);
@@ -248,9 +310,7 @@
                 return filtered.slice(0, 25);
             }
             return [];
-        } catch(e) {
-            return [];
-        }
+        } catch(e) { return []; }
     }
 
     function renderMyPlans(orders, searchPhone) {
@@ -291,7 +351,7 @@
         container.innerHTML = html;
     }
 
-    function renderLiveFeed(orders, searchPhone) {
+    function renderLiveFeed(orders) {
         let container = document.getElementById('liveContainer');
         if(!orders.length) {
             container.innerHTML = '<div class="empty"><i class="fas fa-eye-slash"></i> လက်ရှိ LIVE အော်ဒါမရှိ</div>';
@@ -325,7 +385,7 @@
         if(!currentSearchPhone) {
             let live = await fetchLiveOrders("");
             liveOrders = live;
-            renderLiveFeed(liveOrders, currentSearchPhone);
+            renderLiveFeed(liveOrders);
             document.getElementById('myOrdersContainer').innerHTML = '<div class="empty"><i class="fas fa-search"></i> ဖုန်းနံပါတ်ရှာပါ</div>';
             document.getElementById('myCount').innerText = "0";
             return;
@@ -333,7 +393,7 @@
         let my = await fetchMyOrders(currentSearchPhone);
         let live = await fetchLiveOrders(currentSearchPhone);
         renderMyPlans(my, currentSearchPhone);
-        renderLiveFeed(live, currentSearchPhone);
+        renderLiveFeed(live);
     }
 
     function startAutoRefresh() {
@@ -351,11 +411,11 @@
             if(currentSearchPhone) {
                 let live = await fetchLiveOrders(currentSearchPhone);
                 liveOrders = live;
-                renderLiveFeed(live, currentSearchPhone);
+                renderLiveFeed(live);
             } else {
                 let live = await fetchLiveOrders("");
                 liveOrders = live;
-                renderLiveFeed(live, "");
+                renderLiveFeed(live);
             }
             sec = 30;
             if(timerSpan) timerSpan.innerText = `auto 30s`;
@@ -376,7 +436,6 @@
         currentSearchPhone = input;
         await refreshData();
     }
-
     function clearSearch() {
         document.getElementById('searchPhone').value = "";
         currentSearchPhone = "";
@@ -393,7 +452,7 @@
         startAutoRefresh();
         let live = await fetchLiveOrders("");
         liveOrders = live;
-        renderLiveFeed(live, "");
+        renderLiveFeed(live);
         document.getElementById('myOrdersContainer').innerHTML = '<div class="empty"><i class="fas fa-search"></i> ဖုန်းနံပါတ်ရှာပါ</div>';
     })();
 </script>
