@@ -410,7 +410,42 @@
             border-radius: 4px;
         }
         
-        /* Proof Method Tabs - ONLY TEXT METHOD (No Screenshot for WebView compatibility) */
+        /* Proof Method Tabs (Screenshot / Text) - Both working */
+        .proof-tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .proof-tab-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .proof-tab-btn.screenshot-tab {
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            color: var(--cyan);
+        }
+        .proof-tab-btn.screenshot-tab.active {
+            background: linear-gradient(135deg, #00d4ff, #0891b2);
+            border: none;
+            color: white;
+        }
+        .proof-tab-btn.text-tab {
+            background: rgba(245,158,11,0.15);
+            border: 1px solid rgba(245,158,11,0.3);
+            color: var(--amber);
+        }
+        .proof-tab-btn.text-tab.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none;
+            color: white;
+        }
+        
         .method-panel { animation: fadeIn 0.3s ease; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -463,6 +498,16 @@
             border-radius: 60px;
             padding: 12px 16px;
             color: white;
+        }
+        .file-upload-btn {
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 12px;
+            border-radius: 60px;
+            width: 100%;
+            cursor: pointer;
+            text-align: center;
+            color: var(--cyan);
         }
         .submit-btn {
             width: 100%;
@@ -586,7 +631,7 @@
     </div>
 </div>
 
-<!-- Payment Modal - TEXT METHOD ONLY (No Screenshot for WebView compatibility) -->
+<!-- Payment Modal with KBZ Pay / WavePay Tabs and BOTH Screenshot & Text Methods -->
 <div id="paymentModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-close" id="closeModalBtn">&times;</div>
@@ -611,8 +656,31 @@
             <div class="info-row"><span>ဖုန်းနံပါတ်</span><span id="accountPhone">09789999368 📋</span></div>
         </div>
         
-        <!-- TEXT METHOD ONLY - No screenshot for WebView compatibility -->
-        <div id="textPanel" class="method-panel">
+        <!-- Proof Method Tabs (Screenshot / Text) -->
+        <div class="proof-tab-buttons">
+            <button type="button" id="screenshotTabBtn" class="proof-tab-btn screenshot-tab active">
+                <i class="fas fa-camera"></i> 📸 Screenshot
+            </button>
+            <button type="button" id="textTabBtn" class="proof-tab-btn text-tab">
+                <i class="fas fa-keyboard"></i> ✏️ စာသားဖြည့်
+            </button>
+        </div>
+        
+        <!-- Screenshot Method Panel -->
+        <div id="screenshotPanel" class="method-panel">
+            <div class="form-group">
+                <label><i class="fas fa-image"></i> ငွေလွှဲပြေစာ (Screenshot)</label>
+                <button type="button" id="chooseFileBtn" class="file-upload-btn">
+                    <i class="fas fa-camera"></i> Screenshot ရွေးရန်
+                </button>
+                <input type="file" id="slipImage" accept="image/*" style="display:none;">
+                <div id="fileNameDisplay" class="file-name-display"></div>
+                <div class="note-text" style="margin-top: 8px;">※ ငွေလွှဲပြေစာကို Screenshot ရိုက်ပြီး တင်ပေးပါ။ (ဖုန်း Gallery မှ ရွေးချယ်နိုင်ပါသည်)</div>
+            </div>
+        </div>
+        
+        <!-- Text Method Panel -->
+        <div id="textPanel" class="method-panel" style="display: none;">
             <div class="form-group">
                 <label><i class="fas fa-user"></i> ငွေလွှဲသူအမည် *</label>
                 <input type="text" id="senderName" class="form-control" placeholder="ဥပမာ - မောင်မောင်">
@@ -712,6 +780,59 @@
                 wavepayTab.classList.add('active');
                 kpayTab.classList.remove('active');
                 updateAccountInfo();
+            });
+        }
+        
+        // Proof method tabs switching
+        const screenshotTab = document.getElementById('screenshotTabBtn');
+        const textTab = document.getElementById('textTabBtn');
+        const screenshotPanel = document.getElementById('screenshotPanel');
+        const textPanel = document.getElementById('textPanel');
+        
+        function switchToScreenshot() {
+            if (screenshotPanel) screenshotPanel.style.display = 'block';
+            if (textPanel) textPanel.style.display = 'none';
+            if (screenshotTab) {
+                screenshotTab.classList.add('active');
+                screenshotTab.style.background = "linear-gradient(135deg, #00d4ff, #0891b2)";
+                screenshotTab.style.color = "white";
+            }
+            if (textTab) {
+                textTab.classList.remove('active');
+                textTab.style.background = "rgba(245,158,11,0.15)";
+                textTab.style.color = "var(--amber)";
+            }
+        }
+        
+        function switchToText() {
+            if (textPanel) textPanel.style.display = 'block';
+            if (screenshotPanel) screenshotPanel.style.display = 'none';
+            if (textTab) {
+                textTab.classList.add('active');
+                textTab.style.background = "linear-gradient(135deg, #f59e0b, #d97706)";
+                textTab.style.color = "white";
+            }
+            if (screenshotTab) {
+                screenshotTab.classList.remove('active');
+                screenshotTab.style.background = "rgba(0,212,255,0.15)";
+                screenshotTab.style.color = "var(--cyan)";
+            }
+        }
+        
+        if (screenshotTab) screenshotTab.addEventListener('click', switchToScreenshot);
+        if (textTab) textTab.addEventListener('click', switchToText);
+        
+        // File upload button handler
+        const chooseFileBtn = document.getElementById('chooseFileBtn');
+        const slipImage = document.getElementById('slipImage');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        
+        if (chooseFileBtn && slipImage) {
+            chooseFileBtn.addEventListener('click', () => slipImage.click());
+            slipImage.addEventListener('change', () => {
+                if (slipImage.files.length > 0 && fileNameDisplay) {
+                    fileNameDisplay.innerHTML = `<i class="fas fa-check-circle"></i> ${slipImage.files[0].name}`;
+                }
             });
         }
         
@@ -1059,21 +1180,31 @@
             fd.append('price', price);
             fd.append('payment_method', selectedPaymentMethod);
             
-            // TEXT METHOD ONLY - No screenshot
-            const senderName = document.getElementById('senderName').value.trim();
-            const last5Digits = document.getElementById('last5Digits').value.trim();
+            const isScreenshotMode = screenshotPanel.style.display !== 'none';
             
-            if (!senderName) {
-                showToast("ငွေလွှဲသူအမည် ထည့်ပါ", true);
-                return null;
+            if (isScreenshotMode) {
+                const file = document.getElementById('slipImage').files[0];
+                if (!file) {
+                    showToast("ငွေလွှဲပြေစာ ထည့်ပါ", true);
+                    return null;
+                }
+                fd.append('slip', file);
+            } else {
+                const senderName = document.getElementById('senderName').value.trim();
+                const last5Digits = document.getElementById('last5Digits').value.trim();
+                
+                if (!senderName) {
+                    showToast("ငွေလွှဲသူအမည် ထည့်ပါ", true);
+                    return null;
+                }
+                if (!last5Digits || last5Digits.length !== 5) {
+                    showToast("အကောင့်နောက်ဆုံး ၅ လုံး အတိအကျ ထည့်ပါ", true);
+                    return null;
+                }
+                
+                fd.append('sender_name', senderName);
+                fd.append('last5_digits', last5Digits);
             }
-            if (!last5Digits || last5Digits.length !== 5) {
-                showToast("အကောင့်နောက်ဆုံး ၅ လုံး အတိအကျ ထည့်ပါ", true);
-                return null;
-            }
-            
-            fd.append('sender_name', senderName);
-            fd.append('last5_digits', last5Digits);
             
             let res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
             return await res.json();
@@ -1110,8 +1241,13 @@
                 }
             }
             // Reset form
-            document.getElementById('senderName').value = '';
-            document.getElementById('last5Digits').value = '';
+            if (slipImage) slipImage.value = '';
+            if (fileNameDisplay) fileNameDisplay.innerHTML = '';
+            const senderNameInput = document.getElementById('senderName');
+            const last5DigitsInput = document.getElementById('last5Digits');
+            if (senderNameInput) senderNameInput.value = '';
+            if (last5DigitsInput) last5DigitsInput.value = '';
+            switchToScreenshot();
             if(modal) modal.classList.add('active');
         }
         
@@ -1162,8 +1298,12 @@
                 if(result.success) {
                     showToast(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${result.orderId}`, false);
                     if(modal) modal.classList.remove('active');
-                    document.getElementById('senderName').value = '';
-                    document.getElementById('last5Digits').value = '';
+                    if(slipImage) slipImage.value = '';
+                    if(fileNameDisplay) fileNameDisplay.innerHTML = '';
+                    const senderNameInput = document.getElementById('senderName');
+                    const last5DigitsInput = document.getElementById('last5Digits');
+                    if(senderNameInput) senderNameInput.value = '';
+                    if(last5DigitsInput) last5DigitsInput.value = '';
                     await refreshMyAndLive();
                 } else {
                     showToast("အော်ဒါတင်ရာတွင် အမှားရှိပါသည်။ " + (result.error || ''), true);
