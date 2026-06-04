@@ -522,13 +522,6 @@ app.put('/api/admin/orders/:id/approve', async (req, res) => {
     try {
         const { id } = req.params;
         
-        // Get order details first
-        const { data: order } = await supabaseAdmin
-            .from('orders')
-            .select('phone')
-            .eq('id', id)
-            .single();
-        
         const { error } = await supabaseAdmin
             .from('orders')
             .update({ 
