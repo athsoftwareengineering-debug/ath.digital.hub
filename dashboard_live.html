@@ -230,7 +230,7 @@
             color: #fb7185;
         }
         
-        /* search result container - ရှာဖွေတွေ့ရှိမှသာ ပြမယ် */
+        /* search result container */
         .search-result-container {
             display: none;
             margin-bottom: 20px;
@@ -266,7 +266,7 @@
             50% { background: rgba(244,63,94,0.9); color: white; }
         }
         
-        /* MY PLANS card */
+        /* MY PLANS card - full phone number */
         .my-card {
             background: linear-gradient(135deg, #0f111a, #131725);
             border-radius: 1rem;
@@ -287,6 +287,7 @@
         }
         .my-card:hover { transform: translateY(-2px); border-color: rgba(0,212,255,0.3); }
         .my-card .plan { font-weight: 700; background: linear-gradient(135deg, var(--cyan), #7dd3fc); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .my-card .phone-full { font-size: 0.7rem; font-family: monospace; color: var(--emerald); margin-top: 4px; }
         .status { font-size: 0.6rem; padding: 4px 12px; border-radius: 40px; }
         .status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
@@ -295,18 +296,29 @@
         .date { font-size: 0.6rem; color: var(--text-secondary); margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
         .countdown { background: rgba(0,212,255,0.08); border-radius: 40px; padding: 6px 12px; margin-top: 10px; font-size: 0.65rem; text-align: center; }
         
-        /* 🟠 လိမ္မော်ရောင် မှိတ်တုတ် effect */
-        @keyframes orangeBlink {
-            0% { border-color: rgba(245,158,11,0.3); box-shadow: 0 0 0px rgba(245,158,11,0); background: linear-gradient(135deg, #0f111a, #131725); }
-            30% { border-color: #f59e0b; box-shadow: 0 0 25px #f59e0b; background: rgba(245,158,11,0.25); }
-            70% { border-color: #f59e0b; box-shadow: 0 0 25px #f59e0b; background: rgba(245,158,11,0.25); }
-            100% { border-color: rgba(245,158,11,0.3); box-shadow: 0 0 0px rgba(245,158,11,0); background: linear-gradient(135deg, #0f111a, #131725); }
+        /* Search result card - masked phone */
+        .search-result-card {
+            background: linear-gradient(135deg, #0f111a, #131725);
+            border-radius: 1rem;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(245,158,11,0.3);
+            transition: 0.3s;
+            position: relative;
         }
-        .search-orange-blink {
-            animation: orangeBlink 0.8s ease-in-out 3;
+        .search-result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--amber), #d97706, transparent);
         }
+        .search-result-card .plan { font-weight: 700; color: var(--amber); }
+        .search-result-card .phone-masked { font-size: 0.7rem; font-family: monospace; color: var(--text-secondary); margin-top: 4px; }
         
-        /* LIVE card */
+        /* LIVE card - masked phone */
         .live-card {
             background: linear-gradient(135deg, #0f111a, #131725);
             border-radius: 1rem;
@@ -317,7 +329,18 @@
         }
         .live-card:hover { transform: translateX(4px); border-color: rgba(245,158,11,0.5); }
         .live-card .plan { font-weight: 700; color: var(--amber); }
-        .phone-mask { font-size: 0.7rem; background: #1e293b; display: inline-block; padding: 4px 12px; border-radius: 40px; }
+        .live-card .phone-masked { font-size: 0.7rem; font-family: monospace; background: #1e293b; display: inline-block; padding: 4px 12px; border-radius: 40px; margin-top: 4px; }
+        
+        /* orange blink for search result */
+        @keyframes orangeBlink {
+            0% { border-color: rgba(245,158,11,0.3); box-shadow: 0 0 0px rgba(245,158,11,0); background: linear-gradient(135deg, #0f111a, #131725); }
+            30% { border-color: #f59e0b; box-shadow: 0 0 25px #f59e0b; background: rgba(245,158,11,0.25); }
+            70% { border-color: #f59e0b; box-shadow: 0 0 25px #f59e0b; background: rgba(245,158,11,0.25); }
+            100% { border-color: rgba(245,158,11,0.3); box-shadow: 0 0 0px rgba(245,158,11,0); background: linear-gradient(135deg, #0f111a, #131725); }
+        }
+        .search-orange-blink {
+            animation: orangeBlink 0.8s ease-in-out 3;
+        }
         
         .blink-live { animation: blinkYellow 0.5s ease-in-out 2; }
         .blink-rotate { animation: blinkCyan 0.5s ease-in-out 2; }
@@ -462,7 +485,7 @@
             <div id="searchMessage" class="search-message" style="display: none;"></div>
         </div>
 
-        <!-- SEARCH RESULT CONTAINER (ရှာမှသာ ပြမယ်၊ ကျန်တာဖျောက်) -->
+        <!-- SEARCH RESULT CONTAINER (masked phone) -->
         <div id="searchResultContainer" class="search-result-container">
             <div class="search-result-title">
                 <i class="fas fa-mobile-alt"></i> 🔍 ရှာဖွေတွေ့ရှိသူ၏ Plan များ
@@ -470,7 +493,7 @@
             <div id="searchResultOrders"></div>
         </div>
 
-        <!-- MY PLANS (ကျွန်ုပ်၏ Plan များ) -->
+        <!-- MY PLANS (full phone number) -->
         <div class="section-title" id="myPlansTitle">
             <h2><i class="fas fa-ticket-alt"></i> ကျွန်ုပ်၏ Plan များ</h2>
             <span id="myCount" style="background:#1e293b; padding:4px 12px; border-radius:40px; font-size:0.65rem;">0</span>
@@ -479,7 +502,7 @@
 
         <div class="separator"></div>
 
-        <!-- LIVE FEED (from admin DB) -->
+        <!-- LIVE FEED (masked phone) -->
         <div class="section-title">
             <h2><i class="fas fa-broadcast-tower"></i> LIVE အော်ဒါများ <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span></h2>
             <span id="liveTimer" style="background:#1e293b; padding:4px 12px; border-radius:40px; font-size:0.6rem;">auto 30s</span>
@@ -540,24 +563,18 @@
     let refreshSec = 30;
     let renewMode = 'self';
 
-    // Collapsible info section
-    const infoToggle = document.getElementById('infoToggle');
-    const infoHeader = infoToggle.querySelector('.info-header');
-    const infoBody = infoToggle.querySelector('.info-body');
-    infoHeader.addEventListener('click', () => {
-        infoBody.classList.toggle('open');
-        infoHeader.classList.toggle('open');
-    });
-
-    function maskPhone(p) {
-        if (!p || p.length < 8) return p;
-        return p.substring(0,5) + '***' + p.substring(p.length-3);
+    // Phone display functions
+    function maskPhone(phone) {
+        if (!phone || phone.length < 8) return phone || '';
+        return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
     }
+    
     function formatDate(d) {
         if(!d) return '';
         let date = new Date(d);
         return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
     }
+    
     function remainingTime(activatedAt) {
         if (!activatedAt) return null;
         let end = new Date(activatedAt).getTime() + (30 * 24 * 60 * 60 * 1000);
@@ -591,52 +608,7 @@
         } catch(e) { return []; }
     }
 
-    // ရှာဖွေတွေ့ရှိသူ၏ Plan များကို သီးသန့် container မှာပြမယ်
-    function renderSearchResult(orders, searchedPhone) {
-        const container = document.getElementById('searchResultContainer');
-        const ordersContainer = document.getElementById('searchResultOrders');
-        
-        if(!orders.length) {
-            container.classList.remove('active');
-            return;
-        }
-        
-        container.classList.add('active');
-        let html = '';
-        for(let o of orders) {
-            let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
-            let statusText = o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
-            let countdownHtml = '';
-            if(o.status === 'Approved' && o.activated_at) {
-                let remain = remainingTime(o.activated_at);
-                countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
-            }
-            html += `
-                <div class="my-card search-orange-blink" data-order-id="${o.id}">
-                    <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                        <span class="plan"><i class="fas fa-gem"></i> ${o.plan}</span>
-                        <span class="status ${statusClass}">${statusText}</span>
-                    </div>
-                    <div><span class="price">${o.price.toLocaleString()} MMK</span></div>
-                    <div class="date"><i class="fas fa-calendar-alt"></i> ဝယ်ရက်: ${formatDate(o.created_at)}</div>
-                    ${countdownHtml}
-                </div>
-            `;
-        }
-        ordersContainer.innerHTML = html;
-        
-        // scroll to search result
-        setTimeout(() => {
-            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-    }
-
-    function hideSearchResult() {
-        const container = document.getElementById('searchResultContainer');
-        container.classList.remove('active');
-        document.getElementById('searchResultOrders').innerHTML = '';
-    }
-
+    // Render MY PLANS (FULL phone number - privacy မလို)
     function renderMyPlans(orders) {
         let container = document.getElementById('myOrdersContainer');
         let countSpan = document.getElementById('myCount');
@@ -667,6 +639,7 @@
                         <span class="plan"><i class="fas fa-gem"></i> ${o.plan}</span>
                         <span class="status ${statusClass}">${statusText}</span>
                     </div>
+                    <div class="phone-full"><i class="fas fa-phone-alt"></i> ${o.phone}</div>
                     <div><span class="price">${o.price.toLocaleString()} MMK</span></div>
                     <div class="date"><i class="fas fa-calendar-alt"></i> ဝယ်ရက်: ${formatDate(o.created_at)}</div>
                     ${countdownHtml}
@@ -676,6 +649,54 @@
         container.innerHTML = html;
     }
 
+    // Render SEARCH RESULT (Masked phone)
+    function renderSearchResult(orders, searchedPhone) {
+        const container = document.getElementById('searchResultContainer');
+        const ordersContainer = document.getElementById('searchResultOrders');
+        
+        if(!orders.length) {
+            container.classList.remove('active');
+            return;
+        }
+        
+        container.classList.add('active');
+        let html = '';
+        for(let o of orders) {
+            let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+            let statusText = o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
+            let countdownHtml = '';
+            if(o.status === 'Approved' && o.activated_at) {
+                let remain = remainingTime(o.activated_at);
+                countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
+            }
+            html += `
+                <div class="search-result-card search-orange-blink" data-order-id="${o.id}">
+                    <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                        <span class="plan"><i class="fas fa-gem"></i> ${o.plan}</span>
+                        <span class="status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="phone-masked"><i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}</div>
+                    <div><span class="price">${o.price.toLocaleString()} MMK</span></div>
+                    <div class="date"><i class="fas fa-calendar-alt"></i> ဝယ်ရက်: ${formatDate(o.created_at)}</div>
+                    ${countdownHtml}
+                </div>
+            `;
+        }
+        ordersContainer.innerHTML = html;
+        
+        // auto scroll to result
+        setTimeout(() => {
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
+
+    function hideSearchResult() {
+        const container = document.getElementById('searchResultContainer');
+        container.classList.remove('active');
+        document.getElementById('searchResultOrders').innerHTML = '';
+    }
+
+    // Render LIVE FEED (Masked phone)
     function renderLiveFeed(orders, isNewOrder = false) {
         let container = document.getElementById('liveContainer');
         if(!orders.length) {
@@ -697,7 +718,8 @@
                         <span class="plan"><i class="fas fa-mobile-alt"></i> ${o.plan}</span>
                         <span class="status ${statusClass}">${statusText}</span>
                     </div>
-                    <div><span class="phone-mask"><i class="fas fa-phone"></i> ${maskPhone(o.phone)}</span>  <span class="price">${o.price.toLocaleString()}K</span></div>
+                    <div class="phone-masked"><i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}</div>
+                    <div><span class="price">${o.price.toLocaleString()}K</span></div>
                     <div class="date"><i class="fas fa-clock"></i> ${new Date(o.created_at).toLocaleTimeString()}</div>
                     ${remainHtml}
                 </div>
@@ -811,6 +833,15 @@
         let res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
         return await res.json();
     }
+
+    // Collapsible info section
+    const infoToggle = document.getElementById('infoToggle');
+    const infoHeader = infoToggle.querySelector('.info-header');
+    const infoBody = infoToggle.querySelector('.info-body');
+    infoHeader.addEventListener('click', () => {
+        infoBody.classList.toggle('open');
+        infoHeader.classList.toggle('open');
+    });
 
     // Modal handlers
     const modal = document.getElementById('paymentModal');
