@@ -103,21 +103,40 @@
             font-size: 0.7rem;
         }
         
-        /* info boxes */
-        .info-box {
+        /* collapsible info section (နှိပ်မှပွင့်) */
+        .info-toggle {
             background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(139,92,246,0.05));
             border-radius: 1rem;
-            padding: 16px;
             margin-bottom: 20px;
             border: 1px solid rgba(0,212,255,0.2);
+            overflow: hidden;
         }
-        .info-box h4 {
-            color: var(--cyan);
-            font-size: 0.85rem;
-            margin-bottom: 10px;
+        .info-header {
+            padding: 12px 16px;
+            cursor: pointer;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
+            color: var(--cyan);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .info-header i {
+            transition: transform 0.3s;
+        }
+        .info-header.open i {
+            transform: rotate(180deg);
+        }
+        .info-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding: 0 16px;
+            background: rgba(0,0,0,0.2);
+        }
+        .info-body.open {
+            max-height: 300px;
+            padding: 12px 16px;
         }
         .info-text {
             font-size: 0.7rem;
@@ -131,16 +150,6 @@
         .info-text i.fa-exchange-alt { color: var(--amber); margin-right: 8px; width: 18px; }
         .info-text i.fa-chart-line { color: var(--cyan); margin-right: 8px; width: 18px; }
         .info-text i.fa-lightbulb { color: #fbbf24; margin-right: 8px; width: 18px; }
-        
-        .renew-note {
-            background: rgba(245,158,11,0.12);
-            border-left: 3px solid var(--amber);
-            border-radius: 0.8rem;
-            padding: 12px;
-            margin-bottom: 20px;
-        }
-        .renew-note strong { color: #fbbf24; font-size: 0.75rem; }
-        .renew-note p { font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px; }
         
         /* renew buttons */
         .renew-buttons {
@@ -166,7 +175,7 @@
         }
         .renew-btn:hover { transform: scale(0.98); filter: brightness(1.05); }
         
-        /* search */
+        /* search section */
         .search-section {
             background: rgba(0,212,255,0.05);
             backdrop-filter: blur(10px);
@@ -204,6 +213,22 @@
             cursor: pointer;
         }
         .search-box button.clear { background: #334155; color: white; }
+        
+        .search-message {
+            font-size: 0.65rem;
+            margin-top: 10px;
+            text-align: center;
+            padding: 8px;
+            border-radius: 40px;
+        }
+        .search-message.success {
+            background: rgba(16,185,129,0.15);
+            color: #34d399;
+        }
+        .search-message.error {
+            background: rgba(244,63,94,0.15);
+            color: #fb7185;
+        }
         
         .section-title {
             display: flex;
@@ -252,6 +277,16 @@
         .price { font-size: 1rem; font-weight: 800; color: var(--emerald); }
         .date { font-size: 0.6rem; color: var(--text-secondary); margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
         .countdown { background: rgba(0,212,255,0.08); border-radius: 40px; padding: 6px 12px; margin-top: 10px; font-size: 0.65rem; text-align: center; }
+        
+        /* searched card blink effect */
+        @keyframes searchBlink {
+            0% { border-color: rgba(0,212,255,0.3); box-shadow: 0 0 0px rgba(0,212,255,0); }
+            50% { border-color: #00d4ff; box-shadow: 0 0 20px #00d4ff; background: rgba(0,212,255,0.15); }
+            100% { border-color: rgba(0,212,255,0.3); box-shadow: 0 0 0px rgba(0,212,255,0); }
+        }
+        .search-blink {
+            animation: searchBlink 0.6s ease-in-out 3;
+        }
         
         /* LIVE card */
         .live-card {
@@ -376,20 +411,20 @@
             <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> ထွက်ရန်</button></div>
         </div>
 
-        <!-- 📌 သုံးစွဲသူများသိရှိစေရန် အကြောင်းအရာ (အပြည့်အစုံ) -->
-        <div class="info-box">
-            <h4><i class="fas fa-info-circle"></i> သက်တမ်းတိုးခြင်းအကြောင်း သိမှတ်စရာ</h4>
-            <div class="info-text">
-                <p><i class="fas fa-check-circle"></i> Plan တစ်ခုစီသည် <strong>30 ရက်</strong> သက်တမ်းရှိပါသည်။</p>
-                <p><i class="fas fa-exchange-alt"></i> သက်တမ်းမကုန်သေးဘဲ ထပ်ဝယ်ပါက <strong>အရင် Plan ရဲ့ လက်ကျန်ရက်များ ဆုံးရှုံးမည်</strong> ဖြစ်ပြီး Plan အသစ် စတင်မည်ဖြစ်ပါသည်။</p>
-                <p><i class="fas fa-chart-line"></i> <strong>ဒေတာ၊ မိနစ်၊ SMS ပမာဏများ</strong> သည် လက်ကျန်ရှိပါက အသစ်နှင့် <strong>ပေါင်းထည့်ပေးမည်</strong> ဖြစ်ပါသည်။</p>
-                <p><i class="fas fa-lightbulb"></i> <strong>အကြံပြုချက် -</strong> သက်တမ်းကုန်ခါနီးမှ ထပ်ဝယ်ခြင်းသည် အကျိုးအရှိဆုံးဖြစ်ပါသည်။</p>
+        <!-- Collapsible Info Section (နှိပ်မှပွင့်) -->
+        <div class="info-toggle" id="infoToggle">
+            <div class="info-header">
+                <span><i class="fas fa-info-circle"></i> 📌 သက်တမ်းတိုးခြင်းအကြောင်း သိမှတ်စရာ</span>
+                <i class="fas fa-chevron-down"></i>
             </div>
-        </div>
-
-        <div class="renew-note">
-            <strong><i class="fas fa-clock"></i> ⏰ ထပ်မံဝယ်ယူပါက</strong>
-            <p>သက်တမ်းမကုန်သေးဘဲ ထပ်ဝယ်ပါက လက်ကျန်ရက်များ ဆုံးရှုံးမည်ဖြစ်သော်လည်း <strong>Data/Minutes/SMS ပမာဏများ ပေါင်းထည့်ပေးမည်</strong>။</p>
+            <div class="info-body">
+                <div class="info-text">
+                    <p><i class="fas fa-check-circle"></i> Plan တစ်ခုစီသည် <strong>30 ရက်</strong> သက်တမ်းရှိပါသည်။</p>
+                    <p><i class="fas fa-exchange-alt"></i> သက်တမ်းမကုန်သေးဘဲ ထပ်ဝယ်ပါက <strong>အရင် Plan ရဲ့ လက်ကျန်ရက်များ ဆုံးရှုံးမည်</strong> ဖြစ်ပြီး Plan အသစ် စတင်မည်ဖြစ်ပါသည်။</p>
+                    <p><i class="fas fa-chart-line"></i> <strong>ဒေတာ၊ မိနစ်၊ SMS ပမာဏများ</strong> သည် လက်ကျန်ရှိပါက အသစ်နှင့် <strong>ပေါင်းထည့်ပေးမည်</strong> ဖြစ်ပါသည်။</p>
+                    <p><i class="fas fa-lightbulb"></i> <strong>အကြံပြုချက် -</strong> သက်တမ်းကုန်ခါနီးမှ ထပ်ဝယ်ခြင်းသည် အကျိုးအရှိဆုံးဖြစ်ပါသည်။</p>
+                </div>
+            </div>
         </div>
 
         <!-- Renew Buttons -->
@@ -406,6 +441,7 @@
                 <button id="searchBtn"><i class="fas fa-search"></i> ရှာ</button>
                 <button id="clearSearchBtn" class="clear"><i class="fas fa-times"></i> ရှင်း</button>
             </div>
+            <div id="searchMessage" class="search-message" style="display: none;"></div>
         </div>
 
         <!-- MY PLANS -->
@@ -434,7 +470,6 @@
         <div class="modal-close" id="closeModalBtn">&times;</div>
         <h3 style="text-align:center; margin-bottom:16px;"><i class="fas fa-credit-card"></i> <span id="modalTitle">ထပ်မံဝယ်ယူရန်</span></h3>
         
-        <!-- သတိပေးချက် (Modal ထဲမှာ ထပ်ပြီး သိသာအောင်) -->
         <div class="warning-note">
             <span><i class="fas fa-exclamation-triangle"></i> သတိပြုရန် - သက်တမ်းမကုန်သေးဘဲ ထပ်ဝယ်ပါက လက်ကျန်ရက်များ ဆုံးရှုံးမည်ဖြစ်ပြီး Plan အသစ်စတင်ပါမည်။</span>
         </div>
@@ -480,6 +515,15 @@
     let externalSearchPhone = '';
     let renewMode = 'self';
 
+    // Collapsible info section
+    const infoToggle = document.getElementById('infoToggle');
+    const infoHeader = infoToggle.querySelector('.info-header');
+    const infoBody = infoToggle.querySelector('.info-body');
+    infoHeader.addEventListener('click', () => {
+        infoBody.classList.toggle('open');
+        infoHeader.classList.toggle('open');
+    });
+
     function maskPhone(p) {
         if (!p || p.length < 8) return p;
         return p.substring(0,5) + '***' + p.substring(p.length-3);
@@ -521,7 +565,7 @@
         } catch(e) { return []; }
     }
 
-    function renderMyPlans(orders, searchPhoneForDisplay = '') {
+    function renderMyPlans(orders, searchPhoneForDisplay = '', isSearchResult = false) {
         let container = document.getElementById('myOrdersContainer');
         let countSpan = document.getElementById('myCount');
         let displayPhone = searchPhoneForDisplay || currentUserPhone;
@@ -547,7 +591,7 @@
                 countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
             }
             html += `
-                <div class="my-card">
+                <div class="my-card" data-order-id="${o.id}">
                     <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:12px;">
                         <span class="plan"><i class="fas fa-gem"></i> ${o.plan}</span>
                         <span class="status ${statusClass}">${statusText}</span>
@@ -559,6 +603,15 @@
             `;
         }
         container.innerHTML = html;
+        
+        // Blink effect for search result
+        if(isSearchResult && orders.length > 0) {
+            const cards = document.querySelectorAll('#myOrdersContainer .my-card');
+            cards.forEach(card => {
+                card.classList.add('search-blink');
+                setTimeout(() => card.classList.remove('search-blink'), 2000);
+            });
+        }
     }
 
     function renderLiveFeed(orders, isNewOrder = false) {
@@ -608,9 +661,9 @@
         
         if(externalSearchPhone) {
             let searchedOrders = await fetchMyOrders(externalSearchPhone);
-            renderMyPlans(searchedOrders, externalSearchPhone);
+            renderMyPlans(searchedOrders, externalSearchPhone, true);
         } else {
-            renderMyPlans(my, currentUserPhone);
+            renderMyPlans(my, currentUserPhone, false);
         }
         renderLiveFeed(live, hasNew);
     }
@@ -654,22 +707,49 @@
 
     async function searchOtherUser() {
         let phone = document.getElementById('searchPhone').value.trim();
+        const msgDiv = document.getElementById('searchMessage');
+        
         if(phone === '') {
             externalSearchPhone = '';
+            msgDiv.style.display = 'none';
             await refreshMyAndLive();
             return;
         }
         if(phone.length < 9) {
-            alert('ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)');
+            msgDiv.style.display = 'block';
+            msgDiv.className = 'search-message error';
+            msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)';
             return;
         }
-        externalSearchPhone = phone;
+        
+        msgDiv.style.display = 'block';
+        msgDiv.className = 'search-message';
+        msgDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ရှာဖွေနေသည်...';
+        
         let searchedOrders = await fetchMyOrders(phone);
-        renderMyPlans(searchedOrders, phone);
+        
+        if(searchedOrders.length === 0) {
+            msgDiv.className = 'search-message error';
+            msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
+            externalSearchPhone = '';
+            renderMyPlans([], currentUserPhone, false);
+        } else {
+            msgDiv.className = 'search-message success';
+            msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။ မီးလေး မှိတ်တုတ်ပြသပါမည်။';
+            externalSearchPhone = phone;
+            renderMyPlans(searchedOrders, phone, true);
+            
+            setTimeout(() => {
+                msgDiv.style.opacity = '0.5';
+                setTimeout(() => { msgDiv.style.opacity = '1'; }, 200);
+            }, 2000);
+        }
     }
+    
     function clearExternalSearch() {
         document.getElementById('searchPhone').value = '';
         externalSearchPhone = '';
+        document.getElementById('searchMessage').style.display = 'none';
         refreshMyAndLive();
     }
 
@@ -759,7 +839,7 @@
             await refreshMyAndLive();
             if(renewMode === 'other' && externalSearchPhone === phone) {
                 let searchedOrders = await fetchMyOrders(phone);
-                renderMyPlans(searchedOrders, phone);
+                renderMyPlans(searchedOrders, phone, true);
             }
         } else {
             alert('❌ အော်ဒါတင်ရာတွင် အမှားရှိပါသည်။ ' + (result.error || ''));
@@ -794,6 +874,7 @@
         document.getElementById('loginScreen').style.display = 'block';
         document.getElementById('dashboardContent').style.display = 'none';
         document.getElementById('searchPhone').value = '';
+        document.getElementById('searchMessage').style.display = 'none';
     }
 
     document.getElementById('modalPhoneCopy').addEventListener('click', () => {
