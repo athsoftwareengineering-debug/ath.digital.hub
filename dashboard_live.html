@@ -151,6 +151,46 @@
         .info-text i.fa-chart-line { color: var(--cyan); margin-right: 8px; width: 18px; }
         .info-text i.fa-lightbulb { color: #fbbf24; margin-right: 8px; width: 18px; }
         
+        /* warning toggle (နှိပ်မှပေါ်) */
+        .warning-toggle {
+            margin-bottom: 20px;
+        }
+        .warning-header {
+            background: rgba(244,63,94,0.1);
+            border-radius: 0.8rem;
+            padding: 10px;
+            border-left: 3px solid var(--rose);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .warning-header:hover {
+            background: rgba(244,63,94,0.2);
+        }
+        .warning-header span {
+            font-size: 0.7rem;
+            color: #fb7185;
+        }
+        .warning-header i {
+            transition: transform 0.3s ease;
+            color: #fb7185;
+        }
+        .warning-content {
+            display: none;
+            background: rgba(244,63,94,0.08);
+            border-radius: 0.8rem;
+            padding: 12px;
+            margin-top: -8px;
+            border-left: 3px solid var(--rose);
+        }
+        .warning-content span {
+            font-size: 0.65rem;
+            color: #fb7185;
+            line-height: 1.5;
+        }
+        
         /* renew buttons */
         .renew-buttons {
             display: flex;
@@ -228,10 +268,6 @@
         .search-message.error {
             background: rgba(244,63,94,0.15);
             color: #fb7185;
-        }
-        .search-message.warning {
-            background: rgba(245,158,11,0.15);
-            color: #fbbf24;
         }
         
         /* search result container */
@@ -427,14 +463,6 @@
             cursor: pointer;
         }
         .note-text { font-size: 0.6rem; color: var(--text-secondary); text-align: center; margin-top: 12px; }
-        .warning-note {
-            background: rgba(244,63,94,0.1);
-            border-radius: 0.8rem;
-            padding: 10px;
-            margin-bottom: 16px;
-            border-left: 3px solid var(--rose);
-        }
-        .warning-note span { font-size: 0.65rem; color: #fb7185; }
         
         /* custom toast message */
         .toast-message {
@@ -483,10 +511,10 @@
             <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> ထွက်ရန်</button></div>
         </div>
 
-        <!-- Collapsible Info Section -->
+        <!-- Collapsible Info Section (နှိပ်မှပေါ်) -->
         <div class="info-toggle" id="infoToggle">
             <div class="info-header">
-                <span><i class="fas fa-info-circle"></i> 📌 သက်တမ်းတိုးခြင်းအကြောင်း သိမှတ်စရာ</span>
+                <span><i class="fas fa-info-circle"></i> 📌 သက်တမ်းတိုးခြင်းအကြောင်း သိမှတ်စရာ (နှိပ်ပါ)</span>
                 <i class="fas fa-chevron-down"></i>
             </div>
             <div class="info-body">
@@ -496,6 +524,17 @@
                     <p><i class="fas fa-chart-line"></i> <strong>ဒေတာ၊ မိနစ်၊ SMS ပမာဏများ</strong> သည် လက်ကျန်ရှိပါက အသစ်နှင့် <strong>ပေါင်းထည့်ပေးမည်</strong> ဖြစ်ပါသည်။</p>
                     <p><i class="fas fa-lightbulb"></i> <strong>အကြံပြုချက် -</strong> သက်တမ်းကုန်ခါနီးမှ ထပ်ဝယ်ခြင်းသည် အကျိုးအရှိဆုံးဖြစ်ပါသည်။</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- ⚠️ Warning Toggle (နှိပ်မှပေါ်မယ့် သတိပေးချက်) -->
+        <div class="warning-toggle" id="warningToggle">
+            <div class="warning-header">
+                <span><i class="fas fa-exclamation-triangle"></i> ⚠️ သတိပြုရန် - အရေးကြီးအကြောင်းအရာ (နှိပ်ပါ)</span>
+                <i class="fas fa-chevron-down" id="warningIcon"></i>
+            </div>
+            <div class="warning-content" id="warningContent">
+                <span><i class="fas fa-exclamation-triangle"></i> သတိပြုရန် - သက်တမ်းမကုန်သေးဘဲ ထပ်ဝယ်ပါက လက်ကျန်ရက်များ ဆုံးရှုံးမည်ဖြစ်ပြီး Plan အသစ်စတင်ပါမည်။</span>
             </div>
         </div>
 
@@ -550,10 +589,6 @@
         <div class="modal-close" id="closeModalBtn">&times;</div>
         <h3 style="text-align:center; margin-bottom:16px;"><i class="fas fa-credit-card"></i> <span id="modalTitle">ထပ်မံဝယ်ယူရန်</span></h3>
         
-        <div class="warning-note">
-            <span><i class="fas fa-exclamation-triangle"></i> သတိပြုရန် - သက်တမ်းမကုန်သေးဘဲ ထပ်ဝယ်ပါက လက်ကျန်ရက်များ ဆုံးရှုံးမည်ဖြစ်ပြီး Plan အသစ်စတင်ပါမည်။</span>
-        </div>
-        
         <div class="info-card">
             <div class="info-row"><span>ငွေလွှဲနည်းလမ်း</span><span>K-Pay / WavePay</span></div>
             <div class="info-row"><span>အကောင့်အမည်</span><span>AUNG THU HTWE</span></div>
@@ -585,7 +620,7 @@
     </div>
 </div>
 
-<!-- Custom Toast Message (ဘယ် alert မှမပါ) -->
+<!-- Custom Toast Message -->
 <div id="toastMsg" class="toast-message">
     <i class="fas fa-info-circle"></i> <span id="toastText"></span>
 </div>
@@ -599,19 +634,43 @@
     let refreshSec = 30;
     let renewMode = 'self';
 
-    // Toast function (alert အစား လှလှလေးပြရန်)
-    function showToast(message, isError = false, isWarning = false) {
+    // Toast function
+    function showToast(message, isError = false) {
         const toast = document.getElementById('toastMsg');
         const toastText = document.getElementById('toastText');
         toastText.innerText = message;
-        toast.style.background = isError ? '#f43f5e' : (isWarning ? '#f59e0b' : '#10b981');
+        toast.style.background = isError ? '#f43f5e' : '#10b981';
         toast.classList.add('show');
         setTimeout(() => {
             toast.classList.remove('show');
         }, 3000);
     }
 
-    // Phone functions
+    // Warning Toggle (နှိပ်မှပေါ်)
+    const warningToggle = document.getElementById('warningToggle');
+    const warningContent = document.getElementById('warningContent');
+    const warningIcon = document.getElementById('warningIcon');
+    if (warningToggle) {
+        warningToggle.addEventListener('click', function() {
+            if (warningContent.style.display === 'none' || warningContent.style.display === '') {
+                warningContent.style.display = 'block';
+                if (warningIcon) warningIcon.style.transform = 'rotate(180deg)';
+            } else {
+                warningContent.style.display = 'none';
+                if (warningIcon) warningIcon.style.transform = 'rotate(0deg)';
+            }
+        });
+    }
+
+    // Collapsible info section
+    const infoToggle = document.getElementById('infoToggle');
+    const infoHeader = infoToggle.querySelector('.info-header');
+    const infoBody = infoToggle.querySelector('.info-body');
+    infoHeader.addEventListener('click', () => {
+        infoBody.classList.toggle('open');
+        infoHeader.classList.toggle('open');
+    });
+
     function maskPhone(phone) {
         if (!phone || phone.length < 8) return phone || '';
         return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
@@ -662,7 +721,6 @@
         }
     }
 
-    // Render MY PLANS (FULL phone)
     function renderMyPlans(orders) {
         let container = document.getElementById('myOrdersContainer');
         let countSpan = document.getElementById('myCount');
@@ -703,7 +761,6 @@
         container.innerHTML = html;
     }
 
-    // Render SEARCH RESULT
     function renderSearchResult(orders) {
         const container = document.getElementById('searchResultContainer');
         const ordersContainer = document.getElementById('searchResultOrders');
@@ -749,7 +806,6 @@
         document.getElementById('searchResultOrders').innerHTML = '';
     }
 
-    // Render LIVE FEED
     function renderLiveFeed(orders, isNewOrder = false) {
         let container = document.getElementById('liveContainer');
         if(!orders.length) {
@@ -888,15 +944,6 @@
         let res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
         return await res.json();
     }
-
-    // Collapsible info
-    const infoToggle = document.getElementById('infoToggle');
-    const infoHeader = infoToggle.querySelector('.info-header');
-    const infoBody = infoToggle.querySelector('.info-body');
-    infoHeader.addEventListener('click', () => {
-        infoBody.classList.toggle('open');
-        infoHeader.classList.toggle('open');
-    });
 
     // Modal handlers
     const modal = document.getElementById('paymentModal');
