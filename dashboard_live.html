@@ -103,35 +103,30 @@
             font-size: 0.7rem;
         }
         
-        /* renew button */
-        .renew-section {
-            background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(0,212,255,0.05));
-            border-radius: 1rem;
-            padding: 12px 16px;
-            margin-bottom: 20px;
+        /* renew buttons */
+        .renew-buttons {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
-            gap: 10px;
-            border: 1px solid rgba(245,158,11,0.3);
-        }
-        .renew-text {
-            font-size: 0.75rem;
-            color: var(--amber);
         }
         .renew-btn {
+            flex: 1;
             background: linear-gradient(135deg, var(--amber), #d97706);
             border: none;
-            padding: 8px 20px;
-            border-radius: 40px;
+            padding: 12px;
+            border-radius: 60px;
             font-weight: bold;
             color: white;
             cursor: pointer;
             transition: 0.2s;
+            text-align: center;
+        }
+        .renew-btn.self {
+            background: linear-gradient(135deg, var(--cyan), #0891b2);
         }
         .renew-btn:hover {
-            transform: scale(0.96);
+            transform: scale(0.98);
             filter: brightness(1.05);
         }
         
@@ -315,6 +310,12 @@
             font-weight: bold;
             cursor: pointer;
         }
+        .note-text {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 12px;
+        }
     </style>
 </head>
 <body>
@@ -336,10 +337,10 @@
             <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> ထွက်ရန်</button></div>
         </div>
 
-        <!-- RENEW BUTTON - သက်တမ်းတိုးချင်ရင် ဒီမှာနှိပ် -->
-        <div class="renew-section">
-            <span class="renew-text"><i class="fas fa-exclamation-triangle"></i> သက်တမ်းကုန်ခါနီး / ထပ်ဝယ်လိုပါက</span>
-            <button class="renew-btn" id="openRenewModalBtn"><i class="fas fa-shopping-cart"></i> ထပ်ဝယ်ရန်</button>
+        <!-- RENEW BUTTONS - 2 ways -->
+        <div class="renew-buttons">
+            <button class="renew-btn self" id="openSelfRenewBtn"><i class="fas fa-user"></i> ကိုယ်တိုင်ထပ်ဝယ်ရန်</button>
+            <button class="renew-btn" id="openOtherRenewBtn"><i class="fas fa-users"></i> အခြားသူအတွက် ထပ်ဝယ်ပေးရန်</button>
         </div>
 
         <!-- Search for other users -->
@@ -376,7 +377,7 @@
 <div id="paymentModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-close" id="closeModalBtn">&times;</div>
-        <h3 style="text-align:center; margin-bottom:16px;"><i class="fas fa-credit-card"></i> ထပ်မံဝယ်ယူရန်</h3>
+        <h3 style="text-align:center; margin-bottom:16px;"><i class="fas fa-credit-card"></i> <span id="modalTitle">ထပ်မံဝယ်ယူရန်</span></h3>
         <div class="info-card">
             <div class="info-row"><span>ငွေလွှဲနည်းလမ်း</span><span>K-Pay / WavePay</span></div>
             <div class="info-row"><span>အကောင့်အမည်</span><span>AUNG THU HTWE</span></div>
@@ -384,8 +385,9 @@
         </div>
         <form id="renewForm">
             <div class="form-group">
-                <label>📱 ဖုန်းနံပါတ် *</label>
-                <input type="tel" id="renewPhone" class="form-control" readonly style="background:#1e293b;">
+                <label>📱 လက်ခံမည့်သူ ဖုန်းနံပါတ် *</label>
+                <input type="tel" id="renewPhone" class="form-control" placeholder="09xxxxxxxxx">
+                <div class="note-text" id="phoneNote"></div>
             </div>
             <div class="form-group">
                 <label>🎯 Plan ရွေးရန် *</label>
@@ -415,6 +417,7 @@
     let autoRefreshInterval = null, rotateInterval = null, timerInterval = null;
     let refreshSec = 30;
     let externalSearchPhone = '';
+    let renewMode = 'self'; // 'self' or 'other'
 
     function maskPhone(p) {
         if (!p || p.length < 8) return p;
@@ -609,7 +612,6 @@
         refreshMyAndLive();
     }
 
-    // Renew order function
     async function submitRenewOrder(phone, plan, price, file) {
         let fd = new FormData();
         fd.append('phone', phone);
@@ -619,6 +621,94 @@
         let res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
         return await res.json();
     }
+
+    // Modal handlers
+    const modal = document.getElementById('paymentModal');
+    const renewPhone = document.getElementById('renewPhone');
+    const renewPlan = document.getElementById('renewPlan');
+    const renewSlip = document.getElementById('renewSlip');
+    const chooseFileBtn = document.getElementById('chooseRenewFileBtn');
+    const renewFileName = document.getElementById('renewFileName');
+    const modalTitle = document.getElementById('modalTitle');
+    const phoneNote = document.getElementById('phoneNote');
+    
+    function openRenewModal(mode) {
+        renewMode = mode;
+        if(mode === 'self') {
+            modalTitle.innerText = 'ကိုယ်တိုင် ထပ်ဝယ်ရန်';
+            renewPhone.value = currentUserPhone;
+            renewPhone.readOnly = true;
+            phoneNote.innerHTML = '※ သင့်ကိုယ်ပိုင်နံပါတ်';
+            phoneNote.style.color = '#10b981';
+        } else {
+            modalTitle.innerText = 'အခြားသူအတွက် ထပ်ဝယ်ပေးရန်';
+            renewPhone.value = '';
+            renewPhone.readOnly = false;
+            phoneNote.innerHTML = '※ လက်ခံမည့်သူ၏ ဖုန်းနံပါတ် (သက်တမ်းတိုးခံရမည့်သူ)';
+            phoneNote.style.color = '#f59e0b';
+        }
+        renewFileName.innerHTML = '';
+        renewSlip.value = '';
+        modal.classList.add('active');
+    }
+    
+    chooseFileBtn.addEventListener('click', () => renewSlip.click());
+    renewSlip.addEventListener('change', () => {
+        if(renewSlip.files.length > 0) {
+            renewFileName.innerHTML = `<i class="fas fa-check-circle"></i> ${renewSlip.files[0].name}`;
+        }
+    });
+    
+    document.getElementById('openSelfRenewBtn').addEventListener('click', () => openRenewModal('self'));
+    document.getElementById('openOtherRenewBtn').addEventListener('click', () => openRenewModal('other'));
+    document.getElementById('closeModalBtn').addEventListener('click', () => modal.classList.remove('active'));
+    window.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('active'); });
+    
+    document.getElementById('renewForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const phone = renewPhone.value.trim();
+        const plan = renewPlan.value;
+        let price = 0;
+        if(plan === 'VIP LEVEL - 1') price = 15000;
+        else if(plan === 'VIP LEVEL - 2') price = 20000;
+        else if(plan === 'VIP LEVEL - 3') price = 25000;
+        else if(plan === 'VIP LEVEL - 4 (ULTRA)') price = 30000;
+        const file = renewSlip.files[0];
+        
+        if(!phone || phone.length < 9) {
+            alert('ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ');
+            return;
+        }
+        if(!file) {
+            alert('ငွေလွှဲပြေစာ ထည့်ပါ');
+            return;
+        }
+        
+        const submitBtn = document.querySelector('#renewForm .submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ အော်ဒါတင်နေပါသည်...';
+        
+        const result = await submitRenewOrder(phone, plan, price, file);
+        
+        if(result.success) {
+            alert(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${result.orderId}\nAdmin အတည်ပြုချိန်စောင့်ပါ။`);
+            modal.classList.remove('active');
+            renewSlip.value = '';
+            renewFileName.innerHTML = '';
+            await refreshMyAndLive();
+            if(renewMode === 'other') {
+                // also refresh search if it matches
+                if(externalSearchPhone === phone) {
+                    let searchedOrders = await fetchMyOrders(phone);
+                    renderMyPlans(searchedOrders, phone);
+                }
+            }
+        } else {
+            alert('❌ အော်ဒါတင်ရာတွင် အမှားရှိပါသည်။ ' + (result.error || ''));
+        }
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-check"></i> အော်ဒါတင်မည်';
+    });
 
     // Login function
     async function login(phone) {
@@ -648,65 +738,10 @@
         document.getElementById('searchPhone').value = '';
     }
 
-    // Renew modal handlers
-    const modal = document.getElementById('paymentModal');
-    const renewPhone = document.getElementById('renewPhone');
-    const renewPlan = document.getElementById('renewPlan');
-    const renewSlip = document.getElementById('renewSlip');
-    const chooseFileBtn = document.getElementById('chooseRenewFileBtn');
-    const renewFileName = document.getElementById('renewFileName');
-    
-    function openRenewModal() {
-        renewPhone.value = currentUserPhone;
-        renewFileName.innerHTML = '';
-        renewSlip.value = '';
-        modal.classList.add('active');
-    }
-    
-    chooseFileBtn.addEventListener('click', () => renewSlip.click());
-    renewSlip.addEventListener('change', () => {
-        if(renewSlip.files.length > 0) {
-            renewFileName.innerHTML = `<i class="fas fa-check-circle"></i> ${renewSlip.files[0].name}`;
-        }
-    });
-    
-    document.getElementById('openRenewModalBtn').addEventListener('click', openRenewModal);
-    document.getElementById('closeModalBtn').addEventListener('click', () => modal.classList.remove('active'));
-    window.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('active'); });
-    
-    document.getElementById('renewForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const phone = renewPhone.value.trim();
-        const plan = renewPlan.value;
-        let price = 0;
-        if(plan === 'VIP LEVEL - 1') price = 15000;
-        else if(plan === 'VIP LEVEL - 2') price = 20000;
-        else if(plan === 'VIP LEVEL - 3') price = 25000;
-        else if(plan === 'VIP LEVEL - 4 (ULTRA)') price = 30000;
-        const file = renewSlip.files[0];
-        
-        if(!file) {
-            alert('ငွေလွှဲပြေစာ ထည့်ပါ');
-            return;
-        }
-        
-        const submitBtn = document.querySelector('#renewForm .submit-btn');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '⏳ အော်ဒါတင်နေပါသည်...';
-        
-        const result = await submitRenewOrder(phone, plan, price, file);
-        
-        if(result.success) {
-            alert(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${result.orderId}\nAdmin အတည်ပြုချိန်စောင့်ပါ။`);
-            modal.classList.remove('active');
-            renewSlip.value = '';
-            renewFileName.innerHTML = '';
-            await refreshMyAndLive();
-        } else {
-            alert('❌ အော်ဒါတင်ရာတွင် အမှားရှိပါသည်။ ' + (result.error || ''));
-        }
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-check"></i> အော်ဒါတင်မည်';
+    // Copy phone in modal
+    document.getElementById('modalPhoneCopy').addEventListener('click', () => {
+        navigator.clipboard.writeText('09789999368');
+        alert('📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ');
     });
 
     // Event binding
@@ -719,12 +754,6 @@
     document.getElementById('logoutBtn').addEventListener('click', logout);
     document.getElementById('searchBtn').addEventListener('click', searchOtherUser);
     document.getElementById('clearSearchBtn').addEventListener('click', clearExternalSearch);
-    
-    // Copy phone in modal
-    document.getElementById('modalPhoneCopy').addEventListener('click', () => {
-        navigator.clipboard.writeText('09789999368');
-        alert('📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ');
-    });
 
     // Initial check
     if(currentUserPhone && currentUserPhone.length > 8) {
