@@ -61,6 +61,11 @@
             cursor: pointer;
             color: #030712;
             font-size: 1rem;
+            transition: 0.2s;
+        }
+        .login-btn:hover {
+            transform: scale(0.98);
+            filter: brightness(1.05);
         }
         
         /* main dashboard */
@@ -604,7 +609,6 @@
             </div>
         </div>
         
-        <!-- TEXT METHOD PANEL - with last5Digits input -->
         <div id="textPanel" class="method-panel" style="display: none;">
             <div class="form-group">
                 <label><i class="fas fa-user"></i> ငွေလွှဲသူအမည် *</label>
@@ -642,521 +646,619 @@
 </div>
 
 <script>
-    const API_BASE = window.location.origin;
-    let currentUserPhone = localStorage.getItem('myPhone') || '';
-    let liveOrders = [];
-    let lastOrderIds = [];
-    let autoRefreshInterval = null, rotateInterval = null, timerInterval = null;
-    let refreshSec = 30;
-    let renewMode = 'self';
+    (function() {
+        // DOM Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const dashboardContent = document.getElementById('dashboardContent');
+        const loginPhoneInput = document.getElementById('loginPhone');
+        const doLoginBtn = document.getElementById('doLoginBtn');
+        const displayPhoneSpan = document.getElementById('displayPhone');
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        const API_BASE = window.location.origin;
+        let currentUserPhone = localStorage.getItem('myPhone') || '';
+        let liveOrders = [];
+        let lastOrderIds = [];
+        let autoRefreshInterval = null, rotateInterval = null, timerInterval = null;
+        let refreshSec = 30;
+        let renewMode = 'self';
+        let externalSearchPhone = '';
 
-    function showToast(message, isError = false) {
-        const toast = document.getElementById('toastMsg');
-        const toastText = document.getElementById('toastText');
-        toastText.innerText = message;
-        toast.style.background = isError ? '#f43f5e' : '#10b981';
-        toast.classList.add('show');
-        setTimeout(() => { toast.classList.remove('show'); }, 3000);
-    }
+        // Toast function
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toastMsg');
+            const toastText = document.getElementById('toastText');
+            toastText.innerText = message;
+            toast.style.background = isError ? '#f43f5e' : '#10b981';
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
 
-    // Warning Toggle
-    const warningToggle = document.getElementById('warningToggle');
-    const warningContent = document.getElementById('warningContent');
-    const warningIcon = document.getElementById('warningIcon');
-    if (warningToggle) {
-        warningToggle.addEventListener('click', function() {
-            if (warningContent.style.display === 'none' || warningContent.style.display === '') {
-                warningContent.style.display = 'block';
-                if (warningIcon) warningIcon.style.transform = 'rotate(180deg)';
-            } else {
-                warningContent.style.display = 'none';
-                if (warningIcon) warningIcon.style.transform = 'rotate(0deg)';
+        // Mask phone
+        function maskPhone(phone) {
+            if (!phone || phone.length < 8) return phone || '';
+            return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
+        }
+
+        // Login function
+        async function login(phone) {
+            if(!phone || phone.length < 9) {
+                showToast("ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)", true);
+                return false;
             }
+            currentUserPhone = phone;
+            localStorage.setItem('myPhone', phone);
+            loginScreen.style.display = 'none';
+            dashboardContent.style.display = 'block';
+            displayPhoneSpan.innerHTML = maskPhone(phone);
+            
+            await refreshMyAndLive();
+            startAutoRefresh();
+            showToast("အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်။", false);
+            return true;
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('myPhone');
+            currentUserPhone = '';
+            externalSearchPhone = '';
+            if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+            if(timerInterval) clearInterval(timerInterval);
+            if(rotateInterval) clearInterval(rotateInterval);
+            loginScreen.style.display = 'block';
+            dashboardContent.style.display = 'none';
+            if(document.getElementById('searchPhone')) document.getElementById('searchPhone').value = '';
+            if(document.getElementById('searchMessage')) document.getElementById('searchMessage').style.display = 'none';
+            hideSearchResult();
+            showToast("ထွက်ရန် အောင်မြင်ပါသည်။", false);
+        }
+
+        // Warning Toggle
+        const warningToggle = document.getElementById('warningToggle');
+        const warningContent = document.getElementById('warningContent');
+        const warningIcon = document.getElementById('warningIcon');
+        if (warningToggle) {
+            warningToggle.addEventListener('click', function() {
+                if (warningContent.style.display === 'none' || warningContent.style.display === '') {
+                    warningContent.style.display = 'block';
+                    if (warningIcon) warningIcon.style.transform = 'rotate(180deg)';
+                } else {
+                    warningContent.style.display = 'none';
+                    if (warningIcon) warningIcon.style.transform = 'rotate(0deg)';
+                }
+            });
+        }
+
+        // Collapsible info section
+        const infoToggle = document.getElementById('infoToggle');
+        const infoHeader = infoToggle.querySelector('.info-header');
+        const infoBody = infoToggle.querySelector('.info-body');
+        infoHeader.addEventListener('click', () => {
+            infoBody.classList.toggle('open');
+            infoHeader.classList.toggle('open');
         });
-    }
 
-    const infoToggle = document.getElementById('infoToggle');
-    const infoHeader = infoToggle.querySelector('.info-header');
-    const infoBody = infoToggle.querySelector('.info-body');
-    infoHeader.addEventListener('click', () => {
-        infoBody.classList.toggle('open');
-        infoHeader.classList.toggle('open');
-    });
-
-    // Tab switching
-    const screenshotTab = document.getElementById('screenshotTabBtn');
-    const textTab = document.getElementById('textTabBtn');
-    const screenshotPanel = document.getElementById('screenshotPanel');
-    const textPanel = document.getElementById('textPanel');
-    
-    function switchToScreenshot() {
-        screenshotPanel.style.display = 'block';
-        textPanel.style.display = 'none';
-        screenshotTab.className = 'tab-btn screenshot-tab';
-        textTab.className = 'tab-btn text-tab';
-        screenshotTab.style.background = "linear-gradient(135deg, #00d4ff, #0891b2)";
-        screenshotTab.style.color = "white";
-        textTab.style.background = "rgba(0,212,255,0.15)";
-        textTab.style.color = "var(--cyan)";
-    }
-    
-    function switchToText() {
-        textPanel.style.display = 'block';
-        screenshotPanel.style.display = 'none';
-        textTab.className = 'tab-btn screenshot-tab';
-        screenshotTab.className = 'tab-btn text-tab';
-        textTab.style.background = "linear-gradient(135deg, #00d4ff, #0891b2)";
-        textTab.style.color = "white";
-        screenshotTab.style.background = "rgba(0,212,255,0.15)";
-        screenshotTab.style.color = "var(--cyan)";
-    }
-    
-    screenshotTab.addEventListener('click', switchToScreenshot);
-    textTab.addEventListener('click', switchToText);
-
-    function maskPhone(phone) {
-        if (!phone || phone.length < 8) return phone || '';
-        return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
-    }
-    
-    function formatDate(d) {
-        if(!d) return '';
-        let date = new Date(d);
-        return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
-    }
-    
-    function remainingTime(activatedAt) {
-        if (!activatedAt) return null;
-        let end = new Date(activatedAt).getTime() + (30 * 24 * 60 * 60 * 1000);
-        let remain = end - Date.now();
-        if (remain <= 0) return '✅ သက်တမ်းကုန်';
-        let days = Math.floor(remain / 86400000);
-        let hours = Math.floor((remain % 86400000) / 3600000);
-        let mins = Math.floor((remain % 3600000) / 60000);
-        return `${days}ရက် ${hours}နာရီ ${mins}မိနစ်`;
-    }
-
-    async function fetchMyOrders(phone) {
-        if(!phone) return [];
-        try {
-            let res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(phone)}`);
-            let data = await res.json();
-            return data.orders || [];
-        } catch(e) { 
-            showToast("ဆာဗာချိတ်ဆက်မှု အမှား။ နောက်မှထပ်စမ်းပါ။", true);
-            return []; 
-        }
-    }
-    
-    async function fetchLiveOrders(excludePhone) {
-        try {
-            let res = await fetch(`${API_BASE}/api/admin/orders`);
-            let data = await res.json();
-            if(data.orders) {
-                let filtered = data.orders.filter(o => o.phone !== excludePhone);
-                filtered.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-                return filtered.slice(0, 30);
-            }
-            return [];
-        } catch(e) { 
-            showToast("LIVE feed ရယူရာတွင် အမှား။", true);
-            return []; 
-        }
-    }
-
-    function renderMyPlans(orders) {
-        let container = document.getElementById('myOrdersContainer');
-        let countSpan = document.getElementById('myCount');
+        // Tab switching
+        const screenshotTab = document.getElementById('screenshotTabBtn');
+        const textTab = document.getElementById('textTabBtn');
+        const screenshotPanel = document.getElementById('screenshotPanel');
+        const textPanel = document.getElementById('textPanel');
         
-        if(!currentUserPhone) {
-            container.innerHTML = '<div class="empty"><i class="fas fa-search"></i> ဖုန်းနံပါတ်ရှာပါ</div>';
-            countSpan.innerText = '0';
-            return;
-        }
-        if(orders.length === 0) {
-            container.innerHTML = '<div class="empty"><i class="fas fa-inbox"></i> အော်ဒါမရှိသေးပါ</div>';
-            countSpan.innerText = '0';
-            return;
-        }
-        countSpan.innerText = orders.length;
-        let html = '';
-        for(let o of orders) {
-            let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
-            let statusText = o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
-            let countdownHtml = '';
-            if(o.status === 'Approved' && o.activated_at) {
-                let remain = remainingTime(o.activated_at);
-                countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
+        function switchToScreenshot() {
+            if(screenshotPanel) screenshotPanel.style.display = 'block';
+            if(textPanel) textPanel.style.display = 'none';
+            if(screenshotTab) {
+                screenshotTab.className = 'tab-btn screenshot-tab';
+                screenshotTab.style.background = "linear-gradient(135deg, #00d4ff, #0891b2)";
+                screenshotTab.style.color = "white";
             }
-            html += `
-                <div class="my-card" data-order-id="${o.id}">
-                    <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                        <span class="plan"><i class="fas fa-gem"></i> ${o.plan}</span>
-                        <span class="status ${statusClass}">${statusText}</span>
+            if(textTab) {
+                textTab.className = 'tab-btn text-tab';
+                textTab.style.background = "rgba(0,212,255,0.15)";
+                textTab.style.color = "var(--cyan)";
+            }
+        }
+        
+        function switchToText() {
+            if(textPanel) textPanel.style.display = 'block';
+            if(screenshotPanel) screenshotPanel.style.display = 'none';
+            if(textTab) {
+                textTab.className = 'tab-btn screenshot-tab';
+                textTab.style.background = "linear-gradient(135deg, #00d4ff, #0891b2)";
+                textTab.style.color = "white";
+            }
+            if(screenshotTab) {
+                screenshotTab.className = 'tab-btn text-tab';
+                screenshotTab.style.background = "rgba(0,212,255,0.15)";
+                screenshotTab.style.color = "var(--cyan)";
+            }
+        }
+        
+        if(screenshotTab) screenshotTab.addEventListener('click', switchToScreenshot);
+        if(textTab) textTab.addEventListener('click', switchToText);
+
+        function formatDate(d) {
+            if(!d) return '';
+            let date = new Date(d);
+            return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
+        }
+        
+        function remainingTime(activatedAt) {
+            if (!activatedAt) return null;
+            let end = new Date(activatedAt).getTime() + (30 * 24 * 60 * 60 * 1000);
+            let remain = end - Date.now();
+            if (remain <= 0) return '✅ သက်တမ်းကုန်';
+            let days = Math.floor(remain / 86400000);
+            let hours = Math.floor((remain % 86400000) / 3600000);
+            let mins = Math.floor((remain % 3600000) / 60000);
+            return `${days}ရက် ${hours}နာရီ ${mins}မိနစ်`;
+        }
+
+        async function fetchMyOrders(phone) {
+            if(!phone) return [];
+            try {
+                let res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(phone)}`);
+                let data = await res.json();
+                return data.orders || [];
+            } catch(e) { 
+                showToast("ဆာဗာချိတ်ဆက်မှု အမှား။ နောက်မှထပ်စမ်းပါ။", true);
+                return []; 
+            }
+        }
+        
+        async function fetchLiveOrders(excludePhone) {
+            try {
+                let res = await fetch(`${API_BASE}/api/admin/orders`);
+                let data = await res.json();
+                if(data.orders) {
+                    let filtered = data.orders.filter(o => o.phone !== excludePhone);
+                    filtered.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                    return filtered.slice(0, 30);
+                }
+                return [];
+            } catch(e) { 
+                showToast("LIVE feed ရယူရာတွင် အမှား။", true);
+                return []; 
+            }
+        }
+
+        function renderMyPlans(orders) {
+            let container = document.getElementById('myOrdersContainer');
+            let countSpan = document.getElementById('myCount');
+            
+            if(!currentUserPhone) {
+                if(container) container.innerHTML = '<div class="empty"><i class="fas fa-search"></i> ဖုန်းနံပါတ်ရှာပါ</div>';
+                if(countSpan) countSpan.innerText = '0';
+                return;
+            }
+            if(!orders || orders.length === 0) {
+                if(container) container.innerHTML = '<div class="empty"><i class="fas fa-inbox"></i> အော်ဒါမရှိသေးပါ</div>';
+                if(countSpan) countSpan.innerText = '0';
+                return;
+            }
+            if(countSpan) countSpan.innerText = orders.length;
+            let html = '';
+            for(let o of orders) {
+                let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+                let statusText = o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
+                let countdownHtml = '';
+                if(o.status === 'Approved' && o.activated_at) {
+                    let remain = remainingTime(o.activated_at);
+                    countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
+                }
+                html += `
+                    <div class="my-card" data-order-id="${o.id}">
+                        <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                            <span class="plan"><i class="fas fa-gem"></i> ${o.plan}</span>
+                            <span class="status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="phone-full"><i class="fas fa-phone-alt"></i> ${o.phone}</div>
+                        <div><span class="price">${o.price.toLocaleString()} MMK</span></div>
+                        <div class="date"><i class="fas fa-calendar-alt"></i> ဝယ်ရက်: ${formatDate(o.created_at)}</div>
+                        ${countdownHtml}
                     </div>
-                    <div class="phone-full"><i class="fas fa-phone-alt"></i> ${o.phone}</div>
-                    <div><span class="price">${o.price.toLocaleString()} MMK</span></div>
-                    <div class="date"><i class="fas fa-calendar-alt"></i> ဝယ်ရက်: ${formatDate(o.created_at)}</div>
-                    ${countdownHtml}
-                </div>
-            `;
-        }
-        container.innerHTML = html;
-    }
-
-    function renderSearchResult(orders) {
-        const container = document.getElementById('searchResultContainer');
-        const ordersContainer = document.getElementById('searchResultOrders');
-        
-        if(!orders.length) {
-            container.classList.remove('active');
-            return;
-        }
-        
-        container.classList.add('active');
-        let html = '';
-        for(let o of orders) {
-            let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
-            let statusText = o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
-            let countdownHtml = '';
-            if(o.status === 'Approved' && o.activated_at) {
-                let remain = remainingTime(o.activated_at);
-                countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
+                `;
             }
-            html += `
-                <div class="search-result-card search-orange-blink" data-order-id="${o.id}">
-                    <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                        <span class="plan"><i class="fas fa-gem"></i> ${o.plan}</span>
-                        <span class="status ${statusClass}">${statusText}</span>
-                    </div>
-                    <div class="phone-masked"><i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}</div>
-                    <div><span class="price">${o.price.toLocaleString()} MMK</span></div>
-                    <div class="date"><i class="fas fa-calendar-alt"></i> ဝယ်ရက်: ${formatDate(o.created_at)}</div>
-                    ${countdownHtml}
-                </div>
-            `;
+            if(container) container.innerHTML = html;
         }
-        ordersContainer.innerHTML = html;
-        
-        setTimeout(() => {
-            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-    }
 
-    function hideSearchResult() {
-        const container = document.getElementById('searchResultContainer');
-        container.classList.remove('active');
-        document.getElementById('searchResultOrders').innerHTML = '';
-    }
-
-    function renderLiveFeed(orders, isNewOrder = false) {
-        let container = document.getElementById('liveContainer');
-        if(!orders.length) {
-            container.innerHTML = '<div class="empty"><i class="fas fa-eye-slash"></i> လက်ရှိ LIVE အော်ဒါမရှိ</div>';
-            return;
-        }
-        let html = '';
-        for(let o of orders) {
-            let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
-            let statusText = o.status === 'Pending' ? 'Pending' : (o.status === 'Approved' ? 'Approved' : 'Rejected');
-            let remainHtml = '';
-            if(o.status === 'Approved' && o.activated_at) {
-                let remain = remainingTime(o.activated_at);
-                remainHtml = `<div class="countdown" style="margin-top:6px;"><i class="fas fa-hourglass-start"></i> ${remain}</div>`;
+        function renderSearchResult(orders) {
+            const container = document.getElementById('searchResultContainer');
+            const ordersContainer = document.getElementById('searchResultOrders');
+            
+            if(!orders || !orders.length) {
+                if(container) container.classList.remove('active');
+                return;
             }
-            html += `
-                <div class="live-card" data-order-id="${o.id}">
-                    <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                        <span class="plan"><i class="fas fa-mobile-alt"></i> ${o.plan}</span>
-                        <span class="status ${statusClass}">${statusText}</span>
+            
+            if(container) container.classList.add('active');
+            let html = '';
+            for(let o of orders) {
+                let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+                let statusText = o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
+                let countdownHtml = '';
+                if(o.status === 'Approved' && o.activated_at) {
+                    let remain = remainingTime(o.activated_at);
+                    countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
+                }
+                html += `
+                    <div class="search-result-card search-orange-blink" data-order-id="${o.id}">
+                        <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                            <span class="plan"><i class="fas fa-gem"></i> ${o.plan}</span>
+                            <span class="status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="phone-masked"><i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}</div>
+                        <div><span class="price">${o.price.toLocaleString()} MMK</span></div>
+                        <div class="date"><i class="fas fa-calendar-alt"></i> ဝယ်ရက်: ${formatDate(o.created_at)}</div>
+                        ${countdownHtml}
                     </div>
-                    <div class="phone-masked"><i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}</div>
-                    <div><span class="price">${o.price.toLocaleString()}K</span></div>
-                    <div class="date"><i class="fas fa-clock"></i> ${new Date(o.created_at).toLocaleTimeString()}</div>
-                    ${remainHtml}
-                </div>
-            `;
+                `;
+            }
+            if(ordersContainer) ordersContainer.innerHTML = html;
+            
+            setTimeout(() => {
+                if(container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
         }
-        container.innerHTML = html;
-        
-        if(isNewOrder && orders.length > 0) {
+
+        function hideSearchResult() {
+            const container = document.getElementById('searchResultContainer');
+            if(container) container.classList.remove('active');
+            const ordersContainer = document.getElementById('searchResultOrders');
+            if(ordersContainer) ordersContainer.innerHTML = '';
+        }
+
+        function renderLiveFeed(orders, isNewOrder = false) {
+            let container = document.getElementById('liveContainer');
+            if(!orders || !orders.length) {
+                if(container) container.innerHTML = '<div class="empty"><i class="fas fa-eye-slash"></i> လက်ရှိ LIVE အော်ဒါမရှိ</div>';
+                return;
+            }
+            let html = '';
+            for(let o of orders) {
+                let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+                let statusText = o.status === 'Pending' ? 'Pending' : (o.status === 'Approved' ? 'Approved' : 'Rejected');
+                let remainHtml = '';
+                if(o.status === 'Approved' && o.activated_at) {
+                    let remain = remainingTime(o.activated_at);
+                    remainHtml = `<div class="countdown" style="margin-top:6px;"><i class="fas fa-hourglass-start"></i> ${remain}</div>`;
+                }
+                html += `
+                    <div class="live-card" data-order-id="${o.id}">
+                        <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <span class="plan"><i class="fas fa-mobile-alt"></i> ${o.plan}</span>
+                            <span class="status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="phone-masked"><i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}</div>
+                        <div><span class="price">${o.price.toLocaleString()}K</span></div>
+                        <div class="date"><i class="fas fa-clock"></i> ${new Date(o.created_at).toLocaleTimeString()}</div>
+                        ${remainHtml}
+                    </div>
+                `;
+            }
+            if(container) container.innerHTML = html;
+            
+            if(isNewOrder && orders.length > 0) {
+                const firstCard = document.querySelector('.live-card');
+                if(firstCard) firstCard.classList.add('blink-live');
+                setTimeout(() => firstCard?.classList.remove('blink-live'), 1000);
+            }
+        }
+
+        async function refreshMyAndLive() {
+            if(!currentUserPhone) return;
+            let my = await fetchMyOrders(currentUserPhone);
+            let live = await fetchLiveOrders(currentUserPhone);
+            let newIds = live.map(o => o.id);
+            let hasNew = (lastOrderIds.length > 0 && newIds.length > 0 && newIds[0] !== lastOrderIds[0]);
+            lastOrderIds = newIds;
+            liveOrders = live;
+            
+            if(externalSearchPhone) {
+                let searchedOrders = await fetchMyOrders(externalSearchPhone);
+                renderSearchResult(searchedOrders);
+            } else {
+                hideSearchResult();
+                renderMyPlans(my);
+            }
+            renderLiveFeed(live, hasNew);
+        }
+
+        function rotateLiveOrders() {
+            if(liveOrders.length <= 1) return;
+            const lastItem = liveOrders.pop();
+            liveOrders.unshift(lastItem);
+            renderLiveFeed(liveOrders, false);
             const firstCard = document.querySelector('.live-card');
-            if(firstCard) firstCard.classList.add('blink-live');
-            setTimeout(() => firstCard?.classList.remove('blink-live'), 1000);
+            if(firstCard) {
+                firstCard.classList.add('blink-rotate');
+                setTimeout(() => firstCard.classList.remove('blink-rotate'), 800);
+            }
         }
-    }
 
-    async function refreshMyAndLive() {
-        if(!currentUserPhone) return;
-        let my = await fetchMyOrders(currentUserPhone);
-        let live = await fetchLiveOrders(currentUserPhone);
-        let newIds = live.map(o => o.id);
-        let hasNew = (lastOrderIds.length > 0 && newIds.length > 0 && newIds[0] !== lastOrderIds[0]);
-        lastOrderIds = newIds;
-        liveOrders = live;
-        
-        renderMyPlans(my);
-        renderLiveFeed(live, hasNew);
-    }
-
-    function rotateLiveOrders() {
-        if(liveOrders.length <= 1) return;
-        const lastItem = liveOrders.pop();
-        liveOrders.unshift(lastItem);
-        renderLiveFeed(liveOrders, false);
-        const firstCard = document.querySelector('.live-card');
-        if(firstCard) {
-            firstCard.classList.add('blink-rotate');
-            setTimeout(() => firstCard.classList.remove('blink-rotate'), 800);
-        }
-    }
-
-    function startAutoRefresh() {
-        if(autoRefreshInterval) clearInterval(autoRefreshInterval);
-        if(timerInterval) clearInterval(timerInterval);
-        if(rotateInterval) clearInterval(rotateInterval);
-        
-        refreshSec = 30;
-        const timerSpan = document.getElementById('liveTimer');
-        const updateTimer = () => {
-            if(timerSpan) timerSpan.innerText = `auto ${refreshSec}s`;
-            refreshSec--;
-            if(refreshSec < 0) refreshSec = 30;
-        };
-        timerInterval = setInterval(updateTimer, 1000);
-        
-        autoRefreshInterval = setInterval(async () => {
-            await refreshMyAndLive();
+        function startAutoRefresh() {
+            if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+            if(timerInterval) clearInterval(timerInterval);
+            if(rotateInterval) clearInterval(rotateInterval);
+            
             refreshSec = 30;
-            if(timerSpan) timerSpan.innerText = 'auto 30s';
-        }, 30000);
-        
-        rotateInterval = setInterval(() => {
-            if(liveOrders.length > 1) rotateLiveOrders();
-        }, 10000);
-    }
-
-    async function searchOtherUser() {
-        let phone = document.getElementById('searchPhone').value.trim();
-        const msgDiv = document.getElementById('searchMessage');
-        
-        if(phone === '') {
-            msgDiv.style.display = 'none';
-            hideSearchResult();
-            return;
-        }
-        if(phone.length < 9) {
-            msgDiv.style.display = 'block';
-            msgDiv.className = 'search-message error';
-            msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)';
-            hideSearchResult();
-            return;
-        }
-        
-        msgDiv.style.display = 'block';
-        msgDiv.className = 'search-message';
-        msgDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ရှာဖွေနေသည်...';
-        
-        let searchedOrders = await fetchMyOrders(phone);
-        
-        if(searchedOrders.length === 0) {
-            msgDiv.className = 'search-message error';
-            msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
-            hideSearchResult();
-            showToast("ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။", true);
-        } else {
-            msgDiv.className = 'search-message success';
-            msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။ 🟠 လိမ္မော်ရောင် မှိတ်တုတ်ပြသပါမည်။';
-            renderSearchResult(searchedOrders);
-            showToast(`📞 ${maskPhone(phone)} အတွက် Plan ${searchedOrders.length} ခုတွေ့ရှိ`, false);
-        }
-    }
-    
-    function clearExternalSearch() {
-        document.getElementById('searchPhone').value = '';
-        document.getElementById('searchMessage').style.display = 'none';
-        hideSearchResult();
-    }
-
-    async function submitRenewOrder(phone, plan, price) {
-        let fd = new FormData();
-        fd.append('phone', phone);
-        fd.append('plan', plan);
-        fd.append('price', price);
-        
-        const isScreenshotMode = screenshotPanel.style.display !== 'none';
-        
-        if (isScreenshotMode) {
-            const file = document.getElementById('slipImage').files[0];
-            if (!file) {
-                showToast("ငွေလွှဲပြေစာ ထည့်ပါ", true);
-                return null;
-            }
-            fd.append('slip', file);
-        } else {
-            const senderName = document.getElementById('senderName').value.trim();
-            const last5Digits = document.getElementById('last5Digits').value.trim();
+            const timerSpan = document.getElementById('liveTimer');
+            const updateTimer = () => {
+                if(timerSpan) timerSpan.innerText = `auto ${refreshSec}s`;
+                refreshSec--;
+                if(refreshSec < 0) refreshSec = 30;
+            };
+            timerInterval = setInterval(updateTimer, 1000);
             
-            if (!senderName) {
-                showToast("ငွေလွှဲသူအမည် ထည့်ပါ", true);
-                return null;
+            autoRefreshInterval = setInterval(async () => {
+                await refreshMyAndLive();
+                refreshSec = 30;
+                if(timerSpan) timerSpan.innerText = 'auto 30s';
+            }, 30000);
+            
+            rotateInterval = setInterval(() => {
+                if(liveOrders.length > 1) rotateLiveOrders();
+            }, 10000);
+        }
+
+        async function searchOtherUser() {
+            let phone = document.getElementById('searchPhone').value.trim();
+            const msgDiv = document.getElementById('searchMessage');
+            
+            if(phone === '') {
+                externalSearchPhone = '';
+                if(msgDiv) msgDiv.style.display = 'none';
+                await refreshMyAndLive();
+                return;
             }
-            if (!last5Digits || last5Digits.length !== 5) {
-                showToast("အကောင့်နောက်ဆုံး ၅ လုံး အတိအကျ ထည့်ပါ", true);
-                return null;
+            if(phone.length < 9) {
+                if(msgDiv) {
+                    msgDiv.style.display = 'block';
+                    msgDiv.className = 'search-message error';
+                    msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)';
+                }
+                return;
             }
             
-            fd.append('sender_name', senderName);
-            fd.append('last5_digits', last5Digits);
+            if(msgDiv) {
+                msgDiv.style.display = 'block';
+                msgDiv.className = 'search-message';
+                msgDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ရှာဖွေနေသည်...';
+            }
+            
+            let searchedOrders = await fetchMyOrders(phone);
+            
+            if(searchedOrders.length === 0) {
+                if(msgDiv) {
+                    msgDiv.className = 'search-message error';
+                    msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
+                }
+                externalSearchPhone = '';
+                hideSearchResult();
+                renderMyPlans(await fetchMyOrders(currentUserPhone));
+            } else {
+                if(msgDiv) {
+                    msgDiv.className = 'search-message success';
+                    msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။ 🟠 လိမ္မော်ရောင် မှိတ်တုတ်ပြသပါမည်။';
+                }
+                externalSearchPhone = phone;
+                renderSearchResult(searchedOrders);
+                renderMyPlans([]); // clear my orders temporarily
+                // but keep my orders hidden or show empty
+            }
         }
         
-        let res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
-        return await res.json();
-    }
-
-    // Modal handlers
-    const modal = document.getElementById('paymentModal');
-    const renewPhone = document.getElementById('renewPhone');
-    const renewPlan = document.getElementById('renewPlan');
-    const renewSlip = document.getElementById('renewSlip');
-    const chooseFileBtn = document.getElementById('chooseFileBtn');
-    const fileNameDisplay = document.getElementById('fileNameDisplay');
-    const modalTitle = document.getElementById('modalTitle');
-    const phoneNote = document.getElementById('phoneNote');
-    
-    chooseFileBtn.addEventListener('click', () => renewSlip.click());
-    renewSlip.addEventListener('change', () => {
-        if(renewSlip.files.length > 0) {
-            fileNameDisplay.innerHTML = `<i class="fas fa-check-circle"></i> ${renewSlip.files[0].name}`;
+        function clearExternalSearch() {
+            document.getElementById('searchPhone').value = '';
+            externalSearchPhone = '';
+            document.getElementById('searchMessage').style.display = 'none';
+            refreshMyAndLive();
         }
-    });
-    
-    function openRenewModal(mode) {
-        renewMode = mode;
-        if(mode === 'self') {
-            modalTitle.innerText = 'ကိုယ်တိုင် ထပ်ဝယ်ရန်';
-            renewPhone.value = currentUserPhone;
-            renewPhone.readOnly = true;
-            phoneNote.innerHTML = '※ သင့်ကိုယ်ပိုင်နံပါတ်';
-            phoneNote.style.color = '#10b981';
+
+        async function submitRenewOrder(phone, plan, price) {
+            let fd = new FormData();
+            fd.append('phone', phone);
+            fd.append('plan', plan);
+            fd.append('price', price);
+            
+            const isScreenshotMode = screenshotPanel && screenshotPanel.style.display !== 'none';
+            
+            if (isScreenshotMode) {
+                const file = document.getElementById('slipImage').files[0];
+                if (!file) {
+                    showToast("ငွေလွှဲပြေစာ ထည့်ပါ", true);
+                    return null;
+                }
+                fd.append('slip', file);
+            } else {
+                const senderName = document.getElementById('senderName').value.trim();
+                const last5Digits = document.getElementById('last5Digits').value.trim();
+                
+                if (!senderName) {
+                    showToast("ငွေလွှဲသူအမည် ထည့်ပါ", true);
+                    return null;
+                }
+                if (!last5Digits || last5Digits.length !== 5) {
+                    showToast("အကောင့်နောက်ဆုံး ၅ လုံး အတိအကျ ထည့်ပါ", true);
+                    return null;
+                }
+                
+                fd.append('sender_name', senderName);
+                fd.append('last5_digits', last5Digits);
+            }
+            
+            let res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
+            return await res.json();
+        }
+
+        // Modal handlers
+        const modal = document.getElementById('paymentModal');
+        const renewPhone = document.getElementById('renewPhone');
+        const renewPlan = document.getElementById('renewPlan');
+        const renewSlip = document.getElementById('renewSlip');
+        const chooseFileBtn = document.getElementById('chooseFileBtn');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const modalTitle = document.getElementById('modalTitle');
+        const phoneNote = document.getElementById('phoneNote');
+        
+        if(chooseFileBtn) {
+            chooseFileBtn.addEventListener('click', () => renewSlip.click());
+        }
+        if(renewSlip) {
+            renewSlip.addEventListener('change', () => {
+                if(renewSlip.files.length > 0 && fileNameDisplay) {
+                    fileNameDisplay.innerHTML = `<i class="fas fa-check-circle"></i> ${renewSlip.files[0].name}`;
+                }
+            });
+        }
+        
+        function openRenewModal(mode) {
+            renewMode = mode;
+            if(mode === 'self') {
+                if(modalTitle) modalTitle.innerText = 'ကိုယ်တိုင် ထပ်ဝယ်ရန်';
+                if(renewPhone) {
+                    renewPhone.value = currentUserPhone;
+                    renewPhone.readOnly = true;
+                }
+                if(phoneNote) {
+                    phoneNote.innerHTML = '※ သင့်ကိုယ်ပိုင်နံပါတ်';
+                    phoneNote.style.color = '#10b981';
+                }
+            } else {
+                if(modalTitle) modalTitle.innerText = 'အခြားသူအတွက် ထပ်ဝယ်ပေးရန်';
+                if(renewPhone) {
+                    renewPhone.value = '';
+                    renewPhone.readOnly = false;
+                }
+                if(phoneNote) {
+                    phoneNote.innerHTML = '※ လက်ခံမည့်သူ၏ ဖုန်းနံပါတ် (သက်တမ်းတိုးခံရမည့်သူ)';
+                    phoneNote.style.color = '#f59e0b';
+                }
+            }
+            if(renewSlip) renewSlip.value = '';
+            if(fileNameDisplay) fileNameDisplay.innerHTML = '';
+            const senderNameInput = document.getElementById('senderName');
+            const last5DigitsInput = document.getElementById('last5Digits');
+            if(senderNameInput) senderNameInput.value = '';
+            if(last5DigitsInput) last5DigitsInput.value = '';
+            switchToScreenshot();
+            if(modal) modal.classList.add('active');
+        }
+        
+        const openSelfRenewBtn = document.getElementById('openSelfRenewBtn');
+        const openOtherRenewBtn = document.getElementById('openOtherRenewBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        
+        if(openSelfRenewBtn) openSelfRenewBtn.addEventListener('click', () => openRenewModal('self'));
+        if(openOtherRenewBtn) openOtherRenewBtn.addEventListener('click', () => openRenewModal('other'));
+        if(closeModalBtn) closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
+        if(modal) {
+            window.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('active'); });
+        }
+        
+        const renewForm = document.getElementById('renewForm');
+        if(renewForm) {
+            renewForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const phone = renewPhone ? renewPhone.value.trim() : '';
+                const plan = renewPlan ? renewPlan.value : '';
+                let price = 0;
+                if(plan === 'VIP LEVEL - 1') price = 15000;
+                else if(plan === 'VIP LEVEL - 2') price = 20000;
+                else if(plan === 'VIP LEVEL - 3') price = 25000;
+                else if(plan === 'VIP LEVEL - 4 (ULTRA)') price = 30000;
+                
+                if(!phone || phone.length < 9) {
+                    showToast("ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)", true);
+                    return;
+                }
+                
+                const submitBtn = renewForm.querySelector('.submit-btn');
+                if(submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '⏳ အော်ဒါတင်နေပါသည်...';
+                }
+                
+                const result = await submitRenewOrder(phone, plan, price);
+                
+                if (result === null) {
+                    if(submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-check"></i> အော်ဒါတင်မည်';
+                    }
+                    return;
+                }
+                
+                if(result.success) {
+                    showToast(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${result.orderId}`, false);
+                    if(modal) modal.classList.remove('active');
+                    if(renewSlip) renewSlip.value = '';
+                    if(fileNameDisplay) fileNameDisplay.innerHTML = '';
+                    const senderNameInput = document.getElementById('senderName');
+                    const last5DigitsInput = document.getElementById('last5Digits');
+                    if(senderNameInput) senderNameInput.value = '';
+                    if(last5DigitsInput) last5DigitsInput.value = '';
+                    await refreshMyAndLive();
+                } else {
+                    showToast("အော်ဒါတင်ရာတွင် အမှားရှိပါသည်။ " + (result.error || ''), true);
+                }
+                if(submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check"></i> အော်ဒါတင်မည်';
+                }
+            });
+        }
+
+        const modalPhoneCopy = document.getElementById('modalPhoneCopy');
+        if(modalPhoneCopy) {
+            modalPhoneCopy.addEventListener('click', () => {
+                navigator.clipboard.writeText('09789999368');
+                showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ", false);
+            });
+        }
+
+        const searchBtn = document.getElementById('searchBtn');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        const searchPhoneInput = document.getElementById('searchPhone');
+        
+        if(searchBtn) searchBtn.addEventListener('click', searchOtherUser);
+        if(clearSearchBtn) clearSearchBtn.addEventListener('click', clearExternalSearch);
+        if(searchPhoneInput) {
+            searchPhoneInput.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') searchOtherUser();
+            });
+        }
+
+        // Login button handler
+        if(doLoginBtn) {
+            doLoginBtn.addEventListener('click', () => {
+                const phone = loginPhoneInput ? loginPhoneInput.value.trim() : '';
+                login(phone);
+            });
+        }
+        if(loginPhoneInput) {
+            loginPhoneInput.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') {
+                    const phone = loginPhoneInput.value.trim();
+                    login(phone);
+                }
+            });
+        }
+        if(logoutBtn) logoutBtn.addEventListener('click', logout);
+
+        // Check saved session
+        if(currentUserPhone && currentUserPhone.length > 8) {
+            loginScreen.style.display = 'none';
+            dashboardContent.style.display = 'block';
+            displayPhoneSpan.innerHTML = maskPhone(currentUserPhone);
+            refreshMyAndLive();
+            startAutoRefresh();
         } else {
-            modalTitle.innerText = 'အခြားသူအတွက် ထပ်ဝယ်ပေးရန်';
-            renewPhone.value = '';
-            renewPhone.readOnly = false;
-            phoneNote.innerHTML = '※ လက်ခံမည့်သူ၏ ဖုန်းနံပါတ် (သက်တမ်းတိုးခံရမည့်သူ)';
-            phoneNote.style.color = '#f59e0b';
+            loginScreen.style.display = 'block';
+            dashboardContent.style.display = 'none';
         }
-        renewSlip.value = '';
-        fileNameDisplay.innerHTML = '';
-        document.getElementById('senderName').value = '';
-        document.getElementById('last5Digits').value = '';
-        switchToScreenshot();
-        modal.classList.add('active');
-    }
-    
-    document.getElementById('openSelfRenewBtn').addEventListener('click', () => openRenewModal('self'));
-    document.getElementById('openOtherRenewBtn').addEventListener('click', () => openRenewModal('other'));
-    document.getElementById('closeModalBtn').addEventListener('click', () => modal.classList.remove('active'));
-    window.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('active'); });
-    
-    document.getElementById('renewForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const phone = renewPhone.value.trim();
-        const plan = renewPlan.value;
-        let price = 0;
-        if(plan === 'VIP LEVEL - 1') price = 15000;
-        else if(plan === 'VIP LEVEL - 2') price = 20000;
-        else if(plan === 'VIP LEVEL - 3') price = 25000;
-        else if(plan === 'VIP LEVEL - 4 (ULTRA)') price = 30000;
-        
-        if(!phone || phone.length < 9) {
-            showToast("ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)", true);
-            return;
-        }
-        
-        const submitBtn = document.querySelector('#renewForm .submit-btn');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '⏳ အော်ဒါတင်နေပါသည်...';
-        
-        const result = await submitRenewOrder(phone, plan, price);
-        
-        if (result === null) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-check"></i> အော်ဒါတင်မည်';
-            return;
-        }
-        
-        if(result.success) {
-            showToast(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${result.orderId}`, false);
-            modal.classList.remove('active');
-            renewSlip.value = '';
-            fileNameDisplay.innerHTML = '';
-            document.getElementById('senderName').value = '';
-            document.getElementById('last5Digits').value = '';
-            await refreshMyAndLive();
-        } else {
-            showToast("အော်ဒါတင်ရာတွင် အမှားရှိပါသည်။ " + (result.error || ''), true);
-        }
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-check"></i> အော်ဒါတင်မည်';
-    });
-
-    async function login(phone) {
-        if(!phone || phone.length < 9) {
-            showToast("ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)", true);
-            return false;
-        }
-        currentUserPhone = phone;
-        localStorage.setItem('myPhone', phone);
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('dashboardContent').style.display = 'block';
-        document.getElementById('displayPhone').innerHTML = maskPhone(phone);
-        
-        await refreshMyAndLive();
-        startAutoRefresh();
-        showToast("အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်။", false);
-        return true;
-    }
-    
-    function logout() {
-        localStorage.removeItem('myPhone');
-        currentUserPhone = '';
-        if(autoRefreshInterval) clearInterval(autoRefreshInterval);
-        if(timerInterval) clearInterval(timerInterval);
-        if(rotateInterval) clearInterval(rotateInterval);
-        document.getElementById('loginScreen').style.display = 'block';
-        document.getElementById('dashboardContent').style.display = 'none';
-        document.getElementById('searchPhone').value = '';
-        document.getElementById('searchMessage').style.display = 'none';
-        hideSearchResult();
-        showToast("ထွက်ရန် အောင်မြင်ပါသည်။", false);
-    }
-
-    document.getElementById('modalPhoneCopy').addEventListener('click', () => {
-        navigator.clipboard.writeText('09789999368');
-        showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ", false);
-    });
-
-    document.getElementById('doLoginBtn').addEventListener('click', () => {
-        login(document.getElementById('loginPhone').value.trim());
-    });
-    document.getElementById('loginPhone').addEventListener('keypress', (e) => {
-        if(e.key === 'Enter') login(e.target.value.trim());
-    });
-    document.getElementById('logoutBtn').addEventListener('click', logout);
-    document.getElementById('searchBtn').addEventListener('click', searchOtherUser);
-    document.getElementById('clearSearchBtn').addEventListener('click', clearExternalSearch);
-
-    if(currentUserPhone && currentUserPhone.length > 8) {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('dashboardContent').style.display = 'block';
-        document.getElementById('displayPhone').innerHTML = maskPhone(currentUserPhone);
-        refreshMyAndLive();
-        startAutoRefresh();
-    } else {
-        document.getElementById('loginScreen').style.display = 'block';
-        document.getElementById('dashboardContent').style.display = 'none';
-    }
+    })();
 </script>
 </body>
 </html>
