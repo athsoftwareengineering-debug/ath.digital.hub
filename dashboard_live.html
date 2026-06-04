@@ -410,7 +410,7 @@
             border-radius: 4px;
         }
         
-        /* Proof Method Tabs (Screenshot / Text) - Both working */
+        /* Proof Method Tabs (Screenshot / Text) */
         .proof-tab-buttons {
             display: flex;
             gap: 10px;
@@ -727,7 +727,7 @@
         const logoutBtn = document.getElementById('logoutBtn');
         
         // Payment method variables
-        let selectedPaymentMethod = 'kpay'; // 'kpay' or 'wavepay'
+        let selectedPaymentMethod = 'kpay';
         
         const API_BASE = window.location.origin;
         let currentUserPhone = localStorage.getItem('myPhone') || '';
@@ -752,7 +752,6 @@
             return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
         }
 
-        // Update account info based on selected payment method
         function updateAccountInfo() {
             const paymentMethodName = document.getElementById('paymentMethodName');
             if (selectedPaymentMethod === 'kpay') {
@@ -836,7 +835,6 @@
             });
         }
         
-        // Login function
         async function login(phone) {
             if(!phone || phone.length < 9) {
                 showToast("ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)", true);
@@ -1240,7 +1238,6 @@
                     phoneNote.style.color = '#f59e0b';
                 }
             }
-            // Reset form
             if (slipImage) slipImage.value = '';
             if (fileNameDisplay) fileNameDisplay.innerHTML = '';
             const senderNameInput = document.getElementById('senderName');
@@ -1351,7 +1348,6 @@
         }
         if(logoutBtn) logoutBtn.addEventListener('click', logout);
         
-        // Check saved session
         if(currentUserPhone && currentUserPhone.length > 8) {
             loginScreen.style.display = 'none';
             dashboardContent.style.display = 'block';
