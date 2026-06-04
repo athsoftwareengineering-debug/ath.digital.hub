@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>My Plans & LIVE | ATH</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0c15;
+            font-family: 'Inter', sans-serif;
+            padding: 16px;
+            color: #f1f5f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        /* header */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 1.4rem;
+            background: linear-gradient(135deg, #fff, #00d4ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .sub {
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+        /* search box */
+        .search-box {
+            background: rgba(0,212,255,0.08);
+            border-radius: 60px;
+            padding: 6px;
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(0,212,255,0.2);
+        }
+        .search-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 10px 16px;
+            color: white;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .search-box button {
+            background: #00d4ff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: bold;
+            color: #030712;
+            cursor: pointer;
+        }
+        .search-box button.clear {
+            background: #334155;
+            color: white;
+        }
+        /* section title */
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin: 20px 0 12px;
+        }
+        .section-title h2 {
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .live-badge {
+            font-size: 0.6rem;
+            background: #f43f5e;
+            padding: 2px 8px;
+            border-radius: 40px;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        /* cards */
+        .card {
+            background: linear-gradient(145deg, #11131e, #0c0e16);
+            border-radius: 1.2rem;
+            padding: 14px;
+            margin-bottom: 12px;
+            border-left: 3px solid #00d4ff;
+        }
+        .card.live-card {
+            border-left-color: #f59e0b;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .plan {
+            font-weight: 700;
+            color: #00d4ff;
+        }
+        .status {
+            font-size: 0.65rem;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-weight: 600;
+        }
+        .status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
+        .status.rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        .price {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+        .date {
+            font-size: 0.6rem;
+            color: #64748b;
+            margin-top: 6px;
+        }
+        .countdown {
+            background: rgba(0,212,255,0.1);
+            border-radius: 40px;
+            padding: 6px 12px;
+            margin-top: 8px;
+            font-size: 0.65rem;
+            font-family: monospace;
+            text-align: center;
+        }
+        .phone-mask {
+            font-size: 0.7rem;
+            font-family: monospace;
+            background: #1e293b;
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 40px;
+        }
+        .empty {
+            text-align: center;
+            padding: 32px;
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+        .footer {
+            text-align: center;
+            font-size: 0.6rem;
+            color: #475569;
+            margin-top: 32px;
+        }
+        hr {
+            border-color: #1e293b;
+            margin: 8px 0;
+        }
+        i {
+            margin-right: 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-sim-card"></i> ATH MY PLANS</h1>
+        <div class="sub">ဝယ်ထားသော Plan များနှင့် LIVE အော်ဒါများ</div>
+    </div>
+
+    <!-- search section -->
+    <div class="search-box">
+        <input type="tel" id="searchPhone" placeholder="📱 ဖုန်းနံပါတ်ရိုက်ထည့်ပါ (09...)" value="">
+        <button id="searchBtn"><i class="fas fa-search"></i> ရှာ</button>
+        <button id="clearBtn" class="clear"><i class="fas fa-times"></i></button>
+    </div>
+
+    <!-- MY PLANS (purchased) -->
+    <div class="section-title">
+        <h2><i class="fas fa-ticket-alt"></i> ဝယ်ထားသော Plan များ</h2>
+        <span id="myCount" style="font-size:0.65rem;">0</span>
+    </div>
+    <div id="myOrdersContainer">
+        <div class="empty"><i class="fas fa-spinner fa-pulse"></i> နံပါတ်ရှာပါ</div>
+    </div>
+
+    <!-- LIVE FEED (other users) -->
+    <div class="section-title">
+        <h2><i class="fas fa-broadcast-tower"></i> LIVE အော်ဒါများ <span class="live-badge">LIVE</span></h2>
+        <span id="liveTimer" style="font-size:0.6rem;">auto 30s</span>
+    </div>
+    <div id="liveContainer">
+        <div class="empty"><i class="fas fa-spinner fa-pulse"></i> စောင့်နေသည်...</div>
+    </div>
+    <div class="footer">⚡ အခြားသူများ၏ အော်ဒါအသစ်များ အလိုအလျောက် ပြောင်းလဲပြသည်</div>
+</div>
+
+<script>
+    const API_BASE = window.location.origin;
+    let currentSearchPhone = "";
+    let allOrdersData = [];
+    let liveOrders = [];
+    let autoInterval = null, countdownSec = 30, timerInterval = null;
+
+    // helpers
+    function maskPhone(p) {
+        if (!p || p.length < 8) return p;
+        return p.substring(0,5) + "***" + p.substring(p.length-3);
+    }
+
+    function formatDate(d) {
+        if(!d) return "";
+        let date = new Date(d);
+        return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
+    }
+
+    function remainingTime(activatedAt) {
+        if (!activatedAt) return null;
+        let end = new Date(activatedAt).getTime() + (30 * 24 * 60 * 60 * 1000);
+        let remain = end - Date.now();
+        if (remain <= 0) return "✅ သက်တမ်းကုန်";
+        let days = Math.floor(remain / 86400000);
+        let hours = Math.floor((remain % 86400000) / 3600000);
+        let mins = Math.floor((remain % 3600000) / 60000);
+        let secs = Math.floor((remain % 60000) / 1000);
+        return `${days}ရက် ${hours}နာရီ ${mins}မိနစ်`;
+    }
+
+    // fetch user orders by phone
+    async function fetchMyOrders(phone) {
+        if(!phone) return [];
+        try {
+            let res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(phone)}`);
+            let data = await res.json();
+            return data.orders || [];
+        } catch(e) {
+            return [];
+        }
+    }
+
+    // fetch all orders for live feed (exclude current searched phone)
+    async function fetchLiveOrders(excludePhone) {
+        try {
+            let res = await fetch(`${API_BASE}/api/admin/orders`);
+            let data = await res.json();
+            if(data.orders) {
+                let filtered = data.orders.filter(o => o.phone !== excludePhone);
+                filtered.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                return filtered.slice(0, 25);
+            }
+            return [];
+        } catch(e) {
+            return [];
+        }
+    }
+
+    // render MY PLANS
+    function renderMyPlans(orders, searchPhone) {
+        let container = document.getElementById('myOrdersContainer');
+        let countSpan = document.getElementById('myCount');
+        if(!searchPhone) {
+            container.innerHTML = '<div class="empty"><i class="fas fa-search"></i> ဖုန်းနံပါတ်ရှာပါ</div>';
+            countSpan.innerText = "0";
+            return;
+        }
+        if(orders.length === 0) {
+            container.innerHTML = '<div class="empty"><i class="fas fa-inbox"></i> အော်ဒါမရှိသေးပါ</div>';
+            countSpan.innerText = "0";
+            return;
+        }
+        countSpan.innerText = orders.length;
+        let html = "";
+        for(let o of orders) {
+            let statusClass = o.status === "Pending" ? "pending" : (o.status === "Approved" ? "approved" : "rejected");
+            let statusText = o.status === "Pending" ? "⏳ စောင့်ဆိုင်းဆဲ" : (o.status === "Approved" ? "✅ အတည်ပြုပြီး" : "❌ ပယ်ဖျက်ခံရ");
+            let countdownHtml = "";
+            if(o.status === "Approved" && o.activated_at) {
+                let remain = remainingTime(o.activated_at);
+                countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
+            }
+            html += `
+                <div class="card">
+                    <div class="card-header">
+                        <span class="plan"><i class="fas fa-tag"></i> ${o.plan}</span>
+                        <span class="status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div><span class="price">${o.price.toLocaleString()} MMK</span></div>
+                    <div class="date"><i class="fas fa-calendar-alt"></i> ဝယ်ရက်: ${formatDate(o.created_at)}</div>
+                    ${countdownHtml}
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+
+    // render LIVE FEED
+    function renderLiveFeed(orders, searchPhone) {
+        let container = document.getElementById('liveContainer');
+        if(!orders.length) {
+            container.innerHTML = '<div class="empty"><i class="fas fa-eye-slash"></i> လက်ရှိ LIVE အော်ဒါမရှိ</div>';
+            return;
+        }
+        let html = "";
+        for(let o of orders) {
+            let statusClass = o.status === "Pending" ? "pending" : (o.status === "Approved" ? "approved" : "rejected");
+            let statusText = o.status === "Pending" ? "Pending" : (o.status === "Approved" ? "Approved" : "Rejected");
+            let remainHtml = "";
+            if(o.status === "Approved" && o.activated_at) {
+                let remain = remainingTime(o.activated_at);
+                remainHtml = `<div class="countdown" style="margin-top:4px;"><i class="fas fa-hourglass-start"></i> ${remain}</div>`;
+            }
+            html += `
+                <div class="card live-card">
+                    <div class="card-header">
+                        <span class="plan"><i class="fas fa-mobile-alt"></i> ${o.plan}</span>
+                        <span class="status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div><span class="phone-mask"><i class="fas fa-phone"></i> ${maskPhone(o.phone)}</span>  <span class="price">${o.price.toLocaleString()}K</span></div>
+                    <div class="date"><i class="fas fa-clock"></i> ${new Date(o.created_at).toLocaleTimeString()}</div>
+                    ${remainHtml}
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+
+    // main refresh
+    async function refreshData() {
+        if(!currentSearchPhone) {
+            // just refresh live feed without my orders
+            let live = await fetchLiveOrders("");
+            liveOrders = live;
+            renderLiveFeed(liveOrders, currentSearchPhone);
+            document.getElementById('myOrdersContainer').innerHTML = '<div class="empty"><i class="fas fa-search"></i> ဖုန်းနံပါတ်ရှာပါ</div>';
+            document.getElementById('myCount').innerText = "0";
+            return;
+        }
+        // fetch both
+        let my = await fetchMyOrders(currentSearchPhone);
+        let live = await fetchLiveOrders(currentSearchPhone);
+        allOrdersData = my;
+        liveOrders = live;
+        renderMyPlans(my, currentSearchPhone);
+        renderLiveFeed(live, currentSearchPhone);
+    }
+
+    // auto refresh for live feed only
+    function startAutoRefresh() {
+        if(autoInterval) clearInterval(autoInterval);
+        if(timerInterval) clearInterval(timerInterval);
+        let sec = 30;
+        const timerSpan = document.getElementById('liveTimer');
+        const updateTimer = () => {
+            if(timerSpan) timerSpan.innerText = `auto ${sec}s`;
+            sec--;
+            if(sec < 0) sec = 30;
+        };
+        timerInterval = setInterval(updateTimer, 1000);
+        autoInterval = setInterval(async () => {
+            // refresh live feed only (so my orders don't reset)
+            if(currentSearchPhone) {
+                let live = await fetchLiveOrders(currentSearchPhone);
+                liveOrders = live;
+                renderLiveFeed(live, currentSearchPhone);
+            } else {
+                let live = await fetchLiveOrders("");
+                liveOrders = live;
+                renderLiveFeed(live, "");
+            }
+            sec = 30;
+            if(timerSpan) timerSpan.innerText = `auto 30s`;
+        }, 30000);
+    }
+
+    // search action
+    async function searchPhone() {
+        let input = document.getElementById('searchPhone').value.trim();
+        if(input === "") {
+            currentSearchPhone = "";
+            await refreshData();
+            return;
+        }
+        if(input.length < 9) {
+            alert("ဖုန်းနံပါတ် မှန်ကန်စွာထည့်ပါ (09xxxxxxxxx)");
+            return;
+        }
+        currentSearchPhone = input;
+        await refreshData();
+    }
+
+    function clearSearch() {
+        document.getElementById('searchPhone').value = "";
+        currentSearchPhone = "";
+        refreshData();
+    }
+
+    // event binding
+    document.getElementById('searchBtn').addEventListener('click', searchPhone);
+    document.getElementById('clearBtn').addEventListener('click', clearSearch);
+    document.getElementById('searchPhone').addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') searchPhone();
+    });
+
+    // initial load: show live feed only
+    (async () => {
+        startAutoRefresh();
+        let live = await fetchLiveOrders("");
+        liveOrders = live;
+        renderLiveFeed(live, "");
+        document.getElementById('myOrdersContainer').innerHTML = '<div class="empty"><i class="fas fa-search"></i> ဖုန်းနံပါတ်ရှာပါ</div>';
+    })();
+</script>
+</body>
+</html>
