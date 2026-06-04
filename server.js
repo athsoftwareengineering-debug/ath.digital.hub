@@ -438,13 +438,13 @@ app.post('/api/admin/cleanup-old', async (req, res) => {
     }
 });
 
-// ==================== CREATE ORDER ====================
+// ==================== CREATE ORDER (UPDATED with payment_method) ====================
 app.post('/api/orders', upload.single('slip'), async (req, res) => {
     try {
-        const { phone, plan, price, sender_name, last5_digits } = req.body;
+        const { phone, plan, price, sender_name, last5_digits, payment_method } = req.body;
         const slipFile = req.file;
         
-        console.log(`📝 Creating order: phone=${phone}, plan=${plan}, price=${price}`);
+        console.log(`📝 Creating order: phone=${phone}, plan=${plan}, price=${price}, payment_method=${payment_method || 'kpay'}`);
         if (sender_name) console.log(`   📝 Text proof - Sender: ${sender_name}, Last5: ${last5_digits}`);
         if (slipFile) console.log(`   📸 Screenshot proof - File: ${slipFile.filename}`);
         
@@ -494,7 +494,8 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
                 slip_url: slipUrl,
                 image_hash: imageHash,
                 sender_name: sender_name || null,
-                last5_digits: last5_digits || null
+                last5_digits: last5_digits || null,
+                payment_method: payment_method || 'kpay'
             }]);
         
         if (error) {
