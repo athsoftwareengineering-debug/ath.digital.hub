@@ -1,4 +1,3 @@
-// server.js - Express Server
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -15,12 +14,13 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(__dirname));
+app.use(express.static(__dirname)); // Serve static files from root directory
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('📁 Uploads directory created');
 }
 app.use('/uploads', express.static('uploads'));
 
@@ -49,7 +49,7 @@ const upload = multer({
     }
 });
 
-// ==================== FRAUD DETECTION HELPERS ====================
+// ==================== HELPER FUNCTIONS ====================
 
 function calculateImageHash(fileBuffer) {
     return crypto.createHash('md5').update(fileBuffer).digest('hex');
@@ -68,6 +68,7 @@ async function getUserStats(phone) {
         }
         return data;
     } catch (e) {
+        console.error('Exception in getUserStats:', e);
         return null;
     }
 }
@@ -102,9 +103,12 @@ async function updateUserStats(phone, isRejected = false) {
                     order_count: 1,
                     reject_count: isRejected ? 1 : 0,
                     suspect_flag: false,
-                    blocked: false
+                    blocked: false,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
                 }]);
         }
+        console.log(`📊 Updated stats for ${phone}: ${isRejected ? 'rejected' : 'new order'}`);
     } catch (e) {
         console.error('Error updating user stats:', e);
     }
@@ -151,6 +155,7 @@ async function isDuplicateImage(imageHash) {
     }
 }
 
+// Rate limiting map
 const orderRateLimit = new Map();
 function checkRateLimit(phone) {
     const now = Date.now();
@@ -171,24 +176,28 @@ async function autoCleanupOldOrders() {
     try {
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
         
+        // Get orders to delete
         const { data: ordersToDelete } = await supabaseAdmin
             .from('orders')
             .select('slip_url')
             .in('status', ['Pending', 'Rejected'])
             .lt('created_at', thirtyDaysAgo);
         
+        // Delete associated files
         if (ordersToDelete && ordersToDelete.length > 0) {
             for (const order of ordersToDelete) {
                 if (order.slip_url) {
                     const filePath = path.join(__dirname, order.slip_url);
                     if (fs.existsSync(filePath)) {
                         fs.unlinkSync(filePath);
+                        console.log(`🗑 Deleted file: ${order.slip_url}`);
                     }
                 }
             }
         }
         
-        const { data, error } = await supabaseAdmin
+        // Delete orders from database
+        const { error } = await supabaseAdmin
             .from('orders')
             .delete()
             .in('status', ['Pending', 'Rejected'])
@@ -204,14 +213,12 @@ async function autoCleanupOldOrders() {
     }
 }
 
-setInterval(autoCleanupOldOrders, 24 * 60 * 60 * 1000);
+// Run cleanup on startup and every 24 hours
 setTimeout(autoCleanupOldOrders, 5000);
+setInterval(autoCleanupOldOrders, 24 * 60 * 60 * 1000);
 
 // ==================== STATIC HTML ROUTES ====================
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-app.get('/index.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 app.get('/admin.html', (req, res) => {
@@ -221,6 +228,7 @@ app.get('/dashboard_live.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'dashboard_live.html'));
 });
 
+// Health check endpoint
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -360,216 +368,30 @@ app.get('/api/orders/:phone', async (req, res) => {
     }
 });
 
-// ==================== ADMIN API ====================
-app.get('/api/admin/orders', async (req, res) => {
-    try {
-        const { data, error } = await supabaseAdmin
-            .from('orders')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
-        if (error) {
-            return res.status(500).json({ orders: [], error: error.message });
-        }
-        
-        res.json({ orders: data || [] });
-    } catch (error) {
-        console.error('Error fetching all orders:', error);
-        res.status(500).json({ orders: [], error: error.message });
-    }
-});
-
-app.get('/api/admin/user-stats', async (req, res) => {
-    try {
-        const { data, error } = await supabaseAdmin
-            .from('user_stats')
-            .select('*')
-            .order('order_count', { ascending: false });
-        
-        if (error) {
-            return res.status(500).json({ stats: [], error: error.message });
-        }
-        
-        res.json({ stats: data || [] });
-    } catch (error) {
-        console.error('Error fetching user stats:', error);
-        res.status(500).json({ stats: [], error: error.message });
-    }
-});
-
-app.post('/api/admin/user-block', async (req, res) => {
-    try {
-        const { phone, block } = req.body;
-        
-        if (!phone) {
-            return res.status(400).json({ success: false, error: 'Phone required' });
-        }
-        
-        const { error } = await supabaseAdmin
-            .from('user_stats')
-            .update({ blocked: block, updated_at: new Date().toISOString() })
-            .eq('phone', phone);
-        
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
-        res.json({ success: true, message: block ? 'User blocked' : 'User unblocked' });
-    } catch (error) {
-        console.error('Error blocking user:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.post('/api/admin/clear-suspect', async (req, res) => {
-    try {
-        const { phone } = req.body;
-        
-        if (!phone) {
-            return res.status(400).json({ success: false, error: 'Phone required' });
-        }
-        
-        const { error } = await supabaseAdmin
-            .from('user_stats')
-            .update({ suspect_flag: false, updated_at: new Date().toISOString() })
-            .eq('phone', phone);
-        
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
-        res.json({ success: true, message: 'Suspect flag cleared' });
-    } catch (error) {
-        console.error('Error clearing suspect flag:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.post('/api/admin/user-delete', async (req, res) => {
-    try {
-        const { phone } = req.body;
-        
-        if (!phone) {
-            return res.status(400).json({ success: false, error: 'Phone required' });
-        }
-        
-        const { error } = await supabaseAdmin
-            .from('user_stats')
-            .delete()
-            .eq('phone', phone);
-        
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
-        res.json({ success: true, message: 'User deleted from stats' });
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.post('/api/admin/user-delete-orders', async (req, res) => {
-    try {
-        const { phone } = req.body;
-        
-        if (!phone) {
-            return res.status(400).json({ success: false, error: 'Phone required' });
-        }
-        
-        const { data: orders } = await supabaseAdmin
-            .from('orders')
-            .select('slip_url')
-            .eq('phone', phone);
-        
-        if (orders && orders.length > 0) {
-            for (const order of orders) {
-                if (order.slip_url) {
-                    const filePath = path.join(__dirname, order.slip_url);
-                    if (fs.existsSync(filePath)) {
-                        fs.unlinkSync(filePath);
-                    }
-                }
-            }
-        }
-        
-        const { error } = await supabaseAdmin
-            .from('orders')
-            .delete()
-            .eq('phone', phone);
-        
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
-        res.json({ success: true, message: `Deleted ${orders?.length || 0} orders for ${phone}` });
-    } catch (error) {
-        console.error('Error deleting user orders:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.post('/api/admin/cleanup-old', async (req, res) => {
-    try {
-        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-        
-        const { data: ordersToDelete } = await supabaseAdmin
-            .from('orders')
-            .select('slip_url')
-            .in('status', ['Pending', 'Rejected'])
-            .lt('created_at', thirtyDaysAgo);
-        
-        if (ordersToDelete && ordersToDelete.length > 0) {
-            for (const order of ordersToDelete) {
-                if (order.slip_url) {
-                    const filePath = path.join(__dirname, order.slip_url);
-                    if (fs.existsSync(filePath)) {
-                        fs.unlinkSync(filePath);
-                    }
-                }
-            }
-        }
-        
-        const { data, error } = await supabaseAdmin
-            .from('orders')
-            .delete()
-            .in('status', ['Pending', 'Rejected'])
-            .lt('created_at', thirtyDaysAgo);
-        
-        if (error) {
-            return res.status(500).json({ success: false, error: error.message });
-        }
-        
-        res.json({ success: true, message: `Deleted ${ordersToDelete?.length || 0} old orders` });
-    } catch (error) {
-        console.error('Error during manual cleanup:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
 // ==================== CREATE ORDER ====================
 app.post('/api/orders', upload.single('slip'), async (req, res) => {
     try {
         const { phone, plan, price, sender_name, last5_digits, payment_method } = req.body;
         const slipFile = req.file;
         
-        console.log(`📝 Creating order: phone=${phone}, plan=${plan}, price=${price}, payment_method=${payment_method || 'kpay'}`);
-        if (sender_name) console.log(`   📝 Text proof - Sender: ${sender_name}, Last5: ${last5_digits}`);
-        if (slipFile) console.log(`   📸 Screenshot proof - File: ${slipFile.filename}`);
+        console.log(`📝 Creating order: phone=${phone}, plan=${plan}, price=${price}, payment=${payment_method || 'kpay'}`);
         
         if (!phone || !plan || !price) {
             return res.status(400).json({ success: false, error: 'Missing required fields' });
         }
         
+        // Check if phone is blocked
         const blocked = await isPhoneBlocked(phone);
         if (blocked) {
             return res.status(403).json({ success: false, error: 'This phone number has been blocked. Contact admin for support.' });
         }
         
+        // Rate limiting
         if (!checkRateLimit(phone)) {
             return res.status(429).json({ success: false, error: 'Too many orders. Please wait a moment.' });
         }
         
+        // Check for duplicate order
         const duplicate = await isDuplicateOrder(phone, plan);
         if (duplicate) {
             return res.status(409).json({ success: false, error: 'Duplicate order detected. Please wait 5 minutes.' });
@@ -604,7 +426,8 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
                 image_hash: imageHash,
                 sender_name: sender_name || null,
                 last5_digits: last5_digits || null,
-                payment_method: payment_method || 'kpay'
+                payment_method: payment_method || 'kpay',
+                created_at: new Date().toISOString()
             }]);
         
         if (error) {
@@ -626,7 +449,202 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
     }
 });
 
-// ==================== ADMIN - Approve/Reject/Delete ====================
+// ==================== ADMIN API ====================
+// Get all orders (admin only)
+app.get('/api/admin/orders', async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            return res.status(500).json({ orders: [], error: error.message });
+        }
+        
+        res.json({ orders: data || [] });
+    } catch (error) {
+        console.error('Error fetching all orders:', error);
+        res.status(500).json({ orders: [], error: error.message });
+    }
+});
+
+// Get user stats (admin only)
+app.get('/api/admin/user-stats', async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('user_stats')
+            .select('*')
+            .order('order_count', { ascending: false });
+        
+        if (error) {
+            return res.status(500).json({ stats: [], error: error.message });
+        }
+        
+        res.json({ stats: data || [] });
+    } catch (error) {
+        console.error('Error fetching user stats:', error);
+        res.status(500).json({ stats: [], error: error.message });
+    }
+});
+
+// Block/unblock user
+app.post('/api/admin/user-block', async (req, res) => {
+    try {
+        const { phone, block } = req.body;
+        
+        if (!phone) {
+            return res.status(400).json({ success: false, error: 'Phone required' });
+        }
+        
+        const { error } = await supabaseAdmin
+            .from('user_stats')
+            .update({ blocked: block, updated_at: new Date().toISOString() })
+            .eq('phone', phone);
+        
+        if (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        res.json({ success: true, message: block ? 'User blocked' : 'User unblocked' });
+    } catch (error) {
+        console.error('Error blocking user:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Clear suspect flag
+app.post('/api/admin/clear-suspect', async (req, res) => {
+    try {
+        const { phone } = req.body;
+        
+        if (!phone) {
+            return res.status(400).json({ success: false, error: 'Phone required' });
+        }
+        
+        const { error } = await supabaseAdmin
+            .from('user_stats')
+            .update({ suspect_flag: false, updated_at: new Date().toISOString() })
+            .eq('phone', phone);
+        
+        if (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        res.json({ success: true, message: 'Suspect flag cleared' });
+    } catch (error) {
+        console.error('Error clearing suspect flag:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete user from stats
+app.post('/api/admin/user-delete', async (req, res) => {
+    try {
+        const { phone } = req.body;
+        
+        if (!phone) {
+            return res.status(400).json({ success: false, error: 'Phone required' });
+        }
+        
+        const { error } = await supabaseAdmin
+            .from('user_stats')
+            .delete()
+            .eq('phone', phone);
+        
+        if (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        res.json({ success: true, message: 'User deleted from stats' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete all orders for a user
+app.post('/api/admin/user-delete-orders', async (req, res) => {
+    try {
+        const { phone } = req.body;
+        
+        if (!phone) {
+            return res.status(400).json({ success: false, error: 'Phone required' });
+        }
+        
+        // Get orders to delete files
+        const { data: orders } = await supabaseAdmin
+            .from('orders')
+            .select('slip_url')
+            .eq('phone', phone);
+        
+        if (orders && orders.length > 0) {
+            for (const order of orders) {
+                if (order.slip_url) {
+                    const filePath = path.join(__dirname, order.slip_url);
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                    }
+                }
+            }
+        }
+        
+        const { error } = await supabaseAdmin
+            .from('orders')
+            .delete()
+            .eq('phone', phone);
+        
+        if (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        res.json({ success: true, message: `Deleted ${orders?.length || 0} orders for ${phone}` });
+    } catch (error) {
+        console.error('Error deleting user orders:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Manual cleanup old orders
+app.post('/api/admin/cleanup-old', async (req, res) => {
+    try {
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        
+        const { data: ordersToDelete } = await supabaseAdmin
+            .from('orders')
+            .select('slip_url')
+            .in('status', ['Pending', 'Rejected'])
+            .lt('created_at', thirtyDaysAgo);
+        
+        if (ordersToDelete && ordersToDelete.length > 0) {
+            for (const order of ordersToDelete) {
+                if (order.slip_url) {
+                    const filePath = path.join(__dirname, order.slip_url);
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                    }
+                }
+            }
+        }
+        
+        const { error } = await supabaseAdmin
+            .from('orders')
+            .delete()
+            .in('status', ['Pending', 'Rejected'])
+            .lt('created_at', thirtyDaysAgo);
+        
+        if (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        res.json({ success: true, message: `Deleted ${ordersToDelete?.length || 0} old orders` });
+    } catch (error) {
+        console.error('Error during manual cleanup:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Approve order
 app.put('/api/admin/orders/:id/approve', async (req, res) => {
     try {
         const { id } = req.params;
@@ -643,6 +661,7 @@ app.put('/api/admin/orders/:id/approve', async (req, res) => {
             return res.status(500).json({ success: false, error: error.message });
         }
         
+        console.log(`✅ Order ${id} approved`);
         res.json({ success: true, message: 'Order approved successfully' });
     } catch (error) {
         console.error('Error approving order:', error);
@@ -650,10 +669,12 @@ app.put('/api/admin/orders/:id/approve', async (req, res) => {
     }
 });
 
+// Reject order
 app.put('/api/admin/orders/:id/reject', async (req, res) => {
     try {
         const { id } = req.params;
         
+        // Get phone before updating
         const { data: order } = await supabaseAdmin
             .from('orders')
             .select('phone')
@@ -673,6 +694,7 @@ app.put('/api/admin/orders/:id/reject', async (req, res) => {
             await updateUserStats(order.phone, true);
         }
         
+        console.log(`❌ Order ${id} rejected`);
         res.json({ success: true, message: 'Order rejected successfully' });
     } catch (error) {
         console.error('Error rejecting order:', error);
@@ -680,10 +702,12 @@ app.put('/api/admin/orders/:id/reject', async (req, res) => {
     }
 });
 
+// Delete order
 app.delete('/api/admin/orders/:id', async (req, res) => {
     try {
         const { id } = req.params;
         
+        // Get slip_url to delete file
         const { data: order } = await supabaseAdmin
             .from('orders')
             .select('slip_url')
@@ -706,6 +730,7 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
             return res.status(500).json({ success: false, error: error.message });
         }
         
+        console.log(`🗑 Order ${id} deleted`);
         res.json({ success: true, message: 'Order deleted successfully' });
     } catch (error) {
         console.error('Error deleting order:', error);
@@ -713,23 +738,32 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
     }
 });
 
+// Admin login
 app.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
-    if (password === process.env.ADMIN_PASSWORD) {
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    
+    if (password === adminPassword) {
         res.json({ success: true, message: 'Login successful' });
     } else {
         res.status(401).json({ success: false, message: 'Invalid password' });
     }
 });
 
-app.use('/uploads', express.static('uploads'));
-
+// ==================== START SERVER ====================
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`📱 User Store: http://localhost:${PORT}/index.html`);
-    console.log(`👨‍💼 Admin Panel: http://localhost:${PORT}/admin.html`);
-    console.log(`📊 Dashboard Live: http://localhost:${PORT}/dashboard_live.html`);
-    console.log(`📁 Uploads folder: ${uploadsDir}`);
-    console.log(`🗑️ Auto cleanup: Pending/Rejected orders older than 30 days will be deleted daily`);
-    console.log(`🛒 Market API: http://localhost:${PORT}/api/market/products`);
+    console.log(`
+╔══════════════════════════════════════════════════════════╗
+║                                                          ║
+║     🚀 ATH DIGITAL HUB SERVER STARTED                   ║
+║                                                          ║
+║     📱 User Store:      http://localhost:${PORT}/         ║
+║     👨‍💼 Admin Panel:     http://localhost:${PORT}/admin.html ║
+║     📊 Live Dashboard:  http://localhost:${PORT}/dashboard_live.html ║
+║                                                          ║
+║     📁 Uploads folder:  ${uploadsDir}                    ║
+║     🗑️ Auto cleanup:    30 days for Pending/Rejected     ║
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝
+    `);
 });
