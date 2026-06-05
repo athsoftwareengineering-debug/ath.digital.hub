@@ -304,8 +304,8 @@
             border: none;
         }
         
-        /* Cards */
-        .order-card, .stack-item {
+        /* ========== MY ORDERS CARD (Improved Layout) ========== */
+        .order-card {
             background: var(--bg-card);
             border-radius: 1rem;
             padding: 16px;
@@ -314,11 +314,11 @@
             transition: all 0.3s ease;
             width: 100%;
         }
-        .order-card:hover, .stack-item:hover {
+        .order-card:hover {
             border-color: rgba(0,212,255,0.3);
             transform: translateY(-2px);
         }
-        .order-header, .stack-header {
+        .order-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -326,7 +326,7 @@
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .order-plan, .stack-plan {
+        .order-plan {
             font-weight: 700;
             font-size: 0.9rem;
             background: linear-gradient(135deg, var(--cyan), #7dd3fc);
@@ -334,90 +334,100 @@
             -webkit-background-clip: text;
             color: transparent;
         }
-        .order-price, .stack-price {
-            font-weight: 800;
-            color: var(--emerald);
-            font-size: 0.9rem;
+        .order-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 600;
         }
-        .order-phone, .stack-phone {
+        .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
+        .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        
+        .order-phone-price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .order-phone {
             font-size: 0.75rem;
             font-family: monospace;
             background: rgba(0,212,255,0.08);
             display: inline-block;
             padding: 4px 10px;
             border-radius: 40px;
-            margin-bottom: 10px;
             color: var(--cyan);
         }
-        .order-date-row {
+        .order-price {
+            font-weight: 800;
+            color: var(--emerald);
+            font-size: 0.9rem;
+        }
+        .order-date-time {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin: 8px 0;
+            margin-bottom: 12px;
             font-size: 0.65rem;
             color: var(--text-secondary);
         }
-        .order-date-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
+        .order-proof {
             background: rgba(0,0,0,0.2);
-            padding: 4px 8px;
-            border-radius: 40px;
+            border-radius: 12px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.7rem;
         }
-        .order-status, .stack-status {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 0.6rem;
-            font-weight: 600;
-            margin: 8px 0;
+        .proof-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
         }
-        .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
-        .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
-        .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
-        
-        .live-stats-row {
+        .proof-row:last-child {
+            margin-bottom: 0;
+        }
+        .order-start-end {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 12px 0;
+            font-size: 0.65rem;
+            padding: 8px 0;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .order-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: 8px;
-            padding-top: 6px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            font-size: 0.6rem;
         }
-        .live-remaining {
+        .order-remaining {
+            font-size: 0.65rem;
             color: var(--cyan);
             display: flex;
             align-items: center;
             gap: 4px;
         }
-        .live-enddate {
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .order-countdown {
-            background: rgba(0,212,255,0.08);
-            border-radius: 40px;
+        .view-slip-btn {
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
             padding: 6px 12px;
-            margin-top: 10px;
-            font-size: 0.6rem;
-            text-align: center;
+            border-radius: 40px;
+            font-size: 0.65rem;
+            cursor: pointer;
+            color: var(--cyan);
+            transition: all 0.2s;
         }
-        .order-enddate {
-            text-align: right;
-            font-size: 0.6rem;
-            color: var(--text-secondary);
-            margin-top: 8px;
-            padding-top: 6px;
-            border-top: 1px solid rgba(255,255,255,0.05);
+        .view-slip-btn:hover {
+            background: var(--cyan);
+            color: #030712;
         }
         
+        /* Plan Card */
         .plan-card, .profile-card {
             background: var(--bg-card);
             border-radius: 1rem;
@@ -427,6 +437,7 @@
         }
         .plan-card { border-left-color: var(--amber); }
         
+        /* Market Products */
         .product-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -455,6 +466,7 @@
         }
         .market-section-title { font-size: 0.85rem; font-weight: 600; color: var(--cyan); margin: 16px 0 8px; }
         
+        /* LIVE Tab */
         .live-search-fixed {
             position: sticky;
             top: 60px;
@@ -477,8 +489,18 @@
             gap: 0;
         }
         .stack-item {
-            border-left: 3px solid var(--violet);
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 16px;
             margin-bottom: 12px;
+            border: 1px solid rgba(0,212,255,0.08);
+            border-left: 3px solid var(--violet);
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .stack-item:hover {
+            border-color: rgba(0,212,255,0.3);
+            transform: translateY(-2px);
         }
         .stack-item.new-order {
             border-left-color: var(--violet);
@@ -513,6 +535,29 @@
             display: inline-block;
             margin-bottom: 8px;
         }
+        .stack-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .stack-plan {
+            font-weight: 700;
+            font-size: 0.9rem;
+            background: linear-gradient(135deg, var(--cyan), #7dd3fc);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .stack-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 600;
+        }
         .stack-details {
             display: flex;
             justify-content: space-between;
@@ -520,6 +565,41 @@
             flex-wrap: wrap;
             gap: 10px;
             margin-bottom: 10px;
+        }
+        .stack-phone {
+            font-size: 0.75rem;
+            font-family: monospace;
+            background: rgba(0,212,255,0.08);
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 40px;
+            color: var(--cyan);
+        }
+        .stack-price {
+            font-weight: 800;
+            color: var(--emerald);
+            font-size: 0.9rem;
+        }
+        .live-stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.6rem;
+        }
+        .live-remaining {
+            color: var(--cyan);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .live-enddate {
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
         
         .status-bar {
@@ -631,7 +711,7 @@
         <!-- Plans Tab -->
         <div id="plansTab" class="tab-content"><div id="plansContainer"></div></div>
 
-        <!-- My Orders Tab -->
+        <!-- My Orders Tab (Improved Layout) -->
         <div id="ordersTab" class="tab-content">
             <div class="renew-buttons">
                 <button class="renew-btn self" onclick="openRenewModal('self')"><i class="fas fa-user"></i> ကိုယ်တိုင်ထပ်ဝယ်ရန်</button>
@@ -1026,12 +1106,11 @@
         container.innerHTML = html;
     }
     
-    // ========== REVERSE ROTATION (အောက်ဆုံးကနေ အပေါ်ကို ပြောင်း) ==========
+    // Reverse rotation (အောက်ဆုံးကနေ အပေါ်ကို ပြောင်း)
     function startLiveRotation() {
         if (liveRotateInterval) clearInterval(liveRotateInterval);
         liveRotateInterval = setInterval(() => {
             if (currentTab === 'live' && liveStackOrders.length > 1 && !currentSearchPhone) {
-                // Reverse rotation: move last item to front
                 const lastItem = liveStackOrders.pop();
                 liveStackOrders.unshift(lastItem);
                 renderLiveStack();
@@ -1137,8 +1216,12 @@
         `).join('');
     }
     
+    // ========== IMPROVED MY ORDERS RENDER FUNCTION ==========
     function renderMyOrders() {
-        if (!allOrders.length) { document.getElementById('myOrdersContainer').innerHTML = '<div style="text-align:center; padding:40px;">📭 အော်ဒါမရှိသေးပါ</div>'; return; }
+        if (!allOrders.length) { 
+            document.getElementById('myOrdersContainer').innerHTML = '<div style="text-align:center; padding:40px;">📭 အော်ဒါမရှိသေးပါ</div>'; 
+            return; 
+        }
         const sortedOrders = [...allOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         let html = '';
         for (const o of sortedOrders) {
@@ -1146,37 +1229,108 @@
             const startDate = o.activated_at ? new Date(o.activated_at) : null;
             const endDate = startDate ? new Date(startDate.getTime() + 30 * 86400000) : null;
             
+            // Plan Icon
+            let planIcon = "🔥";
+            if (o.plan.includes("VIP 1") || o.plan.includes("VIP LEVEL - 1")) planIcon = "🔥";
+            else if (o.plan.includes("VIP 2") || o.plan.includes("VIP LEVEL - 2")) planIcon = "⭐";
+            else if (o.plan.includes("VIP 3") || o.plan.includes("VIP LEVEL - 3")) planIcon = "💎";
+            else if (o.plan.includes("VIP 4") || o.plan.includes("ULTRA")) planIcon = "👑";
+            
+            // Status
             let statusText = '', statusClass = '';
             if (o.status === 'Pending') { statusText = '⏳ စောင့်ဆိုင်းဆဲ'; statusClass = 'status-pending'; }
             else if (o.status === 'Approved') { statusText = '✅ အတည်ပြုပြီး'; statusClass = 'status-approved'; }
             else { statusText = '❌ ပယ်ဖျက်ခံရ'; statusClass = 'status-rejected'; }
             
+            // Proof section (Text proof or Screenshot)
+            let proofHtml = '';
+            if (o.sender_name && o.last5_digits) {
+                // Text proof
+                proofHtml = `
+                    <div class="order-proof">
+                        <div class="proof-row">
+                            <span><i class="fas fa-user"></i> ငွေလွှဲသူအမည်:</span>
+                            <span style="font-weight:600;">${escapeHtml(o.sender_name)}</span>
+                        </div>
+                        <div class="proof-row">
+                            <span><i class="fas fa-credit-card"></i> ပြေစာ NO.:</span>
+                            <span style="font-weight:600;">${escapeHtml(o.last5_digits)}</span>
+                        </div>
+                    </div>
+                `;
+            } else if (o.slip_url) {
+                // Screenshot proof
+                proofHtml = `
+                    <div class="order-proof" style="text-align:center;">
+                        <button class="view-slip-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> 📸 ပြေစာကြည့်ရန်</button>
+                    </div>
+                `;
+            }
+            
+            // Remaining and End Date
             let remainingHtml = '';
+            let startEndHtml = '';
             if (o.status === 'Approved' && o.activated_at) {
                 const remain = getRemainingTime(o.activated_at);
-                remainingHtml = `<div class="order-countdown"><i class="fas fa-hourglass-half"></i> 📌 ကျန်ရှိ: ${remain}</div>`;
+                remainingHtml = `<span class="order-remaining"><i class="fas fa-hourglass-half"></i> ⏳ ကျန်ရှိ: ${remain}</span>`;
+                if (startDate && endDate) {
+                    startEndHtml = `
+                        <div class="order-start-end">
+                            <span><i class="fas fa-play-circle"></i> 📅 စတင်ရက်: ${startDate.toLocaleDateString()}</span>
+                            <span><i class="fas fa-calendar-times"></i> ⏰ ကုန်ဆုံးရက်: ${endDate.toLocaleDateString()}</span>
+                        </div>
+                    `;
+                }
             }
             
             html += `
                 <div class="order-card">
                     <div class="order-header">
-                        <span class="order-plan">${o.plan}</span>
-                        <span class="order-price">${o.price.toLocaleString()} MMK</span>
+                        <span class="order-plan">${planIcon} ${o.plan}</span>
+                        <span class="order-status ${statusClass}">${statusText}</span>
                     </div>
-                    <div class="order-phone">📞 ${o.phone}</div>
-                    <div class="order-date-row">
-                        <div class="order-date-item"><i class="fas fa-calendar-alt"></i> ${orderDate.toLocaleDateString()}</div>
-                        <div class="order-date-item"><i class="fas fa-clock"></i> ${orderDate.toLocaleTimeString()}</div>
+                    <div class="order-phone-price">
+                        <span class="order-phone"><i class="fas fa-phone-alt"></i> 📞 ${o.phone}</span>
+                        <span class="order-price"><i class="fas fa-coins"></i> 💰 ${o.price.toLocaleString()} MMK</span>
                     </div>
-                    ${startDate ? `<div class="order-date-row"><div class="order-date-item"><i class="fas fa-play-circle"></i> စတင်: ${startDate.toLocaleDateString()}</div></div>` : ''}
-                    <div><span class="order-status ${statusClass}">${statusText}</span></div>
-                    ${remainingHtml}
-                    ${endDate ? `<div class="order-enddate"><i class="fas fa-calendar-times"></i> ကုန်ဆုံး: ${endDate.toLocaleDateString()}</div>` : ''}
+                    <div class="order-date-time">
+                        <span><i class="fas fa-calendar-alt"></i> 📅 ${orderDate.toLocaleDateString()}</span>
+                        <span><i class="fas fa-clock"></i> 🕐 ${orderDate.toLocaleTimeString()}</span>
+                    </div>
+                    ${proofHtml}
+                    ${startEndHtml}
+                    <div class="order-footer">
+                        ${remainingHtml}
+                        ${o.slip_url ? `<button class="view-slip-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> 📸 ပြေစာကြည့်ရန်</button>` : ''}
+                    </div>
                 </div>
             `;
         }
         document.getElementById('myOrdersContainer').innerHTML = html;
     }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    function openScreenshot(url) {
+        const modal = document.getElementById('screenshotModal');
+        const img = document.getElementById('modalImage');
+        if (url && url !== 'null') {
+            img.src = url.startsWith('/') ? API_BASE + url : url;
+        } else {
+            img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E';
+        }
+        modal.classList.add('active');
+    }
+    
+    function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
     
     async function loadUserOrders() {
         const res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(currentUser)}`);
@@ -1284,6 +1438,7 @@
     window.showSupport = showSupport; window.showProfile = showProfile;
     window.showNotifications = () => showToast("No new notifications");
     window.changeLanguage = changeLanguage; window.toggleLanguageDropdown = toggleLanguageDropdown;
+    window.openScreenshot = openScreenshot; window.closeModal = closeModal;
 </script>
 </body>
 </html>
