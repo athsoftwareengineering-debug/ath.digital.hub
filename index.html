@@ -268,18 +268,21 @@
         }
         .plan-card { border-left-color: var(--amber); }
         
-        /* Live Cards Grid */
+        /* ========== LIVE GRID (4 Cards) ========== */
         .live-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr;
             gap: 12px;
             margin-bottom: 16px;
         }
-        @media (min-width: 768px) {
-            .live-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        @media (min-width: 480px) {
+            .live-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
         }
-        @media (max-width: 480px) {
-            .live-grid { grid-template-columns: 1fr; }
+        @media (min-width: 768px) {
+            .live-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+        }
+        @media (min-width: 1024px) {
+            .live-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
         }
         
         .live-card {
@@ -290,14 +293,22 @@
             transition: all 0.3s ease;
         }
         
-        @keyframes slideUpNew {
-            0% { opacity: 0; transform: translateY(30px); }
-            100% { opacity: 1; transform: translateY(0); }
+        /* Slide Up Animation - အောက်ကနေ အပေါ်ကို တက်လာမယ် */
+        @keyframes slideUpFromBottom {
+            0% {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .live-card.slide-up-new {
-            animation: slideUpNew 0.5s ease-out forwards;
+            animation: slideUpFromBottom 0.5s ease-out forwards;
         }
         
+        /* Cyan Blink Animation (2 seconds) */
         @keyframes blinkCyan {
             0% { background: rgba(0,212,255,0); border-left-color: var(--amber); }
             25% { background: rgba(0,212,255,0.3); border-left-color: var(--cyan); box-shadow: 0 0 15px var(--cyan); }
@@ -309,6 +320,7 @@
             animation: blinkCyan 2s ease-in-out;
         }
         
+        /* Search Orange Blink */
         @keyframes blinkOrange {
             0% { background: rgba(245,158,11,0); border-left-color: var(--amber); }
             25% { background: rgba(245,158,11,0.3); border-left-color: #f59e0b; box-shadow: 0 0 15px #f59e0b; }
@@ -392,6 +404,7 @@
         <div id="plansTab" class="tab-content"><div id="plansContainer"></div></div>
         <div id="ordersTab" class="tab-content"><div id="myOrdersContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading...</div></div></div>
 
+        <!-- LIVE TAB - Grid with 4 cards -->
         <div id="liveTab" class="tab-content">
             <div style="background: rgba(0,212,255,0.05); border-radius: 1rem; padding: 14px; margin-bottom: 20px;">
                 <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 10px;"><i class="fas fa-search"></i> <span id="searchTitle">သက်တမ်းစစ်ရန်</span></div>
@@ -429,7 +442,6 @@
             <button onclick="closePaymentModal()" style="background:none; border:none; color:white; font-size:1.3rem;">&times;</button>
         </div>
         
-        <!-- Payment Method Tabs -->
         <div class="payment-tab-buttons">
             <button type="button" id="kpayTabBtn" class="payment-tab-btn kpay-tab active">
                 <img src="https://i.ibb.co/CpyBHvrS/1000011452.jpg" alt="KBZ Pay" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
@@ -522,7 +534,7 @@
             last5Hint: "※ အကောင့်နံပါတ်ရဲ့ နောက်ဆုံးဂဏန်း ၅ လုံး",
             submitOrderBtnText: "✅ အော်ဒါတင်မည်",
             noOrders: "📭 အော်ဒါမရှိသေးပါ", pending: "⏳ စောင့်ဆိုင်းဆဲ", approved: "✅ အတည်ပြုပြီး", rejected: "❌ ပယ်ဖျက်ခံရ",
-            total: "စုစုပေါင်း", approvedCount: "အတည်ပြုပြီး", logoutBtn: "ထွက်ရန်"
+            total: "စုစုပေါင်း", approvedCount: "အတည်ပြုပြီး", logoutBtn: "ထွက်ရန်", buyNow: "ဝယ်ယူမည်"
         },
         en: {
             loginSubtitle: "Login", loginBtn: "Login",
@@ -542,7 +554,7 @@
             last5Hint: "※ Last 5 digits of the account number",
             submitOrderBtnText: "✅ Place Order",
             noOrders: "📭 No orders yet", pending: "⏳ Pending", approved: "✅ Approved", rejected: "❌ Rejected",
-            total: "Total", approvedCount: "Approved", logoutBtn: "Logout"
+            total: "Total", approvedCount: "Approved", logoutBtn: "Logout", buyNow: "Buy Now"
         },
         zh: {
             loginSubtitle: "登录", loginBtn: "登录",
@@ -562,7 +574,7 @@
             last5Hint: "※ 账户号码的最后5位数字",
             submitOrderBtnText: "✅ 提交订单",
             noOrders: "📭 暂无订单", pending: "⏳ 待处理", approved: "✅ 已批准", rejected: "❌ 已拒绝",
-            total: "总计", approvedCount: "已批准", logoutBtn: "退出"
+            total: "总计", approvedCount: "已批准", logoutBtn: "退出", buyNow: "立即购买"
         }
     };
     
@@ -573,7 +585,7 @@
         if (!t) return;
         document.getElementById('loginSubtitle') && (document.getElementById('loginSubtitle').innerText = t.loginSubtitle);
         document.getElementById('loginBtn') && (document.getElementById('loginBtn').innerText = t.loginBtn);
-        document.getElementById('greetingText') && (document.getElementById('greetingText').innerHTML = `${t.greetingPrefix} <span id="userName">${currentUsername || 'User'}</span>`);
+        if (currentUsername) document.getElementById('greetingText') && (document.getElementById('greetingText').innerHTML = `${t.greetingPrefix} <span id="userName">${currentUsername}</span>`);
         document.getElementById('adOfferText') && (document.getElementById('adOfferText').innerText = t.adOfferText);
         document.getElementById('adDeliveryText') && (document.getElementById('adDeliveryText').innerText = t.adDeliveryText);
         document.getElementById('adTitle') && (document.getElementById('adTitle').innerHTML = `${t.adTitle} <i class="fas fa-arrow-right"></i>`);
@@ -611,7 +623,6 @@
         const flags = { my: '🇲🇲', en: '🇬🇧', zh: '🇨🇳' };
         document.getElementById('currentLangFlag').innerHTML = flags[lang];
         updateUITexts();
-        document.getElementById('langDropdown').classList.remove('show');
         if (currentTab === 'plans') renderPlans();
         if (currentTab === 'orders') renderMyOrders();
         if (currentTab === 'live') renderLiveOrders();
@@ -629,6 +640,7 @@
         }
     });
     
+    // Get number of cards based on screen width
     function getCardsPerPage() {
         const width = window.innerWidth;
         if (width <= 480) return 1;
@@ -745,7 +757,7 @@
         } catch(e) { showToast("Connection error", true); }
     }
     
-    // ========== LIVE TAB FUNCTIONS ==========
+    // ========== LIVE TAB FUNCTIONS (Grid with 4 cards + Slide Up) ==========
     async function loadLiveOrders() {
         try {
             const res = await fetch(`${API_BASE}/api/admin/orders`);
@@ -766,12 +778,14 @@
             container.innerHTML = '<div style="text-align:center; padding:40px;">🔴 လက်ရှိ LIVE အော်ဒါမရှိပါ</div>';
             return;
         }
-        const batchSize = getCardsPerPage();
+        
+        const cardsPerPage = getCardsPerPage();
         const visibleOrders = [];
-        for (let i = 0; i < batchSize; i++) {
+        for (let i = 0; i < cardsPerPage; i++) {
             const idx = (currentBatchStart + i) % liveOrders.length;
             visibleOrders.push(liveOrders[idx]);
         }
+        
         let gridHtml = '<div class="live-grid">';
         for (const card of visibleOrders) {
             let statusClass = card.status === 'Pending' ? 'status-pending' : (card.status === 'Approved' ? 'status-approved' : 'status-rejected');
@@ -795,19 +809,25 @@
         }
         gridHtml += '</div>';
         container.innerHTML = gridHtml;
+        
+        // Add cyan blink animation to all new cards
         setTimeout(() => {
             document.querySelectorAll('#liveContainer .live-card').forEach(card => {
                 card.classList.add('blink-cyan');
                 setTimeout(() => card.classList.remove('blink-cyan'), 2000);
             });
         }, 50);
-        currentBatchStart = (currentBatchStart + batchSize) % liveOrders.length;
+        
+        // Move to next batch for next rotation
+        currentBatchStart = (currentBatchStart + cardsPerPage) % liveOrders.length;
     }
     
     function startLiveRotation() {
         if (liveRotateInterval) clearInterval(liveRotateInterval);
         liveRotateInterval = setInterval(() => {
-            if (currentTab === 'live' && !isSearching && liveOrders.length > 0) renderLiveOrders();
+            if (currentTab === 'live' && !isSearching && liveOrders.length > 0) {
+                renderLiveOrders();
+            }
         }, 5000);
     }
     
@@ -815,7 +835,9 @@
         if (liveRefreshInterval) clearInterval(liveRefreshInterval);
         liveRefreshInterval = setInterval(async () => {
             await loadLiveOrders();
-            if (currentTab === 'live' && !isSearching) renderLiveOrders();
+            if (currentTab === 'live' && !isSearching) {
+                renderLiveOrders();
+            }
             refreshSec = 30;
             const timerSpan = document.getElementById('liveTimer');
             if (timerSpan) timerSpan.innerHTML = 'auto 30s';
@@ -953,20 +975,20 @@
             <div class="plan-card">
                 <div style="display:flex; justify-content:space-between;"><span style="font-weight:700;">${p.icon} ${p.name}</span><span style="font-weight:800; color:var(--emerald);">${p.price.toLocaleString()} MMK</span></div>
                 <ul style="margin:12px 0 0 20px;">${p.features.map(f => `<li style="margin:6px 0; font-size:0.75rem;"><i class="fas fa-check-circle" style="color:var(--emerald);"></i> ${f}</li>`).join('')}</ul>
-                <button class="buy-plan-btn" onclick="openPaymentModal('${p.name}', ${p.price})">${t?.buyNow || 'ဝယ်ယူမည်'}</button>
+                <button class="buy-plan-btn" onclick="openPaymentModal('${p.name}', ${p.price})">${t.buyNow}</button>
             </div>
         `).join('');
     }
     
     function renderMyOrders() {
         const t = translations[currentLanguage];
-        if (!allOrders.length) { document.getElementById('myOrdersContainer').innerHTML = `<div style="text-align:center; padding:40px;">📭 ${t?.noOrders || 'အော်ဒါမရှိသေးပါ'}</div>`; return; }
+        if (!allOrders.length) { document.getElementById('myOrdersContainer').innerHTML = `<div style="text-align:center; padding:40px;">📭 ${t.noOrders}</div>`; return; }
         document.getElementById('myOrdersContainer').innerHTML = allOrders.map(o => `
             <div class="order-card">
-                <div style="display:flex; justify-content:space-between;"><span style="font-weight:700;">${o.plan}</span><span class="${o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected')}">${o.status === 'Pending' ? (t?.pending || '⏳ စောင့်ဆိုင်းဆဲ') : (o.status === 'Approved' ? (t?.approved || '✅ အတည်ပြုပြီး') : (t?.rejected || '❌ ပယ်ဖျက်ခံရ'))}</span></div>
+                <div style="display:flex; justify-content:space-between;"><span style="font-weight:700;">${o.plan}</span><span class="${o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected')}">${o.status === 'Pending' ? t.pending : (o.status === 'Approved' ? t.approved : t.rejected)}</span></div>
                 <div style="margin-top:8px;">📞 ${o.phone}</div><div style="font-weight:700; color:var(--emerald);">${o.price.toLocaleString()} MMK</div>
                 <div style="display:flex; gap:12px; margin-top:8px; font-size:0.65rem;"><span>📅 ${new Date(o.created_at).toLocaleDateString()}</span></div>
-                ${o.status === 'Approved' && o.activated_at ? `<div style="display:flex; gap:12px; margin-top:4px; font-size:0.65rem;"><span>📅 စတင်: ${new Date(o.activated_at).toLocaleDateString()}</span><span>📅 ကုန်: ${new Date(new Date(o.activated_at).getTime()+30*86400000).toLocaleDateString()}</span></div><div class="countdown"><i class="fas fa-hourglass-half"></i> ${t?.remaining || 'ကျန်ရှိ'}: ${getRemainingTime(o.activated_at)}</div>` : ''}
+                ${o.status === 'Approved' && o.activated_at ? `<div style="display:flex; gap:12px; margin-top:4px; font-size:0.65rem;"><span>📅 စတင်: ${new Date(o.activated_at).toLocaleDateString()}</span><span>📅 ကုန်: ${new Date(new Date(o.activated_at).getTime()+30*86400000).toLocaleDateString()}</span></div><div class="countdown"><i class="fas fa-hourglass-half"></i> ${t.remaining || 'ကျန်ရှိ'}: ${getRemainingTime(o.activated_at)}</div>` : ''}
             </div>
         `).join('');
     }
@@ -980,9 +1002,9 @@
             <div class="profile-card" style="text-align:center;">
                 <div style="width:80px; height:80px; background:linear-gradient(135deg, var(--cyan), #0891b2); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:2rem;"><i class="fas fa-user"></i></div>
                 <h3>${currentUsername}</h3><div style="font-size:0.7rem;">📞 ${currentUser}</div><div style="font-size:0.7rem; margin-top:4px;">🆔 ID: ${userStat?.user_id || 'N/A'}</div>
-                <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin:20px 0;"><div style="background:rgba(0,212,255,0.05); padding:12px; border-radius:1rem;"><div style="font-size:1.3rem; font-weight:800;">${allOrders.length}</div><div>${t?.total || 'စုစုပေါင်း'}</div></div><div style="background:rgba(0,212,255,0.05); padding:12px; border-radius:1rem;"><div style="font-size:1.3rem; font-weight:800; color:var(--emerald);">${approved}</div><div>${t?.approvedCount || 'အတည်ပြုပြီး'}</div></div></div>
+                <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin:20px 0;"><div style="background:rgba(0,212,255,0.05); padding:12px; border-radius:1rem;"><div style="font-size:1.3rem; font-weight:800;">${allOrders.length}</div><div>${t.total}</div></div><div style="background:rgba(0,212,255,0.05); padding:12px; border-radius:1rem;"><div style="font-size:1.3rem; font-weight:800; color:var(--emerald);">${approved}</div><div>${t.approvedCount}</div></div></div>
                 <div class="support-links"><a href="https://t.me/ATHsupport" class="support-link"><i class="fab fa-telegram"></i> Telegram</a><a href="https://www.facebook.com/athdigitalhub" class="support-link"><i class="fab fa-facebook"></i> Facebook</a><a href="tel:09789999368" class="support-link"><i class="fas fa-phone"></i> Phone</a><a href="viber://chat?number=09799480995" class="support-link"><i class="fab fa-viber"></i> Viber</a></div>
-                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ${t?.logoutBtn || 'ထွက်ရန်'}</button>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ${t.logoutBtn}</button>
             </div>
         `;
     }
