@@ -194,7 +194,7 @@
         }
         
         /* Common Cards */
-        .plan-card, .order-card, .live-card, .profile-card {
+        .plan-card, .order-card, .profile-card {
             background: var(--bg-card);
             border-radius: 1rem;
             padding: 14px;
@@ -202,30 +202,65 @@
             border-left: 3px solid var(--cyan);
         }
         .plan-card { border-left-color: var(--amber); }
-        .live-card { border-left-color: var(--amber); }
+        
+        /* ========== LIVE CARDS GRID ========== */
+        .live-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        @media (min-width: 768px) {
+            .live-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        }
+        @media (max-width: 480px) {
+            .live-grid { grid-template-columns: 1fr; }
+        }
+        
+        .live-card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 12px;
+            border-left: 3px solid var(--amber);
+            transition: all 0.3s ease;
+        }
         
         /* Slide Up Animation - Card အောက်ကနေ အပေါ်ကို တက်လာမယ် */
         @keyframes slideUpNew {
-            0% { opacity: 0; transform: translateY(40px); }
+            0% { opacity: 0; transform: translateY(30px); }
             100% { opacity: 1; transform: translateY(0); }
         }
         .live-card.slide-up-new {
             animation: slideUpNew 0.5s ease-out forwards;
         }
         
-        /* Search Orange Blink + Slide Up */
-        @keyframes slideUpOrange {
-            0% { opacity: 0; transform: translateY(40px); border-color: rgba(245,158,11,0.3); }
-            50% { border-color: #f59e0b; background: rgba(245,158,11,0.25); box-shadow: 0 0 20px #f59e0b; }
-            100% { opacity: 1; transform: translateY(0); border-color: rgba(245,158,11,0.3); }
+        /* Cyan Blink Animation (မိုးပြာရောင်မှိတ်တုတ် - 2s) */
+        @keyframes blinkCyan {
+            0% { background: rgba(0,212,255,0); border-left-color: var(--amber); }
+            25% { background: rgba(0,212,255,0.3); border-left-color: var(--cyan); box-shadow: 0 0 15px var(--cyan); }
+            50% { background: rgba(0,212,255,0.1); border-left-color: var(--amber); }
+            75% { background: rgba(0,212,255,0.3); border-left-color: var(--cyan); box-shadow: 0 0 15px var(--cyan); }
+            100% { background: rgba(0,212,255,0); border-left-color: var(--amber); }
         }
-        .live-card.search-orange-blink {
-            animation: slideUpOrange 0.8s ease-in-out;
+        .live-card.blink-cyan {
+            animation: blinkCyan 2s ease-in-out;
         }
         
-        .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; padding: 4px 10px; border-radius: 40px; font-size: 0.6rem; display: inline-block; }
-        .status-approved { background: rgba(16,185,129,0.2); color: #34d399; padding: 4px 10px; border-radius: 40px; font-size: 0.6rem; display: inline-block; }
-        .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; padding: 4px 10px; border-radius: 40px; font-size: 0.6rem; display: inline-block; }
+        /* Search Orange Blink */
+        @keyframes blinkOrange {
+            0% { background: rgba(245,158,11,0); border-left-color: var(--amber); }
+            25% { background: rgba(245,158,11,0.3); border-left-color: #f59e0b; box-shadow: 0 0 15px #f59e0b; }
+            50% { background: rgba(245,158,11,0.1); border-left-color: var(--amber); }
+            75% { background: rgba(245,158,11,0.3); border-left-color: #f59e0b; box-shadow: 0 0 15px #f59e0b; }
+            100% { background: rgba(245,158,11,0); border-left-color: var(--amber); }
+        }
+        .live-card.search-highlight {
+            animation: blinkOrange 2s ease-in-out;
+        }
+        
+        .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; padding: 3px 8px; border-radius: 40px; font-size: 0.55rem; display: inline-block; }
+        .status-approved { background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 40px; font-size: 0.55rem; display: inline-block; }
+        .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; padding: 3px 8px; border-radius: 40px; font-size: 0.55rem; display: inline-block; }
         .buy-plan-btn { width: 100%; background: linear-gradient(135deg, var(--cyan), #0891b2); border: none; padding: 10px; border-radius: 60px; font-weight: 700; cursor: pointer; margin-top: 12px; }
         .support-links { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; justify-content: center; }
         .support-link { background: rgba(0,212,255,0.1); padding: 8px 16px; border-radius: 40px; text-decoration: none; color: var(--text-primary); font-size: 0.75rem; display: inline-flex; align-items: center; gap: 8px; }
@@ -236,9 +271,12 @@
         .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--emerald); color: #030712; padding: 10px 20px; border-radius: 60px; font-size: 0.8rem; z-index: 1000; display: none; white-space: nowrap; }
         .live-badge { animation: blinkRed 0.8s step-end infinite; }
         @keyframes blinkRed { 0%,100% { background: rgba(244,63,94,0.2); } 50% { background: rgba(244,63,94,0.9); color: white; } }
-        .countdown { background: rgba(0,212,255,0.08); border-radius: 40px; padding: 6px 12px; margin-top: 10px; font-size: 0.65rem; text-align: center; }
+        .countdown { background: rgba(0,212,255,0.08); border-radius: 40px; padding: 4px 8px; margin-top: 8px; font-size: 0.55rem; text-align: center; }
         .search-message.success { background: rgba(16,185,129,0.15); color: #34d399; padding: 8px; border-radius: 40px; }
         .search-message.error { background: rgba(244,63,94,0.15); color: #fb7185; padding: 8px; border-radius: 40px; }
+        .live-price { font-weight: 700; color: var(--emerald); font-size: 0.8rem; }
+        .live-phone { font-size: 0.65rem; font-family: monospace; margin: 6px 0; }
+        .live-plan { font-weight: 700; color: var(--amber); font-size: 0.7rem; }
     </style>
 </head>
 <body>
@@ -384,9 +422,19 @@
     let allOrders = [], liveOrders = [];
     let currentTab = "home";
     let liveRotateInterval = null, liveRefreshInterval = null, liveTimerInterval = null;
-    let currentLiveIndex = 0, refreshSec = 30;
+    let currentBatchStart = 0;
+    let refreshSec = 30;
     let selectedPayment = "kpay", selectedPlan = null, selectedPrice = null;
     let isSearching = false;
+    let batchSize = 4; // Default for desktop
+    
+    // Get cards per screen size
+    function getCardsPerPage() {
+        const width = window.innerWidth;
+        if (width <= 480) return 1;
+        if (width <= 768) return 2;
+        return 4;
+    }
     
     const plans = [
         { name: "VIP LEVEL 1", price: 15000, features: ["22GB အမြန်နှုန်းမြင့်", "8,000 မိနစ် (ကွန်ရက်တွင်း)", "5,000 SMS"], icon: "🔥" },
@@ -490,7 +538,7 @@
         } catch(e) { showToast("Connection error", true); }
     }
     
-    // ========== LIVE TAB FUNCTIONS (Circular Rotation + Slide Up) ==========
+    // ========== LIVE TAB FUNCTIONS (Grid + Cyan Blink) ==========
     async function loadLiveOrders() {
         try {
             const res = await fetch(`${API_BASE}/api/admin/orders`);
@@ -516,34 +564,50 @@
             return;
         }
         
-        // Circular rotation - get current card
-        const card = liveOrders[currentLiveIndex % liveOrders.length];
-        
-        let statusClass = card.status === 'Pending' ? 'status-pending' : (card.status === 'Approved' ? 'status-approved' : 'status-rejected');
-        let statusText = card.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (card.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
-        let remainHtml = '';
-        if (card.status === 'Approved' && card.activated_at) {
-            remainHtml = `<div class="countdown"><i class="fas fa-hourglass-start"></i> ကျန်ရှိ: ${getRemainingTime(card.activated_at)}</div>`;
+        batchSize = getCardsPerPage();
+        const visibleOrders = [];
+        for (let i = 0; i < batchSize; i++) {
+            const idx = (currentBatchStart + i) % liveOrders.length;
+            visibleOrders.push(liveOrders[idx]);
         }
         
-        // Create new card with slide-up animation
-        const newCardHtml = `
-            <div class="live-card slide-up-new" key="${card.id}-${Date.now()}">
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="font-weight:700; color:var(--amber);"><i class="fas fa-mobile-alt"></i> ${card.plan}</span>
-                    <span class="${statusClass}">${statusText}</span>
+        let gridHtml = '<div class="live-grid">';
+        for (const card of visibleOrders) {
+            let statusClass = card.status === 'Pending' ? 'status-pending' : (card.status === 'Approved' ? 'status-approved' : 'status-rejected');
+            let statusText = card.status === 'Pending' ? '⏳ Pending' : (card.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
+            let remainHtml = '';
+            if (card.status === 'Approved' && card.activated_at) {
+                remainHtml = `<div class="countdown"><i class="fas fa-hourglass-start"></i> ${getRemainingTime(card.activated_at)}</div>`;
+            }
+            gridHtml += `
+                <div class="live-card slide-up-new" data-order-id="${card.id}">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span class="live-plan"><i class="fas fa-mobile-alt"></i> ${card.plan}</span>
+                        <span class="${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="live-phone"><i class="fas fa-phone-alt"></i> ${maskPhone(card.phone)}</div>
+                    <div class="live-price">${card.price.toLocaleString()} MMK</div>
+                    <div style="font-size:0.55rem; margin-top:4px; color:var(--text-secondary);"><i class="fas fa-clock"></i> ${new Date(card.created_at).toLocaleTimeString()}</div>
+                    ${remainHtml}
                 </div>
-                <div style="margin-top:4px;"><i class="fas fa-phone-alt"></i> ${maskPhone(card.phone)}</div>
-                <div style="font-weight:700; color:var(--emerald); margin-top:4px;">${card.price.toLocaleString()} MMK</div>
-                <div style="font-size:0.6rem; margin-top:4px;"><i class="fas fa-clock"></i> ${new Date(card.created_at).toLocaleTimeString()}</div>
-                ${remainHtml}
-            </div>
-        `;
+            `;
+        }
+        gridHtml += '</div>';
+        container.innerHTML = gridHtml;
         
-        container.innerHTML = newCardHtml;
+        // Add cyan blink animation to all new cards
+        setTimeout(() => {
+            const newCards = document.querySelectorAll('#liveContainer .live-card');
+            newCards.forEach(card => {
+                card.classList.add('blink-cyan');
+                setTimeout(() => {
+                    card.classList.remove('blink-cyan');
+                }, 2000);
+            });
+        }, 50);
         
-        // Move to next index for next rotation (circular)
-        currentLiveIndex = (currentLiveIndex + 1) % liveOrders.length;
+        // Move to next batch
+        currentBatchStart = (currentBatchStart + batchSize) % liveOrders.length;
     }
     
     function startLiveRotation() {
@@ -593,7 +657,6 @@
             return;
         }
         
-        // Pause rotation while searching
         isSearching = true;
         if (liveRotateInterval) clearInterval(liveRotateInterval);
         
@@ -618,30 +681,31 @@
                 msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။';
                 
                 const container = document.getElementById('liveContainer');
-                let searchHtml = '';
+                let searchHtml = '<div class="live-grid">';
                 for (const o of orders) {
                     let sClass = o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected');
-                    let sText = o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
+                    let sText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
                     let remain = '';
                     if (o.status === 'Approved' && o.activated_at) {
-                        remain = `<div class="countdown"><i class="fas fa-hourglass-start"></i> ကျန်ရှိ: ${getRemainingTime(o.activated_at)}</div>`;
+                        remain = `<div class="countdown"><i class="fas fa-hourglass-start"></i> ${getRemainingTime(o.activated_at)}</div>`;
                     }
                     searchHtml += `
-                        <div class="live-card search-orange-blink">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                                <span style="font-weight:700; color:var(--amber);"><i class="fas fa-mobile-alt"></i> ${o.plan}</span>
+                        <div class="live-card search-highlight">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span class="live-plan"><i class="fas fa-mobile-alt"></i> ${o.plan}</span>
                                 <span class="${sClass}">${sText}</span>
                             </div>
-                            <div style="margin-top:4px;"><i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}</div>
-                            <div style="font-weight:700; color:var(--emerald); margin-top:4px;">${o.price.toLocaleString()} MMK</div>
+                            <div class="live-phone"><i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}</div>
+                            <div class="live-price">${o.price.toLocaleString()} MMK</div>
                             ${remain}
                         </div>
                     `;
                 }
+                searchHtml += '</div>';
                 container.innerHTML = searchHtml;
                 
                 setTimeout(() => {
-                    const highlighted = document.querySelector('.search-orange-blink');
+                    const highlighted = document.querySelector('.search-highlight');
                     if (highlighted) highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 100);
             }
@@ -661,6 +725,14 @@
         startLiveRotation();
         renderLiveOrders();
     }
+    
+    // Update batch size on window resize
+    window.addEventListener('resize', () => {
+        if (currentTab === 'live' && !isSearching && liveOrders.length > 0) {
+            currentBatchStart = 0;
+            renderLiveOrders();
+        }
+    });
     // ========== END LIVE TAB FUNCTIONS ==========
     
     async function login() {
@@ -754,6 +826,7 @@
         if (tab === 'live') {
             isSearching = false;
             clearLiveSearch();
+            currentBatchStart = 0;
             renderLiveOrders();
             if (!liveRotateInterval) startLiveRotation();
             refreshSec = 30;
