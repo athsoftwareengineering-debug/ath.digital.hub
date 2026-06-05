@@ -18,6 +18,7 @@
             --violet: #8b5cf6;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
+            --border-light: #1e293b;
         }
         body {
             background: var(--bg-dark);
@@ -28,6 +29,7 @@
         }
         .container { max-width: 600px; margin: 0 auto; padding: 0 16px; }
         
+        /* App Bar */
         .app-bar {
             display: flex;
             align-items: center;
@@ -52,6 +54,7 @@
         }
         .logo { font-family: 'Space Grotesk', monospace; font-weight: 700; background: linear-gradient(135deg, #fff, var(--cyan)); background-clip: text; -webkit-background-clip: text; color: transparent; }
         
+        /* Language Dropdown */
         .lang-dropdown {
             position: relative;
             display: inline-block;
@@ -81,6 +84,7 @@
         .lang-dropdown-content button:hover { background: rgba(0,212,255,0.1); }
         .lang-dropdown.show .lang-dropdown-content { display: block; }
         
+        /* Drawer Menu */
         .drawer-overlay {
             position: fixed;
             top: 0;
@@ -139,6 +143,7 @@
         .drawer-menu a i { width: 24px; color: var(--cyan); }
         .drawer-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0; }
         
+        /* Bottom Navigation */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -169,6 +174,7 @@
         .nav-item i { font-size: 1.3rem; }
         .nav-item.active { color: var(--cyan); background: rgba(0,212,255,0.1); }
         
+        /* Login Screen */
         .login-screen {
             display: flex;
             align-items: center;
@@ -205,6 +211,7 @@
             margin-top: 8px;
         }
         
+        /* Collapsible Sections */
         .info-toggle {
             background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(139,92,246,0.05));
             border-radius: 1rem;
@@ -269,6 +276,7 @@
         }
         .warning-content span { font-size: 0.65rem; color: #fb7185; line-height: 1.5; }
         
+        /* Renew Buttons */
         .renew-buttons {
             display: flex;
             gap: 12px;
@@ -288,6 +296,7 @@
         .renew-btn.self { background: linear-gradient(135deg, var(--cyan), #0891b2); }
         .renew-btn.other { background: linear-gradient(135deg, var(--amber), #d97706); }
         
+        /* Payment Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); backdrop-filter: blur(20px);
@@ -368,7 +377,97 @@
             border: none;
         }
         
-        .plan-card, .order-card, .profile-card {
+        /* ========== MY ORDERS CARD (Improved UI) ========== */
+        .order-card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(0,212,255,0.08);
+            transition: all 0.3s ease;
+        }
+        .order-card:hover {
+            border-color: rgba(0,212,255,0.3);
+            transform: translateY(-2px);
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .order-plan {
+            font-weight: 700;
+            font-size: 0.9rem;
+            background: linear-gradient(135deg, var(--cyan), #7dd3fc);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .order-price {
+            font-weight: 800;
+            color: var(--emerald);
+            font-size: 0.9rem;
+        }
+        .order-phone {
+            font-size: 0.75rem;
+            font-family: monospace;
+            background: rgba(0,212,255,0.08);
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 40px;
+            margin-bottom: 10px;
+            color: var(--cyan);
+        }
+        .order-date-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 8px 0;
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+        }
+        .order-date-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(0,0,0,0.2);
+            padding: 4px 8px;
+            border-radius: 40px;
+        }
+        .order-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            margin: 8px 0;
+        }
+        .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
+        .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        .order-countdown {
+            background: rgba(0,212,255,0.08);
+            border-radius: 40px;
+            padding: 6px 12px;
+            margin-top: 10px;
+            font-size: 0.6rem;
+            text-align: center;
+        }
+        .order-enddate {
+            text-align: right;
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .plan-card, .profile-card {
             background: var(--bg-card);
             border-radius: 1rem;
             padding: 14px;
@@ -377,6 +476,7 @@
         }
         .plan-card { border-left-color: var(--amber); }
         
+        /* Market Products */
         .product-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -405,6 +505,7 @@
         }
         .market-section-title { font-size: 0.85rem; font-weight: 600; color: var(--cyan); margin: 16px 0 8px; }
         
+        /* LIVE Tab */
         .live-search-fixed {
             position: sticky;
             top: 60px;
@@ -438,6 +539,7 @@
             border-left: 3px solid var(--violet);
             transition: all 0.3s ease;
         }
+        .stack-item:hover { transform: translateX(4px); border-left-color: var(--cyan); }
         @keyframes blinkViolet {
             0% { background: rgba(139,92,246,0); border-left-color: var(--violet); }
             25% { background: rgba(139,92,246,0.35); border-left-color: var(--violet); box-shadow: 0 0 20px var(--violet); }
@@ -505,6 +607,12 @@
             gap: 6px;
             font-family: monospace;
         }
+        .live-enddate {
+            text-align: right;
+            font-size: 0.55rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
         
         .status-bar {
             display: flex;
@@ -526,9 +634,6 @@
         }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
         
-        .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; padding: 3px 8px; border-radius: 40px; font-size: 0.55rem; display: inline-block; }
-        .status-approved { background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 40px; font-size: 0.55rem; display: inline-block; }
-        .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; padding: 3px 8px; border-radius: 40px; font-size: 0.55rem; display: inline-block; }
         .buy-plan-btn { width: 100%; background: linear-gradient(135deg, var(--cyan), #0891b2); border: none; padding: 10px; border-radius: 60px; font-weight: 700; cursor: pointer; margin-top: 12px; }
         .support-links { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; justify-content: center; }
         .support-link { background: rgba(0,212,255,0.1); padding: 8px 16px; border-radius: 40px; text-decoration: none; color: var(--text-primary); font-size: 0.75rem; display: inline-flex; align-items: center; gap: 8px; }
@@ -539,7 +644,6 @@
         .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--emerald); color: #030712; padding: 10px 20px; border-radius: 60px; font-size: 0.8rem; z-index: 1000; display: none; white-space: nowrap; }
         .live-badge { animation: blinkRed 0.8s step-end infinite; display: inline-block; background: rgba(244,63,94,0.2); color: #f43f5e; padding: 3px 10px; border-radius: 40px; font-size: 0.6rem; margin-left: 8px; }
         @keyframes blinkRed { 0%,100% { background: rgba(244,63,94,0.2); } 50% { background: rgba(244,63,94,0.9); color: white; } }
-        .countdown { background: rgba(0,212,255,0.08); border-radius: 40px; padding: 4px 8px; margin-top: 8px; font-size: 0.55rem; text-align: center; }
         .search-message.success { background: rgba(16,185,129,0.15); color: #34d399; padding: 8px; border-radius: 40px; }
         .search-message.error { background: rgba(244,63,94,0.15); color: #fb7185; padding: 8px; border-radius: 40px; }
     </style>
@@ -576,6 +680,7 @@
         </div>
     </div>
 
+    <!-- Drawer Menu -->
     <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
     <div id="drawer" class="drawer">
         <div class="drawer-header">
@@ -597,6 +702,7 @@
     </div>
 
     <div class="container">
+        <!-- Home Tab -->
         <div id="homeTab" class="tab-content active">
             <div style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(139,92,246,0.05)); border-radius: 1.5rem; padding: 20px; margin: 16px 0; text-align: center;">
                 <div style="font-size: 1.2rem;" id="greetingText">🌤️ မင်္ဂလာပါ, <span id="userName">User</span></div>
@@ -612,8 +718,10 @@
             </div>
         </div>
 
+        <!-- Plans Tab -->
         <div id="plansTab" class="tab-content"><div id="plansContainer"></div></div>
 
+        <!-- My Orders Tab (Improved UI) -->
         <div id="ordersTab" class="tab-content">
             <div class="info-toggle" id="infoToggle">
                 <div class="info-header">
@@ -674,6 +782,7 @@
             </div>
         </div>
 
+        <!-- Market Tab -->
         <div id="marketTab" class="tab-content">
             <div id="marketContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading products...</div></div>
         </div>
@@ -971,10 +1080,15 @@
             if (order.status === "Approved") { statClass = "approved"; statText = "✅ အတည်ပြုပြီး"; }
             if (order.status === "Rejected") { statClass = "rejected"; statText = "❌ ပယ်ဖျက်ခံရ"; }
             let countdownHtml = '';
+            let endDateHtml = '';
             if (order.status === 'Approved' && order.activated_at) {
-                countdownHtml = `<div class="feed-countdown" id="live-cd-${order.id}"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${getRemainingTime(order.activated_at)}</div>`;
+                const startDate = new Date(order.activated_at);
+                const endDate = new Date(startDate.getTime() + 30 * 86400000);
+                const remain = getRemainingTime(order.activated_at);
+                countdownHtml = `<div class="feed-countdown" id="live-cd-${order.id}"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
+                endDateHtml = `<div class="live-enddate">📅 ကုန်ဆုံး: ${endDate.toLocaleDateString()}</div>`;
             }
-            html += `<div class="stack-item ${isNew ? 'new-order' : ''} ${isHighlight ? 'search-highlight' : ''}" data-order-id="${order.id}">${isNew ? `<div class="new-badge"><i class="fas fa-fire"></i> NEW</div>` : ''}<div class="stack-header"><span class="stack-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span><span class="stack-status ${statClass}">${statText}</span></div><div class="stack-details"><span class="stack-phone"><i class="fas fa-mobile-alt"></i> ${maskPhone(order.phone)}</span><span class="stack-price"><i class="fas fa-coins"></i> ${order.price.toLocaleString()} KS</span></div>${countdownHtml}</div>`;
+            html += `<div class="stack-item ${isNew ? 'new-order' : ''} ${isHighlight ? 'search-highlight' : ''}" data-order-id="${order.id}">${isNew ? `<div class="new-badge"><i class="fas fa-fire"></i> NEW</div>` : ''}<div class="stack-header"><span class="stack-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span><span class="stack-status ${statClass}">${statText}</span></div><div class="stack-details"><span class="stack-phone"><i class="fas fa-mobile-alt"></i> ${maskPhone(order.phone)}</span><span class="stack-price"><i class="fas fa-coins"></i> ${order.price.toLocaleString()} KS</span></div>${countdownHtml}${endDateHtml}</div>`;
         }
         html += '</div>';
         container.innerHTML = html;
@@ -1047,24 +1161,18 @@
     }
     
     function resetLiveToNormal() {
-        // Clear any search and auto clear timeout
-        if (autoClearTimeout) {
-            clearTimeout(autoClearTimeout);
-            autoClearTimeout = null;
-        }
+        if (autoClearTimeout) { clearTimeout(autoClearTimeout); autoClearTimeout = null; }
         if (currentSearchPhone) {
             currentSearchPhone = '';
             document.getElementById('liveSearchPhone').value = '';
             const msgDiv = document.getElementById('liveSearchMessage');
             if (msgDiv) msgDiv.style.display = 'none';
         }
-        // Reset refresh interval to 30s
         if (liveRefreshInterval) clearInterval(liveRefreshInterval);
         startLiveRefresh();
         refreshSec = 30;
         if (document.getElementById('liveTimer')) document.getElementById('liveTimer').innerHTML = 'auto 30s';
         if (document.getElementById('liveUpdateText')) document.getElementById('liveUpdateText').innerHTML = 'အလိုအလျောက်: 30s';
-        // Reload normal live orders
         loadLiveOrders();
     }
     
@@ -1101,9 +1209,7 @@
     function startAutoClearTimeout() {
         if (autoClearTimeout) clearTimeout(autoClearTimeout);
         autoClearTimeout = setTimeout(() => {
-            if (currentSearchPhone) {
-                resetLiveToNormal();
-            }
+            if (currentSearchPhone) resetLiveToNormal();
         }, 10000);
     }
     
@@ -1124,9 +1230,7 @@
                 currentSearchPhone = phone;
                 liveStackOrders = orders.slice(0, 100);
                 renderLiveStack();
-                // Start auto clear after 10 seconds
                 startAutoClearTimeout();
-                // Change refresh interval to 10s
                 if (liveRefreshInterval) clearInterval(liveRefreshInterval);
                 startLiveRefresh();
                 refreshSec = 10;
@@ -1135,9 +1239,7 @@
         } catch(e) { if (msgDiv) { msgDiv.className = 'search-message error'; msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ရှာဖွေရာတွင် အမှားရှိပါသည်။'; } }
     }
     
-    function clearLiveSearch() {
-        resetLiveToNormal();
-    }
+    function clearLiveSearch() { resetLiveToNormal(); }
     
     // ========== USER FUNCTIONS ==========
     const plans = [
@@ -1170,29 +1272,26 @@
             else { statusText = '❌ ပယ်ဖျက်ခံရ'; statusClass = 'status-rejected'; }
             
             let remainingHtml = '';
-            let endDateHtml = '';
             if (o.status === 'Approved' && o.activated_at) {
                 const remain = getRemainingTime(o.activated_at);
-                remainingHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> 📌 ကျန်ရှိ: ${remain}</div>`;
-                endDateHtml = `<div style="text-align:right; font-size:0.6rem; color:var(--text-secondary); margin-top:4px;">📅 ကုန်ဆုံး: ${endDate ? endDate.toLocaleDateString() : 'N/A'}</div>`;
+                remainingHtml = `<div class="order-countdown"><i class="fas fa-hourglass-half"></i> 📌 ကျန်ရှိ: ${remain}</div>`;
             }
             
             html += `
                 <div class="order-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <span style="font-weight:700; font-size:0.9rem;">${o.plan}</span>
-                        <span style="font-weight:800; color:var(--emerald); font-size:0.9rem;">${o.price.toLocaleString()} MMK</span>
+                    <div class="order-header">
+                        <span class="order-plan">${o.plan}</span>
+                        <span class="order-price">${o.price.toLocaleString()} MMK</span>
                     </div>
-                    <div style="margin-bottom:6px;">📞 ${o.phone}</div>
-                    <div style="margin-bottom:6px; font-size:0.7rem; color:var(--text-secondary);">
-                        📅 ဝယ်ရက်: ${orderDate.toLocaleDateString()} &nbsp;&nbsp; 🕐 ${orderDate.toLocaleTimeString()}
+                    <div class="order-phone">📞 ${o.phone}</div>
+                    <div class="order-date-row">
+                        <div class="order-date-item"><i class="fas fa-calendar-alt"></i> ${orderDate.toLocaleDateString()}</div>
+                        <div class="order-date-item"><i class="fas fa-clock"></i> ${orderDate.toLocaleTimeString()}</div>
                     </div>
-                    ${startDate ? `<div style="margin-bottom:6px; font-size:0.7rem; color:var(--text-secondary);">📅 စတင်ရက်: ${startDate.toLocaleDateString()}</div>` : ''}
-                    <div style="margin:8px 0 4px;">
-                        <span class="${statusClass}" style="padding:3px 10px; border-radius:40px; font-size:0.6rem;">${statusText}</span>
-                    </div>
+                    ${startDate ? `<div class="order-date-row"><div class="order-date-item"><i class="fas fa-play-circle"></i> စတင်: ${startDate.toLocaleDateString()}</div></div>` : ''}
+                    <div><span class="order-status ${statusClass}">${statusText}</span></div>
                     ${remainingHtml}
-                    ${endDateHtml}
+                    ${endDate ? `<div class="order-enddate"><i class="fas fa-calendar-times"></i> ကုန်ဆုံး: ${endDate.toLocaleDateString()}</div>` : ''}
                 </div>
             `;
         }
@@ -1271,17 +1370,10 @@
             if (item.dataset.tab === tab) item.classList.add('active');
             else item.classList.remove('active');
         });
-        
-        // Reset live when switching to ANY tab (not just live)
         resetLiveToNormal();
-        
         if (tab === 'orders') loadUserOrders();
         if (tab === 'live') {
-            // Extra reset for live tab
-            if (liveRotateInterval) {
-                clearInterval(liveRotateInterval);
-                startLiveRotation();
-            }
+            if (liveRotateInterval) { clearInterval(liveRotateInterval); startLiveRotation(); }
         }
         if (tab === 'plans') renderPlans();
         if (tab === 'profile') renderProfile();
