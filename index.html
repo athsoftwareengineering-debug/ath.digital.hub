@@ -15,12 +15,9 @@
             --emerald: #10b981;
             --rose: #f43f5e;
             --amber: #f59e0b;
-            --kpay: #1e88e5;
-            --wavepay: #43a047;
-            --ayapay: #f9a825;
+            --violet: #8b5cf6;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
-            --violet: #8b5cf6;
         }
         body {
             background: var(--bg-dark);
@@ -32,6 +29,7 @@
         }
         .container { max-width: 600px; margin: 0 auto; padding: 0 16px; }
         
+        /* App Bar */
         .app-bar {
             display: flex;
             align-items: center;
@@ -56,6 +54,7 @@
         }
         .logo { font-family: 'Space Grotesk', monospace; font-weight: 700; background: linear-gradient(135deg, #fff, var(--cyan)); background-clip: text; -webkit-background-clip: text; color: transparent; }
         
+        /* Language Dropdown */
         .lang-dropdown {
             position: relative;
             display: inline-block;
@@ -85,6 +84,7 @@
         .lang-dropdown-content button:hover { background: rgba(0,212,255,0.1); }
         .lang-dropdown.show .lang-dropdown-content { display: block; }
         
+        /* Drawer Menu */
         .drawer-overlay {
             position: fixed;
             top: 0;
@@ -97,10 +97,7 @@
             opacity: 0;
             transition: all 0.3s;
         }
-        .drawer-overlay.open {
-            visibility: visible;
-            opacity: 1;
-        }
+        .drawer-overlay.open { visibility: visible; opacity: 1; }
         .drawer {
             position: fixed;
             top: 0;
@@ -115,12 +112,7 @@
             overflow-y: auto;
         }
         .drawer.open { left: 0; }
-        .drawer-header {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(0,212,255,0.1);
-            margin-bottom: 20px;
-        }
+        .drawer-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(0,212,255,0.1); margin-bottom: 20px; }
         .drawer-avatar {
             width: 70px;
             height: 70px;
@@ -151,6 +143,7 @@
         .drawer-menu a i { width: 24px; color: var(--cyan); }
         .drawer-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0; }
         
+        /* Bottom Navigation */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -181,6 +174,7 @@
         .nav-item i { font-size: 1.3rem; }
         .nav-item.active { color: var(--cyan); background: rgba(0,212,255,0.1); }
         
+        /* Login Screen */
         .login-screen {
             display: flex;
             align-items: center;
@@ -217,6 +211,7 @@
             margin-top: 8px;
         }
         
+        /* Renew Buttons */
         .renew-buttons {
             display: flex;
             gap: 12px;
@@ -236,6 +231,7 @@
         .renew-btn.self { background: linear-gradient(135deg, var(--cyan), #0891b2); }
         .renew-btn.other { background: linear-gradient(135deg, var(--amber), #d97706); }
         
+        /* Payment Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); backdrop-filter: blur(20px);
@@ -253,7 +249,6 @@
             max-height: 90vh;
             overflow-y: auto;
         }
-        
         .payment-tab-buttons {
             display: flex;
             gap: 10px;
@@ -317,6 +312,7 @@
             border: none;
         }
         
+        /* Cards */
         .plan-card, .order-card, .market-card, .profile-card {
             background: var(--bg-card);
             border-radius: 1rem;
@@ -326,6 +322,7 @@
         }
         .plan-card { border-left-color: var(--amber); }
         
+        /* Market Product Grid */
         .product-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -344,7 +341,6 @@
         .product-icon { font-size: 2rem; margin-bottom: 8px; }
         .product-name { font-weight: 700; font-size: 0.8rem; margin-bottom: 4px; }
         .product-price { font-weight: 800; color: var(--emerald); font-size: 0.8rem; }
-        .product-discount { font-size: 0.6rem; color: var(--rose); margin: 4px 0; }
         .product-buy-btn {
             width: 100%;
             background: linear-gradient(135deg, var(--cyan), #0891b2);
@@ -358,6 +354,7 @@
         }
         .market-section-title { font-size: 0.85rem; font-weight: 600; color: var(--cyan); margin: 16px 0 8px; }
         
+        /* LIVE Stack */
         .stack-container {
             display: flex;
             flex-direction: column;
@@ -373,29 +370,27 @@
         }
         .stack-item:hover { transform: translateX(4px); border-left-color: var(--cyan); }
         .stack-item.new-order { 
-            border-left-color: var(--cyan); 
-            background: rgba(0,212,255,0.08);
-            animation: blinkCyan 2s ease-in-out;
+            border-left-color: var(--violet); 
+            background: rgba(139,92,246,0.15);
+            animation: blinkViolet 2s ease-in-out;
+        }
+        @keyframes blinkViolet {
+            0% { background: rgba(139,92,246,0); border-left-color: var(--violet); }
+            25% { background: rgba(139,92,246,0.35); border-left-color: var(--violet); box-shadow: 0 0 20px var(--violet); }
+            50% { background: rgba(139,92,246,0.1); border-left-color: var(--violet); }
+            75% { background: rgba(139,92,246,0.35); border-left-color: var(--violet); box-shadow: 0 0 20px var(--violet); }
+            100% { background: rgba(139,92,246,0); border-left-color: var(--violet); }
         }
         .stack-item.search-highlight {
             border: 2px solid #fbbf24;
             background: rgba(251,191,36,0.15);
-            box-shadow: 0 0 20px rgba(251,191,36,0.5);
             animation: orangeGlow 0.8s ease-in-out 3;
         }
         @keyframes orangeGlow {
-            0% { border-color: rgba(245,158,11,0); box-shadow: 0 0 0px rgba(245,158,11,0); background: rgba(245,158,11,0); }
+            0% { border-color: rgba(245,158,11,0); box-shadow: 0 0 0px rgba(245,158,11,0); }
             50% { border-color: #f59e0b; box-shadow: 0 0 20px #f59e0b; background: rgba(245,158,11,0.25); }
-            100% { border-color: rgba(245,158,11,0); box-shadow: 0 0 0px rgba(245,158,11,0); background: rgba(245,158,11,0); }
+            100% { border-color: rgba(245,158,11,0); box-shadow: 0 0 0px rgba(245,158,11,0); }
         }
-        @keyframes blinkCyan {
-            0% { background: rgba(0,212,255,0); border-left-color: var(--violet); }
-            25% { background: rgba(0,212,255,0.3); border-left-color: var(--cyan); box-shadow: 0 0 15px var(--cyan); }
-            50% { background: rgba(0,212,255,0.1); border-left-color: var(--violet); }
-            75% { background: rgba(0,212,255,0.3); border-left-color: var(--cyan); box-shadow: 0 0 15px var(--cyan); }
-            100% { background: rgba(0,212,255,0); border-left-color: var(--violet); }
-        }
-        
         .new-badge {
             background: linear-gradient(135deg, #f43f5e, #e11d48);
             color: white;
@@ -440,8 +435,6 @@
             gap: 6px;
             font-family: monospace;
         }
-        .feed-countdown.expired { color: var(--rose); }
-        
         .status-bar {
             display: flex;
             justify-content: flex-start;
@@ -512,7 +505,7 @@
         </div>
     </div>
 
-    <!-- Drawer Menu (Sidebar) -->
+    <!-- Drawer Menu -->
     <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
     <div id="drawer" class="drawer">
         <div class="drawer-header">
@@ -534,6 +527,7 @@
     </div>
 
     <div class="container">
+        <!-- Home Tab -->
         <div id="homeTab" class="tab-content active">
             <div style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(139,92,246,0.05)); border-radius: 1.5rem; padding: 20px; margin: 16px 0; text-align: center;">
                 <div style="font-size: 1.2rem;" id="greetingText">🌤️ မင်္ဂလာပါ, <span id="userName">User</span></div>
@@ -556,9 +550,13 @@
             </div>
         </div>
 
+        <!-- Plans Tab -->
         <div id="plansTab" class="tab-content"><div id="plansContainer"></div></div>
+
+        <!-- My Orders Tab -->
         <div id="ordersTab" class="tab-content"><div id="myOrdersContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading...</div></div></div>
 
+        <!-- Live Tab -->
         <div id="liveTab" class="tab-content">
             <div style="background: rgba(0,212,255,0.05); border-radius: 1rem; padding: 14px; margin-bottom: 20px;">
                 <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 10px;"><i class="fas fa-search"></i> <span id="searchTitle">သက်တမ်းစစ်ရန်</span></div>
@@ -580,7 +578,157 @@
             </div>
         </div>
 
+        <!-- Market Tab (Data from API) -->
         <div id="marketTab" class="tab-content">
+            <div id="marketContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading products...</div></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-item" data-tab="home"><i class="fas fa-home"></i><span id="navHome">Home</span></button>
+        <button class="nav-item" data-tab="plans"><i class="fas fa-sim-card"></i><span id="navPlans">Plan များ</span></button>
+        <button class="nav-item" data-tab="orders"><i class="fas fa-list-ul"></i><span id="navOrders">My Orders</span></button>
+        <button class="nav-item" data-tab="live"><i class="fas fa-broadcast-tower"></i><span id="navLive">Live</span></button>
+        <button class="nav-item" data-tab="market"><i class="fas fa-store"></i><span id="navMarket">Market</span></button>
+    </div>
+</div>
+
+<!-- Payment Modal (Reused for both Plan Buy and Renew) -->
+<div id="paymentModal" class="modal-overlay">
+    <div class="modal-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3><i class="fas fa-credit-card"></i> <span id="paymentTitle">ငွေပေးချေမှု</span></h3>
+            <button onclick="closePaymentModal()" style="background:none; border:none; color:white; font-size:1.3rem;">&times;</button>
+        </div>
+        
+        <div class="payment-tab-buttons">
+            <button type="button" id="kpayTabBtn" class="payment-tab-btn kpay-tab active" onclick="selectPayment('kpay')">
+                <img src="https://i.ibb.co/CpyBHvrS/1000011452.jpg" alt="KBZ Pay"> KBZ Pay
+            </button>
+            <button type="button" id="wavepayTabBtn" class="payment-tab-btn wavepay-tab" onclick="selectPayment('wavepay')">
+                <img src="https://i.ibb.co/9990m00N/FB-IMG-1780586423015.jpg" alt="WavePay"> WavePay
+            </button>
+            <button type="button" id="ayapayTabBtn" class="payment-tab-btn ayapay-tab" onclick="selectPayment('ayapay')">
+                <img src="https://i.ibb.co/rPzL2xm/aya-pay.jpg" alt="AYA Pay"> AYA Pay
+            </button>
+        </div>
+        
+        <div class="account-info">
+            <div class="info-row"><span>ငွေလွှဲနည်းလမ်း</span><span id="paymentMethodName">KBZ Pay</span></div>
+            <div class="info-row"><span>အကောင့်အမည်</span><span>AUNG THU HTWE</span></div>
+            <div class="info-row"><span>ဖုန်းနံပါတ်</span><span id="accountPhone">09789999368 📋</span></div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin: 16px 0;">
+            <button id="screenshotTabBtn" onclick="switchToScreenshot()" style="flex:1; padding:10px; border-radius:60px; background:var(--cyan); color:#030712; font-weight:600;">📸 Screenshot</button>
+            <button id="textTabBtn" onclick="switchToText()" style="flex:1; padding:10px; border-radius:60px; background:rgba(245,158,11,0.2); color:var(--amber); font-weight:600;">✏️ စာသားဖြည့်</button>
+        </div>
+        
+        <div id="screenshotPanel">
+            <div style="margin-bottom: 16px;">
+                <label>📱 လက်ခံမည့်သူ ဖုန်းနံပါတ် *</label>
+                <input type="tel" id="orderPhone" class="search-input" style="width:100%; margin-top:8px;" placeholder="09xxxxxxxxx">
+                <div id="phoneNote" style="font-size:0.6rem; margin-top:4px;"></div>
+            </div>
+            <div>
+                <label>🧾 ငွေလွှဲပြေစာ (Screenshot) *</label>
+                <button class="file-upload-btn" onclick="document.getElementById('slipImage').click()"><i class="fas fa-camera"></i> Screenshot ရွေးရန်</button>
+                <input type="file" id="slipImage" accept="image/*" style="display:none;">
+                <div id="fileNameDisplay" style="font-size:0.65rem; color:#64748b; margin-top:8px;"></div>
+            </div>
+        </div>
+        
+        <div id="textPanel" style="display: none;">
+            <div style="margin-bottom: 16px;">
+                <label>📱 လက်ခံမည့်သူ ဖုန်းနံပါတ် *</label>
+                <input type="tel" id="orderPhoneText" class="search-input" style="width:100%; margin-top:8px;" placeholder="09xxxxxxxxx">
+                <div id="phoneNoteText" style="font-size:0.6rem; margin-top:4px;"></div>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <label><i class="fas fa-user"></i> ငွေလွှဲသူအမည် *</label>
+                <input type="text" id="senderName" class="search-input" style="width:100%; margin-top:8px;" placeholder="ဥပမာ - မောင်မောင်">
+            </div>
+            <div>
+                <label><i class="fas fa-credit-card"></i> ငွေလွှဲပြေစာအမှတ် နောက်ဆုံး ၅ လုံး *</label>
+                <input type="text" id="last5Digits" class="search-input" style="width:100%; margin-top:8px;" placeholder="12345" maxlength="5">
+                <div style="font-size:0.6rem; color:#64748b; margin-top:4px;">※ ငွေလွှဲပြေစာအမှတ်ရဲ့ နောက်ဆုံးဂဏန်း ၅ လုံး</div>
+            </div>
+        </div>
+        
+        <button class="submit-payment" onclick="submitOrder()">✅ အော်ဒါတင်မည်</button>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+    const API_BASE = window.location.origin;
+    let currentUser = null, currentUsername = null;
+    let allOrders = [], liveStackOrders = [];
+    let marketProducts = [];
+    let currentTab = "home";
+    let liveRotateInterval = null, liveRefreshInterval = null, liveTimerInterval = null;
+    let refreshSec = 30;
+    let selectedPayment = "kpay", selectedPlan = null, selectedPrice = null;
+    let isSearching = false;
+    let currentSearchPhone = "";
+    let lastHash = '';
+    let liveCountdownIntervals = {};
+    const ROTATE_MS = 10000;
+    const NEW_TIMEOUT = 120000;
+    
+    // ========== MARKET DATA (from Admin API) ==========
+    async function loadMarketProducts() {
+        try {
+            const res = await fetch(`${API_BASE}/api/market/products`);
+            const data = await res.json();
+            if (data.products) {
+                marketProducts = data.products;
+                renderMarket();
+            }
+        } catch(e) {
+            console.error('Error loading market products:', e);
+            renderMarketFallback();
+        }
+    }
+    
+    function renderMarket() {
+        const container = document.getElementById('marketContainer');
+        if (!marketProducts.length) {
+            renderMarketFallback();
+            return;
+        }
+        
+        // Group by category
+        const categories = {};
+        for (const p of marketProducts) {
+            if (!categories[p.category]) categories[p.category] = [];
+            categories[p.category].push(p);
+        }
+        
+        let html = '';
+        for (const [category, products] of Object.entries(categories)) {
+            html += `<div class="market-section-title"><i class="fas fa-tag"></i> ${category}</div>`;
+            html += '<div class="product-grid">';
+            for (const p of products) {
+                html += `
+                    <div class="product-card">
+                        <div class="product-icon"><i class="${p.icon || 'fas fa-box'}"></i></div>
+                        <div class="product-name">${p.name}</div>
+                        <div class="product-price">${p.price.toLocaleString()} MMK</div>
+                        ${p.discount ? `<div class="product-discount">-${p.discount}% OFF</div>` : ''}
+                        <button class="product-buy-btn" onclick="showToast('Product: ${p.name} - Coming Soon')">ဝယ်မည်</button>
+                    </div>
+                `;
+            }
+            html += '</div>';
+        }
+        container.innerHTML = html;
+    }
+    
+    function renderMarketFallback() {
+        const container = document.getElementById('marketContainer');
+        container.innerHTML = `
             <div class="market-section-title"><i class="fas fa-fire"></i> 🔥 အထူးကမ်းလှမ်းချက်များ</div>
             <div class="product-grid">
                 <div class="product-card"><div class="product-icon"><i class="fas fa-tshirt"></i></div><div class="product-name">Premium T-Shirt</div><div class="product-price">25,000 MMK</div><div class="product-discount">-20% OFF</div><button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button></div>
@@ -599,232 +747,100 @@
                 <div class="product-card"><div class="product-icon"><i class="fas fa-hand-peace"></i></div><div class="product-name">Silk Scarf</div><div class="product-price">12,000 MMK</div><button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button></div>
                 <div class="product-card"><div class="product-icon"><i class="fas fa-bag-shopping"></i></div><div class="product-name">Leather Bag</div><div class="product-price">39,000 MMK</div><button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button></div>
             </div>
-        </div>
-    </div>
-
-    <div class="bottom-nav">
-        <button class="nav-item" data-tab="home"><i class="fas fa-home"></i><span id="navHome">Home</span></button>
-        <button class="nav-item" data-tab="plans"><i class="fas fa-sim-card"></i><span id="navPlans">Plan များ</span></button>
-        <button class="nav-item" data-tab="orders"><i class="fas fa-list-ul"></i><span id="navOrders">My Orders</span></button>
-        <button class="nav-item" data-tab="live"><i class="fas fa-broadcast-tower"></i><span id="navLive">Live</span></button>
-        <button class="nav-item" data-tab="market"><i class="fas fa-store"></i><span id="navMarket">Market</span></button>
-    </div>
-</div>
-
-<!-- Renew Modal -->
-<div id="renewModal" class="modal-overlay">
-    <div class="modal-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3><i class="fas fa-credit-card"></i> <span id="renewModalTitle">ထပ်မံဝယ်ယူရန်</span></h3>
-            <button onclick="closeRenewModal()" style="background:none; border:none; color:white; font-size:1.3rem;">&times;</button>
-        </div>
-        
-        <div class="payment-tab-buttons">
-            <button type="button" id="renewKpayTab" class="payment-tab-btn kpay-tab active" onclick="selectRenewPayment('kpay')">
-                <img src="https://i.ibb.co/CpyBHvrS/1000011452.jpg" alt="KBZ Pay"> KBZ Pay
-            </button>
-            <button type="button" id="renewWavepayTab" class="payment-tab-btn wavepay-tab" onclick="selectRenewPayment('wavepay')">
-                <img src="https://i.ibb.co/9990m00N/FB-IMG-1780586423015.jpg" alt="WavePay"> WavePay
-            </button>
-            <button type="button" id="renewAyapayTab" class="payment-tab-btn ayapay-tab" onclick="selectRenewPayment('ayapay')">
-                <img src="https://i.ibb.co/rPzL2xm/aya-pay.jpg" alt="AYA Pay"> AYA Pay
-            </button>
-        </div>
-        
-        <div class="account-info">
-            <div class="info-row"><span>ငွေလွှဲနည်းလမ်း</span><span id="renewPaymentMethodName">KBZ Pay</span></div>
-            <div class="info-row"><span>အကောင့်အမည်</span><span>AUNG THU HTWE</span></div>
-            <div class="info-row"><span>ဖုန်းနံပါတ်</span><span id="renewAccountPhone">09789999368 📋</span></div>
-        </div>
-        
-        <div style="display: flex; gap: 10px; margin: 16px 0;">
-            <button id="renewScreenshotTab" onclick="switchToScreenshot()" style="flex:1; padding:10px; border-radius:60px; background:var(--cyan); color:#030712; font-weight:600;">📸 Screenshot</button>
-            <button id="renewTextTab" onclick="switchToText()" style="flex:1; padding:10px; border-radius:60px; background:rgba(245,158,11,0.2); color:var(--amber); font-weight:600;">✏️ စာသားဖြည့်</button>
-        </div>
-        
-        <div id="renewScreenshotPanel">
-            <div style="margin-bottom: 16px;">
-                <label>📱 လက်ခံမည့်သူ ဖုန်းနံပါတ် *</label>
-                <input type="tel" id="renewPhone" class="search-input" style="width:100%; margin-top:8px;" placeholder="09xxxxxxxxx">
-                <div id="phoneNote" style="font-size:0.6rem; margin-top:4px;"></div>
-            </div>
-            <div>
-                <label>🧾 ငွေလွှဲပြေစာ (Screenshot) *</label>
-                <button class="file-upload-btn" onclick="document.getElementById('renewSlipImage').click()"><i class="fas fa-camera"></i> Screenshot ရွေးရန်</button>
-                <input type="file" id="renewSlipImage" accept="image/*" style="display:none;">
-                <div id="renewFileNameDisplay" style="font-size:0.65rem; color:#64748b; margin-top:8px;"></div>
-            </div>
-        </div>
-        
-        <div id="renewTextPanel" style="display: none;">
-            <div style="margin-bottom: 16px;">
-                <label>📱 လက်ခံမည့်သူ ဖုန်းနံပါတ် *</label>
-                <input type="tel" id="renewPhoneText" class="search-input" style="width:100%; margin-top:8px;" placeholder="09xxxxxxxxx">
-                <div id="phoneNoteText" style="font-size:0.6rem; margin-top:4px;"></div>
-            </div>
-            <div style="margin-bottom: 16px;">
-                <label><i class="fas fa-user"></i> ငွေလွှဲသူအမည် *</label>
-                <input type="text" id="renewSenderName" class="search-input" style="width:100%; margin-top:8px;" placeholder="ဥပမာ - မောင်မောင်">
-            </div>
-            <div>
-                <label><i class="fas fa-credit-card"></i> ငွေလွှဲပြေစာအမှတ် နောက်ဆုံး ၅ လုံး *</label>
-                <input type="text" id="renewLast5Digits" class="search-input" style="width:100%; margin-top:8px;" placeholder="12345" maxlength="5">
-                <div style="font-size:0.6rem; color:#64748b; margin-top:4px;">※ ငွေလွှဲပြေစာအမှတ်ရဲ့ နောက်ဆုံးဂဏန်း ၅ လုံး</div>
-            </div>
-        </div>
-        
-        <div class="form-group" style="margin-bottom: 16px;">
-            <label>🎯 Plan ရွေးရန် *</label>
-            <select id="renewPlan" class="search-input" style="width:100%; margin-top:8px;">
-                <option value="VIP LEVEL - 1">VIP LEVEL - 1 (15,000 MMK)</option>
-                <option value="VIP LEVEL - 2">VIP LEVEL - 2 (20,000 MMK)</option>
-                <option value="VIP LEVEL - 3">VIP LEVEL - 3 (25,000 MMK)</option>
-                <option value="VIP LEVEL - 4 (ULTRA)">VIP LEVEL - 4 (ULTRA) (30,000 MMK)</option>
-            </select>
-        </div>
-        
-        <button id="submitRenewBtn" class="submit-payment" onclick="submitRenewOrder()">✅ အော်ဒါတင်မည်</button>
-    </div>
-</div>
-
-<div id="toast" class="toast"></div>
-
-<script>
-    const API_BASE = window.location.origin;
-    let currentUser = null, currentUsername = null;
-    let allOrders = [], liveStackOrders = [];
-    let currentTab = "home";
-    let liveRotateInterval = null, liveRefreshInterval = null, liveTimerInterval = null;
-    let refreshSec = 30;
-    let selectedPayment = "kpay", selectedPlan = null, selectedPrice = null;
-    let isSearching = false;
-    let currentSearchPhone = "";
-    let lastHash = '';
-    let liveCountdownIntervals = {};
-    const ROTATE_MS = 10000;
-    const NEW_TIMEOUT = 120000;
-    
-    const translations = { my: {}, en: {}, zh: {} };
-    let currentLanguage = localStorage.getItem('app_language') || 'my';
-    
-    function showToast(msg, isError) {
-        const toast = document.getElementById('toast');
-        toast.textContent = msg;
-        toast.style.background = isError ? '#f43f5e' : '#10b981';
-        toast.style.display = 'block';
-        setTimeout(() => toast.style.display = 'none', 2500);
+        `;
     }
     
-    function maskPhone(phone) {
-        if (!phone || phone.length < 8) return phone || '';
-        return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
-    }
+    // ========== PAYMENT FUNCTIONS (Reused) ==========
+    let currentRenewMode = 'other';
     
-    function getRemainingTime(act) {
-        if (!act) return null;
-        const remain = new Date(act).getTime() + 30*86400000 - Date.now();
-        if (remain <= 0) return "Expired";
-        const d = Math.floor(remain/86400000), h = Math.floor((remain%86400000)/3600000), m = Math.floor((remain%3600000)/60000);
-        return `${d}ရက် ${h}နာရီ ${m}မိနစ်`;
-    }
-    
-    const isNewOrder = (o) => Date.now() - new Date(o.created_at).getTime() < NEW_TIMEOUT;
-    
-    function addGlowEffect(element) {
-        if (!element) return;
-        element.classList.add('glow');
-        setTimeout(() => element.classList.remove('glow'), 500);
-    }
-    
-    // Renew Functions
-    let renewPaymentMethod = 'kpay';
-    
-    function selectRenewPayment(method) {
-        renewPaymentMethod = method;
-        document.querySelectorAll('#renewModal .payment-tab-btn').forEach(btn => btn.classList.remove('active'));
-        if (method === 'kpay') document.getElementById('renewKpayTab').classList.add('active');
-        else if (method === 'wavepay') document.getElementById('renewWavepayTab').classList.add('active');
-        else if (method === 'ayapay') document.getElementById('renewAyapayTab').classList.add('active');
+    function selectPayment(method) {
+        selectedPayment = method;
+        document.querySelectorAll('.payment-tab-btn').forEach(btn => btn.classList.remove('active'));
+        if (method === 'kpay') document.getElementById('kpayTabBtn').classList.add('active');
+        else if (method === 'wavepay') document.getElementById('wavepayTabBtn').classList.add('active');
+        else if (method === 'ayapay') document.getElementById('ayapayTabBtn').classList.add('active');
         const names = { kpay: "KBZ Pay", wavepay: "WavePay", ayapay: "AYA Pay" };
-        document.getElementById('renewPaymentMethodName').innerText = names[method];
-    }
-    
-    function openRenewModal(mode) {
-        if (mode === 'self') {
-            if (!currentUser) { showToast("ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ", true); return; }
-            document.getElementById('renewPhone').value = currentUser;
-            document.getElementById('renewPhone').readOnly = true;
-            document.getElementById('renewPhoneText').value = currentUser;
-            document.getElementById('renewPhoneText').readOnly = true;
-            document.getElementById('renewModalTitle').innerText = "ကိုယ်တိုင် ထပ်ဝယ်ရန်";
-            document.getElementById('phoneNote').innerHTML = "※ သင့်ကိုယ်ပိုင်နံပါတ်";
-            document.getElementById('phoneNoteText').innerHTML = "※ သင့်ကိုယ်ပိုင်နံပါတ်";
-        } else {
-            document.getElementById('renewPhone').value = '';
-            document.getElementById('renewPhone').readOnly = false;
-            document.getElementById('renewPhoneText').value = '';
-            document.getElementById('renewPhoneText').readOnly = false;
-            document.getElementById('renewModalTitle').innerText = "အခြားသူအတွက် ထပ်ဝယ်ပေးရန်";
-            document.getElementById('phoneNote').innerHTML = "※ လက်ခံမည့်သူ၏ ဖုန်းနံပါတ်";
-            document.getElementById('phoneNoteText').innerHTML = "※ လက်ခံမည့်သူ၏ ဖုန်းနံပါတ်";
-        }
-        document.getElementById('renewForm').reset();
-        document.getElementById('renewSlipImage').value = '';
-        document.getElementById('renewFileNameDisplay').innerHTML = '';
-        document.getElementById('renewSenderName').value = '';
-        document.getElementById('renewLast5Digits').value = '';
-        switchToScreenshot();
-        document.getElementById('renewModal').classList.add('active');
-    }
-    
-    function closeRenewModal() {
-        document.getElementById('renewModal').classList.remove('active');
+        document.getElementById('paymentMethodName').innerText = names[method];
     }
     
     function switchToScreenshot() {
-        document.getElementById('renewScreenshotPanel').style.display = 'block';
-        document.getElementById('renewTextPanel').style.display = 'none';
-        document.getElementById('renewScreenshotTab').style.cssText = 'flex:1; padding:10px; border-radius:60px; background:var(--cyan); color:#030712; font-weight:600;';
-        document.getElementById('renewTextTab').style.cssText = 'flex:1; padding:10px; border-radius:60px; background:rgba(245,158,11,0.2); color:var(--amber); font-weight:600;';
+        document.getElementById('screenshotPanel').style.display = 'block';
+        document.getElementById('textPanel').style.display = 'none';
+        document.getElementById('screenshotTabBtn').style.cssText = 'flex:1; padding:10px; border-radius:60px; background:var(--cyan); color:#030712; font-weight:600; border:none;';
+        document.getElementById('textTabBtn').style.cssText = 'flex:1; padding:10px; border-radius:60px; background:rgba(245,158,11,0.2); color:var(--amber); font-weight:600; border:none;';
     }
     
     function switchToText() {
-        document.getElementById('renewTextPanel').style.display = 'block';
-        document.getElementById('renewScreenshotPanel').style.display = 'none';
-        document.getElementById('renewTextTab').style.cssText = 'flex:1; padding:10px; border-radius:60px; background:var(--amber); color:#030712; font-weight:600;';
-        document.getElementById('renewScreenshotTab').style.cssText = 'flex:1; padding:10px; border-radius:60px; background:rgba(0,212,255,0.2); color:var(--cyan); font-weight:600;';
+        document.getElementById('textPanel').style.display = 'block';
+        document.getElementById('screenshotPanel').style.display = 'none';
+        document.getElementById('textTabBtn').style.cssText = 'flex:1; padding:10px; border-radius:60px; background:var(--amber); color:#030712; font-weight:600; border:none;';
+        document.getElementById('screenshotTabBtn').style.cssText = 'flex:1; padding:10px; border-radius:60px; background:rgba(0,212,255,0.2); color:var(--cyan); font-weight:600; border:none;';
     }
     
-    document.getElementById('renewSlipImage')?.addEventListener('change', function() {
-        if (this.files.length) document.getElementById('renewFileNameDisplay').innerHTML = `<i class="fas fa-check-circle"></i> ${this.files[0].name}`;
+    function openRenewModal(mode) {
+        currentRenewMode = mode;
+        if (mode === 'self') {
+            if (!currentUser) { showToast("ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ", true); return; }
+            document.getElementById('orderPhone').value = currentUser;
+            document.getElementById('orderPhone').readOnly = true;
+            document.getElementById('orderPhoneText').value = currentUser;
+            document.getElementById('orderPhoneText').readOnly = true;
+            document.getElementById('phoneNote').innerHTML = "※ သင့်ကိုယ်ပိုင်နံပါတ်";
+            document.getElementById('phoneNoteText').innerHTML = "※ သင့်ကိုယ်ပိုင်နံပါတ်";
+        } else {
+            document.getElementById('orderPhone').value = '';
+            document.getElementById('orderPhone').readOnly = false;
+            document.getElementById('orderPhoneText').value = '';
+            document.getElementById('orderPhoneText').readOnly = false;
+            document.getElementById('phoneNote').innerHTML = "※ လက်ခံမည့်သူ၏ ဖုန်းနံပါတ်";
+            document.getElementById('phoneNoteText').innerHTML = "※ လက်ခံမည့်သူ၏ ဖုန်းနံပါတ်";
+        }
+        // Reset form
+        document.getElementById('slipImage').value = '';
+        document.getElementById('fileNameDisplay').innerHTML = '';
+        document.getElementById('senderName').value = '';
+        document.getElementById('last5Digits').value = '';
+        switchToScreenshot();
+        document.getElementById('paymentModal').classList.add('active');
+    }
+    
+    function openPaymentModalFromPlan(plan, price) {
+        selectedPlan = plan;
+        selectedPrice = price;
+        openRenewModal('other');
+    }
+    
+    function closePaymentModal() {
+        document.getElementById('paymentModal').classList.remove('active');
+    }
+    
+    document.getElementById('slipImage')?.addEventListener('change', function() {
+        if (this.files.length) document.getElementById('fileNameDisplay').innerHTML = `<i class="fas fa-check-circle"></i> ${this.files[0].name}`;
     });
     
-    async function submitRenewOrder() {
-        const isScreenshot = document.getElementById('renewScreenshotPanel').style.display !== 'none';
+    async function submitOrder() {
+        const isScreenshot = document.getElementById('screenshotPanel').style.display !== 'none';
         let phone, file, sender, last5;
         
         if (isScreenshot) {
-            phone = document.getElementById('renewPhone').value.trim();
-            file = document.getElementById('renewSlipImage').files[0];
+            phone = document.getElementById('orderPhone').value.trim();
+            file = document.getElementById('slipImage').files[0];
             if (!phone) { showToast("ဖုန်းနံပါတ် ထည့်ပါ", true); return; }
             if (!file) { showToast("ငွေလွှဲပြေစာ တင်ပါ", true); return; }
         } else {
-            phone = document.getElementById('renewPhoneText').value.trim();
-            sender = document.getElementById('renewSenderName').value.trim();
-            last5 = document.getElementById('renewLast5Digits').value.trim();
+            phone = document.getElementById('orderPhoneText').value.trim();
+            sender = document.getElementById('senderName').value.trim();
+            last5 = document.getElementById('last5Digits').value.trim();
             if (!phone) { showToast("ဖုန်းနံပါတ် ထည့်ပါ", true); return; }
             if (!sender) { showToast("ငွေလွှဲသူအမည် ထည့်ပါ", true); return; }
             if (!last5 || last5.length !== 5) { showToast("ငွေလွှဲပြေစာအမှတ် နောက်ဆုံး ၅ လုံး အတိအကျ ထည့်ပါ", true); return; }
         }
         
-        const plan = document.getElementById('renewPlan').value;
-        let price = 0;
-        if (plan === 'VIP LEVEL - 1') price = 15000;
-        else if (plan === 'VIP LEVEL - 2') price = 20000;
-        else if (plan === 'VIP LEVEL - 3') price = 25000;
-        else if (plan === 'VIP LEVEL - 4 (ULTRA)') price = 30000;
+        // Use selectedPlan if coming from Plan tab, otherwise use default
+        const plan = selectedPlan || 'VIP LEVEL - 1';
+        const price = selectedPrice || 15000;
         
-        const submitBtn = document.getElementById('submitRenewBtn');
+        const submitBtn = document.querySelector('.submit-payment');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '⏳ အော်ဒါတင်နေပါသည်...';
         
@@ -832,7 +848,7 @@
         fd.append('phone', phone);
         fd.append('plan', plan);
         fd.append('price', price);
-        fd.append('payment_method', renewPaymentMethod);
+        fd.append('payment_method', selectedPayment);
         
         if (isScreenshot && file) {
             fd.append('slip', file);
@@ -846,9 +862,11 @@
             const data = await res.json();
             if (data.success) {
                 showToast(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${data.orderId}`);
-                closeRenewModal();
+                closePaymentModal();
                 if (currentTab === 'orders') loadUserOrders();
                 if (currentTab === 'live') loadLiveOrders();
+                selectedPlan = null;
+                selectedPrice = null;
             } else {
                 showToast(data.error || "အော်ဒါတင်ရာတွင် အမှားရှိပါသည်", true);
             }
@@ -860,7 +878,7 @@
         }
     }
     
-    // Live Functions
+    // ========== LIVE FUNCTIONS ==========
     function renderLiveStack() {
         const container = document.getElementById('liveContainer');
         if (!liveStackOrders.length) {
@@ -1049,7 +1067,7 @@
         loadLiveOrders();
     }
     
-    // User Functions
+    // ========== USER FUNCTIONS ==========
     const plans = [
         { name: "VIP LEVEL 1", price: 15000, features: ["22GB အမြန်နှုန်းမြင့်", "8,000 မိနစ် (ကွန်ရက်တွင်း)", "5,000 SMS"], icon: "🔥" },
         { name: "VIP LEVEL 2", price: 20000, features: ["40GB အာထရာဒေတာ", "250 မိနစ် (ကွန်ရက်တွင်း)", "25 မိနစ် (အခြားကွန်ရက်)"], icon: "⭐" },
@@ -1062,15 +1080,9 @@
             <div class="plan-card">
                 <div style="display:flex; justify-content:space-between;"><span style="font-weight:700;">${p.icon} ${p.name}</span><span style="font-weight:800; color:var(--emerald);">${p.price.toLocaleString()} MMK</span></div>
                 <ul style="margin:12px 0 0 20px;">${p.features.map(f => `<li style="margin:6px 0; font-size:0.75rem;"><i class="fas fa-check-circle" style="color:var(--emerald);"></i> ${f}</li>`).join('')}</ul>
-                <button class="buy-plan-btn" onclick="openPaymentModal('${p.name}', ${p.price})">ဝယ်ယူမည်</button>
+                <button class="buy-plan-btn" onclick="openPaymentModalFromPlan('${p.name}', ${p.price})">ဝယ်ယူမည်</button>
             </div>
         `).join('');
-    }
-    
-    function openPaymentModal(plan, price) {
-        selectedPlan = plan; selectedPrice = price;
-        // Use the existing payment modal or renew modal
-        openRenewModal('other');
     }
     
     function renderMyOrders() {
@@ -1078,31 +1090,48 @@
             document.getElementById('myOrdersContainer').innerHTML = '<div style="text-align:center; padding:40px;">📭 အော်ဒါမရှိသေးပါ</div>'; 
             return; 
         }
-        // Sort by newest first
         const sortedOrders = [...allOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        document.getElementById('myOrdersContainer').innerHTML = sortedOrders.map(o => `
-            <div class="order-card">
-                <div style="display:flex; justify-content:space-between;">
-                    <span style="font-weight:700;">${o.plan}</span>
-                    <span class="${o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected')}">
-                        ${o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ')}
-                    </span>
-                </div>
-                <div style="margin-top:8px;">📞 ${o.phone}</div>
-                <div style="font-weight:700; color:var(--emerald);">${o.price.toLocaleString()} MMK</div>
-                <div style="display:flex; gap:12px; margin-top:8px; font-size:0.65rem;">
-                    <span>📅 ${new Date(o.created_at).toLocaleDateString()}</span>
-                    <span>🕐 ${new Date(o.created_at).toLocaleTimeString()}</span>
-                </div>
-                ${o.status === 'Approved' && o.activated_at ? `
-                    <div style="display:flex; gap:12px; margin-top:4px; font-size:0.65rem;">
-                        <span>📅 စတင်: ${new Date(o.activated_at).toLocaleDateString()}</span>
-                        <span>📅 ကုန်: ${new Date(new Date(o.activated_at).getTime()+30*86400000).toLocaleDateString()}</span>
+        let html = '';
+        for (const o of sortedOrders) {
+            const orderDate = new Date(o.created_at);
+            const startDate = o.activated_at ? new Date(o.activated_at) : null;
+            const endDate = startDate ? new Date(startDate.getTime() + 30 * 86400000) : null;
+            
+            let statusText = '', statusClass = '';
+            if (o.status === 'Pending') { statusText = '⏳ စောင့်ဆိုင်းဆဲ'; statusClass = 'status-pending'; }
+            else if (o.status === 'Approved') { statusText = '✅ အတည်ပြုပြီး'; statusClass = 'status-approved'; }
+            else { statusText = '❌ ပယ်ဖျက်ခံရ'; statusClass = 'status-rejected'; }
+            
+            let remainingHtml = '';
+            if (o.status === 'Approved' && o.activated_at) {
+                const remain = getRemainingTime(o.activated_at);
+                remainingHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> 📌 ကျန်ရှိ: ${remain}</div>`;
+            }
+            
+            html += `
+                <div class="order-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-weight:700; font-size:0.9rem;">${o.plan}</span>
+                        <span style="font-weight:800; color:var(--emerald); font-size:0.9rem;">${o.price.toLocaleString()} MMK</span>
                     </div>
-                    <div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${getRemainingTime(o.activated_at)}</div>
-                ` : ''}
-            </div>
-        `).join('');
+                    <div style="margin-bottom:6px;">📞 ${o.phone}</div>
+                    <div style="margin-bottom:6px; font-size:0.7rem; color:var(--text-secondary);">
+                        📅 ဝယ်ရက်: ${orderDate.toLocaleDateString()} &nbsp;&nbsp; 🕐 ${orderDate.toLocaleTimeString()}
+                    </div>
+                    ${startDate ? `
+                        <div style="margin-bottom:6px; font-size:0.7rem; color:var(--text-secondary);">
+                            📅 စတင်ရက်: ${startDate.toLocaleDateString()} &nbsp;&nbsp; 
+                            📅 ကုန်ဆုံးရက်: ${endDate ? endDate.toLocaleDateString() : 'N/A'}
+                        </div>
+                    ` : ''}
+                    <div style="margin:8px 0 4px;">
+                        <span class="${statusClass}" style="padding:3px 10px; border-radius:40px; font-size:0.6rem;">${statusText}</span>
+                    </div>
+                    ${remainingHtml}
+                </div>
+            `;
+        }
+        document.getElementById('myOrdersContainer').innerHTML = html;
     }
     
     async function loadUserOrders() {
@@ -1110,6 +1139,35 @@
         const data = await res.json();
         allOrders = data.orders || [];
         renderMyOrders();
+    }
+    
+    function showToast(msg, isError) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.style.background = isError ? '#f43f5e' : '#10b981';
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 2500);
+    }
+    
+    function maskPhone(phone) {
+        if (!phone || phone.length < 8) return phone || '';
+        return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
+    }
+    
+    function getRemainingTime(act) {
+        if (!act) return null;
+        const remain = new Date(act).getTime() + 30*86400000 - Date.now();
+        if (remain <= 0) return "Expired";
+        const d = Math.floor(remain/86400000), h = Math.floor((remain%86400000)/3600000), m = Math.floor((remain%3600000)/60000);
+        return `${d}ရက် ${h}နာရီ ${m}မိနစ်`;
+    }
+    
+    const isNewOrder = (o) => Date.now() - new Date(o.created_at).getTime() < NEW_TIMEOUT;
+    
+    function addGlowEffect(element) {
+        if (!element) return;
+        element.classList.add('glow');
+        setTimeout(() => element.classList.remove('glow'), 500);
     }
     
     async function login() {
@@ -1167,6 +1225,7 @@
         }
         if (tab === 'plans') renderPlans();
         if (tab === 'profile') renderProfile();
+        if (tab === 'market') loadMarketProducts();
     }
     
     async function renderProfile() {
@@ -1195,27 +1254,42 @@
         document.getElementById('drawerOverlay').classList.remove('open');
     }
     function toggleLanguageDropdown() { document.getElementById('langDropdown').classList.toggle('show'); }
-    function changeLanguage(lang) { currentLanguage = lang; localStorage.setItem('app_language', lang); const flags = { my: '🇲🇲', en: '🇬🇧', zh: '🇨🇳' }; document.getElementById('currentLangFlag').innerHTML = flags[lang]; }
+    function changeLanguage(lang) { 
+        currentLanguage = lang; 
+        localStorage.setItem('app_language', lang); 
+        const flags = { my: '🇲🇲', en: '🇬🇧', zh: '🇨🇳' }; 
+        document.getElementById('currentLangFlag').innerHTML = flags[lang]; 
+    }
+    
     document.addEventListener('click', function(event) {
         const dropdown = document.getElementById('langDropdown');
         const langBtn = document.getElementById('langBtn');
         if (!langBtn?.contains(event.target) && dropdown) dropdown.classList.remove('show');
     });
-    document.getElementById('renewAccountPhone')?.addEventListener('click', () => { navigator.clipboard.writeText('09789999368'); showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ"); });
+    document.getElementById('accountPhone')?.addEventListener('click', () => { navigator.clipboard.writeText('09789999368'); showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ"); });
     document.querySelectorAll('.nav-item').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
     
     const savedPhone = localStorage.getItem('userPhone'), savedName = localStorage.getItem('userName');
     if (savedPhone && savedName) { document.getElementById('loginPhone').value = savedPhone; document.getElementById('loginUsername').value = savedName; login(); }
     
-    window.openRenewModal = openRenewModal; window.closeRenewModal = closeRenewModal;
-    window.selectRenewPayment = selectRenewPayment; window.submitRenewOrder = submitRenewOrder;
-    window.switchToScreenshot = switchToScreenshot; window.switchToText = switchToText;
-    window.login = login; window.logout = logout;
-    window.searchLiveOrder = searchLiveOrder; window.clearLiveSearch = clearLiveSearch;
-    window.toggleDrawer = toggleDrawer; window.closeDrawer = closeDrawer;
-    window.showSupport = showSupport; window.showProfile = showProfile;
+    window.openRenewModal = openRenewModal;
+    window.openPaymentModalFromPlan = openPaymentModalFromPlan;
+    window.closePaymentModal = closePaymentModal;
+    window.selectPayment = selectPayment;
+    window.submitOrder = submitOrder;
+    window.switchToScreenshot = switchToScreenshot;
+    window.switchToText = switchToText;
+    window.login = login;
+    window.logout = logout;
+    window.searchLiveOrder = searchLiveOrder;
+    window.clearLiveSearch = clearLiveSearch;
+    window.toggleDrawer = toggleDrawer;
+    window.closeDrawer = closeDrawer;
+    window.showSupport = showSupport;
+    window.showProfile = showProfile;
     window.showNotifications = () => showToast("No new notifications");
-    window.changeLanguage = changeLanguage; window.toggleLanguageDropdown = toggleLanguageDropdown;
+    window.changeLanguage = changeLanguage;
+    window.toggleLanguageDropdown = toggleLanguageDropdown;
 </script>
 </body>
 </html>
