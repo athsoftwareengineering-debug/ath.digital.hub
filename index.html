@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>ATH DIGITAL HUB</title>
+    <title>LIVE Orders | ATH DIGITAL HUB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -15,9 +15,6 @@
             --emerald: #10b981;
             --rose: #f43f5e;
             --amber: #f59e0b;
-            --kpay: #1e88e5;
-            --wavepay: #43a047;
-            --ayapay: #f9a825;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
         }
@@ -27,552 +24,266 @@
             font-family: 'Inter', 'Noto Sans Myanmar', sans-serif;
             min-height: 100vh;
             background-image: radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.1) 0%, transparent 50%);
-            padding-bottom: 70px;
+            padding: 16px;
+            padding-bottom: 80px;
         }
-        .container { max-width: 600px; margin: 0 auto; padding: 0 16px; }
+        .container { max-width: 600px; margin: 0 auto; }
         
-        /* App Bar */
-        .app-bar {
+        /* Header */
+        .header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            padding: 12px 16px;
-            background: rgba(10,12,21,0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0,212,255,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(0,212,255,0.2);
         }
-        .menu-btn, .icon-btn {
-            background: none;
-            border: none;
-            color: var(--text-primary);
+        .logo {
+            font-family: 'Space Grotesk', monospace;
             font-size: 1.2rem;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-        }
-        .logo { font-family: 'Space Grotesk', monospace; font-weight: 700; background: linear-gradient(135deg, #fff, var(--cyan)); background-clip: text; -webkit-background-clip: text; color: transparent; }
-        
-        /* Language Dropdown */
-        .lang-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        .lang-dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 45px;
-            background: var(--bg-card);
-            min-width: 140px;
-            border-radius: 1rem;
-            border: 1px solid rgba(0,212,255,0.3);
-            z-index: 200;
-            overflow: hidden;
-        }
-        .lang-dropdown-content button {
-            width: 100%;
-            padding: 10px 16px;
-            text-align: left;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-        .lang-dropdown-content button:hover { background: rgba(0,212,255,0.1); }
-        .lang-dropdown.show .lang-dropdown-content { display: block; }
-        
-        /* ========== DRAWER MENU (Sidebar) ========== */
-        .drawer-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 200;
-            visibility: hidden;
-            opacity: 0;
-            transition: all 0.3s;
-        }
-        .drawer-overlay.open {
-            visibility: visible;
-            opacity: 1;
-        }
-        .drawer {
-            position: fixed;
-            top: 0;
-            left: -280px;
-            width: 280px;
-            height: 100%;
-            background: var(--bg-card);
-            border-right: 1px solid rgba(0,212,255,0.2);
-            z-index: 201;
-            transition: left 0.3s ease;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        .drawer.open {
-            left: 0;
-        }
-        .drawer-header {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(0,212,255,0.1);
-            margin-bottom: 20px;
-        }
-        .drawer-avatar {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, var(--cyan), #0891b2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 12px;
-            font-size: 1.8rem;
-        }
-        .drawer-username {
             font-weight: 700;
-            font-size: 1rem;
+            background: linear-gradient(135deg, #fff, var(--cyan));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
         }
-        .drawer-phone {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-        .drawer-menu {
-            list-style: none;
-        }
-        .drawer-menu li {
-            margin-bottom: 8px;
-        }
-        .drawer-menu a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: 1rem;
-            color: var(--text-primary);
-            text-decoration: none;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .drawer-menu a:hover {
-            background: rgba(0,212,255,0.1);
-        }
-        .drawer-menu a i {
-            width: 24px;
-            color: var(--cyan);
-        }
-        .drawer-divider {
-            height: 1px;
-            background: rgba(255,255,255,0.05);
-            margin: 16px 0;
-        }
-        
-        /* Bottom Navigation */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(10,12,21,0.95);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(0,212,255,0.1);
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 12px;
-            padding-bottom: env(safe-area-inset-bottom, 12px);
-            z-index: 100;
-        }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 6px 12px;
+        .live-badge {
+            background: rgba(244,63,94,0.2);
+            color: #f43f5e;
+            font-size: 0.6rem;
+            padding: 4px 10px;
             border-radius: 40px;
-            font-size: 0.7rem;
+            animation: blinkRed 0.8s step-end infinite;
         }
-        .nav-item i { font-size: 1.3rem; }
-        .nav-item.active { color: var(--cyan); background: rgba(0,212,255,0.1); }
-        
-        /* Login Screen */
-        .login-screen {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .login-box {
-            background: var(--bg-card);
-            border-radius: 2rem;
-            padding: 2rem;
-            text-align: center;
-            border: 1px solid rgba(0,212,255,0.3);
-            width: 100%;
-            max-width: 350px;
-        }
-        .login-box input {
-            width: 100%;
-            padding: 14px;
-            margin: 12px 0;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #2d3a5e;
-            border-radius: 60px;
-            color: white;
-        }
-        .login-submit {
-            background: linear-gradient(135deg, var(--cyan), #0891b2);
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 60px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 8px;
+        @keyframes blinkRed {
+            0%,100% { background: rgba(244,63,94,0.2); }
+            50% { background: rgba(244,63,94,0.8); color: white; }
         }
         
-        /* Payment Modal */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); backdrop-filter: blur(20px);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 1000; display: none;
-        }
-        .modal-overlay.active { display: flex; }
-        .modal-card {
-            background: var(--bg-card);
-            border-radius: 1.5rem;
-            width: 90%;
-            max-width: 480px;
-            padding: 1.5rem;
-            border: 1px solid rgba(0,212,255,0.3);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        /* Payment Method Tabs */
-        .payment-tab-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .payment-tab-btn {
-            flex: 1;
-            padding: 10px;
-            border-radius: 60px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text-secondary);
-        }
-        .payment-tab-btn img { width: 24px; height: 24px; object-fit: contain; border-radius: 4px; }
-        .payment-tab-btn.kpay-tab.active { background: linear-gradient(135deg, #1e88e5, #1565c0); border: none; color: white; }
-        .payment-tab-btn.wavepay-tab.active { background: linear-gradient(135deg, #43a047, #2e7d32); border: none; color: white; }
-        .payment-tab-btn.ayapay-tab.active { background: linear-gradient(135deg, #f9a825, #d97706); border: none; color: white; }
-        
-        .account-info {
+        /* Search Section */
+        .search-section {
             background: rgba(0,212,255,0.05);
             border-radius: 1rem;
             padding: 14px;
-            margin: 16px 0;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,212,255,0.15);
         }
-        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .file-upload-btn {
-            background: rgba(0,212,255,0.15);
-            border: 1px solid rgba(0,212,255,0.3);
-            padding: 12px;
-            border-radius: 60px;
-            width: 100%;
-            cursor: pointer;
-            text-align: center;
+        .search-title {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
         }
-        .submit-payment {
-            width: 100%;
-            padding: 12px;
-            border-radius: 60px;
-            background: var(--emerald);
-            border: none;
-            color: white;
-            font-weight: bold;
-            margin-top: 16px;
-            cursor: pointer;
+        .search-box {
+            display: flex;
+            gap: 8px;
         }
-        .proof-tab-btn {
+        .search-box input {
             flex: 1;
-            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
             border-radius: 60px;
-            font-weight: 600;
-            cursor: pointer;
+            padding: 10px 16px;
+            color: white;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .search-box input:focus { border-color: var(--cyan); }
+        .search-box button {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
             border: none;
+            padding: 8px 18px;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
         }
-        
-        /* Common Cards */
-        .plan-card, .order-card, .profile-card, .market-card {
-            background: var(--bg-card);
-            border-radius: 1rem;
-            padding: 14px;
-            margin-bottom: 12px;
-            border-left: 3px solid var(--cyan);
+        .search-box button.clear { background: #334155; color: white; }
+        .search-message {
+            font-size: 0.65rem;
+            margin-top: 10px;
+            text-align: center;
+            padding: 8px;
+            border-radius: 40px;
         }
-        .plan-card { border-left-color: var(--amber); }
+        .search-message.success { background: rgba(16,185,129,0.15); color: #34d399; }
+        .search-message.error { background: rgba(244,63,94,0.15); color: #fb7185; }
         
-        /* LIVE Grid */
-        .live-grid {
-            display: grid;
-            grid-template-columns: 1fr;
+        /* Stack Container (LIVE Orders) */
+        .stack-container {
+            display: flex;
+            flex-direction: column;
             gap: 12px;
             margin-bottom: 16px;
         }
-        @media (min-width: 480px) { .live-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (min-width: 768px) { .live-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (min-width: 1024px) { .live-grid { grid-template-columns: repeat(4, 1fr); } }
-        
-        .live-card {
-            background: var(--bg-card);
-            border-radius: 1rem;
-            padding: 12px;
-            border-left: 3px solid var(--amber);
+        .stack-item {
+            background: linear-gradient(135deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
+            border-radius: 12px;
+            padding: 14px;
+            border-left: 3px solid var(--violet);
             transition: all 0.3s ease;
         }
-        @keyframes slideUpFromBottom {
-            0% { opacity: 0; transform: translateY(40px); }
-            100% { opacity: 1; transform: translateY(0); }
+        .stack-item:hover { transform: translateX(4px); border-left-color: var(--cyan); }
+        .stack-item.new-order { 
+            border-left-color: var(--cyan); 
+            background: rgba(0,212,255,0.08);
+            animation: blinkCyan 2s ease-in-out;
         }
-        .live-card.slide-up-new { animation: slideUpFromBottom 0.5s ease-out forwards; }
+        .stack-item.search-highlight {
+            border: 2px solid #fbbf24;
+            background: rgba(251,191,36,0.15);
+            box-shadow: 0 0 20px rgba(251,191,36,0.5);
+            animation: orangeGlow 0.8s ease-in-out 3;
+        }
+        @keyframes orangeGlow {
+            0% { border-color: rgba(245,158,11,0); box-shadow: 0 0 0px rgba(245,158,11,0); background: rgba(245,158,11,0); }
+            50% { border-color: #f59e0b; box-shadow: 0 0 20px #f59e0b; background: rgba(245,158,11,0.25); }
+            100% { border-color: rgba(245,158,11,0); box-shadow: 0 0 0px rgba(245,158,11,0); background: rgba(245,158,11,0); }
+        }
         @keyframes blinkCyan {
-            0% { background: rgba(0,212,255,0); border-left-color: var(--amber); }
+            0% { background: rgba(0,212,255,0); border-left-color: var(--violet); }
             25% { background: rgba(0,212,255,0.3); border-left-color: var(--cyan); box-shadow: 0 0 15px var(--cyan); }
-            50% { background: rgba(0,212,255,0.1); border-left-color: var(--amber); }
+            50% { background: rgba(0,212,255,0.1); border-left-color: var(--violet); }
             75% { background: rgba(0,212,255,0.3); border-left-color: var(--cyan); box-shadow: 0 0 15px var(--cyan); }
-            100% { background: rgba(0,212,255,0); border-left-color: var(--amber); }
+            100% { background: rgba(0,212,255,0); border-left-color: var(--violet); }
         }
-        .live-card.blink-cyan { animation: blinkCyan 2s ease-in-out; }
-        @keyframes blinkOrange {
-            0% { background: rgba(245,158,11,0); border-left-color: var(--amber); }
-            25% { background: rgba(245,158,11,0.3); border-left-color: #f59e0b; box-shadow: 0 0 15px #f59e0b; }
-            50% { background: rgba(245,158,11,0.1); border-left-color: var(--amber); }
-            75% { background: rgba(245,158,11,0.3); border-left-color: #f59e0b; box-shadow: 0 0 15px #f59e0b; }
-            100% { background: rgba(245,158,11,0); border-left-color: var(--amber); }
-        }
-        .live-card.search-highlight { animation: blinkOrange 2s ease-in-out; }
         
-        .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; padding: 3px 8px; border-radius: 40px; font-size: 0.55rem; display: inline-block; }
-        .status-approved { background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 40px; font-size: 0.55rem; display: inline-block; }
-        .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; padding: 3px 8px; border-radius: 40px; font-size: 0.55rem; display: inline-block; }
-        .buy-plan-btn { width: 100%; background: linear-gradient(135deg, var(--cyan), #0891b2); border: none; padding: 10px; border-radius: 60px; font-weight: 700; cursor: pointer; margin-top: 12px; }
-        .support-links { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; justify-content: center; }
-        .support-link { background: rgba(0,212,255,0.1); padding: 8px 16px; border-radius: 40px; text-decoration: none; color: var(--text-primary); font-size: 0.75rem; display: inline-flex; align-items: center; gap: 8px; }
-        .logout-btn { width: 100%; background: rgba(244,63,94,0.2); border: none; padding: 12px; border-radius: 60px; color: #fb7185; font-weight: 600; cursor: pointer; margin-top: 16px; }
-        .search-input { flex:1; background:rgba(0,0,0,0.5); border:1px solid #2d3a5e; border-radius:60px; padding:10px; color:white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--emerald); color: #030712; padding: 10px 20px; border-radius: 60px; font-size: 0.8rem; z-index: 1000; display: none; white-space: nowrap; }
-        .live-badge { animation: blinkRed 0.8s step-end infinite; display: inline-block; background: rgba(244,63,94,0.2); color: #f43f5e; padding: 3px 10px; border-radius: 40px; font-size: 0.6rem; margin-left: 8px; }
-        @keyframes blinkRed { 0%,100% { background: rgba(244,63,94,0.2); } 50% { background: rgba(244,63,94,0.9); color: white; } }
-        .countdown { background: rgba(0,212,255,0.08); border-radius: 40px; padding: 4px 8px; margin-top: 8px; font-size: 0.55rem; text-align: center; }
-        .search-message.success { background: rgba(16,185,129,0.15); color: #34d399; padding: 8px; border-radius: 40px; }
-        .search-message.error { background: rgba(244,63,94,0.15); color: #fb7185; padding: 8px; border-radius: 40px; }
-        .live-price { font-weight: 700; color: var(--emerald); font-size: 0.8rem; }
-        .live-phone { font-size: 0.65rem; font-family: monospace; margin: 6px 0; }
-        .live-plan { font-weight: 700; color: var(--amber); font-size: 0.7rem; }
+        .new-badge {
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+            color: white;
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 40px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        .stack-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .stack-plan {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--cyan);
+        }
+        .stack-status {
+            padding: 3px 10px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 600;
+        }
+        .stack-status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .stack-status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
+        .stack-status.rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        .stack-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .stack-phone {
+            font-size: 0.7rem;
+            font-family: monospace;
+            color: var(--amber);
+        }
+        .stack-price {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--emerald);
+        }
+        .feed-countdown {
+            font-size: 0.6rem;
+            color: var(--cyan);
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: monospace;
+        }
+        .feed-countdown.expired { color: var(--rose); }
+        
+        .status-bar {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.6rem;
+            color: #64748b;
+        }
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 1.5s infinite;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+        
+        .empty-msg {
+            text-align: center;
+            padding: 32px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--emerald);
+            color: #030712;
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            z-index: 1000;
+            display: none;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
-
-<div id="loginScreen" class="login-screen">
-    <div class="login-box">
-        <i class="fas fa-mobile-alt" style="font-size: 2rem; color: var(--cyan);"></i>
-        <h3>ATH DIGITAL HUB</h3>
-        <p style="font-size: 0.7rem; color: var(--text-secondary);" id="loginSubtitle">ဝင်ရောက်ရန်</p>
-        <input type="text" id="loginUsername" placeholder="👤 Username">
-        <input type="tel" id="loginPhone" placeholder="📱 09xxxxxxxxx">
-        <button class="login-submit" onclick="login()" id="loginBtn">ဝင်ရောက်မည်</button>
-    </div>
-</div>
-
-<div id="mainApp" style="display: none;">
-    <div class="app-bar">
-        <button class="menu-btn" onclick="toggleDrawer()"><i class="fas fa-bars"></i></button>
+<div class="container">
+    <div class="header">
         <div class="logo">⚡ ATH DIGITAL HUB</div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-            <button class="icon-btn" onclick="showNotifications()"><i class="fas fa-bell"></i></button>
-            <div class="lang-dropdown">
-                <button class="icon-btn" onclick="toggleLanguageDropdown()" id="langBtn">
-                    <i class="fas fa-globe"></i> <span id="currentLangFlag">🇲🇲</span>
-                </button>
-                <div class="lang-dropdown-content" id="langDropdown">
-                    <button onclick="changeLanguage('my')" data-lang="my">🇲🇲 မြန်မာ</button>
-                    <button onclick="changeLanguage('en')" data-lang="en">🇬🇧 English</button>
-                    <button onclick="changeLanguage('zh')" data-lang="zh">🇨🇳 中文</button>
-                </div>
-            </div>
-        </div>
+        <div><span class="live-badge"><i class="fas fa-circle"></i> LIVE</span></div>
     </div>
-
-    <!-- Drawer Menu (Sidebar) -->
-    <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
-    <div id="drawer" class="drawer">
-        <div class="drawer-header">
-            <div class="drawer-avatar"><i class="fas fa-user"></i></div>
-            <div class="drawer-username" id="drawerUsername">User</div>
-            <div class="drawer-phone" id="drawerPhone"></div>
+    
+    <!-- Search Section -->
+    <div class="search-section">
+        <div class="search-title"><i class="fas fa-search"></i> သက်တမ်းစစ်ရန်</div>
+        <div class="search-box">
+            <input type="tel" id="searchPhone" placeholder="📱 ဖုန်းနံပါတ်ရိုက်ထည့်ပါ">
+            <button id="searchBtn"><i class="fas fa-search"></i> ရှာ</button>
+            <button id="clearSearchBtn" class="clear"><i class="fas fa-times"></i> ရှင်း</button>
         </div>
-        <ul class="drawer-menu">
-            <li><a onclick="closeDrawer(); switchTab('home')"><i class="fas fa-home"></i> Home</a></li>
-            <li><a onclick="closeDrawer(); switchTab('plans')"><i class="fas fa-sim-card"></i> Plan များ</a></li>
-            <li><a onclick="closeDrawer(); switchTab('orders')"><i class="fas fa-list-ul"></i> My Orders</a></li>
-            <li><a onclick="closeDrawer(); switchTab('live')"><i class="fas fa-broadcast-tower"></i> Live</a></li>
-            <li><a onclick="closeDrawer(); switchTab('market')"><i class="fas fa-store"></i> Market</a></li>
-            <li><div class="drawer-divider"></div></li>
-            <li><a onclick="closeDrawer(); showSupport()"><i class="fas fa-headset"></i> Customer Support</a></li>
-            <li><a onclick="closeDrawer(); logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-        </ul>
+        <div id="searchMessage" class="search-message" style="display: none;"></div>
     </div>
-
-    <div class="container">
-        <div id="homeTab" class="tab-content active">
-            <div style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(139,92,246,0.05)); border-radius: 1.5rem; padding: 20px; margin: 16px 0; text-align: center;">
-                <div style="font-size: 1.2rem;" id="greetingText">🌤️ မင်္ဂလာပါ, <span id="userName">User</span></div>
-                <div id="userPhoneDisplay" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;"></div>
-            </div>
-            <div class="plan-card" onclick="window.open('https://www.facebook.com/your-clothing-page', '_blank')" style="text-align:center; cursor:pointer;">
-                <img src="https://via.placeholder.com/600x200?text=Shwe+Clothing+Summer+Sale" style="width:100%; border-radius:0.8rem; margin-bottom:10px;">
-                <div><span style="background:rgba(0,212,255,0.15); padding:4px 12px; border-radius:40px; font-size:0.7rem; margin:6px;"><i class="fas fa-tag"></i> <span id="adOfferText">30% OFF</span></span><span style="background:rgba(16,185,129,0.15); padding:4px 12px; border-radius:40px; font-size:0.7rem; margin:6px;"><i class="fas fa-truck"></i> <span id="adDeliveryText">Free Delivery</span></span></div>
-                <div style="margin-top: 8px; font-weight: 600;" id="adTitle">Shwe Clothing Collection <i class="fas fa-arrow-right"></i></div>
-            </div>
-            <div style="background:rgba(245,158,11,0.1); border-left:3px solid var(--amber); padding:12px; border-radius:0.8rem;" id="announcementText">
-                <i class="fas fa-bullhorn"></i> 🎉 New VIP Plan များ ထပ်ထည့်ထားပါသည်။ ယခုပဲ ဝယ်ယူလိုက်ပါ။
-            </div>
-        </div>
-
-        <div id="plansTab" class="tab-content"><div id="plansContainer"></div></div>
-        <div id="ordersTab" class="tab-content"><div id="myOrdersContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading...</div></div></div>
-
-        <div id="liveTab" class="tab-content">
-            <div style="background: rgba(0,212,255,0.05); border-radius: 1rem; padding: 14px; margin-bottom: 20px;">
-                <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 10px;"><i class="fas fa-search"></i> <span id="searchTitle">သက်တမ်းစစ်ရန်</span></div>
-                <div style="display: flex; gap: 8px;">
-                    <input type="tel" id="liveSearchPhone" class="search-input" placeholder="📱 09xxxxxxxxx">
-                    <button onclick="searchLiveOrder()" style="background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; padding: 0 18px; border-radius: 60px; font-weight: bold; cursor: pointer;"><i class="fas fa-search"></i> <span id="searchBtnText">ရှာ</span></button>
-                    <button onclick="clearLiveSearch()" style="background: #334155; border: none; padding: 0 16px; border-radius: 60px; cursor: pointer;"><i class="fas fa-times"></i> <span id="clearBtnText">ရှင်း</span></button>
-                </div>
-                <div id="liveSearchMessage" style="font-size: 0.65rem; margin-top: 10px; text-align: center; display: none;"></div>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 12px;">
-                <h2 style="font-size: 1rem;"><i class="fas fa-broadcast-tower"></i> <span id="liveTitle">LIVE အော်ဒါများ</span> <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span></h2>
-                <span id="liveTimer" style="background: #1e293b; padding: 4px 12px; border-radius: 40px; font-size: 0.6rem;">auto 30s</span>
-            </div>
-            <div id="liveContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> <span id="liveLoading">စောင့်နေသည်...</span></div></div>
-        </div>
-
-        <!-- Market Tab (was Profile) -->
-        <div id="marketTab" class="tab-content">
-            <div class="market-card" style="text-align:center;">
-                <i class="fas fa-store" style="font-size: 2rem; color: var(--cyan); margin-bottom: 12px;"></i>
-                <h3>Market</h3>
-                <p style="font-size: 0.7rem; color: var(--text-secondary); margin: 8px 0;">အထူးကမ်းလှမ်းချက်များ၊ အထည်အဝတ်အသစ်များ နှင့် ဖက်ရှင်စတိုင်များ</p>
-                <div class="plan-card" onclick="window.open('https://www.facebook.com/your-clothing-page', '_blank')" style="cursor:pointer;">
-                    <img src="https://via.placeholder.com/600x200?text=Shwe+Clothing+New+Arrivals" style="width:100%; border-radius:0.8rem; margin-bottom:10px;">
-                    <div><span class="ad-badge" style="background:rgba(0,212,255,0.15); padding:4px 12px; border-radius:40px; font-size:0.7rem;">New Arrivals</span></div>
-                    <div style="margin-top: 8px;">Shwe Clothing - Summer Collection 2026 <i class="fas fa-arrow-right"></i></div>
-                </div>
-            </div>
-        </div>
+    
+    <!-- LIVE Orders Title -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h2 style="font-size: 1rem;"><i class="fas fa-broadcast-tower"></i> LIVE အော်ဒါများ</h2>
+        <span id="liveTimer" style="background: #1e293b; padding: 4px 12px; border-radius: 40px; font-size: 0.6rem;">auto 30s</span>
     </div>
-
-    <div class="bottom-nav">
-        <button class="nav-item" data-tab="home"><i class="fas fa-home"></i><span id="navHome">Home</span></button>
-        <button class="nav-item" data-tab="plans"><i class="fas fa-sim-card"></i><span id="navPlans">Plan များ</span></button>
-        <button class="nav-item" data-tab="orders"><i class="fas fa-list-ul"></i><span id="navOrders">My Orders</span></button>
-        <button class="nav-item" data-tab="live"><i class="fas fa-broadcast-tower"></i><span id="navLive">Live</span></button>
-        <button class="nav-item" data-tab="market"><i class="fas fa-store"></i><span id="navMarket">Market</span></button>
+    
+    <!-- Stack Container -->
+    <div id="stackContainer" class="stack-container">
+        <div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> စောင့်နေသည်...</div>
     </div>
-</div>
-
-<!-- Payment Modal -->
-<div id="paymentModal" class="modal-overlay">
-    <div class="modal-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3><i class="fas fa-credit-card"></i> <span id="paymentTitle">ငွေပေးချေမှု</span></h3>
-            <button onclick="closePaymentModal()" style="background:none; border:none; color:white; font-size:1.3rem;">&times;</button>
-        </div>
-        
-        <div class="payment-tab-buttons">
-            <button type="button" id="kpayTabBtn" class="payment-tab-btn kpay-tab active">
-                <img src="https://i.ibb.co/CpyBHvrS/1000011452.jpg" alt="KBZ Pay" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
-                <span>KBZ Pay</span>
-            </button>
-            <button type="button" id="wavepayTabBtn" class="payment-tab-btn wavepay-tab">
-                <img src="https://i.ibb.co/9990m00N/FB-IMG-1780586423015.jpg" alt="WavePay" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
-                <span>WavePay</span>
-            </button>
-            <button type="button" id="ayapayTabBtn" class="payment-tab-btn ayapay-tab">
-                <img src="https://i.ibb.co/rPzL2xm/aya-pay.jpg" alt="AYA Pay" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
-                <span>AYA Pay</span>
-            </button>
-        </div>
-        
-        <div class="account-info">
-            <div class="info-row"><span><i class="fas fa-university"></i> <span id="paymentMethodLabel">ငွေလွှဲနည်းလမ်း</span></span><span id="paymentMethodName">KBZ Pay</span></div>
-            <div class="info-row"><span><i class="fas fa-user-circle"></i> <span id="accountNameLabel">အကောင့်အမည်</span></span><span>AUNG THU HTWE</span></div>
-            <div class="info-row"><span><i class="fas fa-phone-alt"></i> <span id="accountPhoneLabel">ဖုန်းနံပါတ်</span></span><span id="accountPhone">09789999368 📋</span></div>
-        </div>
-        
-        <div style="display: flex; gap: 10px; margin: 16px 0;">
-            <button id="screenshotTabBtn" onclick="switchToScreenshot()" style="flex:1; padding:10px; border-radius:60px; border:none; background:var(--cyan); color:#030712; font-weight:600; cursor:pointer;"><i class="fas fa-camera"></i> 📸 <span id="screenshotTabText">Screenshot</span></button>
-            <button id="textTabBtn" onclick="switchToText()" style="flex:1; padding:10px; border-radius:60px; border:none; background:rgba(245,158,11,0.2); color:var(--amber); font-weight:600; cursor:pointer;"><i class="fas fa-keyboard"></i> ✏️ <span id="textTabText">စာသားဖြည့်</span></button>
-        </div>
-        
-        <div id="screenshotPanel">
-            <div style="margin-bottom: 16px;">
-                <label id="screenshotPhoneLabel">📱 လက်ခံမည့်သူ ဖုန်းနံပါတ် *</label>
-                <input type="tel" id="orderPhone" class="search-input" style="width:100%; margin-top:8px;" placeholder="09xxxxxxxxx">
-            </div>
-            <div>
-                <label id="screenshotSlipLabel">🧾 ငွေလွှဲပြေစာ (Screenshot) *</label>
-                <button class="file-upload-btn" onclick="document.getElementById('slipImage').click()"><i class="fas fa-camera"></i> <span id="screenshotUploadBtnText">Screenshot ရွေးရန်</span></button>
-                <input type="file" id="slipImage" accept="image/*" style="display:none;">
-                <div id="fileNameDisplay" style="font-size:0.65rem; color:#64748b; margin-top:8px;"></div>
-            </div>
-        </div>
-        
-        <div id="textPanel" style="display: none;">
-            <div style="margin-bottom: 16px;">
-                <label id="textPhoneLabel">📱 လက်ခံမည့်သူ ဖုန်းနံပါတ် *</label>
-                <input type="tel" id="orderPhoneText" class="search-input" style="width:100%; margin-top:8px;" placeholder="09xxxxxxxxx">
-            </div>
-            <div style="margin-bottom: 16px;">
-                <label id="textSenderLabel"><i class="fas fa-user"></i> ငွေလွှဲသူအမည် *</label>
-                <input type="text" id="senderName" class="search-input" style="width:100%; margin-top:8px;" placeholder="ဥပမာ - မောင်မောင်">
-            </div>
-            <div>
-                <label id="textLast5Label"><i class="fas fa-credit-card"></i> ငွေလွှဲအကောင့်နောက်ဆုံး ၅ လုံး *</label>
-                <input type="text" id="last5Digits" class="search-input" style="width:100%; margin-top:8px;" placeholder="12345" maxlength="5">
-                <div style="font-size:0.6rem; color:#64748b; margin-top:4px;" id="last5Hint">※ အကောင့်နံပါတ်ရဲ့ နောက်ဆုံးဂဏန်း ၅ လုံး</div>
-            </div>
-        </div>
-        
-        <button class="submit-payment" onclick="submitOrder()"><span id="submitOrderBtnText">✅ အော်ဒါတင်မည်</span></button>
+    
+    <div class="status-bar">
+        <span class="status-dot"></span>
+        <span id="liveUpdateText">အလိုအလျောက်: 30s</span>
     </div>
 </div>
 
@@ -580,181 +291,21 @@
 
 <script>
     const API_BASE = window.location.origin;
-    let currentUser = null, currentUsername = null;
-    let allOrders = [], liveOrders = [];
-    let currentTab = "home";
-    let liveRotateInterval = null, liveRefreshInterval = null, liveTimerInterval = null;
-    let currentBatchStart = 0;
+    let stackOrders = [];
+    let autoRefreshInterval = null, timerInterval = null, rotateInterval = null;
     let refreshSec = 30;
-    let selectedPayment = "kpay", selectedPlan = null, selectedPrice = null;
-    let isSearching = false;
+    let currentSearchPhone = "";
+    let liveCountdownIntervals = {};
+    let lastHash = '';
+    const ROTATE_MS = 10000;
+    const NEW_TIMEOUT = 120000;
     
-    // ========== LANGUAGE TRANSLATIONS ==========
-    const translations = {
-        my: {
-            loginSubtitle: "ဝင်ရောက်ရန်", loginBtn: "ဝင်ရောက်မည်",
-            greetingPrefix: "🌤️ မင်္ဂလာပါ,", adOfferText: "30% OFF", adDeliveryText: "Free Delivery", adTitle: "Shwe Clothing Collection",
-            announcement: "🎉 New VIP Plan များ ထပ်ထည့်ထားပါသည်။ ယခုပဲ ဝယ်ယူလိုက်ပါ။",
-            searchTitle: "သက်တမ်းစစ်ရန်", searchBtnText: "ရှာ", clearBtnText: "ရှင်း",
-            liveTitle: "LIVE အော်ဒါများ", liveLoading: "စောင့်နေသည်...",
-            navHome: "Home", navPlans: "Plan များ", navOrders: "My Orders", navLive: "Live", navMarket: "Market",
-            paymentTitle: "ငွေပေးချေမှု", paymentMethodLabel: "ငွေလွှဲနည်းလမ်း", accountNameLabel: "အကောင့်အမည်", accountPhoneLabel: "ဖုန်းနံပါတ်",
-            screenshotTabText: "Screenshot", textTabText: "စာသားဖြည့်",
-            screenshotPhoneLabel: "📱 လက်ခံမည့်သူ ဖုန်းနံပါတ် *",
-            screenshotSlipLabel: "🧾 ငွေလွှဲပြေစာ (Screenshot) *",
-            screenshotUploadBtnText: "Screenshot ရွေးရန်",
-            textPhoneLabel: "📱 လက်ခံမည့်သူ ဖုန်းနံပါတ် *",
-            textSenderLabel: "ငွေလွှဲသူအမည် *",
-            textLast5Label: "ငွေလွှဲအကောင့်နောက်ဆုံး ၅ လုံး *",
-            last5Hint: "※ အကောင့်နံပါတ်ရဲ့ နောက်ဆုံးဂဏန်း ၅ လုံး",
-            submitOrderBtnText: "✅ အော်ဒါတင်မည်",
-            noOrders: "📭 အော်ဒါမရှိသေးပါ", pending: "⏳ စောင့်ဆိုင်းဆဲ", approved: "✅ အတည်ပြုပြီး", rejected: "❌ ပယ်ဖျက်ခံရ",
-            total: "စုစုပေါင်း", approvedCount: "အတည်ပြုပြီး", logoutBtn: "ထွက်ရန်", buyNow: "ဝယ်ယူမည်",
-            remaining: "ကျန်ရှိ"
-        },
-        en: {
-            loginSubtitle: "Login", loginBtn: "Login",
-            greetingPrefix: "🌤️ Welcome,", adOfferText: "30% OFF", adDeliveryText: "Free Delivery", adTitle: "Shwe Clothing Collection",
-            announcement: "🎉 New VIP Plans have been added. Shop now!",
-            searchTitle: "Check Validity", searchBtnText: "Search", clearBtnText: "Clear",
-            liveTitle: "LIVE Orders", liveLoading: "Waiting...",
-            navHome: "Home", navPlans: "Plans", navOrders: "My Orders", navLive: "Live", navMarket: "Market",
-            paymentTitle: "Payment", paymentMethodLabel: "Payment Method", accountNameLabel: "Account Name", accountPhoneLabel: "Phone Number",
-            screenshotTabText: "Screenshot", textTabText: "Text Entry",
-            screenshotPhoneLabel: "📱 Recipient Phone Number *",
-            screenshotSlipLabel: "🧾 Payment Screenshot *",
-            screenshotUploadBtnText: "Select Screenshot",
-            textPhoneLabel: "📱 Recipient Phone Number *",
-            textSenderLabel: "Sender Name *",
-            textLast5Label: "Last 5 digits of account *",
-            last5Hint: "※ Last 5 digits of the account number",
-            submitOrderBtnText: "✅ Place Order",
-            noOrders: "📭 No orders yet", pending: "⏳ Pending", approved: "✅ Approved", rejected: "❌ Rejected",
-            total: "Total", approvedCount: "Approved", logoutBtn: "Logout", buyNow: "Buy Now",
-            remaining: "Remaining"
-        },
-        zh: {
-            loginSubtitle: "登录", loginBtn: "登录",
-            greetingPrefix: "🌤️ 欢迎,", adOfferText: "30% 折扣", adDeliveryText: "免费配送", adTitle: "Shwe 服装系列",
-            announcement: "🎉 新增 VIP 套餐。立即购买！",
-            searchTitle: "检查有效期", searchBtnText: "搜索", clearBtnText: "清除",
-            liveTitle: "实时订单", liveLoading: "等待中...",
-            navHome: "主页", navPlans: "套餐", navOrders: "我的订单", navLive: "实时", navMarket: "市场",
-            paymentTitle: "支付", paymentMethodLabel: "支付方式", accountNameLabel: "账户名称", accountPhoneLabel: "电话号码",
-            screenshotTabText: "截图", textTabText: "文本输入",
-            screenshotPhoneLabel: "📱 接收者电话号码 *",
-            screenshotSlipLabel: "🧾 支付截图 *",
-            screenshotUploadBtnText: "选择截图",
-            textPhoneLabel: "📱 接收者电话号码 *",
-            textSenderLabel: "汇款人姓名 *",
-            textLast5Label: "账户最后5位数字 *",
-            last5Hint: "※ 账户号码的最后5位数字",
-            submitOrderBtnText: "✅ 提交订单",
-            noOrders: "📭 暂无订单", pending: "⏳ 待处理", approved: "✅ 已批准", rejected: "❌ 已拒绝",
-            total: "总计", approvedCount: "已批准", logoutBtn: "退出", buyNow: "立即购买",
-            remaining: "剩余"
-        }
-    };
-    
-    let currentLanguage = localStorage.getItem('app_language') || 'my';
-    
-    function updateUITexts() {
-        const t = translations[currentLanguage];
-        if (!t) return;
-        document.getElementById('loginSubtitle') && (document.getElementById('loginSubtitle').innerText = t.loginSubtitle);
-        document.getElementById('loginBtn') && (document.getElementById('loginBtn').innerText = t.loginBtn);
-        if (currentUsername) document.getElementById('greetingText') && (document.getElementById('greetingText').innerHTML = `${t.greetingPrefix} <span id="userName">${currentUsername}</span>`);
-        document.getElementById('adOfferText') && (document.getElementById('adOfferText').innerText = t.adOfferText);
-        document.getElementById('adDeliveryText') && (document.getElementById('adDeliveryText').innerText = t.adDeliveryText);
-        document.getElementById('adTitle') && (document.getElementById('adTitle').innerHTML = `${t.adTitle} <i class="fas fa-arrow-right"></i>`);
-        document.getElementById('announcementText') && (document.getElementById('announcementText').innerHTML = `<i class="fas fa-bullhorn"></i> ${t.announcement}`);
-        document.getElementById('searchTitle') && (document.getElementById('searchTitle').innerText = t.searchTitle);
-        document.getElementById('searchBtnText') && (document.getElementById('searchBtnText').innerText = t.searchBtnText);
-        document.getElementById('clearBtnText') && (document.getElementById('clearBtnText').innerText = t.clearBtnText);
-        document.getElementById('liveTitle') && (document.getElementById('liveTitle').innerText = t.liveTitle);
-        document.getElementById('liveLoading') && (document.getElementById('liveLoading').innerText = t.liveLoading);
-        document.getElementById('navHome') && (document.getElementById('navHome').innerText = t.navHome);
-        document.getElementById('navPlans') && (document.getElementById('navPlans').innerText = t.navPlans);
-        document.getElementById('navOrders') && (document.getElementById('navOrders').innerText = t.navOrders);
-        document.getElementById('navLive') && (document.getElementById('navLive').innerText = t.navLive);
-        document.getElementById('navMarket') && (document.getElementById('navMarket').innerText = t.navMarket);
-        document.getElementById('paymentTitle') && (document.getElementById('paymentTitle').innerText = t.paymentTitle);
-        document.getElementById('paymentMethodLabel') && (document.getElementById('paymentMethodLabel').innerText = t.paymentMethodLabel);
-        document.getElementById('accountNameLabel') && (document.getElementById('accountNameLabel').innerText = t.accountNameLabel);
-        document.getElementById('accountPhoneLabel') && (document.getElementById('accountPhoneLabel').innerText = t.accountPhoneLabel);
-        document.getElementById('screenshotTabText') && (document.getElementById('screenshotTabText').innerText = t.screenshotTabText);
-        document.getElementById('textTabText') && (document.getElementById('textTabText').innerText = t.textTabText);
-        document.getElementById('screenshotPhoneLabel') && (document.getElementById('screenshotPhoneLabel').innerText = t.screenshotPhoneLabel);
-        document.getElementById('screenshotSlipLabel') && (document.getElementById('screenshotSlipLabel').innerText = t.screenshotSlipLabel);
-        document.getElementById('screenshotUploadBtnText') && (document.getElementById('screenshotUploadBtnText').innerText = t.screenshotUploadBtnText);
-        document.getElementById('textPhoneLabel') && (document.getElementById('textPhoneLabel').innerText = t.textPhoneLabel);
-        document.getElementById('textSenderLabel') && (document.getElementById('textSenderLabel').innerText = t.textSenderLabel);
-        document.getElementById('textLast5Label') && (document.getElementById('textLast5Label').innerText = t.textLast5Label);
-        document.getElementById('last5Hint') && (document.getElementById('last5Hint').innerText = t.last5Hint);
-        document.getElementById('submitOrderBtnText') && (document.getElementById('submitOrderBtnText').innerHTML = t.submitOrderBtnText);
-    }
-    
-    function changeLanguage(lang) {
-        currentLanguage = lang;
-        localStorage.setItem('app_language', lang);
-        const flags = { my: '🇲🇲', en: '🇬🇧', zh: '🇨🇳' };
-        document.getElementById('currentLangFlag').innerHTML = flags[lang];
-        updateUITexts();
-        if (currentTab === 'plans') renderPlans();
-        if (currentTab === 'orders') renderMyOrders();
-        if (currentTab === 'live') renderLiveOrders();
-    }
-    
-    function toggleLanguageDropdown() {
-        document.getElementById('langDropdown').classList.toggle('show');
-    }
-    
-    document.addEventListener('click', function(event) {
-        const dropdown = document.getElementById('langDropdown');
-        const langBtn = document.getElementById('langBtn');
-        if (!langBtn?.contains(event.target) && dropdown) dropdown.classList.remove('show');
-    });
-    
-    // Drawer Functions
-    function toggleDrawer() {
-        const drawer = document.getElementById('drawer');
-        const overlay = document.getElementById('drawerOverlay');
-        drawer.classList.toggle('open');
-        overlay.classList.toggle('open');
-    }
-    
-    function closeDrawer() {
-        const drawer = document.getElementById('drawer');
-        const overlay = document.getElementById('drawerOverlay');
-        drawer.classList.remove('open');
-        overlay.classList.remove('open');
-    }
-    
-    function showSupport() {
-        closeDrawer();
-        showToast("Contact: Telegram @ATHsupport, Viber 09799480995");
-    }
-    
-    function getCardsPerPage() {
-        const width = window.innerWidth;
-        if (width <= 480) return 1;
-        if (width <= 768) return 2;
-        return 4;
-    }
-    
-    const plans = [
-        { name: "VIP LEVEL 1", price: 15000, features: ["22GB အမြန်နှုန်းမြင့်", "8,000 မိနစ် (ကွန်ရက်တွင်း)", "5,000 SMS"], icon: "🔥" },
-        { name: "VIP LEVEL 2", price: 20000, features: ["40GB အာထရာဒေတာ", "250 မိနစ် (ကွန်ရက်တွင်း)", "25 မိနစ် (အခြားကွန်ရက်)"], icon: "⭐" },
-        { name: "VIP LEVEL 3", price: 25000, features: ["40GB အမြန်နှုန်း + အပို", "1,400 မိနစ် (ကွန်ရက်တွင်း)", "8,000 SMS အကန့်အသတ်မရှိ"], icon: "⭐" },
-        { name: "VIP LEVEL 4 (ULTRA)", price: 30000, features: ["120GB ဂိမ်းဒေတာ", "အကန့်အသတ်မရှိ Streaming", "ဦးစားပေး ပံ့ပိုးမှု"], icon: "👑" }
-    ];
-    
-    function showToast(msg, isError) {
+    function showToast(msg, isError = false) {
         const toast = document.getElementById('toast');
         toast.textContent = msg;
         toast.style.background = isError ? '#f43f5e' : '#10b981';
         toast.style.display = 'block';
-        setTimeout(() => toast.style.display = 'none', 2500);
+        setTimeout(() => { toast.style.display = 'none'; }, 2500);
     }
     
     function maskPhone(phone) {
@@ -762,191 +313,155 @@
         return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
     }
     
-    function getRemainingTime(act) {
-        if (!act) return null;
-        const remain = new Date(act).getTime() + 30*86400000 - Date.now();
-        if (remain <= 0) return "Expired";
-        const d = Math.floor(remain/86400000), h = Math.floor((remain%86400000)/3600000), m = Math.floor((remain%3600000)/60000);
-        return `${d}ရက် ${h}နာရီ ${m}မိနစ်`;
+    function formatDate(d) {
+        if (!d) return '';
+        let date = new Date(d);
+        return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
     }
     
-    // Payment Methods
-    function selectPayment(method) {
-        selectedPayment = method;
-        document.querySelectorAll('.payment-tab-btn').forEach(btn => btn.classList.remove('active'));
-        if (method === 'kpay') document.getElementById('kpayTabBtn').classList.add('active');
-        else if (method === 'wavepay') document.getElementById('wavepayTabBtn').classList.add('active');
-        else if (method === 'ayapay') document.getElementById('ayapayTabBtn').classList.add('active');
-        const names = { kpay: "KBZ Pay", wavepay: "WavePay", ayapay: "AYA Pay" };
-        document.getElementById('paymentMethodName').innerText = names[method];
+    function getRemainingTime(activatedAt) {
+        if (!activatedAt) return null;
+        let end = new Date(activatedAt).getTime() + (30 * 24 * 60 * 60 * 1000);
+        let remain = end - Date.now();
+        if (remain <= 0) return 'Expired';
+        let days = Math.floor(remain / 86400000);
+        let hours = Math.floor((remain % 86400000) / 3600000);
+        let minutes = Math.floor((remain % 3600000) / 60000);
+        let seconds = Math.floor((remain % 60000) / 1000);
+        return `${days}d ${hours}h ${minutes}m ${seconds}s`;
     }
     
-    document.getElementById('kpayTabBtn')?.addEventListener('click', () => selectPayment('kpay'));
-    document.getElementById('wavepayTabBtn')?.addEventListener('click', () => selectPayment('wavepay'));
-    document.getElementById('ayapayTabBtn')?.addEventListener('click', () => selectPayment('ayapay'));
-    document.getElementById('accountPhone')?.addEventListener('click', () => { navigator.clipboard.writeText('09789999368'); showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ"); });
+    const isNewOrder = (o) => Date.now() - new Date(o.created_at).getTime() < NEW_TIMEOUT;
     
-    function switchToScreenshot() {
-        document.getElementById('screenshotPanel').style.display = 'block';
-        document.getElementById('textPanel').style.display = 'none';
-        document.getElementById('screenshotTabBtn').style.cssText = 'flex:1; padding:10px; border-radius:60px; background:var(--cyan); color:#030712; font-weight:600; cursor:pointer; border:none;';
-        document.getElementById('textTabBtn').style.cssText = 'flex:1; padding:10px; border-radius:60px; background:rgba(245,158,11,0.2); color:var(--amber); font-weight:600; cursor:pointer; border:none;';
+    function addGlowEffect(element) {
+        if (!element) return;
+        element.classList.add('glow');
+        setTimeout(() => { element.classList.remove('glow'); }, 500);
     }
     
-    function switchToText() {
-        document.getElementById('textPanel').style.display = 'block';
-        document.getElementById('screenshotPanel').style.display = 'none';
-        document.getElementById('textTabBtn').style.cssText = 'flex:1; padding:10px; border-radius:60px; background:var(--amber); color:#030712; font-weight:600; cursor:pointer; border:none;';
-        document.getElementById('screenshotTabBtn').style.cssText = 'flex:1; padding:10px; border-radius:60px; background:rgba(0,212,255,0.2); color:var(--cyan); font-weight:600; cursor:pointer; border:none;';
+    function startLiveCountdown(orderId, activatedAt) {
+        if (liveCountdownIntervals[orderId]) clearInterval(liveCountdownIntervals[orderId]);
+        const fn = () => {
+            const el = document.getElementById(`live-cd-${orderId}`);
+            if (!el) {
+                clearInterval(liveCountdownIntervals[orderId]);
+                return;
+            }
+            const remain = getRemainingTime(activatedAt);
+            if (remain === "Expired") {
+                el.innerHTML = `<i class="fas fa-calendar-times"></i> <span style="color:#f43f5e;">Expired</span>`;
+                el.classList.add('expired');
+                clearInterval(liveCountdownIntervals[orderId]);
+            } else {
+                el.innerHTML = `<i class="fas fa-hourglass-half"></i> <span style="color:var(--cyan);">${remain}</span>`;
+            }
+        };
+        fn();
+        liveCountdownIntervals[orderId] = setInterval(fn, 1000);
     }
     
-    document.getElementById('screenshotTabBtn')?.addEventListener('click', switchToScreenshot);
-    document.getElementById('textTabBtn')?.addEventListener('click', switchToText);
-    
-    function openPaymentModal(plan, price) {
-        selectedPlan = plan; selectedPrice = price;
-        document.getElementById('paymentModal').classList.add('active');
-    }
-    
-    function closePaymentModal() {
-        document.getElementById('paymentModal').classList.remove('active');
-        document.getElementById('orderPhone').value = '';
-        document.getElementById('orderPhoneText').value = '';
-        document.getElementById('slipImage').value = '';
-        document.getElementById('fileNameDisplay').innerHTML = '';
-        document.getElementById('senderName').value = '';
-        document.getElementById('last5Digits').value = '';
-        switchToScreenshot();
-    }
-    
-    document.getElementById('slipImage')?.addEventListener('change', function() {
-        if (this.files.length) document.getElementById('fileNameDisplay').innerHTML = `<i class="fas fa-check-circle"></i> ${this.files[0].name}`;
-    });
-    
-    async function submitOrder() {
-        const isScreenshot = document.getElementById('screenshotPanel').style.display !== 'none';
-        let phone, file, sender, last5;
-        if (isScreenshot) {
-            phone = document.getElementById('orderPhone').value.trim();
-            file = document.getElementById('slipImage').files[0];
-            if (!phone) { showToast("ဖုန်းနံပါတ် ထည့်ပါ", true); return; }
-            if (!file) { showToast("ငွေလွှဲပြေစာ တင်ပါ", true); return; }
-        } else {
-            phone = document.getElementById('orderPhoneText').value.trim();
-            sender = document.getElementById('senderName').value.trim();
-            last5 = document.getElementById('last5Digits').value.trim();
-            if (!phone) { showToast("ဖုန်းနံပါတ် ထည့်ပါ", true); return; }
-            if (!sender) { showToast("ငွေလွှဲသူအမည် ထည့်ပါ", true); return; }
-            if (!last5 || last5.length !== 5) { showToast("နောက်ဆုံး ၅ လုံး အတိအကျ ထည့်ပါ", true); return; }
+    function renderStack() {
+        const container = document.getElementById('stackContainer');
+        if (!stackOrders.length) {
+            container.innerHTML = '<div class="empty-msg">📭 အော်ဒါမရှိသေးပါ။<br>စောင့်ဆိုင်းနေပါသည်...</div>';
+            return;
         }
-        const fd = new FormData();
-        fd.append('phone', phone); fd.append('plan', selectedPlan); fd.append('price', selectedPrice); fd.append('payment_method', selectedPayment);
-        if (isScreenshot && file) fd.append('slip', file);
-        else { fd.append('sender_name', sender); fd.append('last5_digits', last5); }
-        try {
-            const res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
-            const data = await res.json();
-            if (data.success) {
-                showToast(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${data.orderId}`);
-                closePaymentModal();
-                if (currentTab === 'orders') loadUserOrders();
-                if (currentTab === 'live') loadLiveOrders();
-            } else showToast(data.error || "အော်ဒါတင်ရာတွင် အမှားရှိပါသည်", true);
-        } catch(e) { showToast("Connection error", true); }
+        
+        let html = '<div class="stack-container">';
+        for (const order of stackOrders) {
+            let isNew = isNewOrder(order);
+            let isHighlight = currentSearchPhone && order.phone === currentSearchPhone;
+            let statClass = "pending", statText = "⏳ စောင့်ဆိုင်းဆဲ";
+            if (order.status === "Approved") { statClass = "approved"; statText = "✅ အတည်ပြုပြီး"; }
+            if (order.status === "Rejected") { statClass = "rejected"; statText = "❌ ပယ်ဖျက်ခံရ"; }
+            
+            let countdownHtml = '';
+            if (order.status === 'Approved' && order.activated_at) {
+                let remain = getRemainingTime(order.activated_at);
+                countdownHtml = `<div class="feed-countdown" id="live-cd-${order.id}"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
+            }
+            
+            html += `
+                <div class="stack-item ${isNew ? 'new-order' : ''} ${isHighlight ? 'search-highlight' : ''}" data-order-id="${order.id}">
+                    ${isNew ? `<div class="new-badge"><i class="fas fa-fire"></i> NEW</div>` : ''}
+                    <div class="stack-header">
+                        <span class="stack-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
+                        <span class="stack-status ${statClass}">${statText}</span>
+                    </div>
+                    <div class="stack-details">
+                        <span class="stack-phone"><i class="fas fa-mobile-alt"></i> ${maskPhone(order.phone)}</span>
+                        <span class="stack-price"><i class="fas fa-coins"></i> ${order.price.toLocaleString()} KS</span>
+                    </div>
+                    ${countdownHtml}
+                </div>
+            `;
+        }
+        html += '</div>';
+        container.innerHTML = html;
+        
+        for (const order of stackOrders) {
+            if (order.status === 'Approved' && order.activated_at) {
+                startLiveCountdown(order.id, order.activated_at);
+            }
+        }
     }
     
-    // ========== LIVE TAB FUNCTIONS ==========
+    function rotateStack() {
+        if (stackOrders.length > 1) {
+            const lastItem = stackOrders.pop();
+            stackOrders.unshift(lastItem);
+            renderStack();
+            setTimeout(() => {
+                const topCard = document.querySelector('.stack-item');
+                if (topCard) addGlowEffect(topCard);
+            }, 50);
+        }
+    }
+    
     async function loadLiveOrders() {
         try {
             const res = await fetch(`${API_BASE}/api/admin/orders`);
             const data = await res.json();
             if (data.orders) {
-                liveOrders = data.orders.filter(o => o.phone !== currentUser);
-                if (!isSearching && currentTab === 'live') renderLiveOrders();
+                let filtered = data.orders;
+                if (currentSearchPhone) {
+                    filtered = filtered.filter(o => o.phone === currentSearchPhone);
+                }
+                let sorted = [...filtered].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                let hash = JSON.stringify(sorted.map(o => ({ id: o.id, status: o.status })));
+                
+                if (hash !== lastHash) {
+                    lastHash = hash;
+                    let currIds = stackOrders.map(o => o.id);
+                    let newOnes = sorted.filter(o => !currIds.includes(o.id));
+                    if (newOnes.length) {
+                        stackOrders = [...newOnes, ...stackOrders].slice(0, 30);
+                        renderStack();
+                        setTimeout(() => {
+                            const newCards = document.querySelectorAll('.stack-item');
+                            for (let i = 0; i < newOnes.length && i < newCards.length; i++) {
+                                addGlowEffect(newCards[i]);
+                            }
+                        }, 50);
+                    } else {
+                        let upd = [];
+                        sorted.forEach(o => { if (currIds.includes(o.id)) upd.push(o); });
+                        stackOrders.forEach(o => { if (!upd.find(x => x.id === o.id)) upd.push(o); });
+                        stackOrders = upd.slice(0, 30);
+                        renderStack();
+                    }
+                }
             }
         } catch(e) {
             console.error('Error loading live orders:', e);
-            if (!isSearching) document.getElementById('liveContainer').innerHTML = '<div style="text-align:center; padding:40px;">🔴 Connection error</div>';
+            document.getElementById('stackContainer').innerHTML = '<div class="empty-msg">🔴 Connection error</div>';
         }
     }
     
-    function renderLiveOrders() {
-        const container = document.getElementById('liveContainer');
-        if (!liveOrders.length) {
-            container.innerHTML = '<div style="text-align:center; padding:40px;">🔴 လက်ရှိ LIVE အော်ဒါမရှိပါ</div>';
-            return;
-        }
-        const cardsPerPage = getCardsPerPage();
-        const visibleOrders = [];
-        for (let i = 0; i < cardsPerPage; i++) {
-            const idx = (currentBatchStart + i) % liveOrders.length;
-            visibleOrders.push(liveOrders[idx]);
-        }
-        let gridHtml = '<div class="live-grid">';
-        for (const card of visibleOrders) {
-            let statusClass = card.status === 'Pending' ? 'status-pending' : (card.status === 'Approved' ? 'status-approved' : 'status-rejected');
-            let statusText = card.status === 'Pending' ? '⏳ Pending' : (card.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
-            let remainHtml = '';
-            if (card.status === 'Approved' && card.activated_at) {
-                remainHtml = `<div class="countdown"><i class="fas fa-hourglass-start"></i> ${getRemainingTime(card.activated_at)}</div>`;
-            }
-            gridHtml += `
-                <div class="live-card slide-up-new" data-order-id="${card.id}">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <span class="live-plan"><i class="fas fa-mobile-alt"></i> ${card.plan}</span>
-                        <span class="${statusClass}">${statusText}</span>
-                    </div>
-                    <div class="live-phone"><i class="fas fa-phone-alt"></i> ${maskPhone(card.phone)}</div>
-                    <div class="live-price">${card.price.toLocaleString()} MMK</div>
-                    <div style="font-size:0.55rem; margin-top:4px; color:var(--text-secondary);"><i class="fas fa-clock"></i> ${new Date(card.created_at).toLocaleTimeString()}</div>
-                    ${remainHtml}
-                </div>
-            `;
-        }
-        gridHtml += '</div>';
-        container.innerHTML = gridHtml;
-        setTimeout(() => {
-            document.querySelectorAll('#liveContainer .live-card').forEach(card => {
-                card.classList.add('blink-cyan');
-                setTimeout(() => card.classList.remove('blink-cyan'), 2000);
-            });
-        }, 50);
-        currentBatchStart = (currentBatchStart + cardsPerPage) % liveOrders.length;
-    }
-    
-    function startLiveRotation() {
-        if (liveRotateInterval) clearInterval(liveRotateInterval);
-        liveRotateInterval = setInterval(() => {
-            if (currentTab === 'live' && !isSearching && liveOrders.length > 0) renderLiveOrders();
-        }, 5000);
-    }
-    
-    function startLiveRefresh() {
-        if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-        liveRefreshInterval = setInterval(async () => {
-            await loadLiveOrders();
-            if (currentTab === 'live' && !isSearching) renderLiveOrders();
-            refreshSec = 30;
-            const timerSpan = document.getElementById('liveTimer');
-            if (timerSpan) timerSpan.innerHTML = 'auto 30s';
-        }, 30000);
-    }
-    
-    function startLiveTimer() {
-        if (liveTimerInterval) clearInterval(liveTimerInterval);
-        liveTimerInterval = setInterval(() => {
-            if (currentTab === 'live') {
-                refreshSec--;
-                if (refreshSec < 0) refreshSec = 30;
-                const timerSpan = document.getElementById('liveTimer');
-                if (timerSpan) timerSpan.innerHTML = `auto ${refreshSec}s`;
-            }
-        }, 1000);
-    }
-    
-    async function searchLiveOrder() {
-        const phone = document.getElementById('liveSearchPhone').value.trim();
-        const msgDiv = document.getElementById('liveSearchMessage');
+    async function searchByPhone() {
+        const phone = document.getElementById('searchPhone').value.trim();
+        const msgDiv = document.getElementById('searchMessage');
+        
         if (!phone || phone.length < 9) {
             if (msgDiv) {
                 msgDiv.style.display = 'block';
@@ -955,175 +470,93 @@
             }
             return;
         }
-        isSearching = true;
-        if (liveRotateInterval) clearInterval(liveRotateInterval);
+        
         if (msgDiv) {
             msgDiv.style.display = 'block';
             msgDiv.className = 'search-message';
             msgDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ရှာဖွေနေသည်...';
         }
+        
         try {
             const res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(phone)}`);
             const data = await res.json();
             const orders = data.orders || [];
+            
             if (orders.length === 0) {
-                msgDiv.className = 'search-message error';
-                msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
-                isSearching = false;
-                startLiveRotation();
-            } else {
-                msgDiv.className = 'search-message success';
-                msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။';
-                const container = document.getElementById('liveContainer');
-                let searchHtml = '<div class="live-grid">';
-                for (const o of orders) {
-                    let sClass = o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected');
-                    let sText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
-                    let remain = '';
-                    if (o.status === 'Approved' && o.activated_at) remain = `<div class="countdown"><i class="fas fa-hourglass-start"></i> ${getRemainingTime(o.activated_at)}</div>`;
-                    searchHtml += `
-                        <div class="live-card search-highlight">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                                <span class="live-plan"><i class="fas fa-mobile-alt"></i> ${o.plan}</span>
-                                <span class="${sClass}">${sText}</span>
-                            </div>
-                            <div class="live-phone"><i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}</div>
-                            <div class="live-price">${o.price.toLocaleString()} MMK</div>
-                            ${remain}
-                        </div>
-                    `;
+                if (msgDiv) {
+                    msgDiv.className = 'search-message error';
+                    msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
                 }
-                searchHtml += '</div>';
-                container.innerHTML = searchHtml;
-                setTimeout(() => {
-                    const highlighted = document.querySelector('.search-highlight');
-                    if (highlighted) highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
+                currentSearchPhone = '';
+                await loadLiveOrders();
+            } else {
+                if (msgDiv) {
+                    msgDiv.className = 'search-message success';
+                    msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။ 🟠 လိမ္မော်ရောင် မှိတ်တုတ်ပြသပါမည်။';
+                }
+                currentSearchPhone = phone;
+                stackOrders = orders.slice(0, 30);
+                renderStack();
             }
+            
+            setTimeout(() => {
+                const highlighted = document.querySelector('.search-highlight');
+                if (highlighted) highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
         } catch(e) {
-            msgDiv.className = 'search-message error';
-            msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ရှာဖွေရာတွင် အမှားရှိပါသည်။';
-            isSearching = false;
-            startLiveRotation();
+            if (msgDiv) {
+                msgDiv.className = 'search-message error';
+                msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ရှာဖွေရာတွင် အမှားရှိပါသည်။';
+            }
         }
     }
     
-    function clearLiveSearch() {
-        document.getElementById('liveSearchPhone').value = '';
-        const msgDiv = document.getElementById('liveSearchMessage');
-        if (msgDiv) msgDiv.style.display = 'none';
-        isSearching = false;
-        startLiveRotation();
-        renderLiveOrders();
+    function clearSearch() {
+        currentSearchPhone = '';
+        document.getElementById('searchPhone').value = '';
+        document.getElementById('searchMessage').style.display = 'none';
+        loadLiveOrders();
     }
     
-    window.addEventListener('resize', () => {
-        if (currentTab === 'live' && !isSearching && liveOrders.length > 0) {
-            currentBatchStart = 0;
-            renderLiveOrders();
-        }
+    function startAutoRefresh() {
+        if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+        if (timerInterval) clearInterval(timerInterval);
+        
+        refreshSec = 30;
+        const timerSpan = document.getElementById('liveTimer');
+        const updateTimer = () => {
+            if (timerSpan) timerSpan.innerText = `auto ${refreshSec}s`;
+            refreshSec--;
+            if (refreshSec < 0) refreshSec = 30;
+        };
+        timerInterval = setInterval(updateTimer, 1000);
+        
+        autoRefreshInterval = setInterval(async () => {
+            await loadLiveOrders();
+            refreshSec = 30;
+            if (timerSpan) timerSpan.innerText = 'auto 30s';
+        }, 30000);
+    }
+    
+    function startRotate() {
+        if (rotateInterval) clearInterval(rotateInterval);
+        rotateInterval = setInterval(() => {
+            if (stackOrders.length > 1 && !currentSearchPhone) {
+                rotateStack();
+            }
+        }, ROTATE_MS);
+    }
+    
+    // Initialize
+    document.getElementById('searchBtn').addEventListener('click', searchByPhone);
+    document.getElementById('clearSearchBtn').addEventListener('click', clearSearch);
+    document.getElementById('searchPhone').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') searchByPhone();
     });
     
-    async function login() {
-        const username = document.getElementById('loginUsername').value.trim();
-        const phone = document.getElementById('loginPhone').value.trim();
-        if (!username || !phone || phone.length < 9) { showToast("Username နှင့် ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ", true); return; }
-        const statsRes = await fetch(`${API_BASE}/api/admin/user-stats`);
-        const statsData = await statsRes.json();
-        if (statsData.stats?.find(u => u.phone === phone)?.blocked) {
-            showToast("သင့်အကောင့်အား ပိတ်ထားပါသည်။ Customer Support ကို ဆက်သွယ်ပါ။", true);
-            return;
-        }
-        currentUser = phone; currentUsername = username;
-        localStorage.setItem('userPhone', phone); localStorage.setItem('userName', username);
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block';
-        document.getElementById('userName').innerHTML = username;
-        document.getElementById('userPhoneDisplay').innerHTML = `📞 ${phone}`;
-        document.getElementById('drawerUsername').innerHTML = username;
-        document.getElementById('drawerPhone').innerHTML = maskPhone(phone);
-        updateUITexts();
-        await loadUserOrders();
-        await loadLiveOrders();
-        renderPlans();
-        startLiveRotation();
-        startLiveRefresh();
-        startLiveTimer();
-    }
-    
-    async function loadUserOrders() {
-        const res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(currentUser)}`);
-        const data = await res.json();
-        allOrders = data.orders || [];
-        renderMyOrders();
-    }
-    
-    function renderPlans() {
-        const t = translations[currentLanguage];
-        document.getElementById('plansContainer').innerHTML = plans.map(p => `
-            <div class="plan-card">
-                <div style="display:flex; justify-content:space-between;"><span style="font-weight:700;">${p.icon} ${p.name}</span><span style="font-weight:800; color:var(--emerald);">${p.price.toLocaleString()} MMK</span></div>
-                <ul style="margin:12px 0 0 20px;">${p.features.map(f => `<li style="margin:6px 0; font-size:0.75rem;"><i class="fas fa-check-circle" style="color:var(--emerald);"></i> ${f}</li>`).join('')}</ul>
-                <button class="buy-plan-btn" onclick="openPaymentModal('${p.name}', ${p.price})">${t.buyNow}</button>
-            </div>
-        `).join('');
-    }
-    
-    function renderMyOrders() {
-        const t = translations[currentLanguage];
-        if (!allOrders.length) { document.getElementById('myOrdersContainer').innerHTML = `<div style="text-align:center; padding:40px;">📭 ${t.noOrders}</div>`; return; }
-        document.getElementById('myOrdersContainer').innerHTML = allOrders.map(o => `
-            <div class="order-card">
-                <div style="display:flex; justify-content:space-between;"><span style="font-weight:700;">${o.plan}</span><span class="${o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected')}">${o.status === 'Pending' ? t.pending : (o.status === 'Approved' ? t.approved : t.rejected)}</span></div>
-                <div style="margin-top:8px;">📞 ${o.phone}</div><div style="font-weight:700; color:var(--emerald);">${o.price.toLocaleString()} MMK</div>
-                <div style="display:flex; gap:12px; margin-top:8px; font-size:0.65rem;"><span>📅 ${new Date(o.created_at).toLocaleDateString()}</span></div>
-                ${o.status === 'Approved' && o.activated_at ? `<div style="display:flex; gap:12px; margin-top:4px; font-size:0.65rem;"><span>📅 စတင်: ${new Date(o.activated_at).toLocaleDateString()}</span><span>📅 ကုန်: ${new Date(new Date(o.activated_at).getTime()+30*86400000).toLocaleDateString()}</span></div><div class="countdown"><i class="fas fa-hourglass-half"></i> ${t.remaining}: ${getRemainingTime(o.activated_at)}</div>` : ''}
-            </div>
-        `).join('');
-    }
-    
-    function logout() {
-        localStorage.clear();
-        if (liveRotateInterval) clearInterval(liveRotateInterval);
-        if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-        if (liveTimerInterval) clearInterval(liveTimerInterval);
-        document.getElementById('loginScreen').style.display = 'flex';
-        document.getElementById('mainApp').style.display = 'none';
-        showToast("ထွက်ရန် အောင်မြင်ပါသည်။");
-    }
-    
-    function switchTab(tab) {
-        currentTab = tab;
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.getElementById(`${tab}Tab`).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(item => {
-            if (item.dataset.tab === tab) item.classList.add('active');
-            else item.classList.remove('active');
-        });
-        if (tab === 'orders') loadUserOrders();
-        if (tab === 'live') {
-            isSearching = false;
-            clearLiveSearch();
-            currentBatchStart = 0;
-            renderLiveOrders();
-            if (!liveRotateInterval) startLiveRotation();
-            refreshSec = 30;
-            if (document.getElementById('liveTimer')) document.getElementById('liveTimer').innerHTML = 'auto 30s';
-        }
-        if (tab === 'plans') renderPlans();
-    }
-    
-    document.querySelectorAll('.nav-item').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
-    
-    const savedPhone = localStorage.getItem('userPhone'), savedName = localStorage.getItem('userName');
-    if (savedPhone && savedName) { document.getElementById('loginPhone').value = savedPhone; document.getElementById('loginUsername').value = savedName; login(); }
-    
-    window.openPaymentModal = openPaymentModal; window.closePaymentModal = closePaymentModal;
-    window.login = login; window.logout = logout; window.searchLiveOrder = searchLiveOrder; window.clearLiveSearch = clearLiveSearch;
-    window.changeLanguage = changeLanguage; window.toggleDrawer = toggleDrawer; window.closeDrawer = closeDrawer;
-    window.showSupport = showSupport;
-    window.toggleDrawer = toggleDrawer;
-    window.showNotifications = () => showToast("No new notifications");
+    startAutoRefresh();
+    startRotate();
+    loadLiveOrders();
 </script>
 </body>
 </html>
