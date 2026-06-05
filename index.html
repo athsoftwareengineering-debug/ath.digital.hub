@@ -3,1259 +3,810 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>ATH DIGITAL HUB | MYTEL VIP Store</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>ATH DIGITAL HUB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --bg-deep: #0a0c15;
+            --bg-dark: #0a0c15;
+            --bg-card: #0f111a;
             --cyan: #00d4ff;
-            --violet: #8b5cf6;
             --emerald: #10b981;
             --rose: #f43f5e;
             --amber: #f59e0b;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
+            --border: #1e293b;
         }
         body {
-            background: #0a0c15;
+            background: var(--bg-dark);
             color: var(--text-primary);
-            font-family: 'Noto Sans Myanmar', 'Inter', sans-serif;
+            font-family: 'Inter', 'Noto Sans Myanmar', sans-serif;
             min-height: 100vh;
-            background-image: radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.12) 0%, transparent 50%),
-                              radial-gradient(circle at 85% 70%, rgba(0,212,255,0.08) 0%, transparent 55%);
+            background-image: radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.1) 0%, transparent 50%);
+            padding-bottom: 70px;
         }
-        .container { max-width: 1320px; margin: 0 auto; padding: 16px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 0 16px; }
         
-        .store-header {
-            backdrop-filter: blur(20px);
-            background: rgba(10,12,21,0.6);
-            border: 1px solid rgba(0,212,255,0.2);
-            border-radius: 1.5rem;
+        /* ========== APP BAR ========== */
+        .app-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .brand {
-            font-family: 'Space Grotesk', monospace;
-            font-size: 1.2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #ffffff, #94a3b8, var(--cyan));
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .brand img {
-            height: 35px;
-            width: auto;
-            border-radius: 8px;
-        }
-        @media (min-width: 768px) { 
-            .brand { font-size: 1.5rem; }
-            .brand img { height: 40px; }
-        }
-        
-        .lang-switcher {
-            display: flex;
-            gap: 8px;
-            background: rgba(0,212,255,0.1);
-            padding: 4px;
-            border-radius: 60px;
-            border: 1px solid rgba(0,212,255,0.2);
-        }
-        .lang-btn {
-            background: transparent;
-            border: none;
-            padding: 6px 16px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            cursor: pointer;
-            color: var(--text-secondary);
-            transition: all 0.2s;
-        }
-        .lang-btn.active {
-            background: var(--cyan);
-            color: #030712;
-            box-shadow: 0 0 10px rgba(0,212,255,0.3);
-        }
-        
-        .my-orders-btn {
-            background: rgba(139,92,246,0.2);
-            border: 1px solid rgba(139,92,246,0.5);
-            padding: 8px 16px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.75rem;
-            color: #c4b5fd;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        @media (min-width: 768px) { .my-orders-btn { padding: 10px 20px; } }
-        .my-orders-btn:hover { background: var(--violet); color: white; }
-        
-        .hero { text-align: center; margin: 16px 0 20px; }
-        .hero h1 { font-size: 1.8rem; font-weight: 700; background: linear-gradient(to right, #fff, var(--cyan)); background-clip: text; -webkit-background-clip: text; color: transparent; }
-        @media (min-width: 768px) { .hero h1 { font-size: 2.5rem; } }
-        .hero p { color: var(--text-secondary); font-size: 0.8rem; margin-top: 8px; }
-        
-        .history-panel {
-            position: fixed;
+            background: rgba(10,12,21,0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,212,255,0.1);
+            position: sticky;
             top: 0;
-            right: -100%;
-            width: 90%;
-            max-width: 550px;
-            height: 100%;
-            background: rgba(8,12,22,0.98);
-            backdrop-filter: blur(24px);
-            border-left: 1px solid rgba(0,212,255,0.3);
-            z-index: 1500;
-            transition: right 0.35s ease;
-            padding: 16px;
-            overflow-y: auto;
+            z-index: 100;
         }
-        .history-panel.open { right: 0; }
-        .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid rgba(0,212,255,0.3);
-        }
-        .history-header h3 { font-size: 1.1rem; color: var(--cyan); }
-        .close-history { font-size: 1.5rem; cursor: pointer; padding: 0 8px; }
-        .close-history:hover { color: var(--rose); }
-        
-        .auto-refresh-status {
-            background: rgba(0,212,255,0.08);
-            border-radius: 40px;
-            padding: 5px 12px;
-            font-size: 0.6rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 16px;
-            justify-content: center;
-        }
-        
-        .search-section {
-            background: rgba(0,212,255,0.05);
-            border: 1px solid rgba(0,212,255,0.2);
-            border-radius: 1rem;
-            padding: 14px;
-            margin-bottom: 20px;
-        }
-        .search-title { font-size: 0.85rem; font-weight: 600; color: var(--cyan); margin-bottom: 10px; }
-        .search-input-group { display: flex; gap: 10px; flex-wrap: wrap; }
-        .search-input {
-            flex: 1;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #2d3a5e;
-            border-radius: 60px;
-            padding: 10px 16px;
-            color: white;
-            font-size: 0.8rem;
-        }
-        .search-input:focus { border-color: var(--cyan); outline: none; }
-        .search-btn, .clear-search-btn {
-            padding: 10px 20px;
-            border-radius: 60px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 0.75rem;
-            transition: all 0.2s;
-        }
-        .search-btn { background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; color: white; }
-        .clear-search-btn { background: #334155; border: none; color: white; }
-        .search-btn:hover, .clear-search-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
-        .search-hint { font-size: 0.6rem; color: #64748b; margin-top: 8px; text-align: center; }
-        
-        .orders-card {
-            border-radius: 1rem;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-        .orders-card.my-orders {
-            background: rgba(0,212,255,0.03);
-            border: 1px solid rgba(0,212,255,0.4);
-        }
-        .orders-card.my-orders .card-header {
-            background: rgba(0,212,255,0.15);
-            border-bottom: 1px solid rgba(0,212,255,0.3);
-            color: var(--cyan);
-        }
-        .orders-card.others-orders {
-            background: rgba(139,92,246,0.03);
-            border: 1px solid rgba(139,92,246,0.3);
-        }
-        .orders-card.others-orders .card-header {
-            background: rgba(139,92,246,0.1);
-            border-bottom: 1px solid rgba(139,92,246,0.2);
-            color: #c4b5fd;
-        }
-        .card-header { padding: 12px 16px; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .card-content { padding: 16px; max-height: 500px; overflow-y: auto; }
-        
-        .live-badge {
-            background: rgba(244,63,94,0.2);
-            color: #f43f5e;
-            font-size: 0.6rem;
-            font-weight: 700;
-            padding: 3px 10px;
-            border-radius: 40px;
-            margin-left: 8px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            animation: liveBlink 1s step-end infinite;
-        }
-        @keyframes liveBlink {
-            0%,100% { background: rgba(244,63,94,0.2); color: #f43f5e; }
-            50% { background: rgba(244,63,94,0.8); color: white; }
-        }
-        
-        .stack-container { display: flex; flex-direction: column; gap: 10px; }
-        .stack-item {
-            background: linear-gradient(135deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
-            border-radius: 12px;
-            padding: 14px;
-            border-left: 3px solid var(--violet);
-            transition: all 0.3s ease;
-        }
-        .stack-item:hover { transform: translateX(4px); border-left-color: var(--cyan); }
-        .stack-item.new-order { border-left-color: var(--cyan); background: rgba(0,212,255,0.08); }
-        .stack-item.search-highlight {
-            border: 2px solid #fbbf24;
-            background: rgba(251,191,36,0.15);
-            box-shadow: 0 0 20px rgba(251,191,36,0.5);
-        }
-        @keyframes orangeGlow {
-            0% { border-color: rgba(245,158,11,0); box-shadow: 0 0 0px rgba(245,158,11,0); background: rgba(245,158,11,0); }
-            50% { border-color: #f59e0b; box-shadow: 0 0 20px #f59e0b; background: rgba(245,158,11,0.25); }
-            100% { border-color: rgba(245,158,11,0); box-shadow: 0 0 0px rgba(245,158,11,0); background: rgba(245,158,11,0); }
-        }
-        .stack-item.glow { animation: orangeGlow 0.5s ease-in-out; }
-        
-        .new-badge {
-            background: linear-gradient(135deg, #f43f5e, #e11d48);
-            color: white;
-            font-size: 0.55rem;
-            font-weight: 700;
-            padding: 2px 10px;
-            border-radius: 40px;
-            display: inline-block;
-            margin-bottom: 8px;
-        }
-        .stack-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
-        .stack-plan { font-size: 0.8rem; font-weight: 700; color: var(--cyan); }
-        .stack-status { padding: 3px 10px; border-radius: 40px; font-size: 0.6rem; font-weight: 600; }
-        .stack-status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
-        .stack-status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
-        .stack-status.rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
-        .stack-details { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
-        .stack-phone { font-size: 0.7rem; font-family: monospace; color: var(--amber); }
-        .stack-price { font-size: 0.75rem; font-weight: 600; color: var(--emerald); }
-        .feed-countdown { 
-            font-size: 0.6rem; 
-            color: var(--cyan); 
-            margin-top: 6px; 
-            padding-top: 6px; 
-            border-top: 1px solid rgba(255,255,255,0.05); 
-            display: flex; 
-            align-items: center; 
-            gap: 6px;
-            font-family: monospace;
-        }
-        .feed-countdown i { font-size: 0.55rem; }
-        .feed-countdown.expired { color: var(--rose); }
-        
-        .status-bar { display: flex; justify-content: flex-start; margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.6rem; color: #64748b; }
-        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; animation: pulse 1.5s infinite; display: inline-block; margin-right: 4px; }
-        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-        
-        .order-item {
-            background: linear-gradient(135deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 10px;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-        .order-item:hover { transform: translateX(3px); border-color: rgba(0,212,255,0.3); }
-        .order-item.highlight { border-color: #fbbf24; background: rgba(251,191,36,0.15); box-shadow: 0 0 15px rgba(251,191,36,0.4); }
-        .my-orders .order-item { border-left: 2px solid var(--cyan); }
-        .order-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .order-plan { font-size: 0.75rem; font-weight: 700; color: var(--cyan); }
-        .status-badge { padding: 3px 8px; border-radius: 40px; font-size: 0.55rem; font-weight: 700; }
-        .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
-        .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
-        .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
-        .info-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 8px; }
-        .info-item { background: rgba(0,0,0,0.25); border-radius: 10px; padding: 6px 8px; }
-        .info-label { font-size: 0.5rem; color: #64748b; }
-        .info-value { font-size: 0.7rem; font-weight: 600; }
-        .info-value.price { color: var(--emerald); }
-        .copy-id { cursor: pointer; margin-left: 5px; font-size: 0.6rem; opacity: 0.7; }
-        .date-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
-        .date-box { flex: 1; background: rgba(0,0,0,0.25); border-radius: 10px; padding: 6px 8px; text-align: center; }
-        .date-label { font-size: 0.5rem; color: #64748b; }
-        .date-value { font-size: 0.7rem; font-weight: 600; }
-        .date-value.start { color: var(--cyan); }
-        .date-value.expired { color: var(--amber); }
-        .waiting-badge { background: rgba(245,158,11,0.15); padding: 5px 10px; border-radius: 20px; font-size: 0.6rem; color: #fbbf24; margin-top: 6px; text-align: center; }
-        .countdown-timer { background: rgba(0,212,255,0.08); padding: 6px 10px; border-radius: 30px; margin-top: 8px; text-align: center; font-size: 0.65rem; font-family: monospace; }
-        .view-slip-btn {
-            background: rgba(0,212,255,0.15);
-            border: 1px solid rgba(0,212,255,0.3);
-            padding: 4px 10px;
-            border-radius: 40px;
-            font-size: 0.6rem;
-            cursor: pointer;
-            color: var(--cyan);
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        .view-slip-btn:hover { background: var(--cyan); color: #030712; }
-        
-        .pack-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
-            gap: 20px;
-            margin: 32px 0 40px;
-        }
-        .pack-card {
-            background: linear-gradient(145deg, #11131e, #0c0e16);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(34,197,94,0.2);
-            border-radius: 24px;
-            padding: 1.2rem;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-        .pack-card:hover { transform: translateY(-6px); border-color: rgba(34,197,94,0.5); }
-        .card-header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-        .flag-badge { font-size: 0.65rem; font-weight: 800; padding: 3px 10px; border-radius: 40px; color: white; }
-        .tier-name { font-size: 0.75rem; font-weight: 700; color: var(--cyan); letter-spacing: 1px; }
-        .pack-price { font-size: 1.3rem; font-weight: 800; }
-        .feature-list { list-style: none; margin: 12px 0 20px; }
-        .feature-list li { margin-bottom: 8px; font-size: 0.7rem; display: flex; align-items: flex-start; gap: 8px; color: #cbd5e1; line-height: 1.4; }
-        .feature-list li i { width: 16px; font-size: 0.7rem; margin-top: 2px; flex-shrink: 0; color: #10b981; }
-        .feature-number { font-weight: 600; color: var(--cyan); margin-right: 4px; }
-        .buy-btn {
-            width: 100%;
-            padding: 10px 0;
+        .menu-btn {
+            background: none;
             border: none;
-            border-radius: 60px;
-            font-weight: 700;
-            background: white;
-            color: #0f172a;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.2s;
-        }
-        .buy-btn:hover { background: var(--cyan); transform: scale(0.98); color: #030712; }
-        .divider { margin: 12px 0; border-top: 1px solid rgba(255,255,255,0.08); }
-        
-        /* ==================== PROFESSIONAL PAYMENT MODAL STYLES ==================== */
-        .modal-overlay {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(3,7,18,0.94); backdrop-filter: blur(20px);
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; visibility: hidden; transition: 0.25s; z-index: 2000;
-        }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-card {
-            background: linear-gradient(145deg, rgba(18,22,35,0.98), rgba(10,12,21,0.98));
-            border: 1px solid rgba(0,212,255,0.4);
-            border-radius: 1.5rem;
-            width: 90%;
-            max-width: 480px;
-            padding: 1.5rem;
-            position: relative;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-        }
-        .modal-close {
-            position: absolute;
-            right: 16px;
-            top: 16px;
+            color: var(--text-primary);
             font-size: 1.3rem;
             cursor: pointer;
-            color: var(--text-secondary);
-            transition: all 0.2s;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-        .modal-close:hover {
-            color: var(--rose);
-            background: rgba(244,63,94,0.1);
-            transform: scale(1.1);
-        }
-        .modal-icon {
-            text-align: center;
-            margin-bottom: 16px;
-        }
-        .modal-icon i {
-            font-size: 2rem;
-            color: var(--cyan);
-            background: rgba(0,212,255,0.1);
-            padding: 12px;
-            border-radius: 60px;
-        }
-        .modal-title {
-            font-family: 'Space Grotesk', sans-serif;
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--text-primary);
-        }
-        .info-card {
-            background: rgba(0,212,255,0.05);
-            border: 1px solid rgba(0,212,255,0.15);
-            border-radius: 1rem;
-            padding: 14px;
-            margin-bottom: 20px;
-        }
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .info-row:last-child {
-            border-bottom: none;
-        }
-        .info-label {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .info-value {
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: rgba(6,182,212,0.12);
-            padding: 4px 10px;
-            border-radius: 40px;
-            color: var(--cyan);
-        }
-        .copy-hint {
-            font-size: 0.55rem;
-            color: #64748b;
-            text-align: center;
-            margin-top: 8px;
-            padding-top: 6px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
-        .form-group {
-            margin-bottom: 16px;
-        }
-        .form-group label {
-            font-size: 0.7rem;
-            display: block;
-            margin-bottom: 6px;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        .form-control {
-            width: 100%;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #2d3a5e;
-            border-radius: 60px;
-            padding: 12px 16px;
-            color: white;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
-        .form-control:focus {
-            border-color: var(--cyan);
-            outline: none;
-            box-shadow: 0 0 10px rgba(0,212,255,0.2);
-        }
-        /* ★★★ BUTTON STYLE FOR FILE UPLOAD ★★★ */
-        .file-upload-btn {
-            background: rgba(0,212,255,0.15);
-            border: 1px solid rgba(0,212,255,0.3);
-            padding: 12px 16px;
-            border-radius: 60px;
-            width: 100%;
-            cursor: pointer;
-            color: var(--cyan);
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-            text-align: center;
-        }
-        .file-upload-btn:hover {
-            background: rgba(0,212,255,0.25);
-            transform: translateY(-1px);
-        }
-        .file-name-display {
-            font-size: 0.65rem;
-            color: #64748b;
-            margin-top: 8px;
-            text-align: center;
-        }
-        .submit-btn {
-            width: 100%;
-            padding: 12px;
-            border-radius: 60px;
-            font-weight: 800;
-            cursor: pointer;
-            margin-top: 8px;
-            background: linear-gradient(135deg, var(--emerald), #059669);
-            color: white;
-            border: none;
-            transition: all 0.2s;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .submit-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            filter: brightness(1.05);
-            box-shadow: 0 5px 20px rgba(16,185,129,0.3);
-        }
-        .submit-btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-        
-        footer {
-            margin-top: 40px;
-            text-align: center;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            padding: 20px;
-        }
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-        .social-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-        .social-icon:hover {
-            transform: translateY(-3px);
-        }
-        .social-icon i {
-            font-size: 1.2rem;
-            color: white;
-        }
-        .social-icon.facebook { background: #1877f2; }
-        .social-icon.telegram { background: #0088cc; }
-        .social-icon.viber { background: #7360f2; }
-        .social-icon.phone { background: #25d366; }
-        .footer-text {
-            font-size: 0.65rem;
-            color: #64748b;
-            margin-top: 10px;
-        }
-        
-        .image-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.96);
-            backdrop-filter: blur(20px);
-            z-index: 10000;
             display: flex;
             align-items: center;
             justify-content: center;
-            visibility: hidden;
-            opacity: 0;
-            transition: all 0.3s ease;
         }
-        .image-modal.active { visibility: visible; opacity: 1; }
-        .image-modal-content {
-            max-width: 90%;
-            max-height: 90%;
-            background: rgba(18,22,35,0.95);
-            border-radius: 24px;
-            padding: 10px;
-            border: 1px solid rgba(0,212,255,0.5);
+        .menu-btn:hover { background: rgba(255,255,255,0.05); }
+        .logo {
+            font-family: 'Space Grotesk', monospace;
+            font-weight: 700;
+            font-size: 1rem;
+            background: linear-gradient(135deg, #fff, var(--cyan));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
         }
-        .image-modal-content img { max-width: 100%; max-height: 70vh; border-radius: 16px; }
-        .img-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid rgba(0,212,255,0.2); }
-        .close-img-modal { background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; }
-        .close-img-modal:hover { background: var(--rose); }
-        .img-modal-footer { padding: 10px 12px; font-size: 0.65rem; color: #64748b; text-align: center; border-top: 1px solid rgba(0,212,255,0.1); margin-top: 10px; }
-        
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 4px; }
-        .empty-msg { text-align: center; color: var(--text-secondary); padding: 30px; font-size: 0.7rem; }
-        
-        .phone-copy {
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.2rem;
             cursor: pointer;
-            transition: all 0.2s;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            position: relative;
         }
-        .phone-copy:hover {
-            color: var(--cyan);
-            text-decoration: underline;
+        .badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--rose);
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 20px;
+            min-width: 18px;
+            text-align: center;
         }
         
-        .toast {
+        /* ========== BOTTOM NAVIGATION ========== */
+        .bottom-nav {
             position: fixed;
-            top: -80px;
-            right: 16px;
-            background: var(--emerald);
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10,12,21,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0,212,255,0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 12px;
+            padding-bottom: env(safe-area-inset-bottom, 12px);
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 40px;
+            transition: all 0.2s;
+            font-size: 0.7rem;
+        }
+        .nav-item i { font-size: 1.3rem; }
+        .nav-item.active { color: var(--cyan); background: rgba(0,212,255,0.1); }
+        .nav-item .nav-badge {
+            position: absolute;
+            margin-top: -8px;
+            margin-left: 15px;
+            background: var(--rose);
+            color: white;
+            font-size: 0.55rem;
+            padding: 2px 5px;
+            border-radius: 20px;
+        }
+        
+        /* ========== HOME TAB ========== */
+        .welcome-card {
+            background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(139,92,246,0.05));
+            border-radius: 1.5rem;
+            padding: 20px;
+            margin: 16px 0;
+            text-align: center;
+            border: 1px solid rgba(0,212,255,0.2);
+        }
+        .greeting { font-size: 1.2rem; margin-bottom: 8px; }
+        .clothing-ad {
+            background: var(--bg-card);
+            border-radius: 1.2rem;
+            padding: 16px;
+            margin: 16px 0;
+            text-align: center;
+            border: 1px solid rgba(0,212,255,0.2);
+            transition: transform 0.3s;
+        }
+        .clothing-ad:hover { transform: translateY(-3px); border-color: var(--cyan); }
+        .ad-img {
+            width: 100%;
+            border-radius: 1rem;
+            margin-bottom: 10px;
+        }
+        .ad-badge {
+            display: inline-block;
+            background: rgba(0,212,255,0.15);
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            margin: 6px;
+        }
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .quick-btn {
+            flex: 1;
+            background: rgba(0,212,255,0.1);
+            border: 1px solid rgba(0,212,255,0.2);
+            padding: 12px;
+            border-radius: 1rem;
+            text-align: center;
+            cursor: pointer;
+        }
+        .announcement {
+            background: rgba(245,158,11,0.1);
+            border-left: 3px solid var(--amber);
+            padding: 12px;
+            border-radius: 0.8rem;
+            margin: 16px 0;
+        }
+        
+        /* ========== PLAN TAB ========== */
+        .plan-card {
+            background: linear-gradient(145deg, var(--bg-card), #0a0c15);
+            border-radius: 1.2rem;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(0,212,255,0.1);
+            transition: all 0.3s;
+        }
+        .plan-card:hover { transform: translateY(-3px); border-color: rgba(0,212,255,0.3); }
+        .plan-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .plan-name { font-size: 1.1rem; font-weight: 700; color: var(--cyan); }
+        .plan-price { font-size: 1.2rem; font-weight: 800; color: var(--emerald); }
+        .plan-features { list-style: none; margin: 12px 0; }
+        .plan-features li { font-size: 0.75rem; margin: 8px 0; display: flex; align-items: center; gap: 8px; color: var(--text-secondary); }
+        .buy-plan-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--cyan), #0891b2);
+            border: none;
+            padding: 10px;
+            border-radius: 60px;
             color: #030712;
-            padding: 12px 20px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        
+        /* ========== ORDERS TAB ========== */
+        .order-card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 14px;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--cyan);
+        }
+        .order-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 600;
+        }
+        .status-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
+        .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        .date-row { display: flex; gap: 12px; margin-top: 10px; font-size: 0.65rem; }
+        .countdown { background: rgba(0,212,255,0.08); padding: 6px; border-radius: 40px; text-align: center; margin-top: 10px; }
+        
+        /* ========== LIVE TAB ========== */
+        .live-card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 14px;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--amber);
+            animation: slideUp 0.7s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .live-card.new-order { animation: slideUp 0.7s ease-out, blinkCyan 2s ease-in-out 1; }
+        @keyframes blinkCyan {
+            0% { background: rgba(0,212,255,0); border-left-color: var(--amber); }
+            50% { background: rgba(0,212,255,0.25); border-left-color: var(--cyan); box-shadow: 0 0 15px var(--cyan); }
+            100% { background: rgba(0,212,255,0); border-left-color: var(--amber); }
+        }
+        .live-card.search-highlight { animation: blinkAmber 2s ease-in-out 1; }
+        @keyframes blinkAmber {
+            0% { background: rgba(245,158,11,0); border-left-color: var(--amber); }
+            50% { background: rgba(245,158,11,0.3); border-left-color: #fbbf24; box-shadow: 0 0 15px var(--amber); }
+            100% { background: rgba(245,158,11,0); border-left-color: var(--amber); }
+        }
+        
+        /* ========== PROFILE TAB ========== */
+        .profile-card {
+            background: var(--bg-card);
+            border-radius: 1.5rem;
+            padding: 20px;
+            text-align: center;
+            margin: 16px 0;
+        }
+        .avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--cyan), #0891b2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 2rem;
+        }
+        .stats-grid-profile {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background: rgba(0,212,255,0.05);
+            padding: 12px;
+            border-radius: 1rem;
+            text-align: center;
+        }
+        .stat-number { font-size: 1.3rem; font-weight: 800; color: var(--cyan); }
+        .support-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin: 16px 0;
+        }
+        .support-link {
+            background: rgba(0,212,255,0.1);
+            padding: 8px 16px;
+            border-radius: 40px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logout-btn {
+            width: 100%;
+            background: rgba(244,63,94,0.2);
+            border: 1px solid rgba(244,63,94,0.3);
+            padding: 12px;
+            border-radius: 60px;
+            color: #fb7185;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+        .ban-message {
+            background: rgba(244,63,94,0.15);
+            border: 1px solid var(--rose);
+            border-radius: 1rem;
+            padding: 20px;
+            text-align: center;
+            margin: 16px 0;
+        }
+        
+        /* ========== LOGIN SCREEN ========== */
+        .login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .login-box {
+            background: var(--bg-card);
+            border-radius: 2rem;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid rgba(0,212,255,0.3);
+            width: 100%;
+            max-width: 350px;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 14px;
+            margin: 16px 0;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 60px;
+            color: white;
+        }
+        .login-submit {
+            background: linear-gradient(135deg, var(--cyan), #0891b2);
+            width: 100%;
+            padding: 12px;
+            border: none;
             border-radius: 60px;
             font-weight: 700;
-            z-index: 3000;
-            transition: top 0.3s;
+            cursor: pointer;
+        }
+        
+        .hidden { display: none; }
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--emerald);
+            color: #030712;
+            padding: 10px 20px;
+            border-radius: 60px;
             font-size: 0.8rem;
+            z-index: 1000;
             display: none;
+            white-space: nowrap;
         }
-        .toast.show {
-            display: block;
-            top: 20px;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
     </style>
 </head>
 <body>
-<div class="toast" id="globalToast">✅ အော်ဒါအောင်မြင်ပါပြီ။</div>
-<div class="container">
-    <div class="store-header">
-        <div class="brand">
-            <img src="https://i.postimg.cc/GpR4ctR1/photo-2026-05-31-22-35-50.jpg" alt="ATH DIGITAL HUB Logo">
-            <i class="fas fa-bolt"></i> ATH DIGITAL HUB
-        </div>
-        <div class="lang-switcher">
-            <button class="lang-btn" data-lang="my">🇲🇲 မြန်မာ</button>
-            <button class="lang-btn" data-lang="en">🇬🇧 English</button>
-        </div>
-        <button class="my-orders-btn" id="myOrdersBtn"><i class="fas fa-list-ul"></i> <span id="myOrdersBtnText">အော်ဒါများ</span></button>
-    </div>
-    <div class="hero">
-        <h1>MYTEL DATA ELITE 5G+</h1>
-        <p id="heroSubtitle">မြန်ဆန်သော Data & Voice Plan များ — VIP အတွေ့အကြုံ</p>
-    </div>
-    
-    <div class="pack-grid">
-        <div class="pack-card">
-            <div class="card-header-row">
-                <span class="flag-badge" style="background:linear-gradient(135deg,#fbbf24,#d97706);">🔥BS</span>
-                <span class="tier-name">TIER V1</span>
-                <span class="pack-price">15,000 <small>MMK</small></span>
-            </div>
-            <div class="divider"></div>
-            <ul class="feature-list">
-                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">22GB</span> <span class="f1">အမြန်နှုန်းမြင့်</span></span></li>
-                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">8,000</span> <span class="f2">မိနစ် (ကွန်ရက်တွင်း)</span></span></li>
-                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">5,000</span> <span class="f3">SMS</span></span></li>
-            </ul>
-            <div class="divider"></div>
-            <button class="buy-btn" data-plan="VIP LEVEL - 1" data-price="15000"><span class="buy-text">ဝယ်ယူမည်</span></button>
-        </div>
-        
-        <div class="pack-card">
-            <div class="card-header-row">
-                <span class="flag-badge" style="background:linear-gradient(135deg,#00d4ff,#0891b2);">⭐POP</span>
-                <span class="tier-name">TIER V2</span>
-                <span class="pack-price">20,000 <small>MMK</small></span>
-            </div>
-            <div class="divider"></div>
-            <ul class="feature-list">
-                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">40GB</span> <span class="f1">အာထရာဒေတာ</span></span></li>
-                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">250</span> <span class="f2">မိနစ် (ကွန်ရက်တွင်း)</span></span></li>
-                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">25</span> <span class="f3">မိနစ် (အခြားကွန်ရက်)</span></span></li>
-            </ul>
-            <div class="divider"></div>
-            <button class="buy-btn" data-plan="VIP LEVEL - 2" data-price="20000"><span class="buy-text">ဝယ်ယူမည်</span></button>
-        </div>
-        
-        <div class="pack-card">
-            <div class="card-header-row">
-                <span class="flag-badge" style="background:linear-gradient(135deg,#22c55e,#15803d);">⭐VAL</span>
-                <span class="tier-name">TIER V3</span>
-                <span class="pack-price">25,000 <small>MMK</small></span>
-            </div>
-            <div class="divider"></div>
-            <ul class="feature-list">
-                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">40GB</span> <span class="f1">အမြန်နှုန်း + အပို</span></span></li>
-                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">1,400</span> <span class="f2">မိနစ် (ကွန်ရက်တွင်း)</span></span></li>
-                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">8,000</span> <span class="f3">SMS အကန့်အသတ်မရှိ</span></span></li>
-            </ul>
-            <div class="divider"></div>
-            <button class="buy-btn" data-plan="VIP LEVEL - 3" data-price="25000"><span class="buy-text">ဝယ်ယူမည်</span></button>
-        </div>
-        
-        <div class="pack-card">
-            <div class="card-header-row">
-                <span class="flag-badge" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">👑TOP</span>
-                <span class="tier-name">TIER V4 (ULTRA)</span>
-                <span class="pack-price">30,000 <small>MMK</small></span>
-            </div>
-            <div class="divider"></div>
-            <ul class="feature-list">
-                <li><i class="fas fa-check-circle"></i> <span><span class="feature-number">120GB</span> <span class="f1">ဂိမ်းဒေတာ</span></span></li>
-                <li><i class="fas fa-check-circle"></i> <span><span class="f2">အကန့်အသတ်မရှိ Streaming</span></span></li>
-                <li><i class="fas fa-check-circle"></i> <span><span class="f3">ဦးစားပေး ပံ့ပိုးမှု</span></span></li>
-            </ul>
-            <div class="divider"></div>
-            <button class="buy-btn" data-plan="VIP LEVEL - 4 (ULTRA)" data-price="30000"><span class="buy-text">ဝယ်ယူမည်</span></button>
-        </div>
+
+<div id="loginScreen" class="login-screen">
+    <div class="login-box">
+        <i class="fas fa-mobile-alt" style="font-size: 2rem; color: var(--cyan);"></i>
+        <h3>ATH DIGITAL HUB</h3>
+        <p style="font-size: 0.7rem; color: var(--text-secondary);">ဝယ်ထားသော Plan များကြည့်ရန်</p>
+        <input type="tel" id="loginPhone" placeholder="📱 09xxxxxxxxx">
+        <button class="login-submit" onclick="login()">ဝင်ရောက်မည်</button>
     </div>
 </div>
 
-<div id="historyPanel" class="history-panel">
-    <div class="history-header">
-        <h3><i class="fas fa-list-ul"></i> <span id="dashboardTitle">အော်ဒါများ</span></h3>
-        <span class="close-history" id="closeHistoryBtn">&times;</span>
-    </div>
-    <div class="auto-refresh-status"><i class="fas fa-sync-alt"></i> <span id="autoRefreshText">အလိုအလျောက်: 30s</span></div>
-    <div class="search-section">
-        <div class="search-title"><i class="fas fa-search"></i> <span id="searchTitle">ရှာဖွေရန်</span></div>
-        <div class="search-input-group">
-            <input type="tel" id="searchPhoneInput" class="search-input" placeholder="📱 09xxxxxxxxx">
-            <button id="searchBtn" class="search-btn"><i class="fas fa-search"></i> <span id="searchBtnText">ရှာမည်</span></button>
-            <button id="clearSearchBtn" class="clear-search-btn"><i class="fas fa-times"></i> <span id="clearBtnText">ရှင်းမည်</span></button>
+<div id="mainApp" style="display: none;">
+    <!-- App Bar -->
+    <div class="app-bar">
+        <button class="menu-btn" onclick="toggleDrawer()"><i class="fas fa-bars"></i></button>
+        <div class="logo">⚡ ATH DIGITAL HUB</div>
+        <div style="display: flex; gap: 8px;">
+            <button class="icon-btn" onclick="showNotifications()"><i class="fas fa-bell"></i><span id="notiBadge" class="badge hidden">0</span></button>
+            <button class="icon-btn" onclick="toggleLanguage()"><i class="fas fa-globe"></i><span id="langText">🇲🇲</span></button>
         </div>
-        <div class="search-hint" id="searchHint">💡 မည်သည့်ဖုန်းနံပါတ်မဆို ရှာနိုင်ပါသည်။ ရှာတွေ့ပါက အဝါရောင် Highlight ပြပါမည်။</div>
     </div>
-    <div class="orders-card my-orders">
-        <div class="card-header"><i class="fas fa-user-circle"></i> <span id="myOrdersHeader">ကျွန်ုပ်၏ အော်ဒါများ</span></div>
-        <div class="card-content" id="myOrdersContainer"><div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading...</div></div>
+
+    <!-- Tab Content -->
+    <div class="container">
+        <div id="homeTab" class="tab-content active">
+            <div class="welcome-card">
+                <div class="greeting">🌤️ မင်္ဂလာပါ, <span id="userName">မောင်မောင်</span></div>
+                <div id="userPhoneDisplay" style="font-size: 0.7rem; color: var(--text-secondary);"></div>
+            </div>
+            
+            <div class="clothing-ad" onclick="window.open('https://www.facebook.com/your-clothing-page', '_blank')">
+                <img src="https://via.placeholder.com/600x200?text=Shwe+Clothing+Summer+Sale" class="ad-img" alt="Shwe Clothing" id="adImage">
+                <div><span class="ad-badge"><i class="fas fa-tag"></i> 30% OFF</span><span class="ad-badge"><i class="fas fa-truck"></i> Free Delivery</span></div>
+                <div style="margin-top: 8px; font-weight: 600;">Shwe Clothing Collection <i class="fas fa-arrow-right"></i></div>
+            </div>
+            
+            <div class="quick-actions">
+                <div class="quick-btn" onclick="switchTab('plans')"><i class="fas fa-sim-card"></i><br>Data Plan</div>
+                <div class="quick-btn" onclick="switchTab('orders')"><i class="fas fa-list-ul"></i><br>My Orders</div>
+                <div class="quick-btn" onclick="switchTab('live')"><i class="fas fa-broadcast-tower"></i><br>Live</div>
+            </div>
+            
+            <div class="announcement">
+                <i class="fas fa-bullhorn"></i> 🎉 New VIP Plan များ ထပ်ထည့်ထားပါသည်။ ယခုပဲ ဝယ်ယူလိုက်ပါ။
+            </div>
+        </div>
+
+        <div id="plansTab" class="tab-content">
+            <div id="plansContainer"></div>
+        </div>
+
+        <div id="ordersTab" class="tab-content">
+            <div id="myOrdersContainer"><div class="loading" style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading...</div></div>
+        </div>
+
+        <div id="liveTab" class="tab-content">
+            <div class="search-section" style="margin-bottom: 16px;">
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="liveSearchInput" class="search-input" style="flex:1; background:rgba(0,0,0,0.5); border:1px solid #2d3a5e; border-radius:60px; padding:10px;" placeholder="🔍 Phone or User ID">
+                    <button class="search-btn" onclick="searchLive()" style="background:var(--cyan); border:none; padding:0 16px; border-radius:60px;">ရှာ</button>
+                    <button class="clear-btn" onclick="clearLiveSearch()" style="background:#334155; border:none; padding:0 12px; border-radius:60px;"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            <div id="liveContainer"><div class="loading" style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading LIVE...</div></div>
+        </div>
+
+        <div id="profileTab" class="tab-content">
+            <div id="profileContainer"></div>
+        </div>
     </div>
-    <div class="orders-card others-orders">
-        <div class="card-header"><i class="fas fa-globe"></i> <span id="liveFeedHeader">အခြားသူများ၏ အော်ဒါများ</span> <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span></div>
-        <div class="card-content stack-container" id="stackContainer"><div class="empty-msg"><i class="fas fa-spinner fa-pulse"></i> Loading feed...</div></div>
-        <div class="status-bar"><span class="status-dot"></span> <span id="liveUpdateText">အလိုအလျောက်: 30s</span></div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button class="nav-item" data-tab="home"><i class="fas fa-home"></i><span>Home</span></button>
+        <button class="nav-item" data-tab="plans"><i class="fas fa-sim-card"></i><span>Plan များ</span></button>
+        <button class="nav-item" data-tab="orders"><i class="fas fa-list-ul"></i><span>My Orders</span></button>
+        <button class="nav-item" data-tab="live"><i class="fas fa-broadcast-tower"></i><span>Live</span></button>
+        <button class="nav-item" data-tab="profile"><i class="fas fa-user"></i><span>Profile</span></button>
     </div>
 </div>
 
-<!-- ==================== PAYMENT MODAL WITH BUTTON ==================== -->
-<div id="paymentModal" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-close" id="closeModalBtn">&times;</div>
-        <div class="modal-icon">
-            <i class="fas fa-credit-card"></i>
-        </div>
-        <h3 class="modal-title" id="paymentTitle">ငွေပေးချေမှု</h3>
-        
-        <div class="info-card">
-            <div class="info-row">
-                <span class="info-label"><i class="fas fa-university"></i> ငွေလွှဲနည်းလမ်း</span>
-                <span class="info-value">K-Pay / WavePay</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label"><i class="fas fa-user-circle"></i> အကောင့်အမည်</span>
-                <span class="info-value">AUNG THU HTWE</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label"><i class="fas fa-phone-alt"></i> ဖုန်းနံပါတ်</span>
-                <span class="info-value phone-copy" id="clickablePhone">09789999368 📋</span>
-            </div>
-            <div class="copy-hint">
-                <i class="fas fa-info-circle"></i> ※ ဖုန်းနံပါတ်ကို နှိပ်၍ ကူးယူနိုင်ပါသည်။
-            </div>
-        </div>
-        
-        <form id="orderForm" enctype="multipart/form-data">
-            <div class="form-group">
-                <label id="phoneLabel"><i class="fas fa-mobile-alt"></i> ဖုန်းနံပါတ် *</label>
-                <input type="tel" id="customerPhone" class="form-control" placeholder="09XXXXXXXXX" required>
-            </div>
-            <div class="form-group">
-                <label id="slipLabel"><i class="fas fa-image"></i> ငွေလွှဲပြေစာ</label>
-                <!-- ★★★ BUTTON FOR FILE UPLOAD (WebView Friendly) ★★★ -->
-                <button type="button" id="chooseFileBtn" class="file-upload-btn">
-                    <i class="fas fa-camera"></i> 📸 Screenshot ရွေးရန်
-                </button>
-                <input type="file" id="slipImage" accept="image/*" style="display: none;" required>
-                <div id="fileNameDisplay" class="file-name-display"></div>
-            </div>
-            <button type="submit" class="submit-btn" id="submitOrderBtn">
-                <span id="submitBtnText">✅ အော်ဒါတင်မည်</span>
-            </button>
-        </form>
-    </div>
-</div>
-
-<div id="screenshotModal" class="image-modal" onclick="closeImageModal()">
-    <div class="image-modal-content" onclick="event.stopPropagation()">
-        <div class="img-modal-header"><span><i class="fas fa-image"></i> <span id="screenshotTitle">ငွေလွှဲပြေစာ</span></span><button class="close-img-modal" onclick="closeImageModal()">&times;</button></div>
-        <img id="modalImage" src="" alt="Screenshot">
-        <div class="img-modal-footer"><i class="fas fa-info-circle"></i> <span id="modalFooterText">အပြင်ဘက်နှိပ်ပါ သို့မဟုတ် ✕ နှိပ်ပါ</span></div>
-    </div>
-</div>
-
-<footer>
-    <div class="social-links">
-        <a href="https://www.facebook.com/athdigitalhub/" target="_blank" class="social-icon facebook" title="Facebook">
-            <i class="fab fa-facebook-f"></i>
-        </a>
-        <a href="https://t.me/ATHCustomerService" target="_blank" class="social-icon telegram" title="Telegram">
-            <i class="fab fa-telegram-plane"></i>
-        </a>
-        <a href="viber://chat?number=09799480995" class="social-icon viber" title="Viber">
-            <i class="fab fa-viber"></i>
-        </a>
-        <a href="tel:09789999368" class="social-icon phone" title="Call">
-            <i class="fas fa-phone-alt"></i>
-        </a>
-    </div>
-    <div class="footer-text">
-        © 2026 <strong>ATH DIGITAL HUB</strong> | Developed by AUNG THU HTWE
-    </div>
-</footer>
+<div id="toast" class="toast"></div>
 
 <script>
-    let currentLang = localStorage.getItem('app_language') || 'my';
     const API_BASE = window.location.origin;
-    let selectedPlan = "", selectedPrice = 0;
-    let allOrdersData = [];
-    let myPhone = localStorage.getItem('myOrderPhone') || '';
-    let currentSearchPhone = '';
-    let autoRefreshInterval = null, refreshCountdown = null, refreshSec = 30;
-    let countdownIntervals = {};
-    let liveCountdownIntervals = {};
-    let stackOrders = [], rotateInterval = null, lastHash = '';
-    const ROTATE_MS = 10000, NEW_TIMEOUT = 120000;
+    let currentUser = null;
+    let userStats = null;
+    let allOrders = [];
+    let liveOrders = [];
+    let currentTab = "home";
+    let liveRotateInterval = null;
+    let liveRefreshInterval = null;
+    let currentLiveIndex = 0;
+    let currentLiveSearch = "";
+    let liveCardsPerPage = window.innerWidth < 480 ? 1 : (window.innerWidth < 768 ? 2 : 4);
     
-    // ★★★ FILE UPLOAD BUTTON HANDLER (Key for WebView) ★★★
-    const chooseFileBtn = document.getElementById('chooseFileBtn');
-    const slipImageInput = document.getElementById('slipImage');
-    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    // Plans Data
+    const plans = [
+        { name: "VIP LEVEL 1", price: 15000, features: ["22GB အမြန်နှုန်းမြင့်", "8,000 မိနစ် (ကွန်ရက်တွင်း)", "5,000 SMS"], color: "#fbbf24", icon: "🔥" },
+        { name: "VIP LEVEL 2", price: 20000, features: ["40GB အာထရာဒေတာ", "250 မိနစ် (ကွန်ရက်တွင်း)", "25 မိနစ် (အခြားကွန်ရက်)"], color: "#00d4ff", icon: "⭐" },
+        { name: "VIP LEVEL 3", price: 25000, features: ["40GB အမြန်နှုန်း + အပို", "1,400 မိနစ် (ကွန်ရက်တွင်း)", "8,000 SMS အကန့်အသတ်မရှိ"], color: "#22c55e", icon: "⭐" },
+        { name: "VIP LEVEL 4 (ULTRA)", price: 30000, features: ["120GB ဂိမ်းဒေတာ", "အကန့်အသတ်မရှိ Streaming", "ဦးစားပေး ပံ့ပိုးမှု"], color: "#8b5cf6", icon: "👑" }
+    ];
     
-    if (chooseFileBtn && slipImageInput) {
-        chooseFileBtn.addEventListener('click', function() {
-            slipImageInput.click();
-        });
-        
-        slipImageInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                fileNameDisplay.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> ရွေးထားသည်: ${this.files[0].name}`;
-                fileNameDisplay.style.color = '#10b981';
-            } else {
-                fileNameDisplay.innerHTML = '';
-            }
-        });
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.style.background = isError ? '#f43f5e' : '#10b981';
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2500);
     }
     
-    const isNewOrder = (o) => Date.now() - new Date(o.created_at).getTime() < NEW_TIMEOUT;
-    const maskPhone = (p) => p && p.length >= 8 ? p.substring(0,5)+'***'+p.substring(p.length-3) : p;
-    const formatDate = (d) => d ? new Date(d).toISOString().split('T')[0] : 'N/A';
-    const expiredDate = (act) => act ? new Date(new Date(act).getTime()+30*86400000).toISOString().split('T')[0] : null;
+    function maskPhone(phone) {
+        if (!phone || phone.length < 8) return phone || '';
+        return phone.substring(0, 5) + '***' + phone.substring(phone.length - 3);
+    }
     
-    const remainingTime = (act) => {
-        if (!act) return null;
-        let remain = new Date(act).getTime() + 30*86400000 - Date.now();
+    function getRemainingTime(activatedAt) {
+        if (!activatedAt) return null;
+        const remain = new Date(activatedAt).getTime() + (30 * 24 * 60 * 60 * 1000) - Date.now();
         if (remain <= 0) return "Expired";
         const days = Math.floor(remain / 86400000);
         const hours = Math.floor((remain % 86400000) / 3600000);
-        const minutes = Math.floor((remain % 3600000) / 60000);
-        const seconds = Math.floor((remain % 60000) / 1000);
-        return `${days}d ${hours}h ${minutes}m ${seconds}s`;
-    };
+        const mins = Math.floor((remain % 3600000) / 60000);
+        return `${days}ရက် ${hours}နာရီ ${mins}မိနစ်`;
+    }
     
-    const translations = {
-        my: {
-            myOrdersBtn: 'အော်ဒါများ', heroSubtitle: 'မြန်ဆန်သော Data & Voice Plan များ — VIP အတွေ့အကြုံ',
-            dashboard: 'အော်ဒါများ', autoRefresh: 'အလိုအလျောက်: 30s',
-            searchTitle: 'ရှာဖွေရန်', searchBtn: 'ရှာမည်', clearBtn: 'ရှင်းမည်',
-            searchHint: '💡 မည်သည့်ဖုန်းနံပါတ်မဆို ရှာနိုင်ပါသည်။ ရှာတွေ့ပါက အဝါရောင် Highlight ပြပါမည်။',
-            myOrdersHeader: 'ကျွန်ုပ်၏ အော်ဒါများ', liveFeedHeader: 'အခြားသူများ၏ အော်ဒါများ',
-            liveUpdate: 'အလိုအလျောက်: 30s', loading: 'Loading...', loadingFeed: 'Loading feed...',
-            noOrders: '📭 အော်ဒါမရှိသေးပါ။<br>စောင့်ဆိုင်းနေပါသည်...',
-            noMyOrders: '📭 သင့်အော်ဒါမရှိသေးပါ။', placeFirst: 'အော်ဒါအသစ်တင်ပါ။',
-            paymentTitle: 'ငွေပေးချေမှု', phoneLabel: '📱 ဖုန်းနံပါတ် *', slipLabel: '🧾 ငွေလွှဲပြေစာ',
-            submitBtn: '✅ အော်ဒါတင်မည်', footnote: '※ ဖုန်းနံပါတ်ကို နှိပ်၍ ကူးယူနိုင်ပါသည်။',
-            screenshotTitle: 'ငွေလွှဲပြေစာ', modalFooter: 'အပြင်ဘက်နှိပ်ပါ သို့မဟုတ် ✕ နှိပ်ပါ',
-            orderSuccess: '✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ', orderError: 'အော်ဒါတင်ရာတွင် အမှားရှိပါသည်',
-            searchPrompt: '⚠️ ဖုန်းနံပါတ် ထည့်ပါ', searchInvalid: '⚠️ ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ',
-            searching: '🔍 ရှာဖွေနေပါသည်...', searchCleared: '🔍 ရှာဖွေမှု ရှင်းလင်းပြီးပါပြီ။',
-            phoneCopied: '📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။',
-            pending: '⏳ စောင့်ဆိုင်းဆဲ', approved: '✅ အတည်ပြုပြီး', rejected: '❌ ပယ်ဖျက်ခံရ',
-            awaiting: '⏳ ကျေးဇူးပြု၍ စောင့်ဆိုင်းပေးပါ', expired: 'သက်တမ်းကုန်', remaining: 'ကျန်ရက်',
-            startDate: 'စတင်ရက်', expiryDate: 'ကုန်ဆုံးရက်', orderDate: 'အော်ဒါရက်', status: 'အခြေအနေ',
-            phone: 'ဖုန်း', amount: 'ပမာဏ', orderId: 'အော်ဒါအမှတ်', copyId: '📋 ကူးယူရန်', viewReceipt: '🧾 ပြေစာကြည့်ရန်',
-            newBadge: 'NEW', buyNow: 'ဝယ်ယူမည်',
-            c1f1:'အမြန်နှုန်းမြင့်',c1f2:'မိနစ် (ကွန်ရက်တွင်း)',c1f3:'SMS',
-            c2f1:'အာထရာဒေတာ',c2f2:'မိနစ် (ကွန်ရက်တွင်း)',c2f3:'မိနစ် (အခြားကွန်ရက်)',
-            c3f1:'အမြန်နှုန်း + အပို',c3f2:'မိနစ် (ကွန်ရက်တွင်း)',c3f3:'SMS အကန့်အသတ်မရှိ',
-            c4f1:'ဂိမ်းဒေတာ',c4f2:'အကန့်အသတ်မရှိ Streaming',c4f3:'ဦးစားပေး ပံ့ပိုးမှု'
-        },
-        en: {
-            myOrdersBtn: 'Orders', heroSubtitle: 'High-speed Data & Voice Plans — VIP Experience',
-            dashboard: 'Orders', autoRefresh: 'Auto: 30s',
-            searchTitle: 'Search', searchBtn: 'Search', clearBtn: 'Clear',
-            searchHint: '💡 Search any phone number. Found orders will be highlighted in yellow.',
-            myOrdersHeader: 'My Orders', liveFeedHeader: 'Live Orders Feed',
-            liveUpdate: 'Auto: 30s', loading: 'Loading...', loadingFeed: 'Loading feed...',
-            noOrders: '📭 No orders yet<br>Waiting for first order...',
-            noMyOrders: '📭 No orders found.', placeFirst: 'Place your first order.',
-            paymentTitle: 'Payment', phoneLabel: '📱 Phone Number *', slipLabel: '🧾 Payment Screenshot',
-            submitBtn: '✅ Place Order', footnote: '※ Click phone number to copy',
-            screenshotTitle: 'Payment Screenshot', modalFooter: 'Click outside or press ✕ to close',
-            orderSuccess: '✅ Order placed! Order ID: ', orderError: 'Failed to place order',
-            searchPrompt: '⚠️ Please enter a phone number', searchInvalid: '⚠️ Please enter a valid phone number',
-            searching: '🔍 Searching...', searchCleared: '🔍 Search cleared',
-            phoneCopied: '📞 Phone number copied',
-            pending: '⏳ Pending', approved: '✅ Approved', rejected: '❌ Rejected',
-            awaiting: '⏳ Please wait for approval', expired: 'Expired', remaining: 'Remaining',
-            startDate: 'Start Date', expiryDate: 'Expiry Date', orderDate: 'Order Date', status: 'Status',
-            phone: 'Phone', amount: 'Amount', orderId: 'Order ID', copyId: '📋 Copy', viewReceipt: '🧾 View Receipt',
-            newBadge: 'NEW', buyNow: 'Purchase Now',
-            c1f1:'Extreme Speed',c1f2:'On-Net Mins',c1f3:'SMS',
-            c2f1:'Ultra Data',c2f2:'On-Net Mins',c2f3:'Any Net Mins',
-            c3f1:'High-Speed + Extra',c3f2:'On-Net Mins',c3f3:'SMS Unlimited',
-            c4f1:'Gamer Data',c4f2:'Unlimited Streaming',c4f3:'Priority Support'
+    async function login() {
+        const phone = document.getElementById('loginPhone').value.trim();
+        if (!phone || phone.length < 9) {
+            showToast("ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ", true);
+            return;
         }
-    };
+        
+        // Check if user is banned
+        const statsRes = await fetch(`${API_BASE}/api/admin/user-stats`);
+        const statsData = await statsRes.json();
+        const userStat = statsData.stats?.find(u => u.phone === phone);
+        
+        if (userStat?.blocked) {
+            showToast("သင့်အကောင့်အား ပိတ်ထားပါသည်။ Customer Support ကို ဆက်သွယ်ပါ။", true);
+            return;
+        }
+        
+        currentUser = phone;
+        localStorage.setItem('userPhone', phone);
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        document.getElementById('userName').innerHTML = maskPhone(phone);
+        document.getElementById('userPhoneDisplay').innerHTML = `📞 ${phone}`;
+        
+        await loadUserData();
+        await loadLiveOrders();
+        startLiveRotation();
+        startLiveRefresh();
+        renderPlans();
+        renderProfile();
+    }
     
-    function updateUI() {
-        const t = translations[currentLang];
-        document.getElementById('myOrdersBtnText').innerHTML = t.myOrdersBtn;
-        document.getElementById('heroSubtitle').innerHTML = t.heroSubtitle;
-        document.getElementById('dashboardTitle').innerHTML = t.dashboard;
-        document.getElementById('autoRefreshText').innerHTML = t.autoRefresh;
-        document.getElementById('searchTitle').innerHTML = t.searchTitle;
-        document.getElementById('searchBtnText').innerHTML = t.searchBtn;
-        document.getElementById('clearBtnText').innerHTML = t.clearBtn;
-        document.getElementById('searchHint').innerHTML = t.searchHint;
-        document.getElementById('myOrdersHeader').innerHTML = t.myOrdersHeader;
-        document.getElementById('liveFeedHeader').innerHTML = t.liveFeedHeader;
-        document.getElementById('liveUpdateText').innerHTML = t.liveUpdate;
-        document.getElementById('paymentTitle').innerHTML = t.paymentTitle;
-        document.getElementById('phoneLabel').innerHTML = t.phoneLabel;
-        document.getElementById('slipLabel').innerHTML = t.slipLabel;
-        document.getElementById('submitBtnText').innerHTML = t.submitBtn;
-        document.getElementById('screenshotTitle').innerHTML = t.screenshotTitle;
-        document.getElementById('modalFooterText').innerHTML = t.modalFooter;
-        document.querySelectorAll('.buy-text').forEach(el => el.innerHTML = t.buyNow);
-        const cards = document.querySelectorAll('.pack-card');
-        if(cards[0]){cards[0].querySelectorAll('.f1')[0].innerHTML=t.c1f1;cards[0].querySelectorAll('.f2')[0].innerHTML=t.c1f2;cards[0].querySelectorAll('.f3')[0].innerHTML=t.c1f3;}
-        if(cards[1]){cards[1].querySelectorAll('.f1')[0].innerHTML=t.c2f1;cards[1].querySelectorAll('.f2')[0].innerHTML=t.c2f2;cards[1].querySelectorAll('.f3')[0].innerHTML=t.c2f3;}
-        if(cards[2]){cards[2].querySelectorAll('.f1')[0].innerHTML=t.c3f1;cards[2].querySelectorAll('.f2')[0].innerHTML=t.c3f2;cards[2].querySelectorAll('.f3')[0].innerHTML=t.c3f3;}
-        if(cards[3]){cards[3].querySelectorAll('.f1')[0].innerHTML=t.c4f1;cards[3].querySelectorAll('.f2')[0].innerHTML=t.c4f2;cards[3].querySelectorAll('.f3')[0].innerHTML=t.c4f3;}
-        document.querySelectorAll('.lang-btn').forEach(btn=>{if(btn.dataset.lang===currentLang)btn.classList.add('active');else btn.classList.remove('active');});
+    async function loadUserData() {
+        const res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(currentUser)}`);
+        const data = await res.json();
+        allOrders = data.orders || [];
         renderMyOrders();
-        renderStack();
     }
     
-    function startCountdown(id, act) {
-        if(countdownIntervals[id])clearInterval(countdownIntervals[id]);
-        const fn=()=>{
-            const el=document.getElementById(`cd-${id}`);
-            if(!el){clearInterval(countdownIntervals[id]);return;}
-            const remain=remainingTime(act);
-            if(remain==="Expired"){
-                el.innerHTML=`<i class="fas fa-calendar-times"></i> ${translations[currentLang].expired}`;
-                el.style.color="#f43f5e";
-                clearInterval(countdownIntervals[id]);
-            }else{
-                el.innerHTML=`<i class="fas fa-hourglass-half"></i> ${translations[currentLang].remaining}: ${remain}`;
-            }
-        };
-        fn();countdownIntervals[id]=setInterval(fn,1000);
-    }
-    
-    function startLiveCountdown(orderId, activatedAt) {
-        if (liveCountdownIntervals[orderId]) clearInterval(liveCountdownIntervals[orderId]);
-        const fn = () => {
-            const el = document.getElementById(`live-cd-${orderId}`);
-            if (!el) { 
-                clearInterval(liveCountdownIntervals[orderId]); 
-                return; 
-            }
-            const remain = remainingTime(activatedAt);
-            const t = translations[currentLang];
-            if (remain === "Expired") {
-                el.innerHTML = `<i class="fas fa-calendar-times"></i> ${t.expired}`;
-                el.classList.add('expired');
-                clearInterval(liveCountdownIntervals[orderId]);
-            } else {
-                el.innerHTML = `<i class="fas fa-hourglass-half"></i> ${t.remaining}: ${remain}`;
-            }
-        };
-        fn();
-        liveCountdownIntervals[orderId] = setInterval(fn, 1000);
-    }
-    
-    function copyOrderId(id){navigator.clipboard.writeText(id);showToast(`📋 Order ID: ${id} copied`);}
-    function openScreenshot(url){let modal=document.getElementById('screenshotModal'),img=document.getElementById('modalImage');img.src=(url&&url!=='null')?(url.startsWith('/')?API_BASE+url:url):'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Screenshot%3C/text%3E%3C/svg%3E';modal.classList.add('active');}
-    function closeImageModal(){document.getElementById('screenshotModal').classList.remove('active');}
-    
-    function showToast(msg, isError) {
-        const toast = document.getElementById('globalToast');
-        toast.style.backgroundColor = isError ? '#f43f5e' : '#10b981';
-        toast.innerHTML = isError ? `⚠️ ${msg}` : `✅ ${msg}`;
-        toast.classList.add('show');
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 2800);
-    }
-    
-    function addGlowEffect(element) {
-        if (!element) return;
-        element.classList.add('glow');
-        setTimeout(() => {
-            element.classList.remove('glow');
-        }, 500);
-    }
-    
-    function renderOrderItem(o,showFull,isHighlight,showSlip){
-        const t=translations[currentLang];
-        let statClass="status-pending",statText=t.pending,waitMsg="";
-        if(o.status==="Approved"){statClass="status-approved";statText=t.approved;}
-        if(o.status==="Rejected"){statClass="status-rejected";statText=t.rejected;}
-        if(o.status==="Pending")waitMsg=`<div class="waiting-badge">${t.awaiting}</div>`;
-        let dateHtml='',cdHtml='';
-        if(o.status==="Approved"&&o.activated_at){
-            let exp=expiredDate(o.activated_at);
-            dateHtml=`<div class="date-row"><div class="date-box"><div class="date-label">${t.startDate}</div><div class="date-value start">${formatDate(o.created_at)}</div></div><div class="date-box"><div class="date-label">${t.expiryDate}</div><div class="date-value expired">${exp||'N/A'}</div></div></div>`;
-            let remain=remainingTime(o.activated_at);
-            cdHtml=`<div class="countdown-timer" id="cd-${o.id}"><i class="fas fa-hourglass-half"></i> ${t.remaining}: ${remain}</div>`;
-        }else{
-            dateHtml=`<div class="date-row"><div class="date-box"><div class="date-label">${t.orderDate}</div><div class="date-value start">${formatDate(o.created_at)}</div></div><div class="date-box"><div class="date-label">${t.status}</div><div class="date-value" style="color:var(--amber);">${o.status==='Pending'?t.pending:(o.status==='Rejected'?t.rejected:'N/A')}</div></div></div>`;
+    async function loadLiveOrders() {
+        const res = await fetch(`${API_BASE}/api/admin/orders`);
+        const data = await res.json();
+        if (data.orders) {
+            liveOrders = data.orders.filter(o => o.phone !== currentUser);
+            renderLiveOrders();
         }
-        let slipBtn = (showSlip && o.slip_url && o.slip_url !== 'null') ? `<button class="view-slip-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> ${t.viewReceipt}</button>` : '';
-        
-        return `<div class="order-item ${isHighlight?'highlight':''}">
-            <div class="order-header">
-                <span class="order-plan"><i class="fas fa-sim-card"></i> ${o.plan}</span>
-                <span class="status-badge ${statClass}">${statText}</span>
-            </div>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">${t.phone}</div>
-                    <div class="info-value">${showFull?o.phone:maskPhone(o.phone)}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">${t.amount}</div>
-                    <div class="info-value price">${o.price.toLocaleString()} KS</div>
-                </div>
-                <div class="info-item" style="grid-column: span 2;">
-                    <div class="info-label">${t.orderId} <span class="copy-id" onclick="copyOrderId('${o.id}')">📋</span></div>
-                    <div class="info-value" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                        <span style="font-family: monospace;">${o.id}</span>
-                        ${slipBtn}
+    }
+    
+    function renderPlans() {
+        const container = document.getElementById('plansContainer');
+        let html = '';
+        for (const plan of plans) {
+            html += `
+                <div class="plan-card">
+                    <div class="plan-header">
+                        <span class="plan-name">${plan.icon} ${plan.name}</span>
+                        <span class="plan-price">${plan.price.toLocaleString()} MMK</span>
                     </div>
+                    <ul class="plan-features">
+                        ${plan.features.map(f => `<li><i class="fas fa-check-circle" style="color:var(--emerald);"></i> ${f}</li>`).join('')}
+                    </ul>
+                    <button class="buy-plan-btn" onclick="openPaymentModal('${plan.name}', ${plan.price})">ဝယ်ယူမည်</button>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+    
+    function renderMyOrders() {
+        const container = document.getElementById('myOrdersContainer');
+        if (!allOrders.length) {
+            container.innerHTML = '<div class="loading" style="text-align:center; padding:40px;">📭 အော်ဒါမရှိသေးပါ</div>';
+            return;
+        }
+        let html = '';
+        for (const o of allOrders) {
+            let statusClass = o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected');
+            let statusText = o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
+            let countdownHtml = '';
+            if (o.status === 'Approved' && o.activated_at) {
+                countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${getRemainingTime(o.activated_at)}</div>`;
+            }
+            html += `
+                <div class="order-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:700;">${o.plan}</span>
+                        <span class="order-status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div style="margin-top:8px;">📞 ${o.phone}</div>
+                    <div style="font-weight:700; color:var(--emerald);">${o.price.toLocaleString()} MMK</div>
+                    <div class="date-row">
+                        <span>📅 ဝယ်ရက်: ${new Date(o.created_at).toLocaleDateString()}</span>
+                    </div>
+                    ${o.status === 'Approved' && o.activated_at ? `
+                        <div class="date-row">
+                            <span>📅 စတင်ရက်: ${new Date(o.activated_at).toLocaleDateString()}</span>
+                            <span>📅 ကုန်ဆုံးရက်: ${new Date(new Date(o.activated_at).getTime() + 30*86400000).toLocaleDateString()}</span>
+                        </div>
+                    ` : ''}
+                    ${countdownHtml}
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+    
+    function renderLiveOrders() {
+        const container = document.getElementById('liveContainer');
+        let filtered = [...liveOrders];
+        if (currentLiveSearch) {
+            filtered = filtered.filter(o => o.phone.includes(currentLiveSearch) || o.user_id?.includes(currentLiveSearch));
+        }
+        
+        if (!filtered.length) {
+            container.innerHTML = '<div class="loading" style="text-align:center; padding:40px;">🔴 လက်ရှိ LIVE အော်ဒါမရှိပါ</div>';
+            return;
+        }
+        
+        // Show only cardsPerPage cards
+        const start = currentLiveIndex;
+        const end = start + liveCardsPerPage;
+        const visibleOrders = filtered.slice(start, end);
+        
+        let html = '';
+        for (const o of visibleOrders) {
+            let statusClass = o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected');
+            let statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
+            html += `
+                <div class="live-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:700; color:var(--amber);">${o.plan}</span>
+                        <span class="order-status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div style="margin-top:8px;">📞 ${maskPhone(o.phone)}</div>
+                    <div style="font-weight:700; color:var(--emerald);">${o.price.toLocaleString()} MMK</div>
+                    ${o.status === 'Approved' && o.activated_at ? `<div class="countdown" style="margin-top:8px;"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${getRemainingTime(o.activated_at)}</div>` : ''}
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        
+        // Update index for next rotation
+        if (filtered.length > liveCardsPerPage) {
+            currentLiveIndex = (currentLiveIndex + liveCardsPerPage) % filtered.length;
+        }
+    }
+    
+    function startLiveRotation() {
+        if (liveRotateInterval) clearInterval(liveRotateInterval);
+        liveRotateInterval = setInterval(() => {
+            renderLiveOrders();
+        }, 5000);
+    }
+    
+    async function startLiveRefresh() {
+        if (liveRefreshInterval) clearInterval(liveRefreshInterval);
+        liveRefreshInterval = setInterval(async () => {
+            await loadLiveOrders();
+        }, 30000);
+    }
+    
+    function searchLive() {
+        currentLiveSearch = document.getElementById('liveSearchInput').value.trim();
+        currentLiveIndex = 0;
+        renderLiveOrders();
+        setTimeout(() => {
+            const highlighted = document.querySelector('.live-card.search-highlight');
+            if (highlighted) highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    }
+    
+    function clearLiveSearch() {
+        currentLiveSearch = "";
+        document.getElementById('liveSearchInput').value = "";
+        currentLiveIndex = 0;
+        renderLiveOrders();
+    }
+    
+    async function renderProfile() {
+        const container = document.getElementById('profileContainer');
+        
+        // Get user stats
+        const statsRes = await fetch(`${API_BASE}/api/admin/user-stats`);
+        const statsData = await statsRes.json();
+        userStats = statsData.stats?.find(u => u.phone === currentUser);
+        
+        const orderCount = allOrders.length;
+        const approvedCount = allOrders.filter(o => o.status === 'Approved').length;
+        const pendingCount = allOrders.filter(o => o.status === 'Pending').length;
+        const rejectedCount = allOrders.filter(o => o.status === 'Rejected').length;
+        
+        let banHtml = '';
+        if (userStats?.blocked) {
+            banHtml = `
+                <div class="ban-message">
+                    <i class="fas fa-ban" style="font-size: 2rem; color: var(--rose);"></i>
+                    <h3>🔴 သင့်အကောင့်အား ပိတ်ထားပါသည်</h3>
+                    <p style="margin-top: 8px;">ဆက်လက်အသုံးပြုလိုပါက Customer Support ကို ဆက်သွယ်ပါ။</p>
+                </div>
+            `;
+        }
+        
+        container.innerHTML = `
+            <div class="profile-card">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+                <h3>${maskPhone(currentUser)}</h3>
+                <div style="font-size:0.7rem; color:var(--text-secondary); margin-top:4px;">🆔 User ID: ${userStats?.user_id || 'N/A'}</div>
+                ${banHtml}
+                <div class="stats-grid-profile">
+                    <div class="stat-box"><div class="stat-number">${orderCount}</div><div>စုစုပေါင်း</div></div>
+                    <div class="stat-box"><div class="stat-number" style="color:var(--emerald);">${approvedCount}</div><div>အတည်ပြုပြီး</div></div>
+                    <div class="stat-box"><div class="stat-number" style="color:var(--amber);">${pendingCount}</div><div>စောင့်ဆိုင်းဆဲ</div></div>
+                    <div class="stat-box"><div class="stat-number" style="color:var(--rose);">${rejectedCount}</div><div>ပယ်ဖျက်ခံရ</div></div>
                 </div>
             </div>
-            ${dateHtml}
-            ${waitMsg}
-            ${cdHtml}
-        </div>`;
-    }
-    
-    function renderMyOrders(){
-        let container=document.getElementById('myOrdersContainer'),t=translations[currentLang];
-        if(!myPhone){container.innerHTML=`<div class="empty-msg"><i class="fas fa-info-circle"></i><br>${t.noMyOrders}<br>${t.placeFirst}</div>`;return;}
-        let orders=allOrdersData.filter(o=>o.phone===myPhone);
-        if(currentSearchPhone)orders=orders.filter(o=>o.phone===currentSearchPhone);
-        if(!orders.length){container.innerHTML=`<div class="empty-msg">📭 ${t.noMyOrders}</div>`;return;}
-        container.innerHTML=orders.map(o=>renderOrderItem(o,true,currentSearchPhone&&o.phone===currentSearchPhone,true)).join('');
-        orders.forEach(o=>{if(o.status==='Approved'&&o.activated_at)startCountdown(o.id,o.activated_at);});
-    }
-    
-    function renderStack(){
-        let container=document.getElementById('stackContainer'),t=translations[currentLang];
-        if(!stackOrders.length){container.innerHTML=`<div class="empty-msg">${t.noOrders}</div>`;return;}
-        let html='<div class="stack-container">';
-        stackOrders.forEach(order=>{
-            let isNew=isNewOrder(order),isHighlight=currentSearchPhone&&order.phone===currentSearchPhone;
-            let statClass="pending",statText=t.pending;
-            if(order.status==="Approved"){statClass="approved";statText=t.approved;}
-            if(order.status==="Rejected"){statClass="rejected";statText=t.rejected;}
-            
-            let countdownHtml='';
-            if(order.status==='Approved'&&order.activated_at){
-                countdownHtml=`<div class="feed-countdown" id="live-cd-${order.id}"><i class="fas fa-hourglass-half"></i> ${t.remaining}: ...</div>`;
-            }
-            html+=`<div class="stack-item ${isNew?'new-order':''} ${isHighlight?'search-highlight':''}" data-order-id="${order.id}">
-                ${isNew?`<div class="new-badge"><i class="fas fa-fire"></i> ${t.newBadge}</div>`:''}
-                <div class="stack-header">
-                    <span class="stack-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
-                    <span class="stack-status ${statClass}">${statText}</span>
+            <div class="profile-card">
+                <h4><i class="fas fa-headset"></i> Customer Support</h4>
+                <div class="support-links">
+                    <a href="https://t.me/ATHsupport" class="support-link"><i class="fab fa-telegram"></i> Telegram</a>
+                    <a href="https://www.facebook.com/athdigitalhub" class="support-link"><i class="fab fa-facebook"></i> Facebook</a>
+                    <a href="tel:09789999368" class="support-link"><i class="fas fa-phone"></i> Phone</a>
+                    <a href="viber://chat?number=09799480995" class="support-link"><i class="fab fa-viber"></i> Viber</a>
                 </div>
-                <div class="stack-details">
-                    <span class="stack-phone"><i class="fas fa-mobile-alt"></i> ${maskPhone(order.phone)}</span>
-                    <span class="stack-price"><i class="fas fa-coins"></i> ${order.price.toLocaleString()} KS</span>
-                </div>
-                ${countdownHtml}
-            </div>`;
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ထွက်ရန်</button>
+            </div>
+        `;
+    }
+    
+    function logout() {
+        localStorage.removeItem('userPhone');
+        currentUser = null;
+        if (liveRotateInterval) clearInterval(liveRotateInterval);
+        if (liveRefreshInterval) clearInterval(liveRefreshInterval);
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('mainApp').style.display = 'none';
+        showToast("ထွက်ရန် အောင်မြင်ပါသည်။");
+    }
+    
+    function openPaymentModal(plan, price) {
+        // Simple payment modal - you can expand this
+        showToast(`Order placed for ${plan} - ${price.toLocaleString()} MMK`);
+    }
+    
+    function switchTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById(`${tab}Tab`).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(item => {
+            if (item.dataset.tab === tab) item.classList.add('active');
+            else item.classList.remove('active');
         });
-        container.innerHTML=html+'</div>';
         
-        stackOrders.forEach(order => {
-            if (order.status === 'Approved' && order.activated_at) {
-                startLiveCountdown(order.id, order.activated_at);
-            }
-        });
+        if (tab === 'orders') loadUserData();
+        if (tab === 'live') renderLiveOrders();
+        if (tab === 'profile') renderProfile();
     }
     
-    function rotateStack() {
-        if (stackOrders.length > 1) {
-            const lastItem = stackOrders.pop();
-            stackOrders.unshift(lastItem);
-            renderStack();
-            setTimeout(() => {
-                const topCard = document.querySelector('.stack-item');
-                if (topCard) addGlowEffect(topCard);
-            }, 50);
-        }
+    function toggleDrawer() {
+        showToast("Menu Drawer - Coming Soon");
     }
     
-    function updateStack(orders){
-        let others=orders.filter(o=>o.phone!==myPhone);
-        if(!others.length){if(stackOrders.length){stackOrders=[];renderStack();}return;}
-        let sorted=[...others].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-        let hash=JSON.stringify(sorted.map(o=>({id:o.id,status:o.status})));
-        
-        let hasNewOrders = false;
-        if (hash !== lastHash) {
-            lastHash=hash;
-            let currIds=stackOrders.map(o=>o.id),newOnes=sorted.filter(o=>!currIds.includes(o.id));
-            if(newOnes.length){
-                hasNewOrders = true;
-                stackOrders=[...newOnes,...stackOrders].slice(0,30);
-                renderStack();
-                setTimeout(() => {
-                    const newCards = document.querySelectorAll('.stack-item');
-                    for (let i = 0; i < newOnes.length && i < newCards.length; i++) {
-                        addGlowEffect(newCards[i]);
-                    }
-                }, 50);
-            } else {
-                let upd=[];
-                sorted.forEach(o=>{if(currIds.includes(o.id))upd.push(o);});
-                stackOrders.forEach(o=>{if(!upd.find(x=>x.id===o.id))upd.push(o);});
-                stackOrders=upd.slice(0,30);
-                renderStack();
-            }
-        }
+    function showNotifications() {
+        showToast("No new notifications");
     }
     
-    async function loadData(){
-        try{
-            let res=await fetch(`${API_BASE}/api/admin/orders`),data=await res.json();
-            if(data.orders){allOrdersData=data.orders;renderMyOrders();updateStack(allOrdersData);}
-        }catch(e){console.error(e);}
+    function toggleLanguage() {
+        showToast("Language: Myanmar");
     }
     
-    function searchPhone(){
-        let phone=document.getElementById('searchPhoneInput').value.trim(),t=translations[currentLang];
-        if(!phone){showToast(t.searchPrompt,true);return;}
-        if(phone.length<8){showToast(t.searchInvalid,true);return;}
-        currentSearchPhone=phone;renderMyOrders();renderStack();
-        showToast(`${t.searching} ${maskPhone(phone)}`);
-        setTimeout(()=>{let h=document.querySelector('.search-highlight, .order-item.highlight');if(h)h.scrollIntoView({behavior:'smooth',block:'center'});},100);
-    }
-    function clearSearch(){currentSearchPhone='';document.getElementById('searchPhoneInput').value='';renderMyOrders();renderStack();showToast(translations[currentLang].searchCleared);}
-    
-    async function addOrder(phone,plan,price,file){
-        let fd=new FormData();fd.append('phone',phone);fd.append('plan',plan);fd.append('price',price);fd.append('slip',file);
-        return await fetch(`${API_BASE}/api/orders`,{method:'POST',body:fd}).then(r=>r.json());
-    }
-    
-    function startAutoRefresh(){
-        if(autoRefreshInterval)clearInterval(autoRefreshInterval);
-        if(refreshCountdown)clearInterval(refreshCountdown);
-        refreshSec=30;
-        refreshCountdown=setInterval(()=>{refreshSec--;if(refreshSec<0)refreshSec=30;document.getElementById('autoRefreshText').innerHTML=`${translations[currentLang].autoRefresh}`.replace('30s',`${refreshSec}s`);},1000);
-        autoRefreshInterval=setInterval(()=>{if(document.getElementById('historyPanel').classList.contains('open')){loadData();refreshSec=30;}},30000);
-    }
-    
-    document.getElementById('orderForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const submitBtn = document.getElementById('submitOrderBtn');
-        const btnText = document.getElementById('submitBtnText');
-        const phone = document.getElementById('customerPhone').value.trim();
-        const file = document.getElementById('slipImage').files[0];
-        const t = translations[currentLang];
-        
-        if (!phone) { showToast(t.searchPrompt, true); return; }
-        if (!file) { showToast("📎 ငွေလွှဲပြေစာ ထည့်ပါ", true); return; }
-        
-        submitBtn.disabled = true;
-        submitBtn.style.opacity = '0.6';
-        btnText.innerHTML = '⏳ အော်ဒါတင်နေပါသည်...';
-        
-        const result = await addOrder(phone, selectedPlan, selectedPrice, file);
-        
-        if (result.success) {
-            btnText.innerHTML = '✅ အော်ဒါအောင်မြင်ပါပြီ';
-            showToast(`${t.orderSuccess}${result.orderId}`);
-            myPhone = phone;
-            localStorage.setItem('myOrderPhone', phone);
-            document.getElementById('paymentModal').classList.remove('active');
-            document.getElementById('orderForm').reset();
-            if (document.getElementById('fileNameDisplay')) {
-                document.getElementById('fileNameDisplay').innerHTML = '';
-            }
-            if (document.getElementById('historyPanel').classList.contains('open')) loadData();
-            
-            setTimeout(() => {
-                submitBtn.disabled = false;
-                submitBtn.style.opacity = '1';
-                btnText.innerHTML = t.submitBtn;
-            }, 2000);
-        } else {
-            btnText.innerHTML = '❌ ' + t.orderError;
-            showToast(t.orderError, true);
-            
-            setTimeout(() => {
-                submitBtn.disabled = false;
-                submitBtn.style.opacity = '1';
-                btnText.innerHTML = t.submitBtn;
-            }, 2000);
-        }
+    // Initialize
+    window.addEventListener('resize', () => {
+        liveCardsPerPage = window.innerWidth < 480 ? 1 : (window.innerWidth < 768 ? 2 : 4);
+        if (currentTab === 'live') renderLiveOrders();
     });
     
-    document.querySelectorAll('.buy-btn').forEach(btn=>btn.addEventListener('click',()=>{selectedPlan=btn.dataset.plan;selectedPrice=parseInt(btn.dataset.price);document.getElementById('paymentModal').classList.add('active');}));
-    document.getElementById('closeModalBtn').addEventListener('click',()=>document.getElementById('paymentModal').classList.remove('active'));
-    window.addEventListener('click',(e)=>{if(e.target===document.getElementById('paymentModal'))document.getElementById('paymentModal').classList.remove('active');});
-    document.getElementById('myOrdersBtn').addEventListener('click',()=>{document.getElementById('historyPanel').classList.add('open');loadData();startAutoRefresh();if(rotateInterval)clearInterval(rotateInterval);rotateInterval=setInterval(()=>{if(document.getElementById('historyPanel').classList.contains('open'))rotateStack();},ROTATE_MS);clearSearch();});
-    document.getElementById('closeHistoryBtn').addEventListener('click',()=>{document.getElementById('historyPanel').classList.remove('open');if(autoRefreshInterval)clearInterval(autoRefreshInterval);if(refreshCountdown)clearInterval(refreshCountdown);if(rotateInterval)clearInterval(rotateInterval);});
-    document.getElementById('searchBtn').addEventListener('click',searchPhone);
-    document.getElementById('clearSearchBtn').addEventListener('click',clearSearch);
-    document.getElementById('searchPhoneInput').addEventListener('keypress',(e)=>{if(e.key==='Enter')searchPhone();});
-    document.getElementById('clickablePhone').addEventListener('click',()=>{navigator.clipboard.writeText("09789999368");showToast(translations[currentLang].phoneCopied);});
-    document.getElementById('screenshotModal').addEventListener('click',(e)=>{if(e.target===e.currentTarget)closeImageModal();});
-    document.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeImageModal();});
-    document.querySelectorAll('.lang-btn').forEach(btn=>btn.addEventListener('click',()=>{currentLang=btn.dataset.lang;localStorage.setItem('app_language',currentLang);updateUI();}));
+    const savedPhone = localStorage.getItem('userPhone');
+    if (savedPhone) {
+        document.getElementById('loginPhone').value = savedPhone;
+        login();
+    }
     
-    window.copyOrderId=copyOrderId;window.openScreenshot=openScreenshot;window.closeImageModal=closeImageModal;
-    updateUI();
-    if(myPhone)console.log("Loaded phone:",maskPhone(myPhone));
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+    
+    window.switchTab = switchTab;
+    window.openPaymentModal = openPaymentModal;
+    window.login = login;
+    window.logout = logout;
+    window.searchLive = searchLive;
+    window.clearLiveSearch = clearLiveSearch;
+    window.toggleDrawer = toggleDrawer;
+    window.showNotifications = showNotifications;
+    window.toggleLanguage = toggleLanguage;
 </script>
 </body>
 </html>
