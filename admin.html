@@ -16,9 +16,6 @@
             --emerald: #10b981;
             --rose: #f43f5e;
             --amber: #f59e0b;
-            --violet: #8b5cf6;
-            --kpay: #1e88e5;
-            --wavepay: #43a047;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
         }
@@ -228,6 +225,7 @@
         }
         .cleanup-btn:hover { background: #f43f5e; color: white; }
         
+        /* Add Product Button */
         .add-product-btn {
             background: var(--emerald);
             color: white;
@@ -257,6 +255,7 @@
             padding: 14px;
             transition: all 0.2s;
         }
+        .product-card:hover { border-color: rgba(0,212,255,0.3); }
         .product-header {
             display: flex;
             justify-content: space-between;
@@ -266,6 +265,13 @@
             margin-bottom: 10px;
             padding-bottom: 8px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .product-image-preview {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
         }
         .product-category {
             font-size: 0.65rem;
@@ -335,7 +341,7 @@
         .modal-btn.save { background: var(--emerald); color: white; }
         .modal-btn.cancel { background: #334155; color: white; }
         
-        .orders-list, .users-list, .product-list {
+        .orders-list, .users-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -349,20 +355,21 @@
             padding: 14px;
             transition: all 0.2s;
         }
+        .order-card:hover, .user-card:hover { border-color: rgba(0,212,255,0.3); }
         .order-card.search-highlight, .user-card.search-highlight {
             border: 2px solid #fbbf24;
             background: rgba(251,191,36,0.15);
             animation: blinkGlow 1s ease-in-out 2;
         }
         @keyframes blinkGlow {
-            0% { border-color: rgba(251,191,36,0); box-shadow: 0 0 0px rgba(251,191,36,0); }
+            0% { border-color: rgba(251,191,36,0); box-shadow: 0 0 0px rgba(251,191,36,0); background: rgba(251,191,36,0); }
             25% { border-color: #fbbf24; box-shadow: 0 0 20px #fbbf24; background: rgba(251,191,36,0.25); }
-            50% { border-color: rgba(251,191,36,0); box-shadow: 0 0 0px rgba(251,191,36,0); }
+            50% { border-color: rgba(251,191,36,0); box-shadow: 0 0 0px rgba(251,191,36,0); background: rgba(251,191,36,0); }
             75% { border-color: #fbbf24; box-shadow: 0 0 20px #fbbf24; background: rgba(251,191,36,0.25); }
-            100% { border-color: rgba(251,191,36,0); box-shadow: 0 0 0px rgba(251,191,36,0); }
+            100% { border-color: rgba(251,191,36,0); box-shadow: 0 0 0px rgba(251,191,36,0); background: rgba(251,191,36,0); }
         }
         
-        .order-header, .user-header {
+        .order-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -372,7 +379,7 @@
             padding-bottom: 8px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .order-id, .user-phone {
+        .order-id {
             font-family: monospace;
             font-size: 0.7rem;
             background: rgba(0,212,255,0.1);
@@ -397,13 +404,48 @@
             gap: 12px;
             margin-bottom: 10px;
         }
-        .detail-item { flex: 1; min-width: 80px; }
-        .detail-label { font-size: 0.55rem; color: #64748b; margin-bottom: 2px; }
-        .detail-value { font-size: 0.8rem; font-weight: 600; }
+        .detail-item {
+            flex: 1;
+            min-width: 80px;
+        }
+        .detail-label {
+            font-size: 0.55rem;
+            color: #64748b;
+            margin-bottom: 2px;
+        }
+        .detail-value {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
         .detail-value.price { color: var(--emerald); }
-        .clickable-phone { cursor: pointer; }
+        .detail-value.cost { color: var(--amber); }
+        .detail-value.profit { color: var(--cyan); }
+        .clickable-phone {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .clickable-phone:hover { color: var(--cyan); }
         
-        .order-actions, .user-actions {
+        .countdown-box {
+            background: rgba(0,212,255,0.08);
+            border-radius: 40px;
+            padding: 6px 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            font-family: 'Space Grotesk', monospace;
+            border: 1px solid rgba(0,212,255,0.2);
+        }
+        .countdown-box i { color: var(--cyan); }
+        .countdown-timer { font-weight: 700; color: var(--cyan); letter-spacing: 1px; }
+        
+        .order-actions {
             display: flex;
             gap: 8px;
             margin-top: 10px;
@@ -411,7 +453,7 @@
             border-top: 1px solid rgba(255,255,255,0.05);
             flex-wrap: wrap;
         }
-        .action-btn, .user-action-btn {
+        .action-btn {
             flex: 1;
             border: none;
             padding: 8px 12px;
@@ -419,6 +461,10 @@
             font-size: 0.7rem;
             cursor: pointer;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         .action-btn.approve { background: #10b981; color: white; }
         .action-btn.reject { background: #f43f5e; color: white; }
@@ -430,15 +476,64 @@
             border-radius: 40px;
             font-size: 0.7rem;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             color: var(--cyan);
         }
         
-        .user-status { font-size: 0.6rem; padding: 3px 8px; border-radius: 40px; }
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .user-phone {
+            font-family: monospace;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .user-phone:hover { color: var(--cyan); }
+        .user-status {
+            font-size: 0.6rem;
+            padding: 3px 8px;
+            border-radius: 40px;
+        }
         .user-status.suspect { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .user-status.blocked { background: rgba(244,63,94,0.2); color: #fb7185; }
         .user-status.normal { background: rgba(16,185,129,0.2); color: #34d399; }
+        .user-stats { display: flex; justify-content: space-around; margin-bottom: 10px; }
+        .user-stat { text-align: center; }
+        .user-stat-value { font-size: 1.1rem; font-weight: 700; }
+        .user-stat-label { font-size: 0.55rem; color: #64748b; }
+        .reject-rate.high { color: var(--rose); }
+        .reject-rate.medium { color: var(--amber); }
+        .user-actions { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap; }
+        .user-action-btn {
+            flex: 1;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .user-action-btn.block { background: rgba(244,63,94,0.2); color: #fb7185; }
+        .user-action-btn.unblock { background: rgba(16,185,129,0.2); color: #34d399; }
+        .user-action-btn.delete-user { background: rgba(244,63,94,0.2); color: #fb7185; }
+        .user-action-btn.delete-orders { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .user-action-btn.clear { background: rgba(0,212,255,0.15); color: var(--cyan); }
         
         .hidden { display: none; }
+        
         .fab-container {
             position: fixed;
             bottom: 20px;
@@ -458,8 +553,13 @@
             font-size: 1.2rem;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0,212,255,0.4);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .fab.logout { background: linear-gradient(135deg, #f43f5e, #e11d48); }
+        .fab:hover { transform: scale(1.05); }
+        .fab.logout { background: linear-gradient(135deg, #f43f5e, #e11d48); box-shadow: 0 4px 15px rgba(244,63,94,0.4); }
         
         .image-modal {
             position: fixed;
@@ -487,6 +587,8 @@
             border: 1px solid rgba(0,212,255,0.5);
         }
         .image-modal-content img { max-width: 100%; max-height: 70vh; border-radius: 16px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid rgba(0,212,255,0.2); }
+        .close-modal { background: rgba(255,255,255,0.1); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
         
         .login-box {
             max-width: 350px;
@@ -517,17 +619,15 @@
             cursor: pointer;
         }
         .loading { text-align: center; padding: 2rem; color: #64748b; }
-        .toast {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            background: var(--emerald);
-            color: #030712;
-            padding: 8px 16px;
-            border-radius: 60px;
-            font-size: 0.8rem;
-            z-index: 9999;
-            display: none;
+        .last-update { font-size: 0.6rem; color: #475569; text-align: center; padding: 12px; }
+        .search-result-badge {
+            background: rgba(0,212,255,0.1);
+            border-radius: 40px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
     </style>
 </head>
@@ -591,6 +691,7 @@
             <div class="users-list" id="usersList"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading users...</div></div>
         </div>
         
+        <!-- Market Tab -->
         <div id="marketTab" class="hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <h3><i class="fas fa-store"></i> Products</h3>
@@ -620,8 +721,9 @@
 <div id="productModal" class="modal">
     <div class="modal-card">
         <h3 id="productModalTitle">Add Product</h3>
-        <input type="text" id="productName" placeholder="Product Name">
-        <input type="number" id="productPrice" placeholder="Price (MMK)">
+        <input type="text" id="productName" placeholder="Product Name *">
+        <input type="number" id="productPrice" placeholder="Price (MMK) *">
+        <input type="text" id="productImage" placeholder="Image URL (optional)">
         <input type="text" id="productCategory" placeholder="Category (e.g., Men, Women, Accessories)">
         <input type="text" id="productIcon" placeholder="FontAwesome Icon (e.g., fas fa-tshirt)">
         <input type="number" id="productDiscount" placeholder="Discount % (optional)">
@@ -651,29 +753,126 @@
     let editingProductId = null;
 
     const costPriceMap = {
-        "VIP LEVEL - 1": 14500, "VIP LEVEL - 2": 19500,
-        "VIP LEVEL - 3": 24500, "VIP LEVEL - 4 (ULTRA)": 29000
+        "VIP LEVEL - 1": 14500,
+        "VIP LEVEL - 2": 19500,
+        "VIP LEVEL - 3": 24500,
+        "VIP LEVEL - 4 (ULTRA)": 29000
     };
+
     function getCostPrice(plan) { return costPriceMap[plan] || 0; }
     function getProfit(price, plan) { return price - getCostPrice(plan); }
-    function maskPhone(phone) { return phone && phone.length >= 8 ? phone.substring(0,5)+'***'+phone.substring(phone.length-3) : phone || ''; }
+    function maskPhone(phone) {
+        if (!phone || phone.length < 8) return phone || '';
+        return phone.substring(0, 5) + '***' + phone.substring(phone.length - 3);
+    }
     
-    function showToast(msg, isError) {
-        const toast = document.createElement('div');
-        toast.style.cssText = `position:fixed;bottom:80px;right:20px;background:${isError ? '#f43f5e' : '#10b981'};color:#030712;padding:8px 16px;border-radius:60px;font-size:0.8rem;font-weight:bold;z-index:9999`;
-        toast.innerHTML = isError ? `❌ ${msg}` : `✅ ${msg}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 2000);
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text);
+        showToast(`📞 ${text} copied!`);
     }
     
     function getRemainingTime(activatedAt) {
         if (!activatedAt) return null;
-        const remain = new Date(activatedAt).getTime() + 30*86400000 - Date.now();
-        if (remain <= 0) return "Expired";
-        const d = Math.floor(remain/86400000), h = Math.floor((remain%86400000)/3600000), m = Math.floor((remain%3600000)/60000), s = Math.floor((remain%60000)/1000);
-        return `${d}d ${h}h ${m}m ${s}s`;
+        const now = Date.now();
+        const endDate = new Date(activatedAt).getTime() + (30 * 24 * 60 * 60 * 1000);
+        const remaining = endDate - now;
+        if (remaining <= 0) return "Expired";
+        const days = Math.floor(remaining / (24 * 60 * 60 * 1000));
+        const hours = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+        const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+        const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+        return { days, hours, minutes, seconds, remaining };
     }
     
+    function formatCountdown(activatedAt) {
+        const time = getRemainingTime(activatedAt);
+        if (!time) return null;
+        if (time === "Expired") return "Expired";
+        return `${time.days}d ${time.hours}h ${time.minutes}m ${time.seconds}s`;
+    }
+
+    function startCountdownForOrder(orderId, activatedAt) {
+        if (activeCountdowns[orderId]) clearInterval(activeCountdowns[orderId]);
+        activeCountdowns[orderId] = setInterval(() => {
+            const elem = document.getElementById(`countdown-${orderId}`);
+            if (elem) {
+                const formatted = formatCountdown(activatedAt);
+                if (formatted === "Expired") {
+                    elem.innerHTML = `<i class="fas fa-calendar-times"></i> <span style="color:#f43f5e;">Expired</span>`;
+                    clearInterval(activeCountdowns[orderId]);
+                } else {
+                    elem.innerHTML = `<i class="fas fa-hourglass-half"></i> <span class="countdown-timer">${formatted}</span>`;
+                }
+            } else {
+                clearInterval(activeCountdowns[orderId]);
+            }
+        }, 1000);
+    }
+
+    function updateCountdown() {
+        const el = document.getElementById('autoSyncTimer');
+        if (el) el.innerHTML = `Auto Sync: ${secondsLeft}s`;
+    }
+
+    function startAutoSync() {
+        if (autoSyncInterval) clearInterval(autoSyncInterval);
+        if (countdownInterval) clearInterval(countdownInterval);
+        secondsLeft = 30; updateCountdown();
+        countdownInterval = setInterval(() => { secondsLeft--; if (secondsLeft < 0) secondsLeft = 30; updateCountdown(); }, 1000);
+        autoSyncInterval = setInterval(() => { if (token === 'logged_in') { loadAllData(); secondsLeft = 30; updateCountdown(); } }, 30000);
+    }
+
+    function stopAutoSync() { if (autoSyncInterval) clearInterval(autoSyncInterval); if (countdownInterval) clearInterval(countdownInterval); }
+
+    function openScreenshot(url) {
+        const modal = document.getElementById('screenshotModal');
+        const img = document.getElementById('modalImage');
+        if (url && url !== 'null') {
+            img.src = url.startsWith('/') ? API_BASE + url : url;
+        } else {
+            img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E';
+        }
+        modal.classList.add('active');
+    }
+    function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
+
+    async function login() {
+        const password = document.getElementById('adminPassword').value;
+        const res = await fetch(`${API_BASE}/api/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+        const data = await res.json();
+        if (data.success) {
+            localStorage.setItem('adminToken', 'logged_in'); token = 'logged_in';
+            document.getElementById('loginBox').style.display = 'none';
+            document.getElementById('adminContent').style.display = 'block';
+            document.getElementById('fabContainer').style.display = 'flex';
+            loadAllData(); startAutoSync();
+        } else { alert('Invalid Password'); }
+    }
+
+    function logout() { stopAutoSync(); localStorage.removeItem('adminToken'); token = null; document.getElementById('loginBox').style.display = 'block'; document.getElementById('adminContent').style.display = 'none'; document.getElementById('fabContainer').style.display = 'none'; }
+
+    async function loadAllData() {
+        await loadOrders();
+        await loadUserStats();
+        await loadProducts();
+    }
+
+    async function loadOrders() {
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/orders`);
+            const data = await res.json();
+            if (data.orders) { allOrders = data.orders; applyFiltersAndSearch(); document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | Total: ${allOrders.length}`; }
+        } catch(e) { document.getElementById('ordersList').innerHTML = '<div class="loading">Connection Error</div>'; }
+    }
+
+    async function loadUserStats() {
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/user-stats`);
+            const data = await res.json();
+            if (data.stats) { userStats = data.stats; renderUsersTab(); }
+        } catch(e) { console.error('Error loading user stats:', e); }
+    }
+
     // ========== PRODUCT API ==========
     async function loadProducts() {
         try {
@@ -692,12 +891,14 @@
             html += `
                 <div class="product-card" data-product-id="${p.id}">
                     <div class="product-header">
-                        <span><i class="${p.icon || 'fas fa-box'}"></i> <strong>${escapeHtml(p.name)}</strong></span>
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            ${p.image ? `<img src="${p.image}" class="product-image-preview" onerror="this.style.display='none'">` : `<div class="product-image-preview" style="display:flex;align-items:center;justify-content:center;"><i class="${p.icon || 'fas fa-box'}"></i></div>`}
+                            <div><strong>${escapeHtml(p.name)}</strong><br><span style="font-size:0.65rem;">💰 ${p.price.toLocaleString()} MMK</span></div>
+                        </div>
                         <span class="product-category">${escapeHtml(p.category || 'Uncategorized')}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; margin:8px 0;">
-                        <span>💰 ${p.price.toLocaleString()} MMK</span>
-                        ${p.discount ? `<span class="status-pending" style="font-size:0.6rem;">-${p.discount}% OFF</span>` : ''}
+                    <div style="margin:8px 0;">
+                        ${p.discount ? `<span class="status-pending" style="font-size:0.6rem; display:inline-block;">-${p.discount}% OFF</span>` : ''}
                     </div>
                     <div class="product-actions">
                         <button class="product-action-btn edit" onclick="openEditProductModal(${p.id})"><i class="fas fa-edit"></i> Edit</button>
@@ -709,6 +910,8 @@
         container.innerHTML = html;
     }
     
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+    
     function openAddProductModal() { editingProductId = null; document.getElementById('productModalTitle').innerText = 'Add Product'; clearProductForm(); document.getElementById('productModal').classList.add('active'); }
     function openEditProductModal(id) {
         const product = products.find(p => p.id === id);
@@ -717,6 +920,7 @@
         document.getElementById('productModalTitle').innerText = 'Edit Product';
         document.getElementById('productName').value = product.name;
         document.getElementById('productPrice').value = product.price;
+        document.getElementById('productImage').value = product.image || '';
         document.getElementById('productCategory').value = product.category || '';
         document.getElementById('productIcon').value = product.icon || 'fas fa-box';
         document.getElementById('productDiscount').value = product.discount || '';
@@ -725,6 +929,7 @@
     function clearProductForm() {
         document.getElementById('productName').value = '';
         document.getElementById('productPrice').value = '';
+        document.getElementById('productImage').value = '';
         document.getElementById('productCategory').value = '';
         document.getElementById('productIcon').value = 'fas fa-box';
         document.getElementById('productDiscount').value = '';
@@ -734,13 +939,14 @@
     async function saveProduct() {
         const name = document.getElementById('productName').value.trim();
         const price = parseInt(document.getElementById('productPrice').value);
+        const image = document.getElementById('productImage').value.trim();
         const category = document.getElementById('productCategory').value.trim();
         const icon = document.getElementById('productIcon').value.trim();
         const discount = parseInt(document.getElementById('productDiscount').value) || 0;
         if (!name || !price) { showToast("Please fill product name and price", true); return; }
         const url = editingProductId ? `${API_BASE}/api/market/products/${editingProductId}` : `${API_BASE}/api/market/products`;
         const method = editingProductId ? 'PUT' : 'POST';
-        const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, price, category, icon, discount }) });
+        const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, price, image, category, icon, discount }) });
         if (res.ok) { showToast(editingProductId ? 'Product updated' : 'Product added'); closeProductModal(); loadProducts(); }
         else { showToast('Error saving product', true); }
     }
@@ -751,181 +957,323 @@
         if (res.ok) { showToast('Product deleted'); loadProducts(); }
         else { showToast('Error deleting product', true); }
     }
-    
-    // ========== ORDERS & USERS ==========
-    async function loadOrders() {
-        try {
-            const res = await fetch(`${API_BASE}/api/admin/orders`);
-            const data = await res.json();
-            if (data.orders) { allOrders = data.orders; applyFiltersAndSearch(); document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | Total: ${allOrders.length}`; }
-        } catch(e) { document.getElementById('ordersList').innerHTML = '<div class="loading">Connection Error</div>'; }
+
+    // ========== USER MANAGEMENT ==========
+    async function blockUser(phone, block) {
+        const res = await fetch(`${API_BASE}/api/admin/user-block`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone, block }) });
+        if (res.ok) { loadUserStats(); showToast(block ? '✅ User blocked' : '✅ User unblocked'); }
+        else alert('Error');
     }
-    async function loadUserStats() {
-        try {
-            const res = await fetch(`${API_BASE}/api/admin/user-stats`);
-            const data = await res.json();
-            if (data.stats) { userStats = data.stats; renderUsersTab(); }
-        } catch(e) { console.error(e); }
+
+    async function clearSuspectFlag(phone) {
+        const res = await fetch(`${API_BASE}/api/admin/clear-suspect`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) });
+        if (res.ok) { loadUserStats(); showToast('✅ Suspect flag cleared'); }
+        else alert('Error');
+    }
+
+    async function deleteUser(phone) {
+        if (confirm(`⚠️ Are you sure you want to delete user ${maskPhone(phone)}?\nThis will remove the user from stats. Orders will remain.`)) {
+            const res = await fetch(`${API_BASE}/api/admin/user-delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) });
+            if (res.ok) { loadUserStats(); showToast('✅ User deleted from stats'); }
+            else alert('Error');
+        }
+    }
+
+    async function deleteAllOrders(phone) {
+        if (confirm(`⚠️ Are you sure you want to delete ALL orders for ${maskPhone(phone)}?\nThis action cannot be undone!`)) {
+            const res = await fetch(`${API_BASE}/api/admin/user-delete-orders`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) });
+            if (res.ok) { loadAllData(); showToast('✅ All orders deleted'); }
+            else alert('Error');
+        }
     }
     
+    async function manualCleanup() {
+        if (confirm('⚠️ Are you sure you want to delete ALL Pending/Rejected orders older than 30 days?\n\nThis action cannot be undone!')) {
+            const res = await fetch(`${API_BASE}/api/admin/cleanup-old`, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`✅ ${data.message}`);
+                loadAllData();
+            } else {
+                showToast('❌ Cleanup failed: ' + data.error, true);
+            }
+        }
+    }
+
     function updateStats(orders) {
-        const total = orders.length, pending = orders.filter(o => o.status === 'Pending'), approved = orders.filter(o => o.status === 'Approved'), rejected = orders.filter(o => o.status === 'Rejected');
-        const revenue = approved.reduce((s, o) => s + o.price, 0), cost = approved.reduce((s, o) => s + getCostPrice(o.plan), 0), profit = revenue - cost;
-        document.getElementById('totalOrders').innerHTML = total; document.getElementById('pendingOrders').innerHTML = pending.length;
-        document.getElementById('approvedOrders').innerHTML = approved.length; document.getElementById('rejectedOrders').innerHTML = rejected.length;
-        document.getElementById('totalRevenue').innerHTML = revenue.toLocaleString() + 'K'; document.getElementById('totalCost').innerHTML = cost.toLocaleString() + 'K';
+        const total = orders.length;
+        const pending = orders.filter(o => o.status === 'Pending');
+        const approved = orders.filter(o => o.status === 'Approved');
+        const rejected = orders.filter(o => o.status === 'Rejected');
+        const revenue = approved.reduce((s, o) => s + o.price, 0);
+        const cost = approved.reduce((s, o) => s + getCostPrice(o.plan), 0);
+        const profit = revenue - cost;
+        document.getElementById('totalOrders').innerHTML = total;
+        document.getElementById('pendingOrders').innerHTML = pending.length;
+        document.getElementById('approvedOrders').innerHTML = approved.length;
+        document.getElementById('rejectedOrders').innerHTML = rejected.length;
+        document.getElementById('totalRevenue').innerHTML = revenue.toLocaleString() + 'K';
+        document.getElementById('totalCost').innerHTML = cost.toLocaleString() + 'K';
         document.getElementById('totalProfit').innerHTML = profit.toLocaleString() + 'K';
         document.getElementById('avgProfit').innerHTML = (approved.length ? Math.round(profit / approved.length) : 0).toLocaleString() + 'K';
     }
-    
-    function renderOrders(orders) {
-        const container = document.getElementById('ordersList');
-        if (!orders || !orders.length) { container.innerHTML = '<div class="loading">No orders found</div>'; return; }
-        let html = '';
-        for (const o of orders) {
-            let statusClass = o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected');
-            let statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
-            const isHighlighted = currentSearchPhone && o.phone === currentSearchPhone;
-            let countdownHtml = '';
-            if (o.status === 'Approved' && o.activated_at) { countdownHtml = `<div class="countdown-box" id="countdown-${o.id}"><i class="fas fa-hourglass-half"></i> <span class="countdown-timer">${getRemainingTime(o.activated_at)}</span></div>`; }
-            let paymentBadge = o.payment_method === 'kpay' ? '<span style="background:rgba(30,136,229,0.2);color:#64b5f6;padding:4px 12px;border-radius:40px;font-size:0.6rem;"><i class="fas fa-university"></i> K-Pay</span>' : (o.payment_method === 'wavepay' ? '<span style="background:rgba(67,160,71,0.2);color:#81c784;padding:4px 12px;border-radius:40px;font-size:0.6rem;"><i class="fas fa-waveform"></i> WavePay</span>' : '<span style="background:rgba(249,168,37,0.2);color:#f9a825;padding:4px 12px;border-radius:40px;font-size:0.6rem;"><i class="fas fa-building"></i> AYA Pay</span>');
-            let proofHtml = o.slip_url ? `<button class="screenshot-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> View Slip</button>` : (o.sender_name ? `<div class="proof-text"><span><i class="fas fa-user"></i> ${escapeHtml(o.sender_name)}</span><span><i class="fas fa-credit-card"></i> Last5: ${escapeHtml(o.last5_digits)}</span></div>` : '<span>No proof</span>');
-            html += `
-                <div class="order-card ${isHighlighted ? 'search-highlight' : ''}">
-                    <div class="order-header"><span class="order-id"><i class="fas fa-hashtag"></i> ${o.id}</span><span class="status-badge ${statusClass}">${statusText}</span></div>
-                    <div class="payment-badge" style="margin-bottom:8px;">${paymentBadge}</div>
-                    <div class="order-details"><div class="detail-item"><div class="detail-label">Phone</div><div class="detail-value clickable-phone" onclick="copyToClipboard('${o.phone}')">📞 ${maskPhone(o.phone)}</div></div><div class="detail-item"><div class="detail-label">Plan</div><div class="detail-value">${o.plan}</div></div><div class="detail-item"><div class="detail-label">Price</div><div class="detail-value price">${o.price.toLocaleString()}K</div></div></div>
-                    <div class="order-details"><div class="detail-item"><div class="detail-label">Cost</div><div class="detail-value cost">${getCostPrice(o.plan).toLocaleString()}K</div></div><div class="detail-item"><div class="detail-label">Profit</div><div class="detail-value profit">${getProfit(o.price, o.plan).toLocaleString()}K</div></div><div class="detail-item"><div class="detail-label">Date</div><div class="detail-value">${new Date(o.created_at).toLocaleDateString()}</div></div></div>
-                    <div class="proof-section" style="margin-top:8px;padding:8px;background:rgba(0,0,0,0.2);border-radius:12px;">${proofHtml}</div>
-                    ${countdownHtml}
-                    <div class="order-actions">${o.status === 'Pending' ? `<button class="action-btn approve" onclick="approveOrder(${o.id})"><i class="fas fa-check"></i> Approve</button><button class="action-btn reject" onclick="rejectOrder(${o.id})"><i class="fas fa-times"></i> Reject</button>` : ''}<button class="action-btn delete" onclick="deleteOrder(${o.id})"><i class="fas fa-trash"></i> Delete</button></div>
-                </div>
-            `;
-        }
-        container.innerHTML = html;
-        for (const o of orders) { if (o.status === 'Approved' && o.activated_at) startCountdown(o.id, o.activated_at); }
-    }
-    
-    function startCountdown(id, act) {
-        if (activeCountdowns[id]) clearInterval(activeCountdowns[id]);
-        const fn = () => { const el = document.getElementById(`countdown-${id}`); if (!el) { clearInterval(activeCountdowns[id]); return; } const remain = getRemainingTime(act); if (remain === "Expired") { el.innerHTML = `<i class="fas fa-calendar-times"></i> <span style="color:#f43f5e;">Expired</span>`; clearInterval(activeCountdowns[id]); } else { el.innerHTML = `<i class="fas fa-hourglass-half"></i> <span class="countdown-timer">${remain}</span>`; } };
-        fn(); activeCountdowns[id] = setInterval(fn, 1000);
-    }
-    
+
     function renderUsersTab() {
         const container = document.getElementById('usersList');
-        if (!userStats.length) { container.innerHTML = '<div class="loading">No user data available</div>'; return; }
-        let filtered = [...userStats];
-        if (currentSearchPhone) filtered = filtered.filter(u => u.phone === currentSearchPhone);
-        if (!filtered.length && currentSearchPhone) { container.innerHTML = `<div class="loading">No user found for ${maskPhone(currentSearchPhone)}</div>`; return; }
+        if (!userStats.length) {
+            container.innerHTML = '<div class="loading">No user data available</div>';
+            return;
+        }
+        
+        let filteredUsers = [...userStats];
+        if (currentSearchPhone) {
+            filteredUsers = filteredUsers.filter(u => u.phone === currentSearchPhone);
+        }
+        
+        if (filteredUsers.length === 0 && currentSearchPhone) {
+            container.innerHTML = `<div class="loading">No user found for ${maskPhone(currentSearchPhone)}</div>`;
+            return;
+        }
+        
         let html = '';
-        for (const user of filtered) {
+        for (const user of filteredUsers) {
             const rejectRate = user.order_count > 0 ? ((user.reject_count / user.order_count) * 100).toFixed(0) : 0;
-            let statusClass = 'normal', statusText = '🟢 Normal';
+            let rateClass = '';
+            if (rejectRate >= 50) rateClass = 'high';
+            else if (rejectRate >= 30) rateClass = 'medium';
+            
+            let statusClass = 'normal';
+            let statusText = '🟢 Normal';
             if (user.blocked) { statusClass = 'blocked'; statusText = '🔴 Blocked'; }
             else if (user.suspect_flag) { statusClass = 'suspect'; statusText = '🟡 Suspect'; }
+            
             const isHighlighted = currentSearchPhone && user.phone === currentSearchPhone;
+            const highlightClass = isHighlighted ? 'search-highlight' : '';
+            
             html += `
-                <div class="user-card ${isHighlighted ? 'search-highlight' : ''}">
-                    <div class="user-header"><span class="user-phone" onclick="copyToClipboard('${user.phone}')">📞 ${maskPhone(user.phone)}</span><span class="user-status ${statusClass}">${statusText}</span></div>
-                    <div class="user-stats" style="display:flex; justify-content:space-around; margin-bottom:10px;"><div class="user-stat"><div class="user-stat-value">${user.order_count || 0}</div><div class="user-stat-label">Orders</div></div><div class="user-stat"><div class="user-stat-value">${user.reject_count || 0}</div><div class="user-stat-label">Rejected</div></div><div class="user-stat"><div class="user-stat-value">${rejectRate}%</div><div class="user-stat-label">Rate</div></div></div>
-                    <div class="user-actions">${!user.blocked ? `<button class="user-action-btn block" onclick="blockUser('${user.phone}', true)">🔴 Block</button>` : `<button class="user-action-btn unblock" onclick="blockUser('${user.phone}', false)">🟢 Unblock</button>`}<button class="user-action-btn delete-user" onclick="deleteUser('${user.phone}')">❌ Delete User</button><button class="user-action-btn delete-orders" onclick="deleteAllOrders('${user.phone}')">🗑 Delete Orders</button>${user.suspect_flag ? `<button class="user-action-btn clear" onclick="clearSuspectFlag('${user.phone}')">✓ Clear Flag</button>` : ''}</div>
+                <div class="user-card ${highlightClass}">
+                    <div class="user-header">
+                        <span class="user-phone" onclick="copyToClipboard('${user.phone}')">📞 ${maskPhone(user.phone)} 📋</span>
+                        <span class="user-status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="user-stats">
+                        <div class="user-stat"><div class="user-stat-value">${user.order_count || 0}</div><div class="user-stat-label">Orders</div></div>
+                        <div class="user-stat"><div class="user-stat-value ${rejectRate >= 50 ? 'high' : (rejectRate >= 30 ? 'medium' : '')}">${user.reject_count || 0}</div><div class="user-stat-label">Rejected</div></div>
+                        <div class="user-stat"><div class="user-stat-value reject-rate ${rateClass}">${rejectRate}%</div><div class="user-stat-label">Reject Rate</div></div>
+                    </div>
+                    <div class="user-actions">
+                        ${!user.blocked ? `<button class="user-action-btn block" onclick="blockUser('${user.phone}', true)">🔴 Block</button>` : `<button class="user-action-btn unblock" onclick="blockUser('${user.phone}', false)">🟢 Unblock</button>`}
+                        <button class="user-action-btn delete-user" onclick="deleteUser('${user.phone}')">❌ Delete User</button>
+                        <button class="user-action-btn delete-orders" onclick="deleteAllOrders('${user.phone}')">🗑 Delete All Orders</button>
+                        ${user.suspect_flag ? `<button class="user-action-btn clear" onclick="clearSuspectFlag('${user.phone}')">✓ Clear Flag</button>` : ''}
+                    </div>
                 </div>
             `;
         }
         container.innerHTML = html;
     }
-    
+
     function applyFiltersAndSearch() {
         let filtered = [...allOrders];
-        if (currentSearchPhone) filtered = filtered.filter(o => o.phone === currentSearchPhone);
+        
+        if (currentSearchPhone) {
+            filtered = filtered.filter(o => o.phone === currentSearchPhone);
+        }
+        
         const status = document.getElementById('statusFilter').value;
         if (status !== 'all') filtered = filtered.filter(o => o.status === status);
+        
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
         if (startDate) { const start = new Date(startDate); start.setHours(0,0,0,0); filtered = filtered.filter(o => new Date(o.created_at) >= start); }
         if (endDate) { const end = new Date(endDate); end.setHours(23,59,59,999); filtered = filtered.filter(o => new Date(o.created_at) <= end); }
-        renderOrders(filtered); updateStats(filtered);
-        if (currentTab === 'users') renderUsersTab();
+        
+        renderOrders(filtered);
+        updateStats(filtered);
+        
+        if (currentSearchPhone) {
+            if (!document.getElementById('searchResultMsg')) {
+                const msgDiv = document.createElement('div');
+                msgDiv.id = 'searchResultMsg';
+                msgDiv.className = 'search-result-badge';
+                msgDiv.style.marginBottom = '12px';
+                msgDiv.style.justifyContent = 'center';
+                document.querySelector('.filter-bar').after(msgDiv);
+            }
+            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Phone: ${maskPhone(currentSearchPhone)} | Found: ${filtered.length} order(s)`;
+        } else {
+            if (document.getElementById('searchResultMsg')) {
+                document.getElementById('searchResultMsg').remove();
+            }
+        }
+        
+        if (currentTab === 'users') {
+            renderUsersTab();
+        }
     }
-    
+
     function searchByPhoneOrId() {
         const searchValue = document.getElementById('searchInput').value.trim();
         if (!searchValue) return;
         currentSearchPhone = searchValue;
         applyFiltersAndSearch();
-        setTimeout(() => { const h = document.querySelector('.search-highlight'); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+        setTimeout(() => {
+            const highlighted = document.querySelector('.search-highlight');
+            if (highlighted) highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
     }
-    function clearSearch() { currentSearchPhone = ""; document.getElementById('searchInput').value = ""; applyFiltersAndSearch(); if (currentTab === 'users') renderUsersTab(); showToast('Search cleared'); }
+    
+    function clearSearch() {
+        currentSearchPhone = "";
+        document.getElementById('searchInput').value = "";
+        applyFiltersAndSearch();
+        if (currentTab === 'users') renderUsersTab();
+        if (document.getElementById('searchResultMsg')) document.getElementById('searchResultMsg').remove();
+        showToast('🔍 Search cleared');
+    }
+
     function applyFilters() { applyFiltersAndSearch(); }
-    function clearFilters() { document.getElementById('startDate').value = ''; document.getElementById('endDate').value = ''; document.getElementById('statusFilter').value = 'all'; applyFiltersAndSearch(); if (currentTab === 'users') renderUsersTab(); showToast('Filters cleared'); }
     
-    async function approveOrder(id) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' }); if (res.ok) { showToast('Approved'); loadOrders(); } else alert('Error'); }
-    async function rejectOrder(id) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' }); if (res.ok) { showToast('Rejected'); loadOrders(); loadUserStats(); } else alert('Error'); }
-    async function deleteOrder(id) { if (confirm('Delete this order?')) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' }); if (res.ok) { showToast('Deleted'); loadOrders(); } else alert('Error'); } }
-    async function blockUser(phone, block) { const res = await fetch(`${API_BASE}/api/admin/user-block`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone, block }) }); if (res.ok) { loadUserStats(); showToast(block ? 'User blocked' : 'User unblocked'); } else alert('Error'); }
-    async function clearSuspectFlag(phone) { const res = await fetch(`${API_BASE}/api/admin/clear-suspect`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) }); if (res.ok) { loadUserStats(); showToast('Suspect flag cleared'); } else alert('Error'); }
-    async function deleteUser(phone) { if (confirm(`Delete user ${maskPhone(phone)}?`)) { const res = await fetch(`${API_BASE}/api/admin/user-delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) }); if (res.ok) { loadUserStats(); showToast('User deleted from stats'); } else alert('Error'); } }
-    async function deleteAllOrders(phone) { if (confirm(`Delete ALL orders for ${maskPhone(phone)}?`)) { const res = await fetch(`${API_BASE}/api/admin/user-delete-orders`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) }); if (res.ok) { loadOrders(); showToast('All orders deleted'); } else alert('Error'); } }
-    async function manualCleanup() { if (confirm('Delete ALL Pending/Rejected orders older than 30 days?')) { const res = await fetch(`${API_BASE}/api/admin/cleanup-old`, { method: 'POST' }); const data = await res.json(); if (data.success) { showToast(data.message); loadOrders(); } else showToast('Cleanup failed', true); } }
-    
-    function copyToClipboard(text) { navigator.clipboard.writeText(text); showToast(`📞 ${text} copied`); }
-    function openScreenshot(url) { const modal = document.getElementById('screenshotModal'); const img = document.getElementById('modalImage'); img.src = url && url !== 'null' ? (url.startsWith('/') ? API_BASE + url : url) : 'data:image/svg+xml,...'; modal.classList.add('active'); }
-    function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
-    function manualRefresh() { loadOrders(); loadUserStats(); loadProducts(); showToast('Synced'); secondsLeft = 30; updateCountdown(); }
-    
-    function startAutoSync() {
-        if (autoSyncInterval) clearInterval(autoSyncInterval);
-        if (countdownInterval) clearInterval(countdownInterval);
-        secondsLeft = 30; updateCountdown();
-        countdownInterval = setInterval(() => { secondsLeft--; if (secondsLeft < 0) secondsLeft = 30; updateCountdown(); }, 1000);
-        autoSyncInterval = setInterval(() => { if (token === 'logged_in') { loadOrders(); loadUserStats(); if (currentTab === 'market') loadProducts(); secondsLeft = 30; updateCountdown(); } }, 30000);
+    function clearFilters() {
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        document.getElementById('statusFilter').value = 'all';
+        applyFiltersAndSearch();
+        if (currentTab === 'users') renderUsersTab();
+        showToast('✅ Filters cleared');
     }
-    function updateCountdown() { const el = document.getElementById('autoSyncTimer'); if (el) el.innerHTML = `Auto Sync: ${secondsLeft}s`; }
-    
-    async function login() {
-        const password = document.getElementById('adminPassword').value;
-        const res = await fetch(`${API_BASE}/api/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
-        const data = await res.json();
-        if (data.success) {
-            localStorage.setItem('adminToken', 'logged_in'); token = 'logged_in';
-            document.getElementById('loginBox').style.display = 'none';
-            document.getElementById('adminContent').style.display = 'block';
-            document.getElementById('fabContainer').style.display = 'flex';
-            loadOrders(); loadUserStats(); loadProducts(); startAutoSync();
-        } else { alert('Invalid Password'); }
+
+    function renderOrders(orders) {
+        const container = document.getElementById('ordersList');
+        if (!orders || orders.length === 0) { 
+            container.innerHTML = '<div class="loading">No orders found</div>'; 
+            return; 
+        }
+        let html = '';
+        for (const o of orders) {
+            let statusClass = o.status === 'Pending' ? 'status-pending' : (o.status === 'Approved' ? 'status-approved' : 'status-rejected');
+            let statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
+            
+            const isHighlighted = currentSearchPhone && o.phone === currentSearchPhone;
+            const highlightClass = isHighlighted ? 'search-highlight' : '';
+            
+            let countdownHtml = '';
+            if (o.status === 'Approved' && o.activated_at) {
+                const initialCountdown = formatCountdown(o.activated_at);
+                countdownHtml = `
+                    <div class="countdown-box" id="countdown-${o.id}">
+                        <i class="fas fa-hourglass-half"></i>
+                        <span class="countdown-timer">${initialCountdown || 'Calculating...'}</span>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div class="order-card ${highlightClass}">
+                    <div class="order-header">
+                        <span class="order-id"><i class="fas fa-hashtag"></i> ${o.id}</span>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="order-details">
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-mobile-alt"></i> Phone</div>
+                            <div class="detail-value clickable-phone" onclick="copyToClipboard('${o.phone}')" title="Click to copy">📞 ${maskPhone(o.phone)} 📋</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-tag"></i> Plan</div>
+                            <div class="detail-value" style="font-size:0.7rem;">${o.plan}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-coins"></i> Price</div>
+                            <div class="detail-value price">${o.price.toLocaleString()}K</div>
+                        </div>
+                    </div>
+                    <div class="order-details">
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-box"></i> Cost</div>
+                            <div class="detail-value cost">${getCostPrice(o.plan).toLocaleString()}K</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-chart-line"></i> Profit</div>
+                            <div class="detail-value profit">${getProfit(o.price, o.plan).toLocaleString()}K</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label"><i class="fas fa-calendar"></i> Date</div>
+                            <div class="detail-value" style="font-size:0.65rem;">${new Date(o.created_at).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    ${countdownHtml}
+                    <div class="order-actions">
+                        ${o.slip_url ? `<button class="screenshot-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> View Slip</button>` : '<span style="font-size:0.6rem;color:#64748b;">No slip</span>'}
+                        ${o.status === 'Pending' ? `
+                            <button class="action-btn approve" onclick="approveOrder(${o.id})"><i class="fas fa-check"></i> Approve</button>
+                            <button class="action-btn reject" onclick="rejectOrder(${o.id})"><i class="fas fa-times"></i> Reject</button>
+                        ` : ''}
+                        <button class="action-btn delete" onclick="deleteOrder(${o.id})"><i class="fas fa-trash"></i> Delete</button>
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        
+        for (const o of orders) {
+            if (o.status === 'Approved' && o.activated_at) {
+                startCountdownForOrder(o.id, o.activated_at);
+            }
+        }
     }
-    function logout() { stopAutoSync(); localStorage.removeItem('adminToken'); token = null; document.getElementById('loginBox').style.display = 'block'; document.getElementById('adminContent').style.display = 'none'; document.getElementById('fabContainer').style.display = 'none'; }
-    function stopAutoSync() { if (autoSyncInterval) clearInterval(autoSyncInterval); if (countdownInterval) clearInterval(countdownInterval); }
-    
+
+    async function approveOrder(id) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' }); if (res.ok) { showToast('✅ Approved'); loadOrders(); } else alert('Error'); }
+    async function rejectOrder(id) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' }); if (res.ok) { showToast('❌ Rejected'); loadOrders(); loadUserStats(); } else alert('Error'); }
+    async function deleteOrder(id) { if (confirm('Delete this order?')) { const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' }); if (res.ok) { showToast('🗑 Deleted'); loadOrders(); } else alert('Error'); } }
+    function manualRefresh() { loadAllData(); showToast('🔄 Synced'); secondsLeft = 30; updateCountdown(); }
+    function showToast(msg, isError = false) { 
+        const toast = document.createElement('div'); 
+        toast.style.cssText = `position:fixed;bottom:80px;right:20px;background:${isError ? '#f43f5e' : '#10b981'};color:#030712;padding:8px 16px;border-radius:60px;font-size:0.8rem;font-weight:bold;z-index:9999`; 
+        toast.innerHTML = isError ? `❌ ${msg}` : `✅ ${msg}`; 
+        document.body.appendChild(toast); 
+        setTimeout(() => toast.remove(), 2000); 
+    }
+
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentTab = btn.dataset.tab;
-            document.getElementById('ordersTab').classList.add('hidden');
-            document.getElementById('usersTab').classList.add('hidden');
-            document.getElementById('marketTab').classList.add('hidden');
-            document.getElementById(`${currentTab}Tab`).classList.remove('hidden');
-            if (currentTab === 'users') renderUsersTab();
-            if (currentTab === 'market') loadProducts();
-            if (currentTab === 'orders') applyFiltersAndSearch();
+            if (currentTab === 'orders') {
+                document.getElementById('ordersTab').classList.remove('hidden');
+                document.getElementById('usersTab').classList.add('hidden');
+                document.getElementById('marketTab').classList.add('hidden');
+                applyFiltersAndSearch();
+            } else if (currentTab === 'users') {
+                document.getElementById('ordersTab').classList.add('hidden');
+                document.getElementById('usersTab').classList.remove('hidden');
+                document.getElementById('marketTab').classList.add('hidden');
+                renderUsersTab();
+            } else if (currentTab === 'market') {
+                document.getElementById('ordersTab').classList.add('hidden');
+                document.getElementById('usersTab').classList.add('hidden');
+                document.getElementById('marketTab').classList.remove('hidden');
+                loadProducts();
+            }
         });
     });
-    document.getElementById('screenshotModal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-    
-    window.approveOrder = approveOrder; window.rejectOrder = rejectOrder; window.deleteOrder = deleteOrder;
-    window.blockUser = blockUser; window.clearSuspectFlag = clearSuspectFlag; window.deleteUser = deleteUser;
-    window.deleteAllOrders = deleteAllOrders; window.copyToClipboard = copyToClipboard;
-    window.openScreenshot = openScreenshot; window.closeModal = closeModal;
-    window.applyFilters = applyFilters; window.clearFilters = clearFilters;
+
+    document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+    document.getElementById('searchInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') searchByPhoneOrId(); });
+
+    window.approveOrder = approveOrder; window.rejectOrder = rejectOrder; window.deleteOrder = deleteOrder; window.logout = logout;
+    window.applyFilters = applyFilters; window.clearFilters = clearFilters; window.openScreenshot = openScreenshot; window.manualRefresh = manualRefresh;
     window.searchByPhoneOrId = searchByPhoneOrId; window.clearSearch = clearSearch;
-    window.manualRefresh = manualRefresh; window.logout = logout;
+    window.blockUser = blockUser; window.clearSuspectFlag = clearSuspectFlag;
+    window.deleteUser = deleteUser; window.deleteAllOrders = deleteAllOrders;
+    window.copyToClipboard = copyToClipboard;
+    window.manualCleanup = manualCleanup;
     window.openAddProductModal = openAddProductModal; window.openEditProductModal = openEditProductModal;
     window.closeProductModal = closeProductModal; window.saveProduct = saveProduct; window.deleteProduct = deleteProduct;
-    
-    if (token === 'logged_in') { document.getElementById('loginBox').style.display = 'none'; document.getElementById('adminContent').style.display = 'block'; document.getElementById('fabContainer').style.display = 'flex'; loadOrders(); loadUserStats(); loadProducts(); startAutoSync(); }
+
+    if (token === 'logged_in') { document.getElementById('loginBox').style.display = 'none'; document.getElementById('adminContent').style.display = 'block'; document.getElementById('fabContainer').style.display = 'flex'; loadAllData(); startAutoSync(); }
 </script>
 </body>
 </html>
