@@ -377,19 +377,22 @@
             border: none;
         }
         
-        /* ========== MY ORDERS CARD (Improved UI) ========== */
-        .order-card {
+        /* ========== UNIFIED CARD STYLES (My Orders + Live Stack) ========== */
+        .order-card, .stack-item {
             background: var(--bg-card);
             border-radius: 1rem;
             padding: 16px;
             margin-bottom: 12px;
             border: 1px solid rgba(0,212,255,0.08);
             transition: all 0.3s ease;
+            width: 100%;
         }
-        .order-card:hover {
+        .order-card:hover, .stack-item:hover {
             border-color: rgba(0,212,255,0.3);
             transform: translateY(-2px);
         }
+        
+        /* My Orders Card Header */
         .order-header {
             display: flex;
             justify-content: space-between;
@@ -467,6 +470,113 @@
             border-top: 1px solid rgba(255,255,255,0.05);
         }
         
+        /* ========== LIVE STACK ITEM (Same as Order Card) ========== */
+        .stack-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .stack-item {
+            border-left: 3px solid var(--violet);
+            margin-bottom: 12px;
+        }
+        .stack-item.new-order {
+            border-left-color: var(--violet);
+            background: rgba(139,92,246,0.15);
+            animation: blinkViolet 2s ease-in-out;
+        }
+        .stack-item.search-highlight {
+            border: 2px solid #fbbf24;
+            background: rgba(251,191,36,0.15);
+            animation: orangeGlow 0.8s ease-in-out 3;
+        }
+        @keyframes blinkViolet {
+            0% { background: rgba(139,92,246,0); border-left-color: var(--violet); }
+            25% { background: rgba(139,92,246,0.35); border-left-color: var(--violet); box-shadow: 0 0 20px var(--violet); }
+            50% { background: rgba(139,92,246,0.1); border-left-color: var(--violet); }
+            75% { background: rgba(139,92,246,0.35); border-left-color: var(--violet); box-shadow: 0 0 20px var(--violet); }
+            100% { background: rgba(139,92,246,0); border-left-color: var(--violet); }
+        }
+        @keyframes orangeGlow {
+            0% { border-color: rgba(245,158,11,0); box-shadow: 0 0 0px rgba(245,158,11,0); }
+            50% { border-color: #f59e0b; box-shadow: 0 0 20px #f59e0b; background: rgba(245,158,11,0.25); }
+            100% { border-color: rgba(245,158,11,0); box-shadow: 0 0 0px rgba(245,158,11,0); }
+        }
+        
+        .new-badge {
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+            color: white;
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 40px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        .stack-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .stack-plan {
+            font-size: 0.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--cyan), #7dd3fc);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .stack-status {
+            padding: 3px 10px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 600;
+        }
+        .stack-status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .stack-status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
+        .stack-status.rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        .stack-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .stack-phone {
+            font-size: 0.75rem;
+            font-family: monospace;
+            background: rgba(0,212,255,0.08);
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 40px;
+            color: var(--cyan);
+        }
+        .stack-price {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--emerald);
+        }
+        .feed-countdown {
+            background: rgba(0,212,255,0.08);
+            border-radius: 40px;
+            padding: 6px 12px;
+            margin-top: 10px;
+            font-size: 0.6rem;
+            text-align: center;
+        }
+        .live-enddate {
+            text-align: right;
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        
         .plan-card, .profile-card {
             background: var(--bg-card);
             border-radius: 1rem;
@@ -505,7 +615,7 @@
         }
         .market-section-title { font-size: 0.85rem; font-weight: 600; color: var(--cyan); margin: 16px 0 8px; }
         
-        /* LIVE Tab */
+        /* LIVE Tab Layout */
         .live-search-fixed {
             position: sticky;
             top: 60px;
@@ -525,93 +635,6 @@
         .live-orders-scrollable {
             scrollbar-width: none;
             -ms-overflow-style: none;
-        }
-        
-        .stack-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .stack-item {
-            background: linear-gradient(135deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
-            border-radius: 12px;
-            padding: 14px;
-            border-left: 3px solid var(--violet);
-            transition: all 0.3s ease;
-        }
-        .stack-item:hover { transform: translateX(4px); border-left-color: var(--cyan); }
-        @keyframes blinkViolet {
-            0% { background: rgba(139,92,246,0); border-left-color: var(--violet); }
-            25% { background: rgba(139,92,246,0.35); border-left-color: var(--violet); box-shadow: 0 0 20px var(--violet); }
-            50% { background: rgba(139,92,246,0.1); border-left-color: var(--violet); }
-            75% { background: rgba(139,92,246,0.35); border-left-color: var(--violet); box-shadow: 0 0 20px var(--violet); }
-            100% { background: rgba(139,92,246,0); border-left-color: var(--violet); }
-        }
-        .stack-item.new-order {
-            border-left-color: var(--violet);
-            background: rgba(139,92,246,0.15);
-            animation: blinkViolet 2s ease-in-out;
-        }
-        .stack-item.search-highlight {
-            border: 2px solid #fbbf24;
-            background: rgba(251,191,36,0.15);
-            animation: orangeGlow 0.8s ease-in-out 3;
-        }
-        @keyframes orangeGlow {
-            0% { border-color: rgba(245,158,11,0); box-shadow: 0 0 0px rgba(245,158,11,0); }
-            50% { border-color: #f59e0b; box-shadow: 0 0 20px #f59e0b; background: rgba(245,158,11,0.25); }
-            100% { border-color: rgba(245,158,11,0); box-shadow: 0 0 0px rgba(245,158,11,0); }
-        }
-        
-        .new-badge {
-            background: linear-gradient(135deg, #f43f5e, #e11d48);
-            color: white;
-            font-size: 0.55rem;
-            font-weight: 700;
-            padding: 2px 10px;
-            border-radius: 40px;
-            display: inline-block;
-            margin-bottom: 8px;
-        }
-        .stack-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        .stack-plan { font-size: 0.8rem; font-weight: 700; color: var(--cyan); }
-        .stack-status { padding: 3px 10px; border-radius: 40px; font-size: 0.6rem; font-weight: 600; }
-        .stack-status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
-        .stack-status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
-        .stack-status.rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
-        .stack-details {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-        .stack-phone { font-size: 0.7rem; font-family: monospace; color: var(--amber); }
-        .stack-price { font-size: 0.75rem; font-weight: 600; color: var(--emerald); }
-        .feed-countdown {
-            font-size: 0.6rem;
-            color: var(--cyan);
-            margin-top: 6px;
-            padding-top: 6px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-family: monospace;
-        }
-        .live-enddate {
-            text-align: right;
-            font-size: 0.55rem;
-            color: var(--text-secondary);
-            margin-top: 6px;
         }
         
         .status-bar {
@@ -721,7 +744,7 @@
         <!-- Plans Tab -->
         <div id="plansTab" class="tab-content"><div id="plansContainer"></div></div>
 
-        <!-- My Orders Tab (Improved UI) -->
+        <!-- My Orders Tab -->
         <div id="ordersTab" class="tab-content">
             <div class="info-toggle" id="infoToggle">
                 <div class="info-header">
@@ -1085,26 +1108,25 @@
                 const startDate = new Date(order.activated_at);
                 const endDate = new Date(startDate.getTime() + 30 * 86400000);
                 const remain = getRemainingTime(order.activated_at);
-                countdownHtml = `<div class="feed-countdown" id="live-cd-${order.id}"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
-                endDateHtml = `<div class="live-enddate">📅 ကုန်ဆုံး: ${endDate.toLocaleDateString()}</div>`;
+                countdownHtml = `<div class="feed-countdown"><i class="fas fa-hourglass-half"></i> 📌 ကျန်ရှိ: ${remain}</div>`;
+                endDateHtml = `<div class="live-enddate"><i class="fas fa-calendar-times"></i> ကုန်ဆုံး: ${endDate.toLocaleDateString()}</div>`;
             }
-            html += `<div class="stack-item ${isNew ? 'new-order' : ''} ${isHighlight ? 'search-highlight' : ''}" data-order-id="${order.id}">${isNew ? `<div class="new-badge"><i class="fas fa-fire"></i> NEW</div>` : ''}<div class="stack-header"><span class="stack-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span><span class="stack-status ${statClass}">${statText}</span></div><div class="stack-details"><span class="stack-phone"><i class="fas fa-mobile-alt"></i> ${maskPhone(order.phone)}</span><span class="stack-price"><i class="fas fa-coins"></i> ${order.price.toLocaleString()} KS</span></div>${countdownHtml}${endDateHtml}</div>`;
+            html += `<div class="stack-item ${isNew ? 'new-order' : ''} ${isHighlight ? 'search-highlight' : ''}" data-order-id="${order.id}">
+                ${isNew ? `<div class="new-badge"><i class="fas fa-fire"></i> NEW</div>` : ''}
+                <div class="stack-header">
+                    <span class="stack-plan">${order.plan}</span>
+                    <span class="stack-status ${statClass}">${statText}</span>
+                </div>
+                <div class="stack-details">
+                    <span class="stack-phone">📞 ${maskPhone(order.phone)}</span>
+                    <span class="stack-price">${order.price.toLocaleString()} KS</span>
+                </div>
+                ${countdownHtml}
+                ${endDateHtml}
+            </div>`;
         }
         html += '</div>';
         container.innerHTML = html;
-        for (const order of liveStackOrders) {
-            if (order.status === 'Approved' && order.activated_at) {
-                if (liveCountdownIntervals[order.id]) clearInterval(liveCountdownIntervals[order.id]);
-                const fn = () => {
-                    const el = document.getElementById(`live-cd-${order.id}`);
-                    if (!el) { clearInterval(liveCountdownIntervals[order.id]); return; }
-                    const remain = getRemainingTime(order.activated_at);
-                    if (remain === "Expired") { el.innerHTML = `<i class="fas fa-calendar-times"></i> <span style="color:#f43f5e;">Expired</span>`; clearInterval(liveCountdownIntervals[order.id]); }
-                    else { el.innerHTML = `<i class="fas fa-hourglass-half"></i> <span style="color:var(--cyan);">${remain}</span>`; }
-                };
-                fn(); liveCountdownIntervals[order.id] = setInterval(fn, 1000);
-            }
-        }
     }
     
     function startLiveRotation() {
