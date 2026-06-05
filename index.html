@@ -210,7 +210,76 @@
             margin-top: 8px;
         }
         
-        /* Renew Buttons */
+        /* ========== COLLAPSIBLE INFO SECTION ========== */
+        .info-toggle {
+            background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(139,92,246,0.05));
+            border-radius: 1rem;
+            margin-bottom: 16px;
+            border: 1px solid rgba(0,212,255,0.2);
+            overflow: hidden;
+        }
+        .info-header {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--cyan);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .info-header i { transition: transform 0.3s; }
+        .info-header.open i { transform: rotate(180deg); }
+        .info-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding: 0 16px;
+            background: rgba(0,0,0,0.2);
+        }
+        .info-body.open {
+            max-height: 350px;
+            padding: 12px 16px;
+        }
+        .info-text {
+            font-size: 0.7rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        .info-text p { margin-bottom: 6px; }
+        .info-text i.fa-check-circle { color: var(--emerald); margin-right: 8px; width: 18px; }
+        .info-text i.fa-exchange-alt { color: var(--amber); margin-right: 8px; width: 18px; }
+        .info-text i.fa-chart-line { color: var(--cyan); margin-right: 8px; width: 18px; }
+        .info-text i.fa-lightbulb { color: #fbbf24; margin-right: 8px; width: 18px; }
+        
+        /* Warning Toggle */
+        .warning-toggle {
+            margin-bottom: 16px;
+        }
+        .warning-header {
+            background: rgba(244,63,94,0.1);
+            border-radius: 0.8rem;
+            padding: 10px;
+            border-left: 3px solid var(--rose);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .warning-header:hover { background: rgba(244,63,94,0.2); }
+        .warning-header span { font-size: 0.7rem; color: #fb7185; }
+        .warning-header i { transition: transform 0.3s ease; color: #fb7185; }
+        .warning-content {
+            display: none;
+            background: rgba(244,63,94,0.08);
+            border-radius: 0.8rem;
+            padding: 12px;
+            margin-top: -8px;
+            border-left: 3px solid var(--rose);
+        }
+        .warning-content span { font-size: 0.65rem; color: #fb7185; line-height: 1.5; }
+        
         .renew-buttons {
             display: flex;
             gap: 12px;
@@ -349,21 +418,19 @@
         }
         .market-section-title { font-size: 0.85rem; font-weight: 600; color: var(--cyan); margin: 16px 0 8px; }
         
-        /* ========== LIVE TAB - FIXED SEARCH + SCROLLABLE ORDERS ========== */
+        /* ========== LIVE TAB ========== */
         .live-search-fixed {
             position: sticky;
             top: 60px;
             background: var(--bg-dark);
             z-index: 50;
             padding: 8px 0 12px;
-            margin: 0;
         }
         .live-orders-scrollable {
-            max-height: calc(100vh - 280px);
+            max-height: calc(100vh - 340px);
             overflow-y: auto;
             padding-right: 4px;
         }
-        /* Hide scrollbar but keep scrolling */
         .live-orders-scrollable::-webkit-scrollbar {
             width: 0px;
             background: transparent;
@@ -566,16 +633,44 @@
 
         <!-- My Orders Tab -->
         <div id="ordersTab" class="tab-content">
+            <!-- ========== INFO SECTION (Collapsible) ========== -->
+            <div class="info-toggle" id="infoToggle">
+                <div class="info-header">
+                    <span><i class="fas fa-info-circle"></i> 📌 သက်တမ်းတိုးခြင်းအကြောင်း သိမှတ်စရာ (နှိပ်ပါ)</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="info-body">
+                    <div class="info-text">
+                        <p><i class="fas fa-check-circle"></i> Plan တစ်ခုစီသည် <strong>30 ရက်</strong> သက်တမ်းရှိပါသည်။</p>
+                        <p><i class="fas fa-exchange-alt"></i> သက်တမ်းမကုန်သေးဘဲ ထပ်ဝယ်ပါက <strong>အရင် Plan ရဲ့ လက်ကျန်ရက်များ ဆုံးရှုံးမည်</strong> ဖြစ်ပြီး Plan အသစ် စတင်မည်ဖြစ်ပါသည်။</p>
+                        <p><i class="fas fa-chart-line"></i> <strong>ဒေတာ၊ မိနစ်၊ SMS ပမာဏများ</strong> သည် လက်ကျန်ရှိပါက အသစ်နှင့် <strong>ပေါင်းထည့်ပေးမည်</strong> ဖြစ်ပါသည်။</p>
+                        <p><i class="fas fa-lightbulb"></i> <strong>အကြံပြုချက် -</strong> သက်တမ်းကုန်ခါနီးမှ ထပ်ဝယ်ခြင်းသည် အကျိုးအရှိဆုံးဖြစ်ပါသည်။</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ========== WARNING SECTION (Collapsible) ========== -->
+            <div class="warning-toggle" id="warningToggle">
+                <div class="warning-header">
+                    <span><i class="fas fa-exclamation-triangle"></i> ⚠️ သတိပြုရန် - အရေးကြီးအကြောင်းအရာ (နှိပ်ပါ)</span>
+                    <i class="fas fa-chevron-down" id="warningIcon"></i>
+                </div>
+                <div class="warning-content" id="warningContent">
+                    <span><i class="fas fa-exclamation-triangle"></i> သတိပြုရန် - သက်တမ်းမကုန်သေးဘဲ ထပ်ဝယ်ပါက လက်ကျန်ရက်များ ဆုံးရှုံးမည်ဖြစ်ပြီး Plan အသစ်စတင်ပါမည်။</span>
+                </div>
+            </div>
+            
+            <!-- Renew Buttons -->
             <div class="renew-buttons">
                 <button class="renew-btn self" onclick="openRenewModal('self')"><i class="fas fa-user"></i> ကိုယ်တိုင်ထပ်ဝယ်ရန်</button>
                 <button class="renew-btn other" onclick="openRenewModal('other')"><i class="fas fa-users"></i> အခြားသူအတွက် ထပ်ဝယ်ပေးရန်</button>
             </div>
+            
             <div id="myOrdersContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading...</div></div>
         </div>
 
-        <!-- Live Tab with FIXED Search and SCROLLABLE Orders -->
+        <!-- Live Tab -->
         <div id="liveTab" class="tab-content">
-            <!-- Fixed Search Section -->
             <div class="live-search-fixed">
                 <div style="background: rgba(0,212,255,0.05); border-radius: 1rem; padding: 14px;">
                     <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 10px;"><i class="fas fa-search"></i> <span id="searchTitle">သက်တမ်းစစ်ရန်</span></div>
@@ -591,12 +686,9 @@
                     <span id="liveTimer" style="background: #1e293b; padding: 4px 12px; border-radius: 40px; font-size: 0.6rem;">auto 30s</span>
                 </div>
             </div>
-            
-            <!-- Scrollable Orders Container (hide scrollbar) -->
             <div class="live-orders-scrollable" id="liveContainer">
                 <div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> <span id="liveLoading">စောင့်နေသည်...</span></div>
             </div>
-            
             <div class="status-bar">
                 <span class="status-dot"></span>
                 <span id="liveUpdateText">အလိုအလျောက်: 30s</span>
@@ -701,6 +793,35 @@
     let currentRenewMode = 'other';
     const ROTATE_MS = 10000;
     const NEW_TIMEOUT = 120000;
+    
+    // ========== COLLAPSIBLE SECTIONS ==========
+    // Info Toggle
+    const infoToggle = document.getElementById('infoToggle');
+    if (infoToggle) {
+        const infoHeader = infoToggle.querySelector('.info-header');
+        const infoBody = infoToggle.querySelector('.info-body');
+        infoHeader.addEventListener('click', () => {
+            infoBody.classList.toggle('open');
+            infoHeader.classList.toggle('open');
+        });
+    }
+    
+    // Warning Toggle
+    const warningToggle = document.getElementById('warningToggle');
+    if (warningToggle) {
+        const warningHeader = warningToggle.querySelector('.warning-header');
+        const warningContent = document.getElementById('warningContent');
+        const warningIcon = document.getElementById('warningIcon');
+        warningHeader.addEventListener('click', () => {
+            if (warningContent.style.display === 'none' || warningContent.style.display === '') {
+                warningContent.style.display = 'block';
+                if (warningIcon) warningIcon.style.transform = 'rotate(180deg)';
+            } else {
+                warningContent.style.display = 'none';
+                if (warningIcon) warningIcon.style.transform = 'rotate(0deg)';
+            }
+        });
+    }
     
     // ========== MARKET DATA ==========
     async function loadMarketProducts() {
@@ -858,7 +979,7 @@
         finally { submitBtn.disabled = false; submitBtn.innerHTML = '✅ အော်ဒါတင်မည်'; }
     }
     
-    // ========== LIVE FUNCTIONS (100 orders + scrollable + fixed search) ==========
+    // ========== LIVE FUNCTIONS ==========
     function renderLiveStack() {
         const container = document.getElementById('liveContainer');
         if (!liveStackOrders.length) {
@@ -921,7 +1042,6 @@
                     let currIds = liveStackOrders.map(o => o.id);
                     let newOnes = sorted.filter(o => !currIds.includes(o.id));
                     if (newOnes.length) {
-                        // 100 orders max (instead of 30)
                         liveStackOrders = [...newOnes, ...liveStackOrders].slice(0, 100);
                         renderLiveStack();
                         setTimeout(() => {
