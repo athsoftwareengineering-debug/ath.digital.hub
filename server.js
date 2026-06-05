@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(__dirname)); // Serve static files from root directory
+app.use(express.static(__dirname));
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -48,6 +48,28 @@ const upload = multer({
         }
     }
 });
+
+// Payment methods configuration
+const PAYMENT_METHODS = {
+    kpay: {
+        name: 'KBZ Pay',
+        account_name: 'AUNG THU HTWE',
+        account_number: '09789999368',
+        icon: 'https://i.ibb.co/CpyBHvrS/1000011452.jpg'
+    },
+    wavepay: {
+        name: 'WavePay',
+        account_name: 'AUNG THU HTWE',
+        account_number: '09789999368',
+        icon: 'https://i.ibb.co/9990m00N/FB-IMG-1780586423015.jpg'
+    },
+    ayapay: {
+        name: 'AYA Pay',
+        account_name: 'AUNG THU HTWE',
+        account_number: '09789999368',
+        icon: 'https://i.ibb.co/rPzL2xm/aya-pay.jpg'
+    }
+};
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -176,14 +198,12 @@ async function autoCleanupOldOrders() {
     try {
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
         
-        // Get orders to delete
         const { data: ordersToDelete } = await supabaseAdmin
             .from('orders')
             .select('slip_url')
             .in('status', ['Pending', 'Rejected'])
             .lt('created_at', thirtyDaysAgo);
         
-        // Delete associated files
         if (ordersToDelete && ordersToDelete.length > 0) {
             for (const order of ordersToDelete) {
                 if (order.slip_url) {
@@ -196,7 +216,6 @@ async function autoCleanupOldOrders() {
             }
         }
         
-        // Delete orders from database
         const { error } = await supabaseAdmin
             .from('orders')
             .delete()
@@ -213,9 +232,50 @@ async function autoCleanupOldOrders() {
     }
 }
 
-// Run cleanup on startup and every 24 hours
 setTimeout(autoCleanupOldOrders, 5000);
 setInterval(autoCleanupOldOrders, 24 * 60 * 60 * 1000);
+
+// ==================== LIVE SYSTEM - WebSocket Alternative (SSE) ====================
+// Store connected clients for Server-Sent Events
+let liveClients = [];
+
+// SSE endpoint for live orders
+app.get('/api/live/events', (req, res) => {
+    res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*'
+    });
+    
+    const clientId = Date.now();
+    const newClient = { id: clientId, res };
+    liveClients.push(newClient);
+    
+    console.log(`🔴 Live client connected: ${clientId}, total: ${liveClients.length}`);
+    
+    req.on('close', () => {
+        liveClients = liveClients.filter(client => client.id !== clientId);
+        console.log(`🔴 Live client disconnected: ${clientId}, total: ${liveClients.length}`);
+    });
+});
+
+// Broadcast new order to all live clients
+async function broadcastNewOrder(order) {
+    const message = `data: ${JSON.stringify({ type: 'new_order', order })}\n\n`;
+    liveClients.forEach(client => {
+        try {
+            client.res.write(message);
+        } catch(e) {
+            console.error('Error broadcasting to client:', e);
+        }
+    });
+}
+
+// Get payment methods
+app.get('/api/payment-methods', (req, res) => {
+    res.json({ methods: PAYMENT_METHODS });
+});
 
 // ==================== STATIC HTML ROUTES ====================
 app.get('/', (req, res) => {
@@ -234,7 +294,6 @@ app.get('/api/health', (req, res) => {
 });
 
 // ==================== MARKET API ====================
-// Get all products
 app.get('/api/market/products', async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -253,7 +312,6 @@ app.get('/api/market/products', async (req, res) => {
     }
 });
 
-// Add new product
 app.post('/api/market/products', async (req, res) => {
     try {
         const { name, price, image, category, icon, discount } = req.body;
@@ -286,7 +344,6 @@ app.post('/api/market/products', async (req, res) => {
     }
 });
 
-// Update product
 app.put('/api/market/products/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -321,7 +378,6 @@ app.put('/api/market/products/:id', async (req, res) => {
     }
 });
 
-// Delete product
 app.delete('/api/market/products/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -380,18 +436,15 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
             return res.status(400).json({ success: false, error: 'Missing required fields' });
         }
         
-        // Check if phone is blocked
         const blocked = await isPhoneBlocked(phone);
         if (blocked) {
             return res.status(403).json({ success: false, error: 'This phone number has been blocked. Contact admin for support.' });
         }
         
-        // Rate limiting
         if (!checkRateLimit(phone)) {
             return res.status(429).json({ success: false, error: 'Too many orders. Please wait a moment.' });
         }
         
-        // Check for duplicate order
         const duplicate = await isDuplicateOrder(phone, plan);
         if (duplicate) {
             return res.status(409).json({ success: false, error: 'Duplicate order detected. Please wait 5 minutes.' });
@@ -437,6 +490,18 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
         
         await updateUserStats(phone, false);
         
+        // Get the created order for broadcast
+        const { data: newOrder } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('id', orderId)
+            .single();
+        
+        // Broadcast to live clients
+        if (newOrder) {
+            await broadcastNewOrder(newOrder);
+        }
+        
         console.log(`✅ Order created: ${orderId}`);
         res.json({ 
             success: true, 
@@ -450,7 +515,6 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
 });
 
 // ==================== ADMIN API ====================
-// Get all orders (admin only)
 app.get('/api/admin/orders', async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
@@ -469,7 +533,6 @@ app.get('/api/admin/orders', async (req, res) => {
     }
 });
 
-// Get user stats (admin only)
 app.get('/api/admin/user-stats', async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
@@ -488,7 +551,6 @@ app.get('/api/admin/user-stats', async (req, res) => {
     }
 });
 
-// Block/unblock user
 app.post('/api/admin/user-block', async (req, res) => {
     try {
         const { phone, block } = req.body;
@@ -513,7 +575,6 @@ app.post('/api/admin/user-block', async (req, res) => {
     }
 });
 
-// Clear suspect flag
 app.post('/api/admin/clear-suspect', async (req, res) => {
     try {
         const { phone } = req.body;
@@ -538,7 +599,6 @@ app.post('/api/admin/clear-suspect', async (req, res) => {
     }
 });
 
-// Delete user from stats
 app.post('/api/admin/user-delete', async (req, res) => {
     try {
         const { phone } = req.body;
@@ -563,7 +623,6 @@ app.post('/api/admin/user-delete', async (req, res) => {
     }
 });
 
-// Delete all orders for a user
 app.post('/api/admin/user-delete-orders', async (req, res) => {
     try {
         const { phone } = req.body;
@@ -572,7 +631,6 @@ app.post('/api/admin/user-delete-orders', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Phone required' });
         }
         
-        // Get orders to delete files
         const { data: orders } = await supabaseAdmin
             .from('orders')
             .select('slip_url')
@@ -605,7 +663,6 @@ app.post('/api/admin/user-delete-orders', async (req, res) => {
     }
 });
 
-// Manual cleanup old orders
 app.post('/api/admin/cleanup-old', async (req, res) => {
     try {
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -644,7 +701,6 @@ app.post('/api/admin/cleanup-old', async (req, res) => {
     }
 });
 
-// Approve order
 app.put('/api/admin/orders/:id/approve', async (req, res) => {
     try {
         const { id } = req.params;
@@ -669,12 +725,10 @@ app.put('/api/admin/orders/:id/approve', async (req, res) => {
     }
 });
 
-// Reject order
 app.put('/api/admin/orders/:id/reject', async (req, res) => {
     try {
         const { id } = req.params;
         
-        // Get phone before updating
         const { data: order } = await supabaseAdmin
             .from('orders')
             .select('phone')
@@ -702,12 +756,10 @@ app.put('/api/admin/orders/:id/reject', async (req, res) => {
     }
 });
 
-// Delete order
 app.delete('/api/admin/orders/:id', async (req, res) => {
     try {
         const { id } = req.params;
         
-        // Get slip_url to delete file
         const { data: order } = await supabaseAdmin
             .from('orders')
             .select('slip_url')
@@ -738,7 +790,6 @@ app.delete('/api/admin/orders/:id', async (req, res) => {
     }
 });
 
-// Admin login
 app.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
@@ -753,17 +804,24 @@ app.post('/api/admin/login', (req, res) => {
 // ==================== START SERVER ====================
 app.listen(PORT, () => {
     console.log(`
-╔══════════════════════════════════════════════════════════╗
-║                                                          ║
-║     🚀 ATH DIGITAL HUB SERVER STARTED                   ║
-║                                                          ║
-║     📱 User Store:      http://localhost:${PORT}/         ║
-║     👨‍💼 Admin Panel:     http://localhost:${PORT}/admin.html ║
-║     📊 Live Dashboard:  http://localhost:${PORT}/dashboard_live.html ║
-║                                                          ║
-║     📁 Uploads folder:  ${uploadsDir}                    ║
-║     🗑️ Auto cleanup:    30 days for Pending/Rejected     ║
-║                                                          ║
-╚══════════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║     🚀 ATH DIGITAL HUB SERVER STARTED                                    ║
+║                                                                          ║
+║     📱 User Store:      http://localhost:${PORT}/                         ║
+║     👨‍💼 Admin Panel:     http://localhost:${PORT}/admin.html               ║
+║     📊 Live Dashboard:  http://localhost:${PORT}/dashboard_live.html      ║
+║     🔴 Live Events:     http://localhost:${PORT}/api/live/events          ║
+║                                                                          ║
+║     💳 Payment Methods:                                                  ║
+║        - KBZ Pay (09789999368)                                           ║
+║        - WavePay (09789999368)                                           ║
+║        - AYA Pay (09789999368) 🆕                                        ║
+║                                                                          ║
+║     📁 Uploads folder:  ${uploadsDir}                                    ║
+║     🗑️ Auto cleanup:    30 days for Pending/Rejected                     ║
+║     🔴 Live clients:    ${liveClients.length} connected                   ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
     `);
 });
