@@ -1,4 +1,3 @@
-// database.js - Supabase Client
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
@@ -6,29 +5,45 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
-// Anon client (for public operations)
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Admin client (with service role for admin operations)
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-
-// Function to ensure user_stats table exists (run once)
-async function initUserStatsTable() {
-    // Note: In Supabase, you need to create this table manually via SQL editor
-    // Run this SQL in Supabase SQL Editor:
-    /*
-    CREATE TABLE IF NOT EXISTS user_stats (
-        id SERIAL PRIMARY KEY,
-        phone TEXT UNIQUE NOT NULL,
-        order_count INTEGER DEFAULT 0,
-        reject_count INTEGER DEFAULT 0,
-        suspect_flag BOOLEAN DEFAULT FALSE,
-        blocked BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
-    );
-    */
-    console.log("✅ Ensure user_stats table exists in Supabase");
+// Validate environment variables
+if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+    console.error('❌ Missing Supabase environment variables!');
+    console.error('Please check your .env file has:');
+    console.error('  SUPABASE_URL');
+    console.error('  SUPABASE_ANON_KEY');
+    console.error('  SUPABASE_SERVICE_KEY');
+    process.exit(1);
 }
 
-module.exports = { supabase, supabaseAdmin, initUserStatsTable };
+// Anon client (for public operations like creating orders)
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Admin client (with service role for admin operations like approving/rejecting)
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+// Test connection function
+async function testConnection() {
+    try {
+        const { data, error } = await supabase.from('orders').select('count', { count: 'exact', head: true });
+        if (error) {
+            console.error('❌ Supabase connection test failed:', error.message);
+            return false;
+        }
+        console.log('✅ Supabase connection successful!');
+        return true;
+    } catch (e) {
+        console.error('❌ Supabase connection error:', e.message);
+        return false;
+    }
+}
+
+// Run test if not in production (optional)
+if (process.env.NODE_ENV !== 'production') {
+    testConnection();
+}
+
+module.exports = { 
+    supabase, 
+    supabaseAdmin,
+    testConnection 
+};
