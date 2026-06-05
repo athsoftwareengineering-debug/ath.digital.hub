@@ -770,7 +770,7 @@
     let liveCountdownIntervals = {};
     let currentRenewMode = 'other';
     let autoClearTimeout = null;
-    const ROTATE_MS = 5000;  // 5 seconds rotate (fixed)
+    const ROTATE_MS = 5000;
     const NEW_TIMEOUT = 120000;
     
     // ========== COLLAPSIBLE SECTIONS ==========
@@ -993,16 +993,13 @@
         }
     }
     
-    // Fixed rotation - every 5 seconds, always rotate
     function startLiveRotation() {
         if (liveRotateInterval) clearInterval(liveRotateInterval);
         liveRotateInterval = setInterval(() => {
             if (currentTab === 'live' && liveStackOrders.length > 1 && !currentSearchPhone) {
-                // Rotate: move first item to end
                 const firstItem = liveStackOrders.shift();
                 liveStackOrders.push(firstItem);
                 renderLiveStack();
-                // Add blink effect to first card
                 setTimeout(() => {
                     const topCard = document.querySelector('.stack-item');
                     if (topCard) {
@@ -1049,8 +1046,31 @@
         } catch(e) { console.error('Error loading live orders:', e); document.getElementById('liveContainer').innerHTML = '<div style="text-align:center; padding:40px;">🔴 Connection error</div>'; }
     }
     
+    function resetLiveToNormal() {
+        // Clear any search and auto clear timeout
+        if (autoClearTimeout) {
+            clearTimeout(autoClearTimeout);
+            autoClearTimeout = null;
+        }
+        if (currentSearchPhone) {
+            currentSearchPhone = '';
+            document.getElementById('liveSearchPhone').value = '';
+            const msgDiv = document.getElementById('liveSearchMessage');
+            if (msgDiv) msgDiv.style.display = 'none';
+        }
+        // Reset refresh interval to 30s
+        if (liveRefreshInterval) clearInterval(liveRefreshInterval);
+        startLiveRefresh();
+        refreshSec = 30;
+        if (document.getElementById('liveTimer')) document.getElementById('liveTimer').innerHTML = 'auto 30s';
+        if (document.getElementById('liveUpdateText')) document.getElementById('liveUpdateText').innerHTML = 'အလိုအလျောက်: 30s';
+        // Reload normal live orders
+        loadLiveOrders();
+    }
+    
     function startLiveRefresh() {
         if (liveRefreshInterval) clearInterval(liveRefreshInterval);
+        const intervalTime = currentSearchPhone ? 10000 : 30000;
         liveRefreshInterval = setInterval(async () => {
             await loadLiveOrders();
             refreshSec = currentSearchPhone ? 10 : 30;
@@ -1058,7 +1078,7 @@
             if (timerSpan) timerSpan.innerHTML = `auto ${refreshSec}s`;
             const updateSpan = document.getElementById('liveUpdateText');
             if (updateSpan) updateSpan.innerHTML = `အလိုအလျောက်: ${refreshSec}s`;
-        }, currentSearchPhone ? 10000 : 30000);
+        }, intervalTime);
     }
     
     function startLiveTimer() {
@@ -1078,12 +1098,11 @@
         }, 1000);
     }
     
-    // Auto clear search after 10 seconds
     function startAutoClearTimeout() {
         if (autoClearTimeout) clearTimeout(autoClearTimeout);
         autoClearTimeout = setTimeout(() => {
             if (currentSearchPhone) {
-                clearLiveSearch();
+                resetLiveToNormal();
             }
         }, 10000);
     }
@@ -1099,12 +1118,7 @@
             const orders = data.orders || [];
             if (orders.length === 0) {
                 if (msgDiv) { msgDiv.className = 'search-message error'; msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။'; }
-                currentSearchPhone = '';
-                await loadLiveOrders();
-                // Restart normal 30s refresh
-                if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-                startLiveRefresh();
-                refreshSec = 30;
+                resetLiveToNormal();
             } else {
                 if (msgDiv) { msgDiv.className = 'search-message success'; msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။ 🟠 လိမ္မော်ရောင် မှိတ်တုတ်ပြသပါမည်။'; }
                 currentSearchPhone = phone;
@@ -1122,20 +1136,7 @@
     }
     
     function clearLiveSearch() {
-        // Clear auto clear timeout
-        if (autoClearTimeout) {
-            clearTimeout(autoClearTimeout);
-            autoClearTimeout = null;
-        }
-        currentSearchPhone = '';
-        document.getElementById('liveSearchPhone').value = '';
-        const msgDiv = document.getElementById('liveSearchMessage');
-        if (msgDiv) msgDiv.style.display = 'none';
-        // Restart normal 30s refresh
-        if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-        startLiveRefresh();
-        refreshSec = 30;
-        loadLiveOrders();
+        resetLiveToNormal();
     }
     
     // ========== USER FUNCTIONS ==========
@@ -1162,13 +1163,38 @@
             const orderDate = new Date(o.created_at);
             const startDate = o.activated_at ? new Date(o.activated_at) : null;
             const endDate = startDate ? new Date(startDate.getTime() + 30 * 86400000) : null;
+            
             let statusText = '', statusClass = '';
             if (o.status === 'Pending') { statusText = '⏳ စောင့်ဆိုင်းဆဲ'; statusClass = 'status-pending'; }
             else if (o.status === 'Approved') { statusText = '✅ အတည်ပြုပြီး'; statusClass = 'status-approved'; }
             else { statusText = '❌ ပယ်ဖျက်ခံရ'; statusClass = 'status-rejected'; }
+            
             let remainingHtml = '';
-            if (o.status === 'Approved' && o.activated_at) { remainingHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> 📌 ကျန်ရှိ: ${getRemainingTime(o.activated_at)}</div>`; }
-            html += `<div class="order-card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><span style="font-weight:700; font-size:0.9rem;">${o.plan}</span><span style="font-weight:800; color:var(--emerald); font-size:0.9rem;">${o.price.toLocaleString()} MMK</span></div><div style="margin-bottom:6px;">📞 ${o.phone}</div><div style="margin-bottom:6px; font-size:0.7rem; color:var(--text-secondary);">📅 ဝယ်ရက်: ${orderDate.toLocaleDateString()} &nbsp;&nbsp; 🕐 ${orderDate.toLocaleTimeString()}</div>${startDate ? `<div style="margin-bottom:6px; font-size:0.7rem; color:var(--text-secondary);">📅 စတင်ရက်: ${startDate.toLocaleDateString()} &nbsp;&nbsp; 📅 ကုန်ဆုံးရက်: ${endDate ? endDate.toLocaleDateString() : 'N/A'}</div>` : ''}<div style="margin:8px 0 4px;"><span class="${statusClass}" style="padding:3px 10px; border-radius:40px; font-size:0.6rem;">${statusText}</span></div>${remainingHtml}</div>`;
+            let endDateHtml = '';
+            if (o.status === 'Approved' && o.activated_at) {
+                const remain = getRemainingTime(o.activated_at);
+                remainingHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> 📌 ကျန်ရှိ: ${remain}</div>`;
+                endDateHtml = `<div style="text-align:right; font-size:0.6rem; color:var(--text-secondary); margin-top:4px;">📅 ကုန်ဆုံး: ${endDate ? endDate.toLocaleDateString() : 'N/A'}</div>`;
+            }
+            
+            html += `
+                <div class="order-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-weight:700; font-size:0.9rem;">${o.plan}</span>
+                        <span style="font-weight:800; color:var(--emerald); font-size:0.9rem;">${o.price.toLocaleString()} MMK</span>
+                    </div>
+                    <div style="margin-bottom:6px;">📞 ${o.phone}</div>
+                    <div style="margin-bottom:6px; font-size:0.7rem; color:var(--text-secondary);">
+                        📅 ဝယ်ရက်: ${orderDate.toLocaleDateString()} &nbsp;&nbsp; 🕐 ${orderDate.toLocaleTimeString()}
+                    </div>
+                    ${startDate ? `<div style="margin-bottom:6px; font-size:0.7rem; color:var(--text-secondary);">📅 စတင်ရက်: ${startDate.toLocaleDateString()}</div>` : ''}
+                    <div style="margin:8px 0 4px;">
+                        <span class="${statusClass}" style="padding:3px 10px; border-radius:40px; font-size:0.6rem;">${statusText}</span>
+                    </div>
+                    ${remainingHtml}
+                    ${endDateHtml}
+                </div>
+            `;
         }
         document.getElementById('myOrdersContainer').innerHTML = html;
     }
@@ -1245,22 +1271,13 @@
             if (item.dataset.tab === tab) item.classList.add('active');
             else item.classList.remove('active');
         });
+        
+        // Reset live when switching to ANY tab (not just live)
+        resetLiveToNormal();
+        
         if (tab === 'orders') loadUserOrders();
         if (tab === 'live') {
-            // Reset live when switching back to live tab
-            if (autoClearTimeout) clearTimeout(autoClearTimeout);
-            if (currentSearchPhone) {
-                currentSearchPhone = '';
-                document.getElementById('liveSearchPhone').value = '';
-                const msgDiv = document.getElementById('liveSearchMessage');
-                if (msgDiv) msgDiv.style.display = 'none';
-            }
-            if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-            startLiveRefresh();
-            refreshSec = 30;
-            if (document.getElementById('liveTimer')) document.getElementById('liveTimer').innerHTML = 'auto 30s';
-            if (document.getElementById('liveUpdateText')) document.getElementById('liveUpdateText').innerHTML = 'အလိုအလျောက်: 30s';
-            loadLiveOrders();
+            // Extra reset for live tab
             if (liveRotateInterval) {
                 clearInterval(liveRotateInterval);
                 startLiveRotation();
