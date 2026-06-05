@@ -87,6 +87,95 @@
         .lang-dropdown-content button:hover { background: rgba(0,212,255,0.1); }
         .lang-dropdown.show .lang-dropdown-content { display: block; }
         
+        /* Drawer Menu (Sidebar) */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        .drawer-overlay.open {
+            visibility: visible;
+            opacity: 1;
+        }
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: var(--bg-card);
+            border-right: 1px solid rgba(0,212,255,0.2);
+            z-index: 201;
+            transition: left 0.3s ease;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .drawer.open {
+            left: 0;
+        }
+        .drawer-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0,212,255,0.1);
+            margin-bottom: 20px;
+        }
+        .drawer-avatar {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--cyan), #0891b2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 1.8rem;
+        }
+        .drawer-username {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .drawer-phone {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .drawer-menu {
+            list-style: none;
+        }
+        .drawer-menu li {
+            margin-bottom: 8px;
+        }
+        .drawer-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .drawer-menu a:hover {
+            background: rgba(0,212,255,0.1);
+        }
+        .drawer-menu a i {
+            width: 24px;
+            color: var(--cyan);
+        }
+        .drawer-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.05);
+            margin: 16px 0;
+        }
+        
         /* Bottom Navigation */
         .bottom-nav {
             position: fixed;
@@ -239,7 +328,7 @@
         }
         
         /* Common Cards */
-        .plan-card, .order-card, .profile-card {
+        .plan-card, .order-card, .market-card {
             background: var(--bg-card);
             border-radius: 1rem;
             padding: 14px;
@@ -248,7 +337,63 @@
         }
         .plan-card { border-left-color: var(--amber); }
         
-        /* ========== LIVE STACK CONTAINER ========== */
+        /* Market Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .product-card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 12px;
+            border: 1px solid rgba(0,212,255,0.1);
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .product-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(0,212,255,0.3);
+        }
+        .product-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        .product-name {
+            font-weight: 700;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+        .product-price {
+            font-weight: 800;
+            color: var(--emerald);
+            font-size: 0.8rem;
+        }
+        .product-discount {
+            font-size: 0.6rem;
+            color: var(--rose);
+            margin: 4px 0;
+        }
+        .product-buy-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--cyan), #0891b2);
+            border: none;
+            padding: 6px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.65rem;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .market-section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--cyan);
+            margin: 16px 0 8px;
+        }
+        
+        /* LIVE Stack Container */
         .stack-container {
             display: flex;
             flex-direction: column;
@@ -420,6 +565,27 @@
         </div>
     </div>
 
+    <!-- Drawer Menu (Sidebar) -->
+    <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+    <div id="drawer" class="drawer">
+        <div class="drawer-header">
+            <div class="drawer-avatar"><i class="fas fa-user"></i></div>
+            <div class="drawer-username" id="drawerUsername">User</div>
+            <div class="drawer-phone" id="drawerPhone"></div>
+        </div>
+        <ul class="drawer-menu">
+            <li><a onclick="closeDrawer(); switchTab('home')"><i class="fas fa-home"></i> Home</a></li>
+            <li><a onclick="closeDrawer(); switchTab('plans')"><i class="fas fa-sim-card"></i> Plan များ</a></li>
+            <li><a onclick="closeDrawer(); switchTab('orders')"><i class="fas fa-list-ul"></i> My Orders</a></li>
+            <li><a onclick="closeDrawer(); switchTab('live')"><i class="fas fa-broadcast-tower"></i> Live</a></li>
+            <li><a onclick="closeDrawer(); switchTab('market')"><i class="fas fa-store"></i> Market</a></li>
+            <li><div class="drawer-divider"></div></li>
+            <li><a onclick="closeDrawer(); showSupport()"><i class="fas fa-headset"></i> Customer Support</a></li>
+            <li><a onclick="closeDrawer(); showProfile()"><i class="fas fa-user-circle"></i> My Profile</a></li>
+            <li><a onclick="closeDrawer(); logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+
     <div class="container">
         <div id="homeTab" class="tab-content active">
             <div style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(139,92,246,0.05)); border-radius: 1.5rem; padding: 20px; margin: 16px 0; text-align: center;">
@@ -461,7 +627,77 @@
             </div>
         </div>
 
-        <div id="profileTab" class="tab-content"><div id="profileContainer"></div></div>
+        <!-- MARKET TAB (Products) -->
+        <div id="marketTab" class="tab-content">
+            <div class="market-section-title"><i class="fas fa-fire"></i> 🔥 အထူးကမ်းလှမ်းချက်များ</div>
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-icon"><i class="fas fa-tshirt"></i></div>
+                    <div class="product-name">Premium T-Shirt</div>
+                    <div class="product-price">25,000 MMK</div>
+                    <div class="product-discount">-20% OFF</div>
+                    <button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-icon"><i class="fas fa-shopping-bag"></i></div>
+                    <div class="product-name">Casual Bag</div>
+                    <div class="product-price">35,000 MMK</div>
+                    <div class="product-discount">-15% OFF</div>
+                    <button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-icon"><i class="fas fa-shoe-prints"></i></div>
+                    <div class="product-name">Sports Shoes</div>
+                    <div class="product-price">45,000 MMK</div>
+                    <div class="product-discount">-10% OFF</div>
+                    <button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button>
+                </div>
+            </div>
+
+            <div class="market-section-title"><i class="fas fa-male"></i> 👕 အမျိုးသားဖက်ရှင်</div>
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-icon"><i class="fas fa-user-tie"></i></div>
+                    <div class="product-name">Formal Shirt</div>
+                    <div class="product-price">55,000 MMK</div>
+                    <button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-icon"><i class="fas fa-vest"></i></div>
+                    <div class="product-name">Winter Jacket</div>
+                    <div class="product-price">89,000 MMK</div>
+                    <button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-icon"><i class="fas fa-tshirt"></i></div>
+                    <div class="product-name">Cotton T-Shirt</div>
+                    <div class="product-price">18,000 MMK</div>
+                    <button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button>
+                </div>
+            </div>
+
+            <div class="market-section-title"><i class="fas fa-female"></i> 👗 အမျိုးသမီးဖက်ရှင်</div>
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-icon"><i class="fas fa-female"></i></div>
+                    <div class="product-name">Summer Dress</div>
+                    <div class="product-price">49,000 MMK</div>
+                    <button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-icon"><i class="fas fa-hand-peace"></i></div>
+                    <div class="product-name">Silk Scarf</div>
+                    <div class="product-price">12,000 MMK</div>
+                    <button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button>
+                </div>
+                <div class="product-card">
+                    <div class="product-icon"><i class="fas fa-bag-shopping"></i></div>
+                    <div class="product-name">Leather Bag</div>
+                    <div class="product-price">39,000 MMK</div>
+                    <button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="bottom-nav">
@@ -469,7 +705,7 @@
         <button class="nav-item" data-tab="plans"><i class="fas fa-sim-card"></i><span id="navPlans">Plan များ</span></button>
         <button class="nav-item" data-tab="orders"><i class="fas fa-list-ul"></i><span id="navOrders">My Orders</span></button>
         <button class="nav-item" data-tab="live"><i class="fas fa-broadcast-tower"></i><span id="navLive">Live</span></button>
-        <button class="nav-item" data-tab="profile"><i class="fas fa-user"></i><span id="navProfile">Profile</span></button>
+        <button class="nav-item" data-tab="market"><i class="fas fa-store"></i><span id="navMarket">Market</span></button>
     </div>
 </div>
 
@@ -565,7 +801,7 @@
             announcement: "🎉 New VIP Plan များ ထပ်ထည့်ထားပါသည်။ ယခုပဲ ဝယ်ယူလိုက်ပါ။",
             searchTitle: "သက်တမ်းစစ်ရန်", searchBtnText: "ရှာ", clearBtnText: "ရှင်း",
             liveTitle: "LIVE အော်ဒါများ", liveLoading: "စောင့်နေသည်...",
-            navHome: "Home", navPlans: "Plan များ", navOrders: "My Orders", navLive: "Live", navProfile: "Profile",
+            navHome: "Home", navPlans: "Plan များ", navOrders: "My Orders", navLive: "Live", navMarket: "Market",
             paymentTitle: "ငွေပေးချေမှု", paymentMethodLabel: "ငွေလွှဲနည်းလမ်း", accountNameLabel: "အကောင့်အမည်", accountPhoneLabel: "ဖုန်းနံပါတ်",
             screenshotTabText: "Screenshot", textTabText: "စာသားဖြည့်",
             screenshotPhoneLabel: "📱 လက်ခံမည့်သူ ဖုန်းနံပါတ် *",
@@ -586,7 +822,7 @@
             announcement: "🎉 New VIP Plans have been added. Shop now!",
             searchTitle: "Check Validity", searchBtnText: "Search", clearBtnText: "Clear",
             liveTitle: "LIVE Orders", liveLoading: "Waiting...",
-            navHome: "Home", navPlans: "Plans", navOrders: "My Orders", navLive: "Live", navProfile: "Profile",
+            navHome: "Home", navPlans: "Plans", navOrders: "My Orders", navLive: "Live", navMarket: "Market",
             paymentTitle: "Payment", paymentMethodLabel: "Payment Method", accountNameLabel: "Account Name", accountPhoneLabel: "Phone Number",
             screenshotTabText: "Screenshot", textTabText: "Text Entry",
             screenshotPhoneLabel: "📱 Recipient Phone Number *",
@@ -607,7 +843,7 @@
             announcement: "🎉 新增 VIP 套餐。立即购买！",
             searchTitle: "检查有效期", searchBtnText: "搜索", clearBtnText: "清除",
             liveTitle: "实时订单", liveLoading: "等待中...",
-            navHome: "主页", navPlans: "套餐", navOrders: "我的订单", navLive: "实时", navProfile: "个人资料",
+            navHome: "主页", navPlans: "套餐", navOrders: "我的订单", navLive: "实时", navMarket: "市场",
             paymentTitle: "支付", paymentMethodLabel: "支付方式", accountNameLabel: "账户名称", accountPhoneLabel: "电话号码",
             screenshotTabText: "截图", textTabText: "文本输入",
             screenshotPhoneLabel: "📱 接收者电话号码 *",
@@ -645,7 +881,7 @@
         document.getElementById('navPlans') && (document.getElementById('navPlans').innerText = t.navPlans);
         document.getElementById('navOrders') && (document.getElementById('navOrders').innerText = t.navOrders);
         document.getElementById('navLive') && (document.getElementById('navLive').innerText = t.navLive);
-        document.getElementById('navProfile') && (document.getElementById('navProfile').innerText = t.navProfile);
+        document.getElementById('navMarket') && (document.getElementById('navMarket').innerText = t.navMarket);
         document.getElementById('paymentTitle') && (document.getElementById('paymentTitle').innerText = t.paymentTitle);
         document.getElementById('paymentMethodLabel') && (document.getElementById('paymentMethodLabel').innerText = t.paymentMethodLabel);
         document.getElementById('accountNameLabel') && (document.getElementById('accountNameLabel').innerText = t.accountNameLabel);
@@ -660,7 +896,6 @@
         document.getElementById('textLast5Label') && (document.getElementById('textLast5Label').innerText = t.textLast5Label);
         document.getElementById('last5Hint') && (document.getElementById('last5Hint').innerText = t.last5Hint);
         document.getElementById('submitOrderBtnText') && (document.getElementById('submitOrderBtnText').innerHTML = t.submitOrderBtnText);
-        if (currentTab === 'profile') renderProfile();
     }
     
     function changeLanguage(lang) {
@@ -683,6 +918,32 @@
         const langBtn = document.getElementById('langBtn');
         if (!langBtn?.contains(event.target) && dropdown) dropdown.classList.remove('show');
     });
+    
+    // Drawer Functions
+    function toggleDrawer() {
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('drawerOverlay');
+        drawer.classList.toggle('open');
+        overlay.classList.toggle('open');
+    }
+    
+    function closeDrawer() {
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('drawerOverlay');
+        drawer.classList.remove('open');
+        overlay.classList.remove('open');
+    }
+    
+    function showSupport() {
+        closeDrawer();
+        showToast("Contact: Telegram @ATHsupport, Viber 09799480995");
+    }
+    
+    function showProfile() {
+        closeDrawer();
+        renderProfile();
+        switchTab('profile');
+    }
     
     const plans = [
         { name: "VIP LEVEL 1", price: 15000, features: ["22GB အမြန်နှုန်းမြင့်", "8,000 မိနစ် (ကွန်ရက်တွင်း)", "5,000 SMS"], icon: "🔥" },
@@ -1037,6 +1298,8 @@
         document.getElementById('mainApp').style.display = 'block';
         document.getElementById('userName').innerHTML = username;
         document.getElementById('userPhoneDisplay').innerHTML = `📞 ${phone}`;
+        document.getElementById('drawerUsername').innerHTML = username;
+        document.getElementById('drawerPhone').innerHTML = maskPhone(phone);
         updateUITexts();
         await loadUserOrders();
         await loadLiveOrders();
@@ -1083,7 +1346,7 @@
         const statsRes = await fetch(`${API_BASE}/api/admin/user-stats`);
         const userStat = (await statsRes.json()).stats?.find(u => u.phone === currentUser);
         const approved = allOrders.filter(o => o.status === 'Approved').length;
-        document.getElementById('profileContainer').innerHTML = `
+        const profileHtml = `
             <div class="profile-card" style="text-align:center;">
                 <div style="width:80px; height:80px; background:linear-gradient(135deg, var(--cyan), #0891b2); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:2rem;"><i class="fas fa-user"></i></div>
                 <h3>${currentUsername}</h3><div style="font-size:0.7rem;">📞 ${currentUser}</div><div style="font-size:0.7rem; margin-top:4px;">🆔 ID: ${userStat?.user_id || 'N/A'}</div>
@@ -1092,6 +1355,16 @@
                 <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ${t.logoutBtn}</button>
             </div>
         `;
+        
+        // Check if profileTab exists, if not create it
+        if (!document.getElementById('profileTab')) {
+            const container = document.querySelector('.container');
+            const newProfileTab = document.createElement('div');
+            newProfileTab.id = 'profileTab';
+            newProfileTab.className = 'tab-content';
+            container.appendChild(newProfileTab);
+        }
+        document.getElementById('profileTab').innerHTML = profileHtml;
     }
     
     function logout() {
@@ -1107,7 +1380,9 @@
     function switchTab(tab) {
         currentTab = tab;
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.getElementById(`${tab}Tab`).classList.add('active');
+        let tabId = tab === 'profile' ? 'profileTab' : `${tab}Tab`;
+        let element = document.getElementById(tabId);
+        if (element) element.classList.add('active');
         document.querySelectorAll('.nav-item').forEach(item => {
             if (item.dataset.tab === tab) item.classList.add('active');
             else item.classList.remove('active');
@@ -1121,8 +1396,8 @@
             refreshSec = 30;
             if (document.getElementById('liveTimer')) document.getElementById('liveTimer').innerHTML = 'auto 30s';
         }
-        if (tab === 'profile') renderProfile();
         if (tab === 'plans') renderPlans();
+        if (tab === 'profile') renderProfile();
     }
     
     document.querySelectorAll('.nav-item').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
@@ -1132,8 +1407,8 @@
     
     window.openPaymentModal = openPaymentModal; window.closePaymentModal = closePaymentModal;
     window.login = login; window.logout = logout; window.searchLiveOrder = searchLiveOrder; window.clearLiveSearch = clearLiveSearch;
-    window.changeLanguage = changeLanguage;
-    window.toggleDrawer = () => showToast("Menu Drawer - Coming Soon");
+    window.changeLanguage = changeLanguage; window.toggleDrawer = toggleDrawer; window.closeDrawer = closeDrawer;
+    window.showSupport = showSupport; window.showProfile = showProfile;
     window.showNotifications = () => showToast("No new notifications");
 </script>
 </body>
