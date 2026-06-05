@@ -225,6 +225,115 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// ==================== MARKET API ====================
+// Get all products
+app.get('/api/market/products', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('market_products')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            return res.status(500).json({ products: [], error: error.message });
+        }
+        
+        res.json({ products: data || [] });
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        res.status(500).json({ products: [], error: error.message });
+    }
+});
+
+// Add new product
+app.post('/api/market/products', async (req, res) => {
+    try {
+        const { name, price, image, category, icon, discount } = req.body;
+        
+        if (!name || !price) {
+            return res.status(400).json({ success: false, error: 'Name and price are required' });
+        }
+        
+        const { data, error } = await supabase
+            .from('market_products')
+            .insert([{
+                name,
+                price: parseInt(price),
+                image: image || null,
+                category: category || 'Uncategorized',
+                icon: icon || 'fas fa-box',
+                discount: discount || 0,
+                created_at: new Date().toISOString()
+            }])
+            .select();
+        
+        if (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        res.json({ success: true, product: data[0] });
+    } catch (error) {
+        console.error('Error adding product:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Update product
+app.put('/api/market/products/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, price, image, category, icon, discount } = req.body;
+        
+        if (!name || !price) {
+            return res.status(400).json({ success: false, error: 'Name and price are required' });
+        }
+        
+        const { data, error } = await supabase
+            .from('market_products')
+            .update({
+                name,
+                price: parseInt(price),
+                image: image || null,
+                category: category || 'Uncategorized',
+                icon: icon || 'fas fa-box',
+                discount: discount || 0,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', parseInt(id))
+            .select();
+        
+        if (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        res.json({ success: true, product: data[0] });
+    } catch (error) {
+        console.error('Error updating product:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete product
+app.delete('/api/market/products/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const { error } = await supabase
+            .from('market_products')
+            .delete()
+            .eq('id', parseInt(id));
+        
+        if (error) {
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        res.json({ success: true, message: 'Product deleted' });
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // ==================== USER API ====================
 app.get('/api/orders/:phone', async (req, res) => {
     try {
@@ -438,7 +547,7 @@ app.post('/api/admin/cleanup-old', async (req, res) => {
     }
 });
 
-// ==================== CREATE ORDER (UPDATED with payment_method) ====================
+// ==================== CREATE ORDER ====================
 app.post('/api/orders', upload.single('slip'), async (req, res) => {
     try {
         const { phone, plan, price, sender_name, last5_digits, payment_method } = req.body;
@@ -622,4 +731,5 @@ app.listen(PORT, () => {
     console.log(`📊 Dashboard Live: http://localhost:${PORT}/dashboard_live.html`);
     console.log(`📁 Uploads folder: ${uploadsDir}`);
     console.log(`🗑️ Auto cleanup: Pending/Rejected orders older than 30 days will be deleted daily`);
+    console.log(`🛒 Market API: http://localhost:${PORT}/api/market/products`);
 });
