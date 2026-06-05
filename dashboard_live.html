@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>My Plans & LIVE | ATH DIGITAL HUB</title>
+    <title>Live Dashboard | ATH DIGITAL HUB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -16,8 +16,6 @@
             --emerald: #10b981;
             --rose: #f43f5e;
             --amber: #f59e0b;
-            --kpay: #1e88e5;
-            --wavepay: #43a047;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
         }
@@ -364,7 +362,7 @@
         .separator { height: 2px; background: linear-gradient(90deg, transparent, rgba(0,212,255,0.3), transparent); margin: 16px 0 8px; }
         .footer { text-align: center; font-size: 0.6rem; color: #475569; margin-top: 32px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); }
         
-        /* Payment Method Tabs (KBZ Pay / WavePay) */
+        /* Payment Method Tabs */
         .payment-tab-buttons {
             display: flex;
             gap: 10px;
@@ -410,7 +408,7 @@
             border-radius: 4px;
         }
         
-        /* Proof Method Tabs (Screenshot / Text) */
+        /* Proof Method Tabs */
         .proof-tab-buttons {
             display: flex;
             gap: 10px;
@@ -521,31 +519,19 @@
         }
         .note-text { font-size: 0.6rem; color: var(--text-secondary); text-align: center; margin-top: 12px; }
         
-        /* custom toast message */
-        .toast-message {
+        .toast {
             position: fixed;
-            bottom: 30px;
+            bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
-            background: #1e293b;
-            color: white;
+            background: var(--emerald);
+            color: #030712;
             padding: 10px 20px;
             border-radius: 60px;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             z-index: 3000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             display: none;
-            align-items: center;
-            gap: 8px;
             white-space: nowrap;
-        }
-        .toast-message.show {
-            display: flex;
-            animation: fadeInUp 0.3s ease;
-        }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
     </style>
 </head>
@@ -631,13 +617,13 @@
     </div>
 </div>
 
-<!-- Payment Modal with KBZ Pay / WavePay Tabs and BOTH Screenshot & Text Methods -->
+<!-- Payment Modal -->
 <div id="paymentModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-close" id="closeModalBtn">&times;</div>
         <h3 style="text-align:center; margin-bottom:16px;"><i class="fas fa-credit-card"></i> <span id="modalTitle">ထပ်မံဝယ်ယူရန်</span></h3>
         
-        <!-- KBZ Pay / WavePay Selection Tab -->
+        <!-- Payment Method Selection Tab -->
         <div class="payment-tab-buttons">
             <button type="button" id="kpayTabBtn" class="payment-tab-btn kpay-tab active">
                 <img src="https://i.ibb.co/CpyBHvrS/1000011452.jpg" alt="KBZ Pay" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
@@ -649,14 +635,14 @@
             </button>
         </div>
         
-        <!-- Dynamic Account Info based on selection -->
+        <!-- Dynamic Account Info -->
         <div class="info-card" id="accountInfo">
             <div class="info-row"><span>ငွေလွှဲနည်းလမ်း</span><span id="paymentMethodName">KBZ Pay</span></div>
             <div class="info-row"><span>အကောင့်အမည်</span><span>AUNG THU HTWE</span></div>
             <div class="info-row"><span>ဖုန်းနံပါတ်</span><span id="accountPhone">09789999368 📋</span></div>
         </div>
         
-        <!-- Proof Method Tabs (Screenshot / Text) -->
+        <!-- Proof Method Tabs -->
         <div class="proof-tab-buttons">
             <button type="button" id="screenshotTabBtn" class="proof-tab-btn screenshot-tab active">
                 <i class="fas fa-camera"></i> 📸 Screenshot
@@ -712,9 +698,7 @@
     </div>
 </div>
 
-<div id="toastMsg" class="toast-message">
-    <i class="fas fa-info-circle"></i> <span id="toastText"></span>
-</div>
+<div id="toast" class="toast"></div>
 
 <script>
     (function() {
@@ -726,11 +710,10 @@
         const displayPhoneSpan = document.getElementById('displayPhone');
         const logoutBtn = document.getElementById('logoutBtn');
         
-        // Payment method variables
         let selectedPaymentMethod = 'kpay';
         
         const API_BASE = window.location.origin;
-        let currentUserPhone = localStorage.getItem('myPhone') || '';
+        let currentUserPhone = localStorage.getItem('dashboardPhone') || '';
         let liveOrders = [];
         let lastOrderIds = [];
         let autoRefreshInterval = null, rotateInterval = null, timerInterval = null;
@@ -739,12 +722,11 @@
         let externalSearchPhone = '';
 
         function showToast(message, isError = false) {
-            const toast = document.getElementById('toastMsg');
-            const toastText = document.getElementById('toastText');
-            toastText.innerText = message;
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
             toast.style.background = isError ? '#f43f5e' : '#10b981';
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2500);
         }
 
         function maskPhone(phone) {
@@ -761,7 +743,7 @@
             }
         }
         
-        // KBZ Pay / WavePay Tab switching
+        // Payment Method Tab switching
         const kpayTab = document.getElementById('kpayTabBtn');
         const wavepayTab = document.getElementById('wavepayTabBtn');
         
@@ -821,7 +803,7 @@
         if (screenshotTab) screenshotTab.addEventListener('click', switchToScreenshot);
         if (textTab) textTab.addEventListener('click', switchToText);
         
-        // File upload button handler
+        // File upload handler
         const chooseFileBtn = document.getElementById('chooseFileBtn');
         const slipImage = document.getElementById('slipImage');
         const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -840,8 +822,20 @@
                 showToast("ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)", true);
                 return false;
             }
+            // Check if user is blocked
+            try {
+                const statsRes = await fetch(`${API_BASE}/api/admin/user-stats`);
+                const statsData = await statsRes.json();
+                if (statsData.stats?.find(u => u.phone === phone)?.blocked) {
+                    showToast("သင့်အကောင့်အား ပိတ်ထားပါသည်။ Customer Support ကို ဆက်သွယ်ပါ။", true);
+                    return false;
+                }
+            } catch(e) {
+                console.log("Block check failed");
+            }
+            
             currentUserPhone = phone;
-            localStorage.setItem('myPhone', phone);
+            localStorage.setItem('dashboardPhone', phone);
             loginScreen.style.display = 'none';
             dashboardContent.style.display = 'block';
             displayPhoneSpan.innerHTML = maskPhone(phone);
@@ -853,7 +847,7 @@
         }
         
         function logout() {
-            localStorage.removeItem('myPhone');
+            localStorage.removeItem('dashboardPhone');
             currentUserPhone = '';
             externalSearchPhone = '';
             if(autoRefreshInterval) clearInterval(autoRefreshInterval);
@@ -934,7 +928,7 @@
                 }
                 return [];
             } catch(e) { 
-                showToast("LIVE feed ရယူရာတွင် အမှား။", true);
+                console.error("Error fetching live orders:", e);
                 return []; 
             }
         }
@@ -1204,8 +1198,13 @@
                 fd.append('last5_digits', last5Digits);
             }
             
-            let res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
-            return await res.json();
+            try {
+                let res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
+                return await res.json();
+            } catch(e) {
+                showToast("Connection error", true);
+                return null;
+            }
         }
         
         // Modal handlers
