@@ -769,7 +769,7 @@
     let lastHash = '';
     let liveCountdownIntervals = {};
     let currentRenewMode = 'other';
-    let searchTimeout = null;
+    let autoClearTimeout = null;  // 10s auto clear timeout
     const ROTATE_MS = 10000;
     const NEW_TIMEOUT = 120000;
     
@@ -956,7 +956,7 @@
         finally { submitBtn.disabled = false; submitBtn.innerHTML = '✅ အော်ဒါတင်မည်'; }
     }
     
-    // ========== LIVE FUNCTIONS (with 15s auto refresh after search) ==========
+    // ========== LIVE FUNCTIONS ==========
     function renderLiveStack() {
         const container = document.getElementById('liveContainer');
         if (!liveStackOrders.length) {
@@ -1055,36 +1055,13 @@
         }, 30000);
     }
     
-    function restartLiveRefreshAfterSearch() {
-        // Clear existing refresh interval
-        if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-        // Start new 15s refresh for search results
-        liveRefreshInterval = setInterval(async () => {
-            if (currentTab === 'live' && currentSearchPhone) {
-                await loadLiveOrders();
-                refreshSec = 15;
-                const timerSpan = document.getElementById('liveTimer');
-                if (timerSpan) timerSpan.innerHTML = 'auto 15s';
-            } else if (currentTab === 'live' && !currentSearchPhone) {
-                // If search is cleared, revert to 30s
-                if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-                startLiveRefresh();
-            }
-        }, 15000);
-        
-        // Update timer display to 15s
-        refreshSec = 15;
-        const timerSpan = document.getElementById('liveTimer');
-        if (timerSpan) timerSpan.innerHTML = 'auto 15s';
-    }
-    
     function startLiveTimer() {
         if (liveTimerInterval) clearInterval(liveTimerInterval);
         liveTimerInterval = setInterval(() => {
             if (currentTab === 'live') {
                 refreshSec--;
                 if (refreshSec < 0) {
-                    if (currentSearchPhone) refreshSec = 15;
+                    if (currentSearchPhone) refreshSec = 10;
                     else refreshSec = 30;
                 }
                 const timerSpan = document.getElementById('liveTimer');
@@ -1093,6 +1070,16 @@
                 if (updateSpan) updateSpan.innerHTML = `အလိုအလျောက်: ${refreshSec}s`;
             }
         }, 1000);
+    }
+    
+    // Auto clear search after 10 seconds
+    function startAutoClearTimeout() {
+        if (autoClearTimeout) clearTimeout(autoClearTimeout);
+        autoClearTimeout = setTimeout(() => {
+            if (currentSearchPhone) {
+                clearLiveSearch();
+            }
+        }, 10000);
     }
     
     async function searchLiveOrder() {
@@ -1117,16 +1104,19 @@
                 currentSearchPhone = phone;
                 liveStackOrders = orders.slice(0, 100);
                 renderLiveStack();
-                // Restart with 15s refresh for search results
-                if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-                restartLiveRefreshAfterSearch();
-                refreshSec = 15;
+                // Start auto clear after 10 seconds
+                startAutoClearTimeout();
             }
             setTimeout(() => { const highlighted = document.querySelector('.search-highlight'); if (highlighted) highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
         } catch(e) { if (msgDiv) { msgDiv.className = 'search-message error'; msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ရှာဖွေရာတွင် အမှားရှိပါသည်။'; } }
     }
     
     function clearLiveSearch() {
+        // Clear auto clear timeout
+        if (autoClearTimeout) {
+            clearTimeout(autoClearTimeout);
+            autoClearTimeout = null;
+        }
         currentSearchPhone = '';
         document.getElementById('liveSearchPhone').value = '';
         const msgDiv = document.getElementById('liveSearchMessage');
@@ -1231,6 +1221,7 @@
         if (liveRotateInterval) clearInterval(liveRotateInterval);
         if (liveRefreshInterval) clearInterval(liveRefreshInterval);
         if (liveTimerInterval) clearInterval(liveTimerInterval);
+        if (autoClearTimeout) clearTimeout(autoClearTimeout);
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('mainApp').style.display = 'none';
         showToast("ထွက်ရန် အောင်မြင်ပါသည်။");
@@ -1246,16 +1237,19 @@
         });
         if (tab === 'orders') loadUserOrders();
         if (tab === 'live') {
-            // Reset live when switching back to live tab
+            // Reset live when switching back to live tab - clear search and reload
+            if (autoClearTimeout) clearTimeout(autoClearTimeout);
             currentSearchPhone = '';
-            clearLiveSearch();
-            loadLiveOrders();
-            if (!liveRotateInterval) startLiveRotation();
+            document.getElementById('liveSearchPhone').value = '';
+            const msgDiv = document.getElementById('liveSearchMessage');
+            if (msgDiv) msgDiv.style.display = 'none';
             if (liveRefreshInterval) clearInterval(liveRefreshInterval);
             startLiveRefresh();
             refreshSec = 30;
             if (document.getElementById('liveTimer')) document.getElementById('liveTimer').innerHTML = 'auto 30s';
             if (document.getElementById('liveUpdateText')) document.getElementById('liveUpdateText').innerHTML = 'အလိုအလျောက်: 30s';
+            loadLiveOrders();
+            if (!liveRotateInterval) startLiveRotation();
         }
         if (tab === 'plans') renderPlans();
         if (tab === 'profile') renderProfile();
