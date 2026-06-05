@@ -466,7 +466,7 @@
         }
         .market-section-title { font-size: 0.85rem; font-weight: 600; color: var(--cyan); margin: 16px 0 8px; }
         
-        /* LIVE Tab */
+        /* ========== LIVE TAB (Original - No Changes) ========== */
         .live-search-fixed {
             position: sticky;
             top: 60px;
@@ -634,6 +634,24 @@
         @keyframes blinkRed { 0%,100% { background: rgba(244,63,94,0.2); } 50% { background: rgba(244,63,94,0.9); color: white; } }
         .search-message.success { background: rgba(16,185,129,0.15); color: #34d399; padding: 8px; border-radius: 40px; }
         .search-message.error { background: rgba(244,63,94,0.15); color: #fb7185; padding: 8px; border-radius: 40px; }
+        
+        /* Payment Proof Text */
+        .proof-text {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.7rem;
+        }
+        .proof-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .proof-row:last-child {
+            margin-bottom: 0;
+        }
     </style>
 </head>
 <body>
@@ -720,7 +738,7 @@
             <div id="myOrdersContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading...</div></div>
         </div>
 
-        <!-- Live Tab -->
+        <!-- Live Tab (Original - No Changes) -->
         <div id="liveTab" class="tab-content">
             <div class="live-search-fixed">
                 <div style="background: rgba(0,212,255,0.05); border-radius: 1rem; padding: 14px;">
@@ -824,6 +842,13 @@
         </div>
         
         <button class="submit-payment" onclick="submitOrder()">✅ အော်ဒါတင်မည်</button>
+    </div>
+</div>
+
+<div id="screenshotModal" class="image-modal" onclick="closeModal()">
+    <div class="image-modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header"><span><i class="fas fa-image"></i> Payment Screenshot</span><button class="close-modal" onclick="closeModal()">&times;</button></div>
+        <img id="modalImage" src="" alt="Screenshot">
     </div>
 </div>
 
@@ -1021,45 +1046,42 @@
         return `${d}ရက် ${h}နာရီ ${m}မိနစ်`;
     }
     
-    function getRemainingTimeShort(act) {
-        if (!act) return null;
-        const remain = new Date(act).getTime() + 30*86400000 - Date.now();
-        if (remain <= 0) return "Expired";
-        const d = Math.floor(remain/86400000);
-        const h = Math.floor((remain%86400000)/3600000);
-        const m = Math.floor((remain%3600000)/60000);
-        return `${d}d ${h}h ${m}m`;
-    }
-    
     const isNewOrder = (o) => Date.now() - new Date(o.created_at).getTime() < NEW_TIMEOUT;
     
-    // ========== LIVE FUNCTIONS ==========
+    // ========== LIVE FUNCTIONS (Original - No Changes) ==========
     async function loadLiveOrders() {
         try {
-            console.log("🔄 Fetching live orders from:", `${API_BASE}/api/admin/orders`);
             const res = await fetch(`${API_BASE}/api/admin/orders`);
-            console.log("📡 Response status:", res.status);
-            
-            if (!res.ok) {
-                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-            }
-            
             const data = await res.json();
-            console.log("✅ Live orders data:", data);
-            
             if (data.orders) {
                 let filtered = data.orders.filter(o => o.phone !== currentUser);
                 if (currentSearchPhone) filtered = filtered.filter(o => o.phone === currentSearchPhone);
                 let sorted = [...filtered].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-                liveStackOrders = sorted.slice(0, 100);
-                renderLiveStack();
-            } else {
-                console.warn("⚠️ No orders in response:", data);
+                let hash = JSON.stringify(sorted.map(o => ({ id: o.id, status: o.status })));
+                if (hash !== lastHash) {
+                    lastHash = hash;
+                    let currIds = liveStackOrders.map(o => o.id);
+                    let newOnes = sorted.filter(o => !currIds.includes(o.id));
+                    if (newOnes.length) {
+                        liveStackOrders = [...newOnes, ...liveStackOrders].slice(0, 100);
+                        renderLiveStack();
+                        setTimeout(() => {
+                            const newCards = document.querySelectorAll('.stack-item');
+                            for (let i = 0; i < newOnes.length && i < newCards.length; i++) {
+                                newCards[i].classList.add('new-order');
+                                setTimeout(() => newCards[i].classList.remove('new-order'), 2000);
+                            }
+                        }, 50);
+                    } else {
+                        let upd = [];
+                        sorted.forEach(o => { if (currIds.includes(o.id)) upd.push(o); });
+                        liveStackOrders.forEach(o => { if (!upd.find(x => x.id === o.id)) upd.push(o); });
+                        liveStackOrders = upd.slice(0, 100);
+                        renderLiveStack();
+                    }
+                }
             }
-        } catch(e) { 
-            console.error('❌ Error loading live orders:', e);
-            document.getElementById('liveContainer').innerHTML = `<div style="text-align:center; padding:40px; color:#f43f5e;">🔴 Connection error: ${e.message}</div>`;
-        }
+        } catch(e) { console.error('Error loading live orders:', e); document.getElementById('liveContainer').innerHTML = '<div style="text-align:center; padding:40px;">🔴 Connection error</div>'; }
     }
     
     function renderLiveStack() {
@@ -1080,7 +1102,7 @@
             if (order.status === 'Approved' && order.activated_at) {
                 const startDate = new Date(order.activated_at);
                 const endDate = new Date(startDate.getTime() + 30 * 86400000);
-                const remain = getRemainingTimeShort(order.activated_at);
+                const remain = getRemainingTime(order.activated_at);
                 statsRowHtml = `
                     <div class="live-stats-row">
                         <span class="live-remaining"><i class="fas fa-hourglass-half"></i> ${remain}</span>
@@ -1106,7 +1128,6 @@
         container.innerHTML = html;
     }
     
-    // Reverse rotation (အောက်ဆုံးကနေ အပေါ်ကို ပြောင်း)
     function startLiveRotation() {
         if (liveRotateInterval) clearInterval(liveRotateInterval);
         liveRotateInterval = setInterval(() => {
@@ -1127,15 +1148,12 @@
     
     function startLiveRefresh() {
         if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-        const intervalTime = currentSearchPhone ? 10000 : 30000;
         liveRefreshInterval = setInterval(async () => {
             await loadLiveOrders();
-            refreshSec = currentSearchPhone ? 10 : 30;
+            refreshSec = 30;
             const timerSpan = document.getElementById('liveTimer');
-            if (timerSpan) timerSpan.innerHTML = `auto ${refreshSec}s`;
-            const updateSpan = document.getElementById('liveUpdateText');
-            if (updateSpan) updateSpan.innerHTML = `အလိုအလျောက်: ${refreshSec}s`;
-        }, intervalTime);
+            if (timerSpan) timerSpan.innerHTML = 'auto 30s';
+        }, 30000);
     }
     
     function startLiveTimer() {
@@ -1143,10 +1161,7 @@
         liveTimerInterval = setInterval(() => {
             if (currentTab === 'live') {
                 refreshSec--;
-                if (refreshSec < 0) {
-                    if (currentSearchPhone) refreshSec = 10;
-                    else refreshSec = 30;
-                }
+                if (refreshSec < 0) refreshSec = 30;
                 const timerSpan = document.getElementById('liveTimer');
                 if (timerSpan) timerSpan.innerHTML = `auto ${refreshSec}s`;
                 const updateSpan = document.getElementById('liveUpdateText');
@@ -1247,7 +1262,7 @@
             if (o.sender_name && o.last5_digits) {
                 // Text proof
                 proofHtml = `
-                    <div class="order-proof">
+                    <div class="proof-text">
                         <div class="proof-row">
                             <span><i class="fas fa-user"></i> ငွေလွှဲသူအမည်:</span>
                             <span style="font-weight:600;">${escapeHtml(o.sender_name)}</span>
@@ -1256,13 +1271,6 @@
                             <span><i class="fas fa-credit-card"></i> ပြေစာ NO.:</span>
                             <span style="font-weight:600;">${escapeHtml(o.last5_digits)}</span>
                         </div>
-                    </div>
-                `;
-            } else if (o.slip_url) {
-                // Screenshot proof
-                proofHtml = `
-                    <div class="order-proof" style="text-align:center;">
-                        <button class="view-slip-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> 📸 ပြေစာကြည့်ရန်</button>
                     </div>
                 `;
             }
@@ -1283,6 +1291,12 @@
                 }
             }
             
+            // Screenshot button (if available)
+            let slipButtonHtml = '';
+            if (o.slip_url && o.slip_url !== 'null') {
+                slipButtonHtml = `<button class="view-slip-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> 📸 ပြေစာကြည့်ရန်</button>`;
+            }
+            
             html += `
                 <div class="order-card">
                     <div class="order-header">
@@ -1301,7 +1315,7 @@
                     ${startEndHtml}
                     <div class="order-footer">
                         ${remainingHtml}
-                        ${o.slip_url ? `<button class="view-slip-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> 📸 ပြေစာကြည့်ရန်</button>` : ''}
+                        ${slipButtonHtml}
                     </div>
                 </div>
             `;
@@ -1390,9 +1404,6 @@
             else item.classList.remove('active');
         });
         if (tab === 'orders') loadUserOrders();
-        if (tab === 'live') {
-            if (liveRotateInterval) { clearInterval(liveRotateInterval); startLiveRotation(); }
-        }
         if (tab === 'plans') renderPlans();
         if (tab === 'profile') renderProfile();
         if (tab === 'market') loadMarketProducts();
