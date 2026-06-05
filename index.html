@@ -379,7 +379,6 @@
         .status-approved { background: rgba(16,185,129,0.2); color: #34d399; }
         .status-rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
         
-        /* ========== LIVE CARD STATS ROW (Remaining + End Date in one line) ========== */
         .live-stats-row {
             display: flex;
             justify-content: space-between;
@@ -942,7 +941,6 @@
         return `${d}ရက် ${h}နာရီ ${m}မိနစ်`;
     }
     
-    // Short version for live card (d h m)
     function getRemainingTimeShort(act) {
         if (!act) return null;
         const remain = new Date(act).getTime() + 30*86400000 - Date.now();
@@ -1028,12 +1026,14 @@
         container.innerHTML = html;
     }
     
+    // ========== REVERSE ROTATION (အောက်ဆုံးကနေ အပေါ်ကို ပြောင်း) ==========
     function startLiveRotation() {
         if (liveRotateInterval) clearInterval(liveRotateInterval);
         liveRotateInterval = setInterval(() => {
             if (currentTab === 'live' && liveStackOrders.length > 1 && !currentSearchPhone) {
-                const firstItem = liveStackOrders.shift();
-                liveStackOrders.push(firstItem);
+                // Reverse rotation: move last item to front
+                const lastItem = liveStackOrders.pop();
+                liveStackOrders.unshift(lastItem);
                 renderLiveStack();
                 setTimeout(() => {
                     const topCard = document.querySelector('.stack-item');
