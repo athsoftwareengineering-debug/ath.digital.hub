@@ -23,12 +23,12 @@
             background: var(--bg-dark);
             color: var(--text-primary);
             font-family: 'Inter', 'Noto Sans Myanmar', sans-serif;
-            min-height: 100vh;
             background-image: radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.1) 0%, transparent 50%);
             padding-bottom: 70px;
         }
         .container { max-width: 600px; margin: 0 auto; padding: 0 16px; }
         
+        /* App Bar */
         .app-bar {
             display: flex;
             align-items: center;
@@ -53,6 +53,7 @@
         }
         .logo { font-family: 'Space Grotesk', monospace; font-weight: 700; background: linear-gradient(135deg, #fff, var(--cyan)); background-clip: text; -webkit-background-clip: text; color: transparent; }
         
+        /* Language Dropdown */
         .lang-dropdown {
             position: relative;
             display: inline-block;
@@ -82,6 +83,7 @@
         .lang-dropdown-content button:hover { background: rgba(0,212,255,0.1); }
         .lang-dropdown.show .lang-dropdown-content { display: block; }
         
+        /* Drawer Menu */
         .drawer-overlay {
             position: fixed;
             top: 0;
@@ -140,6 +142,7 @@
         .drawer-menu a i { width: 24px; color: var(--cyan); }
         .drawer-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0; }
         
+        /* Bottom Navigation */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -170,6 +173,7 @@
         .nav-item i { font-size: 1.3rem; }
         .nav-item.active { color: var(--cyan); background: rgba(0,212,255,0.1); }
         
+        /* Login Screen */
         .login-screen {
             display: flex;
             align-items: center;
@@ -206,7 +210,7 @@
             margin-top: 8px;
         }
         
-        /* Renew Buttons - My Orders Tab အပေါ်မှာ */
+        /* Renew Buttons */
         .renew-buttons {
             display: flex;
             gap: 12px;
@@ -226,6 +230,7 @@
         .renew-btn.self { background: linear-gradient(135deg, var(--cyan), #0891b2); }
         .renew-btn.other { background: linear-gradient(135deg, var(--amber), #d97706); }
         
+        /* Payment Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); backdrop-filter: blur(20px);
@@ -344,12 +349,34 @@
         }
         .market-section-title { font-size: 0.85rem; font-weight: 600; color: var(--cyan); margin: 16px 0 8px; }
         
-        /* ========== LIVE STACK + VIOLET BLINK ========== */
+        /* ========== LIVE TAB - FIXED SEARCH + SCROLLABLE ORDERS ========== */
+        .live-search-fixed {
+            position: sticky;
+            top: 60px;
+            background: var(--bg-dark);
+            z-index: 50;
+            padding: 8px 0 12px;
+            margin: 0;
+        }
+        .live-orders-scrollable {
+            max-height: calc(100vh - 280px);
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        /* Hide scrollbar but keep scrolling */
+        .live-orders-scrollable::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        .live-orders-scrollable {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
         .stack-container {
             display: flex;
             flex-direction: column;
             gap: 12px;
-            margin-bottom: 16px;
         }
         .stack-item {
             background: linear-gradient(135deg, rgba(18,22,35,0.95), rgba(10,12,21,0.98));
@@ -358,7 +385,6 @@
             border-left: 3px solid var(--violet);
             transition: all 0.3s ease;
         }
-        /* ခရမ်းရောင် မှိတ်တုတ် Animation - 2s */
         @keyframes blinkViolet {
             0% { background: rgba(139,92,246,0); border-left-color: var(--violet); }
             25% { background: rgba(139,92,246,0.35); border-left-color: var(--violet); box-shadow: 0 0 20px var(--violet); }
@@ -538,7 +564,7 @@
         <!-- Plans Tab -->
         <div id="plansTab" class="tab-content"><div id="plansContainer"></div></div>
 
-        <!-- My Orders Tab (with Renew Buttons at TOP) -->
+        <!-- My Orders Tab -->
         <div id="ordersTab" class="tab-content">
             <div class="renew-buttons">
                 <button class="renew-btn self" onclick="openRenewModal('self')"><i class="fas fa-user"></i> ကိုယ်တိုင်ထပ်ဝယ်ရန်</button>
@@ -547,22 +573,30 @@
             <div id="myOrdersContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading...</div></div>
         </div>
 
-        <!-- Live Tab (with Violet Blink) -->
+        <!-- Live Tab with FIXED Search and SCROLLABLE Orders -->
         <div id="liveTab" class="tab-content">
-            <div style="background: rgba(0,212,255,0.05); border-radius: 1rem; padding: 14px; margin-bottom: 20px;">
-                <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 10px;"><i class="fas fa-search"></i> <span id="searchTitle">သက်တမ်းစစ်ရန်</span></div>
-                <div style="display: flex; gap: 8px;">
-                    <input type="tel" id="liveSearchPhone" class="search-input" placeholder="📱 09xxxxxxxxx">
-                    <button onclick="searchLiveOrder()" style="background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; padding: 0 18px; border-radius: 60px; font-weight: bold; cursor: pointer;"><i class="fas fa-search"></i> <span id="searchBtnText">ရှာ</span></button>
-                    <button onclick="clearLiveSearch()" style="background: #334155; border: none; padding: 0 16px; border-radius: 60px; cursor: pointer;"><i class="fas fa-times"></i> <span id="clearBtnText">ရှင်း</span></button>
+            <!-- Fixed Search Section -->
+            <div class="live-search-fixed">
+                <div style="background: rgba(0,212,255,0.05); border-radius: 1rem; padding: 14px;">
+                    <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 10px;"><i class="fas fa-search"></i> <span id="searchTitle">သက်တမ်းစစ်ရန်</span></div>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="tel" id="liveSearchPhone" class="search-input" placeholder="📱 09xxxxxxxxx">
+                        <button onclick="searchLiveOrder()" style="background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; padding: 0 18px; border-radius: 60px; font-weight: bold; cursor: pointer;"><i class="fas fa-search"></i> <span id="searchBtnText">ရှာ</span></button>
+                        <button onclick="clearLiveSearch()" style="background: #334155; border: none; padding: 0 16px; border-radius: 60px; cursor: pointer;"><i class="fas fa-times"></i> <span id="clearBtnText">ရှင်း</span></button>
+                    </div>
+                    <div id="liveSearchMessage" style="font-size: 0.65rem; margin-top: 10px; text-align: center; display: none;"></div>
                 </div>
-                <div id="liveSearchMessage" style="font-size: 0.65rem; margin-top: 10px; text-align: center; display: none;"></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 8px;">
+                    <h2 style="font-size: 1rem;"><i class="fas fa-broadcast-tower"></i> <span id="liveTitle">LIVE အော်ဒါများ</span> <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span></h2>
+                    <span id="liveTimer" style="background: #1e293b; padding: 4px 12px; border-radius: 40px; font-size: 0.6rem;">auto 30s</span>
+                </div>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 12px;">
-                <h2 style="font-size: 1rem;"><i class="fas fa-broadcast-tower"></i> <span id="liveTitle">LIVE အော်ဒါများ</span> <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span></h2>
-                <span id="liveTimer" style="background: #1e293b; padding: 4px 12px; border-radius: 40px; font-size: 0.6rem;">auto 30s</span>
+            
+            <!-- Scrollable Orders Container (hide scrollbar) -->
+            <div class="live-orders-scrollable" id="liveContainer">
+                <div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> <span id="liveLoading">စောင့်နေသည်...</span></div>
             </div>
-            <div id="liveContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> <span id="liveLoading">စောင့်နေသည်...</span></div></div>
+            
             <div class="status-bar">
                 <span class="status-dot"></span>
                 <span id="liveUpdateText">အလိုအလျောက်: 30s</span>
@@ -824,10 +858,13 @@
         finally { submitBtn.disabled = false; submitBtn.innerHTML = '✅ အော်ဒါတင်မည်'; }
     }
     
-    // ========== LIVE FUNCTIONS (with Violet Blink) ==========
+    // ========== LIVE FUNCTIONS (100 orders + scrollable + fixed search) ==========
     function renderLiveStack() {
         const container = document.getElementById('liveContainer');
-        if (!liveStackOrders.length) { container.innerHTML = '<div style="text-align:center; padding:40px;">🔴 လက်ရှိ LIVE အော်ဒါမရှိပါ</div>'; return; }
+        if (!liveStackOrders.length) {
+            container.innerHTML = '<div style="text-align:center; padding:40px;">🔴 လက်ရှိ LIVE အော်ဒါမရှိပါ</div>';
+            return;
+        }
         let html = '<div class="stack-container">';
         for (const order of liveStackOrders) {
             let isNew = isNewOrder(order);
@@ -884,7 +921,8 @@
                     let currIds = liveStackOrders.map(o => o.id);
                     let newOnes = sorted.filter(o => !currIds.includes(o.id));
                     if (newOnes.length) {
-                        liveStackOrders = [...newOnes, ...liveStackOrders].slice(0, 30);
+                        // 100 orders max (instead of 30)
+                        liveStackOrders = [...newOnes, ...liveStackOrders].slice(0, 100);
                         renderLiveStack();
                         setTimeout(() => {
                             const newCards = document.querySelectorAll('.stack-item');
@@ -897,7 +935,7 @@
                         let upd = [];
                         sorted.forEach(o => { if (currIds.includes(o.id)) upd.push(o); });
                         liveStackOrders.forEach(o => { if (!upd.find(x => x.id === o.id)) upd.push(o); });
-                        liveStackOrders = upd.slice(0, 30);
+                        liveStackOrders = upd.slice(0, 100);
                         renderLiveStack();
                     }
                 }
@@ -950,7 +988,7 @@
             } else {
                 if (msgDiv) { msgDiv.className = 'search-message success'; msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။ 🟠 လိမ္မော်ရောင် မှိတ်တုတ်ပြသပါမည်။'; }
                 currentSearchPhone = phone;
-                liveStackOrders = orders.slice(0, 30);
+                liveStackOrders = orders.slice(0, 100);
                 renderLiveStack();
             }
             setTimeout(() => { const highlighted = document.querySelector('.search-highlight'); if (highlighted) highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
