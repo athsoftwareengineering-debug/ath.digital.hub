@@ -769,8 +769,8 @@
     let lastHash = '';
     let liveCountdownIntervals = {};
     let currentRenewMode = 'other';
-    let autoClearTimeout = null;  // 10s auto clear timeout
-    const ROTATE_MS = 10000;
+    let autoClearTimeout = null;
+    const ROTATE_MS = 5000;  // 5 seconds rotate (fixed)
     const NEW_TIMEOUT = 120000;
     
     // ========== COLLAPSIBLE SECTIONS ==========
@@ -993,16 +993,25 @@
         }
     }
     
-    function rotateStack() {
-        if (liveStackOrders.length > 1 && !currentSearchPhone) {
-            const lastItem = liveStackOrders.pop();
-            liveStackOrders.unshift(lastItem);
-            renderLiveStack();
-            setTimeout(() => {
-                const topCard = document.querySelector('.stack-item');
-                if (topCard) { topCard.classList.add('new-order'); setTimeout(() => topCard.classList.remove('new-order'), 2000); }
-            }, 50);
-        }
+    // Fixed rotation - every 5 seconds, always rotate
+    function startLiveRotation() {
+        if (liveRotateInterval) clearInterval(liveRotateInterval);
+        liveRotateInterval = setInterval(() => {
+            if (currentTab === 'live' && liveStackOrders.length > 1 && !currentSearchPhone) {
+                // Rotate: move first item to end
+                const firstItem = liveStackOrders.shift();
+                liveStackOrders.push(firstItem);
+                renderLiveStack();
+                // Add blink effect to first card
+                setTimeout(() => {
+                    const topCard = document.querySelector('.stack-item');
+                    if (topCard) {
+                        topCard.classList.add('new-order');
+                        setTimeout(() => topCard.classList.remove('new-order'), 2000);
+                    }
+                }, 50);
+            }
+        }, ROTATE_MS);
     }
     
     async function loadLiveOrders() {
@@ -1040,19 +1049,16 @@
         } catch(e) { console.error('Error loading live orders:', e); document.getElementById('liveContainer').innerHTML = '<div style="text-align:center; padding:40px;">🔴 Connection error</div>'; }
     }
     
-    function startLiveRotation() {
-        if (liveRotateInterval) clearInterval(liveRotateInterval);
-        liveRotateInterval = setInterval(() => { if (currentTab === 'live' && liveStackOrders.length > 0 && !currentSearchPhone) rotateStack(); }, ROTATE_MS);
-    }
-    
     function startLiveRefresh() {
         if (liveRefreshInterval) clearInterval(liveRefreshInterval);
         liveRefreshInterval = setInterval(async () => {
             await loadLiveOrders();
-            refreshSec = 30;
+            refreshSec = currentSearchPhone ? 10 : 30;
             const timerSpan = document.getElementById('liveTimer');
-            if (timerSpan) timerSpan.innerHTML = 'auto 30s';
-        }, 30000);
+            if (timerSpan) timerSpan.innerHTML = `auto ${refreshSec}s`;
+            const updateSpan = document.getElementById('liveUpdateText');
+            if (updateSpan) updateSpan.innerHTML = `အလိုအလျောက်: ${refreshSec}s`;
+        }, currentSearchPhone ? 10000 : 30000);
     }
     
     function startLiveTimer() {
@@ -1106,6 +1112,10 @@
                 renderLiveStack();
                 // Start auto clear after 10 seconds
                 startAutoClearTimeout();
+                // Change refresh interval to 10s
+                if (liveRefreshInterval) clearInterval(liveRefreshInterval);
+                startLiveRefresh();
+                refreshSec = 10;
             }
             setTimeout(() => { const highlighted = document.querySelector('.search-highlight'); if (highlighted) highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
         } catch(e) { if (msgDiv) { msgDiv.className = 'search-message error'; msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ရှာဖွေရာတွင် အမှားရှိပါသည်။'; } }
@@ -1237,19 +1247,24 @@
         });
         if (tab === 'orders') loadUserOrders();
         if (tab === 'live') {
-            // Reset live when switching back to live tab - clear search and reload
+            // Reset live when switching back to live tab
             if (autoClearTimeout) clearTimeout(autoClearTimeout);
-            currentSearchPhone = '';
-            document.getElementById('liveSearchPhone').value = '';
-            const msgDiv = document.getElementById('liveSearchMessage');
-            if (msgDiv) msgDiv.style.display = 'none';
+            if (currentSearchPhone) {
+                currentSearchPhone = '';
+                document.getElementById('liveSearchPhone').value = '';
+                const msgDiv = document.getElementById('liveSearchMessage');
+                if (msgDiv) msgDiv.style.display = 'none';
+            }
             if (liveRefreshInterval) clearInterval(liveRefreshInterval);
             startLiveRefresh();
             refreshSec = 30;
             if (document.getElementById('liveTimer')) document.getElementById('liveTimer').innerHTML = 'auto 30s';
             if (document.getElementById('liveUpdateText')) document.getElementById('liveUpdateText').innerHTML = 'အလိုအလျောက်: 30s';
             loadLiveOrders();
-            if (!liveRotateInterval) startLiveRotation();
+            if (liveRotateInterval) {
+                clearInterval(liveRotateInterval);
+                startLiveRotation();
+            }
         }
         if (tab === 'plans') renderPlans();
         if (tab === 'profile') renderProfile();
