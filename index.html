@@ -206,7 +206,7 @@
             margin-top: 8px;
         }
         
-        /* ========== RENEW BUTTONS (My Orders Tab) ========== */
+        /* Renew Buttons - My Orders Tab အပေါ်မှာ */
         .renew-buttons {
             display: flex;
             gap: 12px;
@@ -226,7 +226,6 @@
         .renew-btn.self { background: linear-gradient(135deg, var(--cyan), #0891b2); }
         .renew-btn.other { background: linear-gradient(135deg, var(--amber), #d97706); }
         
-        /* Payment Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); backdrop-filter: blur(20px);
@@ -307,7 +306,7 @@
             border: none;
         }
         
-        .plan-card, .order-card, .profile-card, .market-card {
+        .plan-card, .order-card, .profile-card {
             background: var(--bg-card);
             border-radius: 1rem;
             padding: 14px;
@@ -345,7 +344,7 @@
         }
         .market-section-title { font-size: 0.85rem; font-weight: 600; color: var(--cyan); margin: 16px 0 8px; }
         
-        /* LIVE Stack Container */
+        /* ========== LIVE STACK + VIOLET BLINK ========== */
         .stack-container {
             display: flex;
             flex-direction: column;
@@ -359,17 +358,18 @@
             border-left: 3px solid var(--violet);
             transition: all 0.3s ease;
         }
-        .stack-item.new-order {
-            border-left-color: var(--violet);
-            background: rgba(139,92,246,0.15);
-            animation: blinkViolet 2s ease-in-out;
-        }
+        /* ခရမ်းရောင် မှိတ်တုတ် Animation - 2s */
         @keyframes blinkViolet {
             0% { background: rgba(139,92,246,0); border-left-color: var(--violet); }
             25% { background: rgba(139,92,246,0.35); border-left-color: var(--violet); box-shadow: 0 0 20px var(--violet); }
             50% { background: rgba(139,92,246,0.1); border-left-color: var(--violet); }
             75% { background: rgba(139,92,246,0.35); border-left-color: var(--violet); box-shadow: 0 0 20px var(--violet); }
             100% { background: rgba(139,92,246,0); border-left-color: var(--violet); }
+        }
+        .stack-item.new-order {
+            border-left-color: var(--violet);
+            background: rgba(139,92,246,0.15);
+            animation: blinkViolet 2s ease-in-out;
         }
         .stack-item.search-highlight {
             border: 2px solid #fbbf24;
@@ -540,7 +540,6 @@
 
         <!-- My Orders Tab (with Renew Buttons at TOP) -->
         <div id="ordersTab" class="tab-content">
-            <!-- Renew Buttons (အော်ဒါစာရင်းရဲ့ အပေါ်မှာ) -->
             <div class="renew-buttons">
                 <button class="renew-btn self" onclick="openRenewModal('self')"><i class="fas fa-user"></i> ကိုယ်တိုင်ထပ်ဝယ်ရန်</button>
                 <button class="renew-btn other" onclick="openRenewModal('other')"><i class="fas fa-users"></i> အခြားသူအတွက် ထပ်ဝယ်ပေးရန်</button>
@@ -548,7 +547,7 @@
             <div id="myOrdersContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading...</div></div>
         </div>
 
-        <!-- Live Tab -->
+        <!-- Live Tab (with Violet Blink) -->
         <div id="liveTab" class="tab-content">
             <div style="background: rgba(0,212,255,0.05); border-radius: 1rem; padding: 14px; margin-bottom: 20px;">
                 <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 10px;"><i class="fas fa-search"></i> <span id="searchTitle">သက်တမ်းစစ်ရန်</span></div>
@@ -570,7 +569,7 @@
             </div>
         </div>
 
-        <!-- Market Tab (မူရင်းအတိုင်း) -->
+        <!-- Market Tab -->
         <div id="marketTab" class="tab-content">
             <div id="marketContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading products...</div></div>
         </div>
@@ -662,7 +661,6 @@
     let liveRotateInterval = null, liveRefreshInterval = null, liveTimerInterval = null;
     let refreshSec = 30;
     let selectedPayment = "kpay", selectedPlan = null, selectedPrice = null;
-    let isSearching = false;
     let currentSearchPhone = "";
     let lastHash = '';
     let liveCountdownIntervals = {};
@@ -670,7 +668,7 @@
     const ROTATE_MS = 10000;
     const NEW_TIMEOUT = 120000;
     
-    // ========== MARKET DATA (မူရင်းအတိုင်း) ==========
+    // ========== MARKET DATA ==========
     async function loadMarketProducts() {
         try {
             const res = await fetch(`${API_BASE}/api/market/products`);
@@ -679,9 +677,7 @@
                 marketProducts = data.products;
                 renderMarket();
             }
-        } catch(e) {
-            renderMarketFallback();
-        }
+        } catch(e) { renderMarketFallback(); }
     }
     
     function renderMarket() {
@@ -721,7 +717,7 @@
         `;
     }
     
-    // ========== PAYMENT FUNCTIONS (Reused by both) ==========
+    // ========== PAYMENT FUNCTIONS ==========
     function selectPayment(method) {
         selectedPayment = method;
         document.querySelectorAll('.payment-tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -789,7 +785,6 @@
     async function submitOrder() {
         const isScreenshot = document.getElementById('screenshotPanel').style.display !== 'none';
         let phone, file, sender, last5;
-        
         if (isScreenshot) {
             phone = document.getElementById('orderPhone').value.trim();
             file = document.getElementById('slipImage').files[0];
@@ -803,14 +798,11 @@
             if (!sender) { showToast("ငွေလွှဲသူအမည် ထည့်ပါ", true); return; }
             if (!last5 || last5.length !== 5) { showToast("ငွေလွှဲပြေစာအမှတ် နောက်ဆုံး ၅ လုံး အတိအကျ ထည့်ပါ", true); return; }
         }
-        
         const plan = selectedPlan || 'VIP LEVEL - 1';
         const price = selectedPrice || 15000;
-        
         const submitBtn = document.querySelector('.submit-payment');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '⏳ အော်ဒါတင်နေပါသည်...';
-        
         const fd = new FormData();
         fd.append('phone', phone);
         fd.append('plan', plan);
@@ -818,7 +810,6 @@
         fd.append('payment_method', selectedPayment);
         if (isScreenshot && file) fd.append('slip', file);
         else { fd.append('sender_name', sender); fd.append('last5_digits', last5); }
-        
         try {
             const res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
             const data = await res.json();
@@ -827,26 +818,16 @@
                 closePaymentModal();
                 if (currentTab === 'orders') loadUserOrders();
                 if (currentTab === 'live') loadLiveOrders();
-                selectedPlan = null;
-                selectedPrice = null;
-            } else {
-                showToast(data.error || "အော်ဒါတင်ရာတွင် အမှားရှိပါသည်", true);
-            }
-        } catch(e) {
-            showToast("Connection error", true);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '✅ အော်ဒါတင်မည်';
-        }
+                selectedPlan = null; selectedPrice = null;
+            } else { showToast(data.error || "အော်ဒါတင်ရာတွင် အမှားရှိပါသည်", true); }
+        } catch(e) { showToast("Connection error", true); }
+        finally { submitBtn.disabled = false; submitBtn.innerHTML = '✅ အော်ဒါတင်မည်'; }
     }
     
-    // ========== LIVE FUNCTIONS ==========
+    // ========== LIVE FUNCTIONS (with Violet Blink) ==========
     function renderLiveStack() {
         const container = document.getElementById('liveContainer');
-        if (!liveStackOrders.length) {
-            container.innerHTML = '<div style="text-align:center; padding:40px;">🔴 လက်ရှိ LIVE အော်ဒါမရှိပါ</div>';
-            return;
-        }
+        if (!liveStackOrders.length) { container.innerHTML = '<div style="text-align:center; padding:40px;">🔴 လက်ရှိ LIVE အော်ဒါမရှိပါ</div>'; return; }
         let html = '<div class="stack-container">';
         for (const order of liveStackOrders) {
             let isNew = isNewOrder(order);
@@ -858,20 +839,7 @@
             if (order.status === 'Approved' && order.activated_at) {
                 countdownHtml = `<div class="feed-countdown" id="live-cd-${order.id}"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${getRemainingTime(order.activated_at)}</div>`;
             }
-            html += `
-                <div class="stack-item ${isNew ? 'new-order' : ''} ${isHighlight ? 'search-highlight' : ''}" data-order-id="${order.id}">
-                    ${isNew ? `<div class="new-badge"><i class="fas fa-fire"></i> NEW</div>` : ''}
-                    <div class="stack-header">
-                        <span class="stack-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span>
-                        <span class="stack-status ${statClass}">${statText}</span>
-                    </div>
-                    <div class="stack-details">
-                        <span class="stack-phone"><i class="fas fa-mobile-alt"></i> ${maskPhone(order.phone)}</span>
-                        <span class="stack-price"><i class="fas fa-coins"></i> ${order.price.toLocaleString()} KS</span>
-                    </div>
-                    ${countdownHtml}
-                </div>
-            `;
+            html += `<div class="stack-item ${isNew ? 'new-order' : ''} ${isHighlight ? 'search-highlight' : ''}" data-order-id="${order.id}">${isNew ? `<div class="new-badge"><i class="fas fa-fire"></i> NEW</div>` : ''}<div class="stack-header"><span class="stack-plan"><i class="fas fa-sim-card"></i> ${order.plan}</span><span class="stack-status ${statClass}">${statText}</span></div><div class="stack-details"><span class="stack-phone"><i class="fas fa-mobile-alt"></i> ${maskPhone(order.phone)}</span><span class="stack-price"><i class="fas fa-coins"></i> ${order.price.toLocaleString()} KS</span></div>${countdownHtml}</div>`;
         }
         html += '</div>';
         container.innerHTML = html;
@@ -882,15 +850,10 @@
                     const el = document.getElementById(`live-cd-${order.id}`);
                     if (!el) { clearInterval(liveCountdownIntervals[order.id]); return; }
                     const remain = getRemainingTime(order.activated_at);
-                    if (remain === "Expired") {
-                        el.innerHTML = `<i class="fas fa-calendar-times"></i> <span style="color:#f43f5e;">Expired</span>`;
-                        clearInterval(liveCountdownIntervals[order.id]);
-                    } else {
-                        el.innerHTML = `<i class="fas fa-hourglass-half"></i> <span style="color:var(--cyan);">${remain}</span>`;
-                    }
+                    if (remain === "Expired") { el.innerHTML = `<i class="fas fa-calendar-times"></i> <span style="color:#f43f5e;">Expired</span>`; clearInterval(liveCountdownIntervals[order.id]); }
+                    else { el.innerHTML = `<i class="fas fa-hourglass-half"></i> <span style="color:var(--cyan);">${remain}</span>`; }
                 };
-                fn();
-                liveCountdownIntervals[order.id] = setInterval(fn, 1000);
+                fn(); liveCountdownIntervals[order.id] = setInterval(fn, 1000);
             }
         }
     }
@@ -902,7 +865,7 @@
             renderLiveStack();
             setTimeout(() => {
                 const topCard = document.querySelector('.stack-item');
-                if (topCard) addGlowEffect(topCard);
+                if (topCard) { topCard.classList.add('new-order'); setTimeout(() => topCard.classList.remove('new-order'), 2000); }
             }, 50);
         }
     }
@@ -925,7 +888,10 @@
                         renderLiveStack();
                         setTimeout(() => {
                             const newCards = document.querySelectorAll('.stack-item');
-                            for (let i = 0; i < newOnes.length && i < newCards.length; i++) addGlowEffect(newCards[i]);
+                            for (let i = 0; i < newOnes.length && i < newCards.length; i++) {
+                                newCards[i].classList.add('new-order');
+                                setTimeout(() => newCards[i].classList.remove('new-order'), 2000);
+                            }
                         }, 50);
                     } else {
                         let upd = [];
@@ -936,17 +902,12 @@
                     }
                 }
             }
-        } catch(e) {
-            console.error('Error loading live orders:', e);
-            document.getElementById('liveContainer').innerHTML = '<div style="text-align:center; padding:40px;">🔴 Connection error</div>';
-        }
+        } catch(e) { console.error('Error loading live orders:', e); document.getElementById('liveContainer').innerHTML = '<div style="text-align:center; padding:40px;">🔴 Connection error</div>'; }
     }
     
     function startLiveRotation() {
         if (liveRotateInterval) clearInterval(liveRotateInterval);
-        liveRotateInterval = setInterval(() => {
-            if (currentTab === 'live' && liveStackOrders.length > 0 && !currentSearchPhone) rotateStack();
-        }, ROTATE_MS);
+        liveRotateInterval = setInterval(() => { if (currentTab === 'live' && liveStackOrders.length > 0 && !currentSearchPhone) rotateStack(); }, ROTATE_MS);
     }
     
     function startLiveRefresh() {
@@ -976,10 +937,7 @@
     async function searchLiveOrder() {
         const phone = document.getElementById('liveSearchPhone').value.trim();
         const msgDiv = document.getElementById('liveSearchMessage');
-        if (!phone || phone.length < 9) {
-            if (msgDiv) { msgDiv.style.display = 'block'; msgDiv.className = 'search-message error'; msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)'; }
-            return;
-        }
+        if (!phone || phone.length < 9) { if (msgDiv) { msgDiv.style.display = 'block'; msgDiv.className = 'search-message error'; msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)'; } return; }
         if (msgDiv) { msgDiv.style.display = 'block'; msgDiv.className = 'search-message'; msgDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ရှာဖွေနေသည်...'; }
         try {
             const res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(phone)}`);
@@ -1017,19 +975,14 @@
     
     function renderPlans() {
         document.getElementById('plansContainer').innerHTML = plans.map(p => `
-            <div class="plan-card">
-                <div style="display:flex; justify-content:space-between;"><span style="font-weight:700;">${p.icon} ${p.name}</span><span style="font-weight:800; color:var(--emerald);">${p.price.toLocaleString()} MMK</span></div>
-                <ul style="margin:12px 0 0 20px;">${p.features.map(f => `<li style="margin:6px 0; font-size:0.75rem;"><i class="fas fa-check-circle" style="color:var(--emerald);"></i> ${f}</li>`).join('')}</ul>
-                <button class="buy-plan-btn" onclick="openPaymentModalFromPlan('${p.name}', ${p.price})">ဝယ်ယူမည်</button>
-            </div>
+            <div class="plan-card"><div style="display:flex; justify-content:space-between;"><span style="font-weight:700;">${p.icon} ${p.name}</span><span style="font-weight:800; color:var(--emerald);">${p.price.toLocaleString()} MMK</span></div>
+            <ul style="margin:12px 0 0 20px;">${p.features.map(f => `<li style="margin:6px 0; font-size:0.75rem;"><i class="fas fa-check-circle" style="color:var(--emerald);"></i> ${f}</li>`).join('')}</ul>
+            <button class="buy-plan-btn" onclick="openPaymentModalFromPlan('${p.name}', ${p.price})">ဝယ်ယူမည်</button></div>
         `).join('');
     }
     
     function renderMyOrders() {
-        if (!allOrders.length) { 
-            document.getElementById('myOrdersContainer').innerHTML = '<div style="text-align:center; padding:40px;">📭 အော်ဒါမရှိသေးပါ</div>'; 
-            return; 
-        }
+        if (!allOrders.length) { document.getElementById('myOrdersContainer').innerHTML = '<div style="text-align:center; padding:40px;">📭 အော်ဒါမရှိသေးပါ</div>'; return; }
         const sortedOrders = [...allOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         let html = '';
         for (const o of sortedOrders) {
@@ -1041,24 +994,8 @@
             else if (o.status === 'Approved') { statusText = '✅ အတည်ပြုပြီး'; statusClass = 'status-approved'; }
             else { statusText = '❌ ပယ်ဖျက်ခံရ'; statusClass = 'status-rejected'; }
             let remainingHtml = '';
-            if (o.status === 'Approved' && o.activated_at) {
-                remainingHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> 📌 ကျန်ရှိ: ${getRemainingTime(o.activated_at)}</div>`;
-            }
-            html += `
-                <div class="order-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <span style="font-weight:700; font-size:0.9rem;">${o.plan}</span>
-                        <span style="font-weight:800; color:var(--emerald); font-size:0.9rem;">${o.price.toLocaleString()} MMK</span>
-                    </div>
-                    <div style="margin-bottom:6px;">📞 ${o.phone}</div>
-                    <div style="margin-bottom:6px; font-size:0.7rem; color:var(--text-secondary);">
-                        📅 ဝယ်ရက်: ${orderDate.toLocaleDateString()} &nbsp;&nbsp; 🕐 ${orderDate.toLocaleTimeString()}
-                    </div>
-                    ${startDate ? `<div style="margin-bottom:6px; font-size:0.7rem; color:var(--text-secondary);">📅 စတင်ရက်: ${startDate.toLocaleDateString()} &nbsp;&nbsp; 📅 ကုန်ဆုံးရက်: ${endDate ? endDate.toLocaleDateString() : 'N/A'}</div>` : ''}
-                    <div style="margin:8px 0 4px;"><span class="${statusClass}" style="padding:3px 10px; border-radius:40px; font-size:0.6rem;">${statusText}</span></div>
-                    ${remainingHtml}
-                </div>
-            `;
+            if (o.status === 'Approved' && o.activated_at) { remainingHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> 📌 ကျန်ရှိ: ${getRemainingTime(o.activated_at)}</div>`; }
+            html += `<div class="order-card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><span style="font-weight:700; font-size:0.9rem;">${o.plan}</span><span style="font-weight:800; color:var(--emerald); font-size:0.9rem;">${o.price.toLocaleString()} MMK</span></div><div style="margin-bottom:6px;">📞 ${o.phone}</div><div style="margin-bottom:6px; font-size:0.7rem; color:var(--text-secondary);">📅 ဝယ်ရက်: ${orderDate.toLocaleDateString()} &nbsp;&nbsp; 🕐 ${orderDate.toLocaleTimeString()}</div>${startDate ? `<div style="margin-bottom:6px; font-size:0.7rem; color:var(--text-secondary);">📅 စတင်ရက်: ${startDate.toLocaleDateString()} &nbsp;&nbsp; 📅 ကုန်ဆုံးရက်: ${endDate ? endDate.toLocaleDateString() : 'N/A'}</div>` : ''}<div style="margin:8px 0 4px;"><span class="${statusClass}" style="padding:3px 10px; border-radius:40px; font-size:0.6rem;">${statusText}</span></div>${remainingHtml}</div>`;
         }
         document.getElementById('myOrdersContainer').innerHTML = html;
     }
@@ -1093,22 +1030,13 @@
     
     const isNewOrder = (o) => Date.now() - new Date(o.created_at).getTime() < NEW_TIMEOUT;
     
-    function addGlowEffect(element) {
-        if (!element) return;
-        element.classList.add('glow');
-        setTimeout(() => element.classList.remove('glow'), 500);
-    }
-    
     async function login() {
         const username = document.getElementById('loginUsername').value.trim();
         const phone = document.getElementById('loginPhone').value.trim();
         if (!username || !phone || phone.length < 9) { showToast("Username နှင့် ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ", true); return; }
         const statsRes = await fetch(`${API_BASE}/api/admin/user-stats`);
         const statsData = await statsRes.json();
-        if (statsData.stats?.find(u => u.phone === phone)?.blocked) {
-            showToast("သင့်အကောင့်အား ပိတ်ထားပါသည်။ Customer Support ကို ဆက်သွယ်ပါ။", true);
-            return;
-        }
+        if (statsData.stats?.find(u => u.phone === phone)?.blocked) { showToast("သင့်အကောင့်အား ပိတ်ထားပါသည်။ Customer Support ကို ဆက်သွယ်ပါ။", true); return; }
         currentUser = phone; currentUsername = username;
         localStorage.setItem('userPhone', phone); localStorage.setItem('userName', username);
         document.getElementById('loginScreen').style.display = 'none';
@@ -1162,33 +1090,20 @@
         const userStat = (await statsRes.json()).stats?.find(u => u.phone === currentUser);
         const approved = allOrders.filter(o => o.status === 'Approved').length;
         document.getElementById('profileContainer').innerHTML = `
-            <div class="profile-card" style="text-align:center;">
-                <div style="width:80px; height:80px; background:linear-gradient(135deg, var(--cyan), #0891b2); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:2rem;"><i class="fas fa-user"></i></div>
-                <h3>${currentUsername}</h3><div style="font-size:0.7rem;">📞 ${currentUser}</div><div style="font-size:0.7rem; margin-top:4px;">🆔 ID: ${userStat?.user_id || 'N/A'}</div>
-                <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin:20px 0;"><div style="background:rgba(0,212,255,0.05); padding:12px; border-radius:1rem;"><div style="font-size:1.3rem; font-weight:800;">${allOrders.length}</div><div>စုစုပေါင်း</div></div><div style="background:rgba(0,212,255,0.05); padding:12px; border-radius:1rem;"><div style="font-size:1.3rem; font-weight:800; color:var(--emerald);">${approved}</div><div>အတည်ပြုပြီး</div></div></div>
-                <div class="support-links"><a href="https://t.me/ATHsupport" class="support-link"><i class="fab fa-telegram"></i> Telegram</a><a href="https://www.facebook.com/athdigitalhub" class="support-link"><i class="fab fa-facebook"></i> Facebook</a><a href="tel:09789999368" class="support-link"><i class="fas fa-phone"></i> Phone</a><a href="viber://chat?number=09799480995" class="support-link"><i class="fab fa-viber"></i> Viber</a></div>
-                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ထွက်ရန်</button>
-            </div>
+            <div class="profile-card" style="text-align:center;"><div style="width:80px; height:80px; background:linear-gradient(135deg, var(--cyan), #0891b2); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:2rem;"><i class="fas fa-user"></i></div>
+            <h3>${currentUsername}</h3><div style="font-size:0.7rem;">📞 ${currentUser}</div><div style="font-size:0.7rem; margin-top:4px;">🆔 ID: ${userStat?.user_id || 'N/A'}</div>
+            <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin:20px 0;"><div style="background:rgba(0,212,255,0.05); padding:12px; border-radius:1rem;"><div style="font-size:1.3rem; font-weight:800;">${allOrders.length}</div><div>စုစုပေါင်း</div></div><div style="background:rgba(0,212,255,0.05); padding:12px; border-radius:1rem;"><div style="font-size:1.3rem; font-weight:800; color:var(--emerald);">${approved}</div><div>အတည်ပြုပြီး</div></div></div>
+            <div class="support-links"><a href="https://t.me/ATHsupport" class="support-link"><i class="fab fa-telegram"></i> Telegram</a><a href="https://www.facebook.com/athdigitalhub" class="support-link"><i class="fab fa-facebook"></i> Facebook</a><a href="tel:09789999368" class="support-link"><i class="fas fa-phone"></i> Phone</a><a href="viber://chat?number=09799480995" class="support-link"><i class="fab fa-viber"></i> Viber</a></div>
+            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ထွက်ရန်</button></div>
         `;
     }
     
     function showProfile() { closeDrawer(); renderProfile(); switchTab('profile'); }
     function showSupport() { closeDrawer(); showToast("Contact: Telegram @ATHsupport, Viber 09799480995"); }
-    function toggleDrawer() {
-        document.getElementById('drawer').classList.toggle('open');
-        document.getElementById('drawerOverlay').classList.toggle('open');
-    }
-    function closeDrawer() {
-        document.getElementById('drawer').classList.remove('open');
-        document.getElementById('drawerOverlay').classList.remove('open');
-    }
+    function toggleDrawer() { document.getElementById('drawer').classList.toggle('open'); document.getElementById('drawerOverlay').classList.toggle('open'); }
+    function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open'); }
     function toggleLanguageDropdown() { document.getElementById('langDropdown').classList.toggle('show'); }
-    function changeLanguage(lang) { 
-        currentLanguage = lang; 
-        localStorage.setItem('app_language', lang); 
-        const flags = { my: '🇲🇲', en: '🇬🇧', zh: '🇨🇳' }; 
-        document.getElementById('currentLangFlag').innerHTML = flags[lang]; 
-    }
+    function changeLanguage(lang) { currentLanguage = lang; localStorage.setItem('app_language', lang); const flags = { my: '🇲🇲', en: '🇬🇧', zh: '🇨🇳' }; document.getElementById('currentLangFlag').innerHTML = flags[lang]; }
     
     document.addEventListener('click', function(event) {
         const dropdown = document.getElementById('langDropdown');
@@ -1201,24 +1116,15 @@
     const savedPhone = localStorage.getItem('userPhone'), savedName = localStorage.getItem('userName');
     if (savedPhone && savedName) { document.getElementById('loginPhone').value = savedPhone; document.getElementById('loginUsername').value = savedName; login(); }
     
-    window.openRenewModal = openRenewModal;
-    window.openPaymentModalFromPlan = openPaymentModalFromPlan;
-    window.closePaymentModal = closePaymentModal;
-    window.selectPayment = selectPayment;
-    window.submitOrder = submitOrder;
-    window.switchToScreenshot = switchToScreenshot;
-    window.switchToText = switchToText;
-    window.login = login;
-    window.logout = logout;
-    window.searchLiveOrder = searchLiveOrder;
-    window.clearLiveSearch = clearLiveSearch;
-    window.toggleDrawer = toggleDrawer;
-    window.closeDrawer = closeDrawer;
-    window.showSupport = showSupport;
-    window.showProfile = showProfile;
+    window.openRenewModal = openRenewModal; window.openPaymentModalFromPlan = openPaymentModalFromPlan;
+    window.closePaymentModal = closePaymentModal; window.selectPayment = selectPayment;
+    window.submitOrder = submitOrder; window.switchToScreenshot = switchToScreenshot;
+    window.switchToText = switchToText; window.login = login; window.logout = logout;
+    window.searchLiveOrder = searchLiveOrder; window.clearLiveSearch = clearLiveSearch;
+    window.toggleDrawer = toggleDrawer; window.closeDrawer = closeDrawer;
+    window.showSupport = showSupport; window.showProfile = showProfile;
     window.showNotifications = () => showToast("No new notifications");
-    window.changeLanguage = changeLanguage;
-    window.toggleLanguageDropdown = toggleLanguageDropdown;
+    window.changeLanguage = changeLanguage; window.toggleLanguageDropdown = toggleLanguageDropdown;
 </script>
 </body>
 </html>
