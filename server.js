@@ -424,6 +424,55 @@ app.get('/api/orders/:phone', async (req, res) => {
     }
 });
 
+// ==================== PUBLIC LIVE API (No Authentication Required) ====================
+// Public endpoint for live orders - no admin authentication needed
+app.get('/api/live/orders', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(50);
+        
+        if (error) {
+            console.error('Error fetching live orders:', error);
+            return res.status(500).json({ orders: [], error: error.message });
+        }
+        
+        res.json({ orders: data || [] });
+    } catch (error) {
+        console.error('Error in live orders endpoint:', error);
+        res.status(500).json({ orders: [], error: error.message });
+    }
+});
+
+// Public endpoint for single order check (for search)
+app.get('/api/live/order/:phone', async (req, res) => {
+    try {
+        const { phone } = req.params;
+        
+        if (!phone || phone === 'null' || phone === 'undefined') {
+            return res.status(400).json({ orders: [], error: 'Invalid phone number' });
+        }
+        
+        const { data, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('phone', phone)
+            .order('created_at', { ascending: false })
+            .limit(50);
+        
+        if (error) {
+            return res.status(500).json({ orders: [], error: error.message });
+        }
+        
+        res.json({ orders: data || [] });
+    } catch (error) {
+        console.error('Error fetching order by phone:', error);
+        res.status(500).json({ orders: [], error: error.message });
+    }
+});
+
 // ==================== CREATE ORDER ====================
 app.post('/api/orders', upload.single('slip'), async (req, res) => {
     try {
@@ -812,6 +861,7 @@ app.listen(PORT, () => {
 ║     👨‍💼 Admin Panel:     http://localhost:${PORT}/admin.html               ║
 ║     📊 Live Dashboard:  http://localhost:${PORT}/dashboard_live.html      ║
 ║     🔴 Live Events:     http://localhost:${PORT}/api/live/events          ║
+║     📡 Public Live API: http://localhost:${PORT}/api/live/orders          ║
 ║                                                                          ║
 ║     💳 Payment Methods:                                                  ║
 ║        - KBZ Pay (09789999368)                                           ║
