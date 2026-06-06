@@ -26,11 +26,13 @@
                 radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.15) 0%, transparent 60%),
                 radial-gradient(circle at 85% 70%, rgba(0,212,255,0.1) 0%, transparent 55%);
             padding: 12px;
+            padding-bottom: 70px;
         }
         
         .container { max-width: 700px; margin: 0 auto; }
         
-        .header {
+        /* Top Bar */
+        .top-bar {
             backdrop-filter: blur(20px);
             background: rgba(10,12,21,0.7);
             border: 1px solid rgba(0,212,255,0.2);
@@ -42,6 +44,11 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
+        }
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
         .menu-btn {
             background: none;
@@ -60,7 +67,7 @@
         .menu-btn:hover {
             background: rgba(0,212,255,0.1);
         }
-        .header h1 {
+        .logo {
             font-size: 1.2rem;
             font-family: monospace;
             background: linear-gradient(135deg, #fff, var(--cyan));
@@ -70,6 +77,29 @@
             display: flex;
             align-items: center;
             gap: 6px;
+        }
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .top-icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .top-icon-btn:hover {
+            background: rgba(0,212,255,0.1);
+            transform: rotate(15deg);
         }
         .sync-status {
             background: rgba(0,212,255,0.15);
@@ -89,7 +119,47 @@
         }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         
-        /* Drawer Menu Styles */
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10,12,21,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0,212,255,0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 12px;
+            padding-bottom: env(safe-area-inset-bottom, 12px);
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+        .nav-item.active {
+            color: var(--cyan);
+            background: rgba(0,212,255,0.1);
+        }
+        .nav-item:hover {
+            background: rgba(0,212,255,0.05);
+        }
+        
+        /* Drawer Menu */
         .drawer-overlay {
             position: fixed;
             top: 0;
@@ -178,31 +248,11 @@
             margin: 16px 0;
         }
         
-        .tab-bar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-            background: rgba(18,22,35,0.8);
-            padding: 6px;
-            border-radius: 60px;
-            backdrop-filter: blur(10px);
+        .tab-content {
+            display: none;
         }
-        .tab-btn {
-            flex: 1;
-            background: transparent;
-            border: none;
-            padding: 10px 0;
-            border-radius: 40px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            color: var(--text-secondary);
-            transition: all 0.2s;
-        }
-        .tab-btn.active {
-            background: var(--cyan);
-            color: #030712;
-            box-shadow: 0 0 10px rgba(0,212,255,0.3);
+        .tab-content.active {
+            display: block;
         }
         
         .stats-grid {
@@ -320,12 +370,6 @@
             font-weight: 500;
         }
         .filter-btn:hover { background: var(--cyan); color: #030712; }
-        .cleanup-btn {
-            background: rgba(244,63,94,0.2);
-            border: 1px solid rgba(244,63,94,0.3);
-            color: #fb7185;
-        }
-        .cleanup-btn:hover { background: #f43f5e; color: white; }
         
         .add-product-btn {
             background: var(--emerald);
@@ -679,34 +723,57 @@
         .user-action-btn.delete-orders { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .user-action-btn.clear { background: rgba(0,212,255,0.15); color: var(--cyan); }
         
-        .hidden { display: none; }
-        
-        /* FAB Buttons - လက်ယာဘက်အောက်ခြေတွင် အဓိက action များ */
-        .fab-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
+        /* Profile Tab Styles with Logo */
+        .profile-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            z-index: 100;
+            align-items: center;
+            gap: 20px;
         }
-        .fab {
-            width: 50px;
-            height: 50px;
+        .profile-logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .profile-logo-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--cyan), #0891b2, var(--violet));
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--cyan), #0891b2);
-            border: none;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,212,255,0.4);
-            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: 0 auto 15px;
+            box-shadow: 0 0 30px rgba(0,212,255,0.3);
         }
-        .fab:hover { transform: scale(1.05); }
+        .profile-logo-icon i {
+            font-size: 3rem;
+            color: white;
+        }
+        .profile-logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, var(--cyan));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .profile-logo-sub {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+        
+        .profile-card {
+            background: linear-gradient(145deg, rgba(18,22,35,0.9), rgba(10,12,21,0.95));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,212,255,0.1);
+            border-radius: 1.2rem;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .hidden { display: none; }
         
         .image-modal {
             position: fixed;
@@ -790,20 +857,72 @@
             display: none;
             white-space: nowrap;
         }
+        
+        .support-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 16px 0;
+            justify-content: center;
+        }
+        .support-link {
+            background: rgba(0,212,255,0.1);
+            padding: 8px 16px;
+            border-radius: 40px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .support-link:hover {
+            background: rgba(0,212,255,0.2);
+            transform: translateY(-2px);
+        }
+        .logout-btn {
+            width: 100%;
+            background: rgba(244,63,94,0.2);
+            border: none;
+            padding: 12px;
+            border-radius: 60px;
+            color: #fb7185;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.2s;
+        }
+        .logout-btn:hover {
+            background: #f43f5e;
+            color: white;
+        }
     </style>
 </head>
 <body>
 <div id="app">
     <div class="container" id="adminContent" style="display: none;">
-        <!-- Header with Menu Button -->
-        <div class="header">
-            <button class="menu-btn" onclick="toggleDrawer()">
-                <i class="fas fa-bars"></i>
-            </button>
-            <h1><i class="fas fa-crown"></i> ATH Admin</h1>
-            <div class="sync-status">
-                <span class="sync-dot"></span>
-                <span id="autoSyncTimer">Auto Sync: 30s</span>
+        <!-- Top Bar with Menu Button and Action Icons -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <button class="menu-btn" onclick="toggleDrawer()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo">
+                    <i class="fas fa-crown"></i> ATH Admin
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <button class="top-icon-btn" onclick="manualRefresh()" title="Sync Data">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="top-icon-btn" onclick="window.location.href='/'" title="Go to Store">
+                    <i class="fas fa-store"></i>
+                </button>
+                <div class="sync-status">
+                    <span class="sync-dot"></span>
+                    <span id="autoSyncTimer">Auto Sync: 30s</span>
+                </div>
             </div>
         </div>
         
@@ -821,23 +940,21 @@
                 <li><a onclick="closeDrawer(); switchTab('orders')"><i class="fas fa-list-ul"></i> Orders</a></li>
                 <li><a onclick="closeDrawer(); switchTab('users')"><i class="fas fa-users"></i> Users</a></li>
                 <li><a onclick="closeDrawer(); switchTab('market')"><i class="fas fa-store"></i> Market</a></li>
+                <li><a onclick="closeDrawer(); switchTab('profile')"><i class="fas fa-user-circle"></i> Profile</a></li>
                 <li><div class="drawer-divider"></div></li>
                 <li><a onclick="closeDrawer(); exportUsersToCSV()"><i class="fas fa-file-excel"></i> Export Users (CSV)</a></li>
                 <li><a onclick="closeDrawer(); exportOrdersToCSV()"><i class="fas fa-file-excel"></i> Export Orders (CSV)</a></li>
                 <li><div class="drawer-divider"></div></li>
-                <li><a onclick="closeDrawer(); manualRefresh()"><i class="fas fa-sync-alt"></i> Refresh Data</a></li>
                 <li><a onclick="closeDrawer(); manualCleanup()"><i class="fas fa-trash-alt"></i> Cleanup Old Orders</a></li>
+                <li><a onclick="closeDrawer(); showSystemResetModal()" style="color: #f43f5e;">
+                    <i class="fas fa-database"></i> System Reset (Danger)
+                </a></li>
                 <li><div class="drawer-divider"></div></li>
                 <li><a onclick="closeDrawer(); logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </div>
         
-        <div class="tab-bar">
-            <button class="tab-btn active" data-tab="orders"><i class="fas fa-list-ul"></i> Orders</button>
-            <button class="tab-btn" data-tab="users"><i class="fas fa-users"></i> Users</button>
-            <button class="tab-btn" data-tab="market"><i class="fas fa-store"></i> Market</button>
-        </div>
-        
+        <!-- Stats Grid -->
         <div class="stats-grid" id="statsGrid">
             <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label"><i class="fas fa-shopping-cart"></i> Total</div></div>
             <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label"><i class="fas fa-clock"></i> Pending</div></div>
@@ -849,12 +966,14 @@
             <div class="stat-card"><div class="stat-number" id="avgProfit">0</div><div class="stat-label"><i class="fas fa-percent"></i> Avg</div></div>
         </div>
         
+        <!-- Search Bar -->
         <div class="search-bar">
             <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by phone, user ID, or name">
             <button class="search-btn" onclick="searchByPhoneOrId()"><i class="fas fa-search"></i> Search</button>
             <button class="clear-search" onclick="clearSearch()"><i class="fas fa-times"></i> Clear</button>
         </div>
         
+        <!-- Filter Bar -->
         <div class="filter-bar">
             <div class="filter-group">
                 <input type="date" id="startDate" class="filter-input" placeholder="Start">
@@ -872,15 +991,18 @@
             </div>
         </div>
         
-        <div id="ordersTab">
+        <!-- Tab Content: Orders -->
+        <div id="ordersTab" class="tab-content active">
             <div class="orders-list" id="ordersList"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading orders...</div></div>
         </div>
         
-        <div id="usersTab" class="hidden">
+        <!-- Tab Content: Users -->
+        <div id="usersTab" class="tab-content">
             <div class="users-list" id="usersList"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading users...</div></div>
         </div>
         
-        <div id="marketTab" class="hidden">
+        <!-- Tab Content: Market -->
+        <div id="marketTab" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <h3><i class="fas fa-store"></i> Products</h3>
                 <button class="add-product-btn" onclick="openAddProductModal()"><i class="fas fa-plus"></i> Add Product</button>
@@ -888,16 +1010,67 @@
             <div class="product-list" id="productList"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading products...</div></div>
         </div>
         
+        <!-- Tab Content: Profile with Logo -->
+        <div id="profileTab" class="tab-content">
+            <div class="profile-container" id="profileContainer">
+                <div class="profile-logo">
+                    <div class="profile-logo-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="profile-logo-text">ATH DIGITAL HUB</div>
+                    <div class="profile-logo-sub">Admin Control Panel</div>
+                </div>
+                <div class="profile-card">
+                    <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+                        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--cyan), #0891b2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                    </div>
+                    <h3 id="adminName">Administrator</h3>
+                    <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;">
+                        <i class="fas fa-shield-alt"></i> Super Admin
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0;">
+                        <div style="background: rgba(0,212,255,0.05); padding: 12px; border-radius: 1rem;">
+                            <div style="font-size: 1.3rem; font-weight: 800; color: var(--cyan);" id="adminTotalOrders">0</div>
+                            <div>Total Orders</div>
+                        </div>
+                        <div style="background: rgba(16,185,129,0.05); padding: 12px; border-radius: 1rem;">
+                            <div style="font-size: 1.3rem; font-weight: 800; color: var(--emerald);" id="adminTotalUsers">0</div>
+                            <div>Total Users</div>
+                        </div>
+                    </div>
+                    <div class="support-links">
+                        <a href="https://t.me/ATHsupport" class="support-link" target="_blank"><i class="fab fa-telegram"></i> Telegram</a>
+                        <a href="https://www.facebook.com/athdigitalhub" class="support-link" target="_blank"><i class="fab fa-facebook"></i> Facebook</a>
+                        <a href="tel:09789999368" class="support-link"><i class="fas fa-phone"></i> Phone</a>
+                        <a href="viber://chat?number=09799480995" class="support-link"><i class="fab fa-viber"></i> Viber</a>
+                    </div>
+                    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+        
         <div class="last-update" id="lastUpdate"></div>
     </div>
     
-    <!-- FAB Buttons (Quick Actions) -->
-    <div class="fab-container" id="fabContainer" style="display: none;">
-        <button class="fab" onclick="manualRefresh()" title="Sync">
-            <i class="fas fa-sync-alt"></i>
+    <!-- Bottom Navigation Bar -->
+    <div class="bottom-nav" id="bottomNav" style="display: none;">
+        <button class="nav-item active" data-tab="orders">
+            <i class="fas fa-list-ul"></i>
+            <span>Orders</span>
         </button>
-        <button class="fab" onclick="window.location.href='/'" title="Store">
+        <button class="nav-item" data-tab="users">
+            <i class="fas fa-users"></i>
+            <span>Users</span>
+        </button>
+        <button class="nav-item" data-tab="market">
             <i class="fas fa-store"></i>
+            <span>Market</span>
+        </button>
+        <button class="nav-item" data-tab="profile">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
         </button>
     </div>
     
@@ -909,7 +1082,42 @@
     </div>
 </div>
 
-<div id="toast" class="toast"></div>
+<!-- System Reset Modal -->
+<div id="systemResetModal" class="modal">
+    <div class="modal-card">
+        <h3 style="color: #f43f5e;"><i class="fas fa-exclamation-triangle"></i> System Reset</h3>
+        <p style="margin: 16px 0; color: #fb7185;">
+            ⚠️ <strong>WARNING!</strong> This action cannot be undone!
+        </p>
+        <div style="background: rgba(244,63,94,0.1); padding: 12px; border-radius: 1rem; margin: 16px 0;">
+            <p style="font-size: 0.8rem;">This will delete:</p>
+            <ul style="margin-left: 20px; margin-top: 8px; font-size: 0.75rem;">
+                <li>❌ All Users</li>
+                <li>❌ All Orders</li>
+                <li>❌ All User Statistics</li>
+                <li>❌ All Uploaded Screenshots</li>
+                <li>✅ Products will be kept (optional)</li>
+            </ul>
+        </div>
+        <div class="form-group">
+            <label>Type <strong style="color:#f43f5e;">"RESET_ALL_DATA"</strong> to confirm:</label>
+            <input type="text" id="resetConfirmInput" class="form-control" style="width:100%; padding:12px; margin-top:8px; background:rgba(0,0,0,0.5); border:1px solid #2d3a5e; border-radius:60px; color:white;" placeholder="RESET_ALL_DATA">
+        </div>
+        <div class="form-group" style="margin-top: 12px;">
+            <label>
+                <input type="checkbox" id="keepProductsCheckbox" checked> Keep Products (don't delete)
+            </label>
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 16px;">
+            <button class="modal-btn" onclick="executeSystemReset()" style="background: #f43f5e; color: white;">
+                <i class="fas fa-trash-alt"></i> Yes, Reset Everything
+            </button>
+            <button class="modal-btn cancel" onclick="closeSystemResetModal()">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- Product Modal -->
 <div id="productModal" class="modal">
@@ -934,6 +1142,8 @@
         <img id="modalImage" src="" alt="Screenshot">
     </div>
 </div>
+
+<div id="toast" class="toast"></div>
 
 <script>
     const API_BASE = window.location.origin;
@@ -1048,6 +1258,55 @@
     }
     function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
 
+    // System Reset Functions
+    function showSystemResetModal() {
+        document.getElementById('resetConfirmInput').value = '';
+        document.getElementById('keepProductsCheckbox').checked = true;
+        document.getElementById('systemResetModal').classList.add('active');
+    }
+
+    function closeSystemResetModal() {
+        document.getElementById('systemResetModal').classList.remove('active');
+    }
+
+    async function executeSystemReset() {
+        const confirmText = document.getElementById('resetConfirmInput').value.trim();
+        const keepProducts = document.getElementById('keepProductsCheckbox').checked;
+        
+        if (confirmText !== 'RESET_ALL_DATA') {
+            showToast('Please type "RESET_ALL_DATA" to confirm', true);
+            return;
+        }
+        
+        if (!confirm('⚠️ FINAL WARNING! This will delete ALL users, orders, and screenshots!\nThis action CANNOT be undone!\n\nAre you ABSOLUTELY sure?')) {
+            return;
+        }
+        
+        showToast('🔄 Resetting system... Please wait...');
+        
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/system-reset`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ confirm: confirmText, keepProducts })
+            });
+            
+            const data = await res.json();
+            
+            if (data.success) {
+                showToast('✅ System reset completed!');
+                closeSystemResetModal();
+                setTimeout(() => {
+                    loadAllData();
+                }, 1000);
+            } else {
+                showToast('❌ Reset failed: ' + data.error, true);
+            }
+        } catch(e) {
+            showToast('Error: ' + e.message, true);
+        }
+    }
+
     async function login() {
         const password = document.getElementById('adminPassword').value;
         try {
@@ -1062,9 +1321,10 @@
                 token = 'logged_in';
                 document.getElementById('loginBox').style.display = 'none';
                 document.getElementById('adminContent').style.display = 'block';
-                document.getElementById('fabContainer').style.display = 'flex';
+                document.getElementById('bottomNav').style.display = 'flex';
                 loadAllData(); 
                 startAutoSync();
+                updateProfileStats();
             } else { 
                 showToast('Invalid Password', true); 
             }
@@ -1079,13 +1339,19 @@
         token = null; 
         document.getElementById('loginBox').style.display = 'block'; 
         document.getElementById('adminContent').style.display = 'none'; 
-        document.getElementById('fabContainer').style.display = 'none'; 
+        document.getElementById('bottomNav').style.display = 'none'; 
+    }
+
+    function updateProfileStats() {
+        document.getElementById('adminTotalOrders').innerText = allOrders.length || 0;
+        document.getElementById('adminTotalUsers').innerText = userStats.length || 0;
     }
 
     async function loadAllData() {
         await loadOrders();
         await loadUserStats();
         await loadProducts();
+        updateProfileStats();
     }
 
     async function loadOrders() {
@@ -1096,6 +1362,7 @@
                 allOrders = data.orders; 
                 applyFiltersAndSearch(); 
                 document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | Total: ${allOrders.length}`; 
+                updateProfileStats();
             }
         } catch(e) { 
             document.getElementById('ordersList').innerHTML = '<div class="loading">Connection Error</div>'; 
@@ -1109,6 +1376,7 @@
             if (data.stats) { 
                 userStats = data.stats; 
                 renderUsersTab(); 
+                updateProfileStats();
             }
         } catch(e) { 
             console.error('Error loading user stats:', e); 
@@ -1715,28 +1983,35 @@
         document.getElementById('drawerOverlay').classList.remove('open');
     }
 
-    // Tab switching
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentTab = btn.dataset.tab;
-            if (currentTab === 'orders') {
-                document.getElementById('ordersTab').classList.remove('hidden');
-                document.getElementById('usersTab').classList.add('hidden');
-                document.getElementById('marketTab').classList.add('hidden');
-                applyFiltersAndSearch();
-            } else if (currentTab === 'users') {
-                document.getElementById('ordersTab').classList.add('hidden');
-                document.getElementById('usersTab').classList.remove('hidden');
-                document.getElementById('marketTab').classList.add('hidden');
-                renderUsersTab();
-            } else if (currentTab === 'market') {
-                document.getElementById('ordersTab').classList.add('hidden');
-                document.getElementById('usersTab').classList.add('hidden');
-                document.getElementById('marketTab').classList.remove('hidden');
-                loadProducts();
+    // Tab switching with bottom nav
+    function switchTab(tab) {
+        currentTab = tab;
+        
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById(`${tab}Tab`).classList.add('active');
+        
+        document.querySelectorAll('.nav-item').forEach(item => {
+            if (item.dataset.tab === tab) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
             }
+        });
+        
+        if (tab === 'orders') {
+            applyFiltersAndSearch();
+        } else if (tab === 'users') {
+            renderUsersTab();
+        } else if (tab === 'market') {
+            loadProducts();
+        } else if (tab === 'profile') {
+            updateProfileStats();
+        }
+    }
+
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchTab(btn.dataset.tab);
         });
     });
 
@@ -1765,6 +2040,10 @@
     window.exportOrdersToCSV = exportOrdersToCSV;
     window.toggleDrawer = toggleDrawer;
     window.closeDrawer = closeDrawer;
+    window.switchTab = switchTab;
+    window.showSystemResetModal = showSystemResetModal;
+    window.closeSystemResetModal = closeSystemResetModal;
+    window.executeSystemReset = executeSystemReset;
     window.openAddProductModal = openAddProductModal; 
     window.openEditProductModal = openEditProductModal;
     window.closeProductModal = closeProductModal; 
@@ -1773,11 +2052,10 @@
     window.showToast = showToast;
     window.closeModal = closeModal;
 
-    // Auto login check
     if (token === 'logged_in') { 
         document.getElementById('loginBox').style.display = 'none'; 
         document.getElementById('adminContent').style.display = 'block'; 
-        document.getElementById('fabContainer').style.display = 'flex'; 
+        document.getElementById('bottomNav').style.display = 'flex'; 
         loadAllData(); 
         startAutoSync(); 
     }
