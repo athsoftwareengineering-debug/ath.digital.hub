@@ -138,7 +138,7 @@
             50% { transform: scale(1.15); background: #e11d48; }
         }
         
-        /* Notification Dropdown - Mobile Friendly, Positioned Absolutely Above Everything */
+        /* Notification Dropdown */
         .notification-dropdown {
             position: fixed;
             top: 70px;
@@ -161,7 +161,6 @@
             display: block;
             animation: slideDown 0.2s ease;
         }
-        /* Desktop styles */
         @media (min-width: 768px) {
             .notification-dropdown {
                 position: absolute;
@@ -269,7 +268,6 @@
             font-size: 0.75rem;
         }
         
-        /* Overlay for mobile when notification is open */
         .notification-overlay {
             position: fixed;
             top: 0;
@@ -786,7 +784,6 @@
 </head>
 <body>
 <div id="app">
-    <!-- Notification Overlay for mobile -->
     <div id="notificationOverlay" class="notification-overlay" onclick="closeNotificationDropdown()"></div>
     
     <div class="container" id="adminContent" style="display: none;">
@@ -1036,35 +1033,38 @@
         showToast(`📋 ${text} copied!`);
     }
     
-    // ==================== NOTIFICATION DROPDOWN FUNCTIONS ====================
-    function toggleNotificationDropdown() {
-        const dropdown = document.getElementById('notificationDropdown');
-        const overlay = document.getElementById('notificationOverlay');
-        dropdown.classList.toggle('show');
-        if (dropdown.classList.contains('show')) {
-            overlay.classList.add('show');
-        } else {
-            overlay.classList.remove('show');
-        }
+    function escapeHtml(str) { 
+        if (!str) return ''; 
+        return str.replace(/[&<>]/g, function(m) { 
+            if (m === '&') return '&amp;'; 
+            if (m === '<') return '&lt;'; 
+            if (m === '>') return '&gt;'; 
+            return m; 
+        }); 
     }
     
-    function closeNotificationDropdown() {
-        const dropdown = document.getElementById('notificationDropdown');
-        const overlay = document.getElementById('notificationOverlay');
-        dropdown.classList.remove('show');
-        overlay.classList.remove('show');
-    }
-    
-    // ==================== STATS UPDATE FUNCTIONS ====================
+    // ==================== STATS UPDATE FUNCTIONS (FIXED) ====================
     function updateAllStats() {
+        // Make sure allOrders is an array
+        if (!allOrders || !Array.isArray(allOrders)) {
+            allOrders = [];
+        }
+        
         const total = allOrders.length;
-        const pending = allOrders.filter(o => o.status === 'Pending').length;
-        const approved = allOrders.filter(o => o.status === 'Approved').length;
-        const rejected = allOrders.filter(o => o.status === 'Rejected').length;
-        const revenue = approved.reduce((s, o) => s + o.price, 0);
-        const cost = approved.reduce((s, o) => s + getCostPrice(o.plan), 0);
+        const pendingOrders = allOrders.filter(o => o && o.status === 'Pending');
+        const approvedOrders = allOrders.filter(o => o && o.status === 'Approved');
+        const rejectedOrders = allOrders.filter(o => o && o.status === 'Rejected');
+        
+        const pending = pendingOrders.length;
+        const approved = approvedOrders.length;
+        const rejected = rejectedOrders.length;
+        
+        // Calculate revenue and cost only from approved orders
+        const revenue = approvedOrders.reduce((s, o) => s + (o.price || 0), 0);
+        const cost = approvedOrders.reduce((s, o) => s + getCostPrice(o.plan || ''), 0);
         const profit = revenue - cost;
         
+        // Update main stats display
         document.getElementById('totalOrders').innerHTML = total;
         document.getElementById('pendingOrders').innerHTML = pending;
         document.getElementById('approvedOrders').innerHTML = approved;
@@ -1072,10 +1072,11 @@
         document.getElementById('totalRevenue').innerHTML = revenue.toLocaleString() + 'K';
         document.getElementById('totalCost').innerHTML = cost.toLocaleString() + 'K';
         document.getElementById('totalProfit').innerHTML = profit.toLocaleString() + 'K';
-        document.getElementById('avgProfit').innerHTML = (approved.length ? Math.round(profit / approved.length) : 0).toLocaleString() + 'K';
+        document.getElementById('avgProfit').innerHTML = (approved ? Math.round(profit / approved) : 0).toLocaleString() + 'K';
         
+        // Update drawer stats
         document.getElementById('drawerTotalOrders').innerText = total;
-        document.getElementById('drawerTotalUsers').innerText = userStats.length;
+        document.getElementById('drawerTotalUsers').innerText = userStats ? userStats.length : 0;
         document.getElementById('drawerPendingOrders').innerText = pending;
         document.getElementById('drawerApprovedOrders').innerText = approved;
         document.getElementById('drawerRejectedOrders').innerText = rejected;
@@ -1148,6 +1149,24 @@
         updateNotificationUI();
         showToast('All notifications cleared');
         closeNotificationDropdown();
+    }
+    
+    function toggleNotificationDropdown() {
+        const dropdown = document.getElementById('notificationDropdown');
+        const overlay = document.getElementById('notificationOverlay');
+        dropdown.classList.toggle('show');
+        if (dropdown.classList.contains('show')) {
+            overlay.classList.add('show');
+        } else {
+            overlay.classList.remove('show');
+        }
+    }
+    
+    function closeNotificationDropdown() {
+        const dropdown = document.getElementById('notificationDropdown');
+        const overlay = document.getElementById('notificationOverlay');
+        dropdown.classList.remove('show');
+        overlay.classList.remove('show');
     }
     
     async function checkForNewOrders() {
@@ -1284,7 +1303,7 @@
         try {
             const res = await fetch(`${API_BASE}/api/admin/orders`);
             const data = await res.json();
-            if (data.orders) { 
+            if (data.orders && Array.isArray(data.orders)) { 
                 allOrders = data.orders;
                 if (allOrders.length > 0 && lastOrderId === null) { lastOrderId = allOrders[0].id; }
                 applyFiltersAndSearch(); 
@@ -1307,7 +1326,7 @@
         try { 
             const res = await fetch(`${API_BASE}/api/admin/user-stats`); 
             const data = await res.json(); 
-            if (data.stats) { 
+            if (data.stats && Array.isArray(data.stats)) { 
                 userStats = data.stats; 
                 renderUsersTab(); 
                 updateAllStats();
@@ -1327,8 +1346,6 @@
     async function loadProducts() {
         try { const res = await fetch(`${API_BASE}/api/market/products`); const data = await res.json(); products = data.products || []; renderProducts(); } catch(e) { console.error('Error loading products:', e); renderProducts(); }
     }
-    
-    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
     
     function renderProducts() {
         const container = document.getElementById('productList');
