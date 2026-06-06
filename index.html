@@ -886,6 +886,26 @@
         return currentUser;
     };
     
+    // ========== Fetch User Data from Server ==========
+    async function fetchUserData(phone) {
+        try {
+            const res = await fetch(`${API_BASE}/api/user/${phone}`);
+            const data = await res.json();
+            
+            if (data.success && data.user) {
+                currentUserId = data.user.user_id;
+                localStorage.setItem('userId', currentUserId);
+                document.getElementById('userIdDisplay').innerHTML = `🆔 ${currentUserId}`;
+                document.getElementById('drawerUserId').innerHTML = `🆔 ${currentUserId}`;
+                await renderProfile();
+                return true;
+            }
+        } catch(e) {
+            console.error('Error fetching user data:', e);
+        }
+        return false;
+    }
+    
     // ========== Login with User ID Registration ==========
     async function login() {
         const username = document.getElementById('loginUsername').value.trim();
@@ -897,7 +917,6 @@
         }
         
         try {
-            // Register/Login API ကိုခေါ်ပါ (Auto User ID generation)
             const res = await fetch(`${API_BASE}/api/user/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -913,7 +932,6 @@
             
             const user = data.user;
             
-            // Check if blocked
             if (user.blocked) {
                 showToast("သင့်အကောင့်အား ပိတ်ထားပါသည်။ Customer Support ကို ဆက်သွယ်ပါ။", true);
                 return;
@@ -927,7 +945,6 @@
             localStorage.setItem('userName', username);
             localStorage.setItem('userId', user.user_id);
             
-            // Show welcome message with user ID
             if (data.isNewUser) {
                 showToast(`🎉 ကြိုဆိုပါသည်! သင်၏ User ID: ${user.user_id}`);
             } else {
@@ -987,6 +1004,8 @@
             return;
         }
         
+        const userId = currentUserId || localStorage.getItem('userId') || 'unknown';
+        
         let csv = "ID,Phone,Plan,Price,Status,Payment Method,Sender Name,Last5 Digits,Order Date,Activated Date\n";
         allOrders.forEach(o => {
             csv += `"${o.id}","${o.phone}","${o.plan}",${o.price},"${o.status}","${o.payment_method || 'kpay'}","${o.sender_name || ''}","${o.last5_digits || ''}","${new Date(o.created_at).toLocaleString()}","${o.activated_at ? new Date(o.activated_at).toLocaleString() : ''}"\n`;
@@ -996,7 +1015,7 @@
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
         link.href = url;
-        link.setAttribute('download', `my_orders_${currentUserId}_${new Date().toISOString().slice(0,19)}.csv`);
+        link.setAttribute('download', `my_orders_${userId}_${new Date().toISOString().slice(0,19)}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1207,13 +1226,16 @@
         const approved = allOrders.filter(o => o.status === 'Approved').length;
         const pending = allOrders.filter(o => o.status === 'Pending').length;
         
+        // Get User ID from currentUserId or localStorage
+        const userId = currentUserId || localStorage.getItem('userId') || 'Loading...';
+        
         container.innerHTML = `
             <div class="profile-card" style="text-align:center;">
                 <div style="width:80px; height:80px; background:linear-gradient(135deg, var(--cyan), #0891b2); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:2rem;"><i class="fas fa-user"></i></div>
                 <h3>${escapeHtml(currentUsername)}</h3>
                 <div style="font-size:0.7rem;">📞 ${currentUser}</div>
                 <div style="font-size:0.7rem; margin-top:4px; background:rgba(0,212,255,0.1); display:inline-block; padding:4px 12px; border-radius:40px;">
-                    🆔 User ID: ${currentUserId}
+                    🆔 User ID: ${userId}
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:20px 0;">
                     <div style="background:rgba(0,212,255,0.05); padding:12px; border-radius:1rem;"><div style="font-size:1.3rem; font-weight:800;">${allOrders.length}</div><div>စုစုပေါင်း</div></div>
@@ -1427,15 +1449,36 @@
         if (!langBtn?.contains(event.target) && dropdown) dropdown.classList.remove('show');
     });
     
-    // Auto login check
+    // ========== AUTO LOGIN CHECK with User ID ==========
     const savedPhone = localStorage.getItem('userPhone');
     const savedName = localStorage.getItem('userName');
     const savedId = localStorage.getItem('userId');
+    
     if (savedPhone && savedName) {
-        document.getElementById('loginPhone').value = savedPhone;
-        document.getElementById('loginUsername').value = savedName;
-        // Auto login with saved credentials
-        login();
+        // Set values to variables
+        currentUser = savedPhone;
+        currentUsername = savedName;
+        currentUserId = savedId || null;
+        
+        // Show dashboard immediately
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        document.getElementById('userName').innerHTML = savedName;
+        document.getElementById('userPhoneDisplay').innerHTML = `📞 ${savedPhone}`;
+        document.getElementById('userIdDisplay').innerHTML = savedId ? `🆔 ${savedId}` : '🆔 Loading...';
+        document.getElementById('drawerUsername').innerHTML = savedName;
+        document.getElementById('drawerPhone').innerHTML = maskPhone(savedPhone);
+        document.getElementById('drawerUserId').innerHTML = savedId ? `🆔 ${savedId}` : '🆔 Loading...';
+        
+        // Load data
+        loadUserOrders();
+        renderPlans();
+        renderProfile();
+        
+        // If no userId in localStorage, fetch from server
+        if (!savedId) {
+            fetchUserData(savedPhone);
+        }
     }
     
     // Global functions
@@ -1462,6 +1505,7 @@
     window.getCurrentUserPhone = function() { return currentUser; };
     window.refreshAllData = refreshAllData;
     window.exportMyOrders = exportMyOrders;
+    window.fetchUserData = fetchUserData;
 </script>
 </body>
 </html>
