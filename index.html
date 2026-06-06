@@ -500,6 +500,7 @@
         }
         .plan-card { border-left-color: var(--amber); }
         
+        /* Market Styles */
         .product-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -512,6 +513,11 @@
             padding: 12px;
             border: 1px solid rgba(0,212,255,0.1);
             text-align: center;
+            transition: all 0.2s;
+        }
+        .product-card:hover {
+            border-color: var(--cyan);
+            transform: translateY(-2px);
         }
         .product-icon { font-size: 2rem; margin-bottom: 8px; }
         .product-name { font-weight: 700; font-size: 0.8rem; }
@@ -527,6 +533,103 @@
             margin-top: 8px;
         }
         .market-section-title { font-size: 0.85rem; font-weight: 600; color: var(--cyan); margin: 16px 0 8px; }
+        
+        /* Live Styles */
+        .live-badge {
+            font-size: 0.6rem;
+            background: rgba(244,63,94,0.2);
+            color: #f43f5e;
+            padding: 3px 10px;
+            border-radius: 40px;
+            animation: blinkRed 0.8s step-end infinite;
+            display: inline-block;
+            margin-left: 8px;
+        }
+        @keyframes blinkRed {
+            0%,100% { background: rgba(244,63,94,0.2); }
+            50% { background: rgba(244,63,94,0.9); color: white; }
+        }
+        .live-card {
+            background: linear-gradient(135deg, #0f111a, #131725);
+            border-radius: 1rem;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(245,158,11,0.2);
+            transition: 0.2s;
+        }
+        .live-card:hover {
+            transform: translateX(4px);
+            border-color: rgba(245,158,11,0.5);
+        }
+        .live-card .plan { font-weight: 700; color: var(--amber); }
+        .live-card .phone-masked { 
+            font-size: 0.7rem; 
+            font-family: monospace; 
+            background: #1e293b; 
+            display: inline-block; 
+            padding: 4px 12px; 
+            border-radius: 40px; 
+            margin-top: 4px; 
+        }
+        .live-stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.6rem;
+        }
+        .live-remaining {
+            color: var(--cyan);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .status-bar {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.6rem;
+            color: #64748b;
+        }
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 1.5s infinite;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        @keyframes pulse {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .live-search-fixed {
+            position: sticky;
+            top: 60px;
+            background: var(--bg-dark);
+            z-index: 50;
+            padding: 8px 0 12px;
+        }
+        .live-orders-scrollable {
+            max-height: calc(100vh - 340px);
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .search-input {
+            flex: 1;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 60px;
+            padding: 10px;
+            color: white;
+        }
+        .search-message.success { background: rgba(16,185,129,0.15); color: #34d399; padding: 8px; border-radius: 40px; }
+        .search-message.error { background: rgba(244,63,94,0.15); color: #fb7185; padding: 8px; border-radius: 40px; }
         
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -627,6 +730,8 @@
             <li><a onclick="closeDrawer(); switchTab('home')"><i class="fas fa-home"></i> Home</a></li>
             <li><a onclick="closeDrawer(); switchTab('plans')"><i class="fas fa-sim-card"></i> Plan များ</a></li>
             <li><a onclick="closeDrawer(); switchTab('orders')"><i class="fas fa-list-ul"></i> My Orders</a></li>
+            <li><a onclick="closeDrawer(); switchTab('live')"><i class="fas fa-broadcast-tower"></i> LIVE</a></li>
+            <li><a onclick="closeDrawer(); switchTab('market')"><i class="fas fa-store"></i> Market</a></li>
             <li><a onclick="closeDrawer(); switchTab('profile')"><i class="fas fa-user-circle"></i> My Profile</a></li>
             <li><div class="drawer-divider"></div></li>
             <li><a onclick="closeDrawer(); showSupport()"><i class="fas fa-headset"></i> Customer Support</a></li>
@@ -662,6 +767,46 @@
             <div id="myOrdersContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading...</div></div>
         </div>
 
+        <!-- LIVE Tab -->
+        <div id="liveTab" class="tab-content">
+            <div class="live-search-fixed">
+                <div style="background: rgba(0,212,255,0.05); border-radius: 1rem; padding: 14px;">
+                    <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 10px;">
+                        <i class="fas fa-search"></i> အခြားသူများ သက်တမ်းစစ်ရန်
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="tel" id="liveSearchPhone" class="search-input" placeholder="📱 09xxxxxxxxx">
+                        <button onclick="searchLiveOrder()" style="background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; padding: 0 18px; border-radius: 60px; font-weight: bold; cursor: pointer;">
+                            <i class="fas fa-search"></i> ရှာ
+                        </button>
+                        <button onclick="clearLiveSearch()" style="background: #334155; border: none; padding: 0 16px; border-radius: 60px; cursor: pointer;">
+                            <i class="fas fa-times"></i> ရှင်း
+                        </button>
+                    </div>
+                    <div id="liveSearchMessage" style="font-size: 0.65rem; margin-top: 10px; text-align: center; display: none;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 8px;">
+                    <h2 style="font-size: 1rem;">
+                        <i class="fas fa-broadcast-tower"></i> LIVE အော်ဒါများ 
+                        <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span>
+                    </h2>
+                    <span id="liveTimer" style="background: #1e293b; padding: 4px 12px; border-radius: 40px; font-size: 0.6rem;">auto 30s</span>
+                </div>
+            </div>
+            <div class="live-orders-scrollable" id="liveContainer">
+                <div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> စောင့်နေသည်...</div>
+            </div>
+            <div class="status-bar">
+                <span class="status-dot"></span>
+                <span id="liveUpdateText">အလိုအလျောက်: 30s</span>
+            </div>
+        </div>
+
+        <!-- Market Tab -->
+        <div id="marketTab" class="tab-content">
+            <div id="marketContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading products...</div></div>
+        </div>
+
         <!-- Profile Tab -->
         <div id="profileTab" class="tab-content">
             <div id="profileContainer"></div>
@@ -669,10 +814,11 @@
     </div>
 
     <div class="bottom-nav">
-        <button class="nav-item active" data-tab="home"><i class="fas fa-home"></i><span>Home</span></button>
-        <button class="nav-item" data-tab="plans"><i class="fas fa-sim-card"></i><span>Plan များ</span></button>
-        <button class="nav-item" data-tab="orders"><i class="fas fa-list-ul"></i><span>My Orders</span></button>
-        <button class="nav-item" data-tab="profile"><i class="fas fa-user"></i><span>Profile</span></button>
+        <button class="nav-item" data-tab="home"><i class="fas fa-home"></i><span>Home</span></button>
+        <button class="nav-item" data-tab="plans"><i class="fas fa-sim-card"></i><span>Plan</span></button>
+        <button class="nav-item" data-tab="orders"><i class="fas fa-list-ul"></i><span>Orders</span></button>
+        <button class="nav-item" data-tab="live"><i class="fas fa-broadcast-tower"></i><span>LIVE</span></button>
+        <button class="nav-item" data-tab="market"><i class="fas fa-store"></i><span>Market</span></button>
     </div>
 </div>
 
@@ -684,7 +830,7 @@
             <button onclick="closePaymentModal()" style="background:none; border:none; color:white; font-size:1.3rem; cursor:pointer;">&times;</button>
         </div>
         
-        <!-- Payment Method Tabs - KBZ / Wave / AYA -->
+        <!-- Payment Method Tabs -->
         <div class="payment-tab-buttons">
             <button type="button" id="kpayTabBtn" class="payment-tab-btn kpay-tab active" onclick="selectPayment('kpay')">
                 <img src="https://i.ibb.co/CpyBHvrS/1000011452.jpg" alt="KBZ Pay" class="payment-method-icon" onerror="this.style.display='none'">
@@ -782,6 +928,15 @@
     let allOrders = [];
     let selectedPayment = "kpay";
     let currentRenewMode = 'other';
+    
+    // Live variables
+    let liveOrders = [];
+    let currentSearchPhone = "";
+    let liveRefreshInterval = null, liveTimerInterval = null;
+    let refreshSec = 30;
+    
+    // Market variables
+    let marketProducts = [];
 
     // ========== Helper Functions ==========
     function maskPhone(phone) {
@@ -967,6 +1122,193 @@
         }
     }
     
+    // ========== Market Functions ==========
+    async function loadMarketProducts() {
+        try {
+            const res = await fetch(`${API_BASE}/api/market/products`);
+            const data = await res.json();
+            marketProducts = data.products || [];
+            renderMarket();
+        } catch(e) {
+            console.error('Error loading products:', e);
+            renderMarketFallback();
+        }
+    }
+    
+    function renderMarket() {
+        const container = document.getElementById('marketContainer');
+        if (!marketProducts.length) {
+            renderMarketFallback();
+            return;
+        }
+        const categories = {};
+        for (const p of marketProducts) {
+            if (!categories[p.category]) categories[p.category] = [];
+            categories[p.category].push(p);
+        }
+        let html = '';
+        for (const [category, products] of Object.entries(categories)) {
+            html += `<div class="market-section-title"><i class="fas fa-tag"></i> ${category}</div><div class="product-grid">`;
+            for (const p of products) {
+                html += `
+                    <div class="product-card">
+                        <div class="product-icon"><i class="${p.icon || 'fas fa-box'}"></i></div>
+                        <div class="product-name">${escapeHtml(p.name)}</div>
+                        <div class="product-price">${p.price.toLocaleString()} MMK</div>
+                        ${p.discount ? `<div class="product-discount" style="font-size:0.6rem; color:var(--amber);">-${p.discount}% OFF</div>` : ''}
+                        <button class="product-buy-btn" onclick="showToast('Product: ${escapeHtml(p.name)} - Coming Soon')">ဝယ်မည်</button>
+                    </div>
+                `;
+            }
+            html += '</div>';
+        }
+        container.innerHTML = html;
+    }
+    
+    function renderMarketFallback() {
+        const container = document.getElementById('marketContainer');
+        container.innerHTML = `
+            <div class="market-section-title"><i class="fas fa-fire"></i> 🔥 အထူးကမ်းလှမ်းချက်များ</div>
+            <div class="product-grid">
+                <div class="product-card"><div class="product-icon"><i class="fas fa-tshirt"></i></div><div class="product-name">Premium T-Shirt</div><div class="product-price">25,000 MMK</div><button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button></div>
+                <div class="product-card"><div class="product-icon"><i class="fas fa-shopping-bag"></i></div><div class="product-name">Casual Bag</div><div class="product-price">35,000 MMK</div><button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button></div>
+                <div class="product-card"><div class="product-icon"><i class="fas fa-shoe-prints"></i></div><div class="product-name">Sports Shoes</div><div class="product-price">45,000 MMK</div><button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button></div>
+            </div>
+        `;
+    }
+    
+    // ========== LIVE Functions ==========
+    async function fetchLiveOrders() {
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/orders`);
+            const data = await res.json();
+            if (data.orders) {
+                let filtered = data.orders.filter(o => o.phone !== currentUser);
+                if (currentSearchPhone) filtered = filtered.filter(o => o.phone === currentSearchPhone);
+                filtered.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                liveOrders = filtered.slice(0, 50);
+                renderLiveFeed();
+            }
+        } catch(e) {
+            console.error('Error loading live orders:', e);
+            document.getElementById('liveContainer').innerHTML = '<div class="empty"><i class="fas fa-exclamation-triangle"></i> Connection error</div>';
+        }
+    }
+    
+    function renderLiveFeed() {
+        const container = document.getElementById('liveContainer');
+        if (!liveOrders.length) {
+            container.innerHTML = '<div class="empty"><i class="fas fa-eye-slash"></i> လက်ရှိ LIVE အော်ဒါမရှိ</div>';
+            return;
+        }
+        let html = '';
+        for (const o of liveOrders) {
+            let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+            let statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
+            let remainHtml = '';
+            if (o.status === 'Approved' && o.activated_at) {
+                let remain = getRemainingTime(o.activated_at);
+                remainHtml = `<div class="live-stats-row"><span class="live-remaining"><i class="fas fa-hourglass-half"></i> ${remain}</span></div>`;
+            }
+            let paymentIcon = '';
+            if (o.payment_method === 'kpay') paymentIcon = '🏦 KBZ';
+            else if (o.payment_method === 'wavepay') paymentIcon = '📱 Wave';
+            else if (o.payment_method === 'ayapay') paymentIcon = '💳 AYA';
+            
+            html += `
+                <div class="live-card" data-order-id="${o.id}">
+                    <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span class="plan"><i class="fas fa-mobile-alt"></i> ${o.plan}</span>
+                        <span class="status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="phone-masked"><i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}</div>
+                    <div><span class="price">${o.price.toLocaleString()}K</span> <span style="font-size:0.6rem;">${paymentIcon}</span></div>
+                    <div class="date"><i class="fas fa-clock"></i> ${new Date(o.created_at).toLocaleTimeString()}</div>
+                    ${remainHtml}
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+    
+    async function searchLiveOrder() {
+        const phone = document.getElementById('liveSearchPhone').value.trim();
+        const msgDiv = document.getElementById('liveSearchMessage');
+        if (!phone || phone.length < 9) {
+            if (msgDiv) {
+                msgDiv.style.display = 'block';
+                msgDiv.className = 'search-message error';
+                msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)';
+            }
+            return;
+        }
+        if (msgDiv) {
+            msgDiv.style.display = 'block';
+            msgDiv.className = 'search-message';
+            msgDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ရှာဖွေနေသည်...';
+        }
+        try {
+            const res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(phone)}`);
+            const data = await res.json();
+            const orders = data.orders || [];
+            if (orders.length === 0) {
+                if (msgDiv) {
+                    msgDiv.className = 'search-message error';
+                    msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
+                }
+                clearLiveSearch();
+            } else {
+                if (msgDiv) {
+                    msgDiv.className = 'search-message success';
+                    msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။';
+                }
+                currentSearchPhone = phone;
+                liveOrders = orders.slice(0, 50);
+                renderLiveFeed();
+            }
+        } catch(e) {
+            if (msgDiv) {
+                msgDiv.className = 'search-message error';
+                msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ရှာဖွေရာတွင် အမှားရှိပါသည်။';
+            }
+        }
+    }
+    
+    function clearLiveSearch() {
+        currentSearchPhone = '';
+        document.getElementById('liveSearchPhone').value = '';
+        const msgDiv = document.getElementById('liveSearchMessage');
+        if (msgDiv) msgDiv.style.display = 'none';
+        fetchLiveOrders();
+    }
+    
+    function startLiveRefresh() {
+        if (liveRefreshInterval) clearInterval(liveRefreshInterval);
+        if (liveTimerInterval) clearInterval(liveTimerInterval);
+        
+        refreshSec = 30;
+        const timerSpan = document.getElementById('liveTimer');
+        const updateSpan = document.getElementById('liveUpdateText');
+        const updateTimer = () => {
+            if (timerSpan && document.getElementById('liveTab').classList.contains('active')) {
+                timerSpan.innerText = `auto ${refreshSec}s`;
+                if (updateSpan) updateSpan.innerHTML = `အလိုအလျောက်: ${refreshSec}s`;
+                refreshSec--;
+                if (refreshSec < 0) refreshSec = 30;
+            }
+        };
+        liveTimerInterval = setInterval(updateTimer, 1000);
+        
+        liveRefreshInterval = setInterval(async () => {
+            if (document.getElementById('liveTab').classList.contains('active')) {
+                await fetchLiveOrders();
+                refreshSec = 30;
+                if (timerSpan) timerSpan.innerText = 'auto 30s';
+                if (updateSpan) updateSpan.innerHTML = 'အလိုအလျောက်: 30s';
+            }
+        }, 30000);
+    }
+    
     // ========== Profile Render ==========
     async function renderProfile() {
         const container = document.getElementById('profileContainer');
@@ -1110,6 +1452,7 @@
                     await loadUserOrders();
                     if (document.getElementById('ordersTab').classList.contains('active')) renderMyOrders();
                 }
+                await fetchLiveOrders();
             } else {
                 showToast(data.error || "အော်ဒါတင်ရာတွင် အမှားရှိပါသည်", true);
             }
@@ -1156,11 +1499,16 @@
         await loadUserOrders();
         renderPlans();
         await renderProfile();
+        await fetchLiveOrders();
+        await loadMarketProducts();
+        startLiveRefresh();
         showToast("အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်။");
     }
     
     function logout() {
         localStorage.clear();
+        if (liveRefreshInterval) clearInterval(liveRefreshInterval);
+        if (liveTimerInterval) clearInterval(liveTimerInterval);
         currentUser = null;
         currentUsername = null;
         document.getElementById('loginScreen').style.display = 'flex';
@@ -1178,6 +1526,8 @@
         if (tab === 'orders') renderMyOrders();
         if (tab === 'plans') renderPlans();
         if (tab === 'profile') renderProfile();
+        if (tab === 'live') fetchLiveOrders();
+        if (tab === 'market') loadMarketProducts();
     }
     
     function toggleDrawer() {
@@ -1249,6 +1599,8 @@
     window.openScreenshot = openScreenshot;
     window.closeModal = closeModal;
     window.copyToClipboard = copyToClipboard;
+    window.searchLiveOrder = searchLiveOrder;
+    window.clearLiveSearch = clearLiveSearch;
 </script>
 </body>
 </html>
