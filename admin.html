@@ -2,11 +2,16 @@
 <html lang="my">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Admin Panel | ATH DIGITAL HUB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* Disable zoom on mobile */
+        html, body {
+            touch-action: pan-x pan-y;
+            -webkit-text-size-adjust: 100%;
+        }
         :root {
             --bg-deep: #0a0c15;
             --cyan: #00d4ff;
@@ -159,7 +164,7 @@
             background: rgba(0,212,255,0.05);
         }
         
-        /* Drawer Menu - ဒီမှာ DB Statistics နဲ့ Menu များ */
+        /* Drawer Menu */
         .drawer-overlay {
             position: fixed;
             top: 0;
@@ -285,6 +290,7 @@
             margin: 16px 0;
         }
         
+        /* Tab Content - Each separate, not mixed */
         .tab-content {
             display: none;
         }
@@ -292,7 +298,8 @@
             display: block;
         }
         
-        .stats-grid {
+        /* Orders Tab Specific */
+        .orders-stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
@@ -407,119 +414,6 @@
             font-weight: 500;
         }
         .filter-btn:hover { background: var(--cyan); color: #030712; }
-        
-        .add-product-btn {
-            background: var(--emerald);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .product-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        .product-card {
-            background: linear-gradient(145deg, rgba(18,22,35,0.85), rgba(10,12,21,0.9));
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,212,255,0.1);
-            border-radius: 1.2rem;
-            padding: 14px;
-            transition: all 0.2s;
-        }
-        .product-card:hover { border-color: rgba(0,212,255,0.3); }
-        .product-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .product-image-preview {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 8px;
-            background: rgba(0,0,0,0.3);
-        }
-        .product-category {
-            font-size: 0.65rem;
-            background: rgba(0,212,255,0.15);
-            padding: 3px 10px;
-            border-radius: 40px;
-        }
-        .product-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
-        .product-action-btn {
-            flex: 1;
-            border: none;
-            padding: 6px;
-            border-radius: 40px;
-            font-size: 0.65rem;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .product-action-btn.edit { background: rgba(0,212,255,0.2); color: var(--cyan); }
-        .product-action-btn.delete { background: rgba(244,63,94,0.2); color: #fb7185; }
-        
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(20px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            display: none;
-        }
-        .modal.active { display: flex; }
-        .modal-card {
-            background: var(--bg-deep);
-            border-radius: 1.5rem;
-            width: 90%;
-            max-width: 480px;
-            padding: 1.5rem;
-            border: 1px solid rgba(0,212,255,0.3);
-        }
-        .modal-card input, .modal-card select, .modal-card textarea {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0 16px;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #2d3a5e;
-            border-radius: 60px;
-            color: white;
-        }
-        .modal-btn {
-            padding: 10px 20px;
-            border-radius: 60px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-        }
-        .modal-btn.save { background: var(--emerald); color: white; }
-        .modal-btn.cancel { background: #334155; color: white; }
         
         .orders-list, .users-list {
             display: flex;
@@ -692,6 +586,7 @@
             color: var(--cyan);
         }
         
+        /* Users Tab Specific */
         .user-header {
             display: flex;
             justify-content: space-between;
@@ -759,6 +654,119 @@
         .user-action-btn.delete-user { background: rgba(244,63,94,0.2); color: #fb7185; }
         .user-action-btn.delete-orders { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .user-action-btn.clear { background: rgba(0,212,255,0.15); color: var(--cyan); }
+        
+        /* Market Tab Specific */
+        .add-product-btn {
+            background: var(--emerald);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .product-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .product-card {
+            background: linear-gradient(145deg, rgba(18,22,35,0.85), rgba(10,12,21,0.9));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,212,255,0.1);
+            border-radius: 1.2rem;
+            padding: 14px;
+            transition: all 0.2s;
+        }
+        .product-card:hover { border-color: rgba(0,212,255,0.3); }
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .product-image-preview {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+        }
+        .product-category {
+            font-size: 0.65rem;
+            background: rgba(0,212,255,0.15);
+            padding: 3px 10px;
+            border-radius: 40px;
+        }
+        .product-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .product-action-btn {
+            flex: 1;
+            border: none;
+            padding: 6px;
+            border-radius: 40px;
+            font-size: 0.65rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .product-action-btn.edit { background: rgba(0,212,255,0.2); color: var(--cyan); }
+        .product-action-btn.delete { background: rgba(244,63,94,0.2); color: #fb7185; }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+        .modal.active { display: flex; }
+        .modal-card {
+            background: var(--bg-deep);
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 480px;
+            padding: 1.5rem;
+            border: 1px solid rgba(0,212,255,0.3);
+        }
+        .modal-card input, .modal-card select, .modal-card textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 16px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 60px;
+            color: white;
+        }
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .modal-btn.save { background: var(--emerald); color: white; }
+        .modal-btn.cancel { background: #334155; color: white; }
         
         .hidden { display: none; }
         
@@ -873,7 +881,7 @@
             </div>
         </div>
         
-        <!-- Drawer Menu (Sidebar) - ဒီမှာ DB Statistics နဲ့ Menu များ -->
+        <!-- Drawer Menu (Sidebar) -->
         <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
         <div id="drawer" class="drawer">
             <div class="drawer-header">
@@ -884,7 +892,7 @@
                 <div class="drawer-subtitle">ATH DIGITAL HUB</div>
             </div>
             
-            <!-- DB Statistics Section (Drawer ထဲမှာ သပ်သပ်) -->
+            <!-- DB Statistics Section -->
             <div class="drawer-stats">
                 <div class="drawer-stats-title">
                     <i class="fas fa-database"></i> Database Statistics
@@ -919,7 +927,7 @@
                 </div>
             </div>
             
-            <!-- Menu Section (Drawer ထဲမှာ သပ်သပ်) -->
+            <!-- Menu Section -->
             <div class="drawer-stats-title" style="margin-top: 10px;">
                 <i class="fas fa-bars"></i> Menu
             </div>
@@ -940,54 +948,61 @@
             </ul>
         </div>
         
-        <!-- Stats Grid (Main Content) -->
-        <div class="stats-grid" id="statsGrid">
-            <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label"><i class="fas fa-shopping-cart"></i> Total</div></div>
-            <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label"><i class="fas fa-clock"></i> Pending</div></div>
-            <div class="stat-card"><div class="stat-number" id="approvedOrders">0</div><div class="stat-label"><i class="fas fa-check-circle"></i> Approved</div></div>
-            <div class="stat-card"><div class="stat-number" id="rejectedOrders">0</div><div class="stat-label"><i class="fas fa-times-circle"></i> Rejected</div></div>
-            <div class="stat-card"><div class="stat-number" id="totalRevenue">0</div><div class="stat-label"><i class="fas fa-coins"></i> Revenue</div></div>
-            <div class="stat-card"><div class="stat-number cost" id="totalCost">0</div><div class="stat-label"><i class="fas fa-boxes"></i> Cost</div></div>
-            <div class="stat-card"><div class="stat-number profit" id="totalProfit">0</div><div class="stat-label"><i class="fas fa-chart-line"></i> Profit</div></div>
-            <div class="stat-card"><div class="stat-number" id="avgProfit">0</div><div class="stat-label"><i class="fas fa-percent"></i> Avg</div></div>
-        </div>
-        
-        <!-- Search Bar -->
-        <div class="search-bar">
-            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by phone, user ID, or name">
-            <button class="search-btn" onclick="searchByPhoneOrId()"><i class="fas fa-search"></i> Search</button>
-            <button class="clear-search" onclick="clearSearch()"><i class="fas fa-times"></i> Clear</button>
-        </div>
-        
-        <!-- Filter Bar -->
-        <div class="filter-bar">
-            <div class="filter-group">
-                <input type="date" id="startDate" class="filter-input" placeholder="Start">
-                <input type="date" id="endDate" class="filter-input" placeholder="End">
-                <select id="statusFilter" class="filter-input">
-                    <option value="all">All</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Approved">Approved</option>
-                    <option value="Rejected">Rejected</option>
-                </select>
-            </div>
-            <div style="display: flex; gap: 8px;">
-                <button class="filter-btn" onclick="applyFilters()"><i class="fas fa-filter"></i> Filter</button>
-                <button class="filter-btn" onclick="clearFilters()" style="background:#334155;"><i class="fas fa-undo"></i></button>
-            </div>
-        </div>
-        
-        <!-- Tab Content: Orders -->
+        <!-- ==================== ORDERS TAB (Separate) ==================== -->
         <div id="ordersTab" class="tab-content active">
+            <!-- Orders Stats -->
+            <div class="orders-stats-grid">
+                <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label"><i class="fas fa-shopping-cart"></i> Total</div></div>
+                <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label"><i class="fas fa-clock"></i> Pending</div></div>
+                <div class="stat-card"><div class="stat-number" id="approvedOrders">0</div><div class="stat-label"><i class="fas fa-check-circle"></i> Approved</div></div>
+                <div class="stat-card"><div class="stat-number" id="rejectedOrders">0</div><div class="stat-label"><i class="fas fa-times-circle"></i> Rejected</div></div>
+                <div class="stat-card"><div class="stat-number" id="totalRevenue">0</div><div class="stat-label"><i class="fas fa-coins"></i> Revenue</div></div>
+                <div class="stat-card"><div class="stat-number cost" id="totalCost">0</div><div class="stat-label"><i class="fas fa-boxes"></i> Cost</div></div>
+                <div class="stat-card"><div class="stat-number profit" id="totalProfit">0</div><div class="stat-label"><i class="fas fa-chart-line"></i> Profit</div></div>
+                <div class="stat-card"><div class="stat-number" id="avgProfit">0</div><div class="stat-label"><i class="fas fa-percent"></i> Avg</div></div>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by phone, user ID, or name">
+                <button class="search-btn" onclick="searchByPhoneOrId()"><i class="fas fa-search"></i> Search</button>
+                <button class="clear-search" onclick="clearSearch()"><i class="fas fa-times"></i> Clear</button>
+            </div>
+            
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <input type="date" id="startDate" class="filter-input" placeholder="Start">
+                    <input type="date" id="endDate" class="filter-input" placeholder="End">
+                    <select id="statusFilter" class="filter-input">
+                        <option value="all">All</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="filter-btn" onclick="applyFilters()"><i class="fas fa-filter"></i> Filter</button>
+                    <button class="filter-btn" onclick="clearFilters()" style="background:#334155;"><i class="fas fa-undo"></i></button>
+                </div>
+            </div>
+            
+            <!-- Orders List -->
             <div class="orders-list" id="ordersList"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading orders...</div></div>
         </div>
         
-        <!-- Tab Content: Users -->
+        <!-- ==================== USERS TAB (Separate) ==================== -->
         <div id="usersTab" class="tab-content">
+            <!-- Search Bar for Users -->
+            <div class="search-bar">
+                <input type="text" id="userSearchInput" class="search-input" placeholder="🔍 Search by phone, user ID, or name">
+                <button class="search-btn" onclick="searchUsers()"><i class="fas fa-search"></i> Search</button>
+                <button class="clear-search" onclick="clearUserSearch()"><i class="fas fa-times"></i> Clear</button>
+            </div>
             <div class="users-list" id="usersList"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading users...</div></div>
         </div>
         
-        <!-- Tab Content: Market -->
+        <!-- ==================== MARKET TAB (Separate) ==================== -->
         <div id="marketTab" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <h3><i class="fas fa-store"></i> Products</h3>
@@ -999,7 +1014,7 @@
         <div class="last-update" id="lastUpdate"></div>
     </div>
     
-    <!-- Bottom Navigation Bar - Orders, Users, Market သုံးခုပဲ -->
+    <!-- Bottom Navigation Bar -->
     <div class="bottom-nav" id="bottomNav" style="display: none;">
         <button class="nav-item active" data-tab="orders">
             <i class="fas fa-list-ul"></i>
@@ -1094,6 +1109,7 @@
     let secondsLeft = 30;
     let activeCountdowns = {};
     let currentSearchPhone = "";
+    let currentUserSearchPhone = "";
     let currentTab = "orders";
     let editingProductId = null;
 
@@ -1608,7 +1624,7 @@
         showToast('📁 Orders exported to CSV');
     }
 
-    function updateStats(orders) {
+    function updateOrdersStats(orders) {
         const total = orders.length;
         const pending = orders.filter(o => o.status === 'Pending');
         const approved = orders.filter(o => o.status === 'Approved');
@@ -1635,16 +1651,16 @@
         }
         
         let filteredUsers = [...userStats];
-        if (currentSearchPhone) {
+        if (currentUserSearchPhone) {
             filteredUsers = filteredUsers.filter(u => 
-                u.phone === currentSearchPhone || 
-                u.user_id === currentSearchPhone ||
-                (u.username && u.username.toLowerCase().includes(currentSearchPhone.toLowerCase()))
+                u.phone === currentUserSearchPhone || 
+                u.user_id === currentUserSearchPhone ||
+                (u.username && u.username.toLowerCase().includes(currentUserSearchPhone.toLowerCase()))
             );
         }
         
-        if (filteredUsers.length === 0 && currentSearchPhone) {
-            container.innerHTML = `<div class="loading">No user found for "${currentSearchPhone}"</div>`;
+        if (filteredUsers.length === 0 && currentUserSearchPhone) {
+            container.innerHTML = `<div class="loading">No user found for "${currentUserSearchPhone}"</div>`;
             return;
         }
         
@@ -1660,9 +1676,9 @@
             if (user.blocked) { statusClass = 'blocked'; statusText = '🔴 Blocked'; }
             else if (user.suspect_flag) { statusClass = 'suspect'; statusText = '🟡 Suspect'; }
             
-            const isHighlighted = currentSearchPhone && (
-                user.phone === currentSearchPhone || 
-                user.user_id === currentSearchPhone
+            const isHighlighted = currentUserSearchPhone && (
+                user.phone === currentUserSearchPhone || 
+                user.user_id === currentUserSearchPhone
             );
             const highlightClass = isHighlighted ? 'search-highlight' : '';
             
@@ -1696,6 +1712,7 @@
         container.innerHTML = html;
     }
 
+    // Orders functions
     function applyFiltersAndSearch() {
         let filtered = [...allOrders];
         
@@ -1712,7 +1729,7 @@
         if (endDate) { const end = new Date(endDate); end.setHours(23,59,59,999); filtered = filtered.filter(o => new Date(o.created_at) <= end); }
         
         renderOrders(filtered);
-        updateStats(filtered);
+        updateOrdersStats(filtered);
         
         if (currentSearchPhone) {
             if (!document.getElementById('searchResultMsg')) {
@@ -1728,10 +1745,6 @@
             if (document.getElementById('searchResultMsg')) {
                 document.getElementById('searchResultMsg').remove();
             }
-        }
-        
-        if (currentTab === 'users') {
-            renderUsersTab();
         }
     }
 
@@ -1750,8 +1763,26 @@
         currentSearchPhone = "";
         document.getElementById('searchInput').value = "";
         applyFiltersAndSearch();
-        if (currentTab === 'users') renderUsersTab();
         if (document.getElementById('searchResultMsg')) document.getElementById('searchResultMsg').remove();
+        showToast('🔍 Search cleared');
+    }
+
+    // Users search functions
+    function searchUsers() {
+        const searchValue = document.getElementById('userSearchInput').value.trim();
+        if (!searchValue) return;
+        currentUserSearchPhone = searchValue;
+        renderUsersTab();
+        setTimeout(() => {
+            const highlighted = document.querySelector('.search-highlight');
+            if (highlighted) highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    }
+    
+    function clearUserSearch() {
+        currentUserSearchPhone = "";
+        document.getElementById('userSearchInput').value = "";
+        renderUsersTab();
         showToast('🔍 Search cleared');
     }
 
@@ -1762,7 +1793,6 @@
         document.getElementById('endDate').value = '';
         document.getElementById('statusFilter').value = 'all';
         applyFiltersAndSearch();
-        if (currentTab === 'users') renderUsersTab();
         showToast('✅ Filters cleared');
     }
 
@@ -1970,6 +2000,7 @@
     document.getElementById('screenshotModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
     document.getElementById('searchInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') searchByPhoneOrId(); });
+    document.getElementById('userSearchInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') searchUsers(); });
 
     // Global functions
     window.approveOrder = approveOrder; 
@@ -1982,6 +2013,8 @@
     window.manualRefresh = manualRefresh;
     window.searchByPhoneOrId = searchByPhoneOrId; 
     window.clearSearch = clearSearch;
+    window.searchUsers = searchUsers;
+    window.clearUserSearch = clearUserSearch;
     window.blockUser = blockUser; 
     window.clearSuspectFlag = clearSuspectFlag;
     window.deleteUser = deleteUser; 
