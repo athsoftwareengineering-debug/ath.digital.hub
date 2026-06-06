@@ -141,6 +141,15 @@
         }
         .drawer-username { font-weight: 700; font-size: 1rem; }
         .drawer-phone { font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px; }
+        .drawer-userid { 
+            font-size: 0.65rem; 
+            color: var(--cyan); 
+            margin-top: 6px;
+            background: rgba(0,212,255,0.1);
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 40px;
+        }
         .drawer-menu { list-style: none; }
         .drawer-menu li { margin-bottom: 8px; }
         .drawer-menu a {
@@ -574,17 +583,17 @@
         .note-text { font-size: 0.6rem; color: var(--text-secondary); margin-top: 8px; }
         .payment-method-icon { width: 20px; height: 20px; border-radius: 4px; object-fit: cover; }
         
-        /* Container styles for loaded content */
         #marketContainer, #liveContainer {
             min-height: 200px;
         }
         
-        /* Export button style */
-        .export-btn {
-            background: linear-gradient(135deg, #10b981, #059669);
-        }
-        .export-btn:hover {
-            transform: scale(1.05);
+        .user-id-badge {
+            background: rgba(0,212,255,0.1);
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            display: inline-block;
+            margin-top: 6px;
         }
     </style>
 </head>
@@ -606,13 +615,8 @@
         <button class="menu-btn" onclick="toggleDrawer()"><i class="fas fa-bars"></i></button>
         <div class="logo">⚡ ATH DIGITAL HUB</div>
         <div style="display: flex; gap: 8px; align-items: center;">
-            <!-- Refresh Button -->
             <button class="icon-btn refresh-btn" onclick="refreshAllData()" title="Refresh Data">
                 <i class="fas fa-sync-alt"></i>
-            </button>
-            <!-- Export Button -->
-            <button class="icon-btn export-btn" onclick="exportMyOrders()" title="Export Orders" style="background: linear-gradient(135deg, #10b981, #059669);">
-                <i class="fas fa-download"></i>
             </button>
             <button class="icon-btn" onclick="showNotifications()"><i class="fas fa-bell"></i></button>
             <div class="lang-dropdown">
@@ -635,6 +639,7 @@
             <div class="drawer-avatar"><i class="fas fa-user"></i></div>
             <div class="drawer-username" id="drawerUsername">User</div>
             <div class="drawer-phone" id="drawerPhone"></div>
+            <div class="drawer-userid" id="drawerUserId"></div>
         </div>
         <ul class="drawer-menu">
             <li><a onclick="closeDrawer(); switchTab('home')"><i class="fas fa-home"></i> Home</a></li>
@@ -644,6 +649,7 @@
             <li><a onclick="closeDrawer(); switchTab('market')"><i class="fas fa-store"></i> Market</a></li>
             <li><a onclick="closeDrawer(); switchTab('profile')"><i class="fas fa-user-circle"></i> My Profile</a></li>
             <li><div class="drawer-divider"></div></li>
+            <li><a onclick="closeDrawer(); exportMyOrders()"><i class="fas fa-file-excel"></i> Export Orders (CSV)</a></li>
             <li><a onclick="closeDrawer(); showSupport()"><i class="fas fa-headset"></i> Customer Support</a></li>
             <li><a onclick="closeDrawer(); logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
@@ -655,6 +661,7 @@
             <div style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(139,92,246,0.05)); border-radius: 1.5rem; padding: 20px; margin: 16px 0; text-align: center;">
                 <div style="font-size: 1.2rem;">🌤️ မင်္ဂလာပါ, <span id="userName">User</span></div>
                 <div id="userPhoneDisplay" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;"></div>
+                <div id="userIdDisplay" class="user-id-badge" style="margin-top: 8px;"></div>
             </div>
             
             <div style="background:linear-gradient(135deg, rgba(0,212,255,0.08), rgba(139,92,246,0.05)); border-radius: 1rem; padding: 20px; text-align: center;">
@@ -815,12 +822,11 @@
 
 <script>
     const API_BASE = window.location.origin;
-    let currentUser = null, currentUsername = null;
+    let currentUser = null, currentUsername = null, currentUserId = null;
     let allOrders = [];
     let selectedPayment = "kpay";
     let currentRenewMode = 'other';
     
-    // Component loaded flags
     let marketLoaded = false;
     let liveLoaded = false;
 
@@ -876,31 +882,93 @@
         });
     }
     
-    // Get current user phone for live component
     window.getCurrentUserPhone = function() {
         return currentUser;
     };
     
-    // ========== Refresh Functions ==========
+    // ========== Login with User ID Registration ==========
+    async function login() {
+        const username = document.getElementById('loginUsername').value.trim();
+        const phone = document.getElementById('loginPhone').value.trim();
+        
+        if (!username || !phone || phone.length < 9) {
+            showToast("Username နှင့် ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ", true);
+            return;
+        }
+        
+        try {
+            // Register/Login API ကိုခေါ်ပါ (Auto User ID generation)
+            const res = await fetch(`${API_BASE}/api/user/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, username })
+            });
+            
+            const data = await res.json();
+            
+            if (!data.success) {
+                showToast(data.error || "Login failed", true);
+                return;
+            }
+            
+            const user = data.user;
+            
+            // Check if blocked
+            if (user.blocked) {
+                showToast("သင့်အကောင့်အား ပိတ်ထားပါသည်။ Customer Support ကို ဆက်သွယ်ပါ။", true);
+                return;
+            }
+            
+            currentUser = phone;
+            currentUsername = username;
+            currentUserId = user.user_id;
+            
+            localStorage.setItem('userPhone', phone);
+            localStorage.setItem('userName', username);
+            localStorage.setItem('userId', user.user_id);
+            
+            // Show welcome message with user ID
+            if (data.isNewUser) {
+                showToast(`🎉 ကြိုဆိုပါသည်! သင်၏ User ID: ${user.user_id}`);
+            } else {
+                showToast(`👋 ပြန်လည်ကြိုဆိုပါသည်! User ID: ${user.user_id}`);
+            }
+            
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('userName').innerHTML = username;
+            document.getElementById('userPhoneDisplay').innerHTML = `📞 ${phone}`;
+            document.getElementById('userIdDisplay').innerHTML = `🆔 ${user.user_id}`;
+            document.getElementById('drawerUsername').innerHTML = username;
+            document.getElementById('drawerPhone').innerHTML = maskPhone(phone);
+            document.getElementById('drawerUserId').innerHTML = `🆔 ${user.user_id}`;
+            
+            await loadUserOrders();
+            renderPlans();
+            await renderProfile();
+            
+        } catch(e) {
+            showToast("Connection error", true);
+            console.error('Login error:', e);
+        }
+    }
+    
+    // ========== Refresh Function ==========
     async function refreshAllData() {
         const refreshBtn = document.querySelector('.refresh-btn');
         refreshBtn.classList.add('refreshing');
         showToast('🔄 Refreshing data...');
         
-        // Reload user orders
         await loadUserOrders();
         
-        // Re-render current tab
         if (currentTab === 'orders') renderMyOrders();
         if (currentTab === 'plans') renderPlans();
         if (currentTab === 'profile') await renderProfile();
         
-        // Refresh live if loaded
         if (liveLoaded && typeof window.fetchLiveOrders === 'function') {
             window.fetchLiveOrders();
         }
         
-        // Refresh market if loaded
         if (marketLoaded && typeof window.loadMarketProducts === 'function') {
             window.loadMarketProducts();
         }
@@ -912,7 +980,7 @@
         showToast('✅ Data refreshed successfully');
     }
     
-    // Export my orders to CSV
+    // ========== CSV Export Function ==========
     function exportMyOrders() {
         if (!allOrders.length) {
             showToast('No orders to export', true);
@@ -928,7 +996,7 @@
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
         link.href = url;
-        link.setAttribute('download', `my_orders_${new Date().toISOString().slice(0,19)}.csv`);
+        link.setAttribute('download', `my_orders_${currentUserId}_${new Date().toISOString().slice(0,19)}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -937,15 +1005,7 @@
         showToast('📁 Orders exported to CSV');
     }
     
-    // Hard reload page
-    function hardReload() {
-        showToast('🔄 Reloading page...');
-        setTimeout(() => {
-            window.location.reload();
-        }, 500);
-    }
-    
-    // ========== Load Market from external file ==========
+    // ========== Load Market ==========
     async function loadMarketContent() {
         const container = document.getElementById('marketContainer');
         if (!container) return;
@@ -976,7 +1036,7 @@
         }
     }
     
-    // ========== Load Live from external file ==========
+    // ========== Load Live ==========
     async function loadLiveContent() {
         const container = document.getElementById('liveContainer');
         if (!container) return;
@@ -1141,7 +1201,7 @@
         }
     }
     
-    // ========== Profile Render ==========
+    // ========== Profile Render with User ID ==========
     async function renderProfile() {
         const container = document.getElementById('profileContainer');
         const approved = allOrders.filter(o => o.status === 'Approved').length;
@@ -1152,6 +1212,9 @@
                 <div style="width:80px; height:80px; background:linear-gradient(135deg, var(--cyan), #0891b2); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:2rem;"><i class="fas fa-user"></i></div>
                 <h3>${escapeHtml(currentUsername)}</h3>
                 <div style="font-size:0.7rem;">📞 ${currentUser}</div>
+                <div style="font-size:0.7rem; margin-top:4px; background:rgba(0,212,255,0.1); display:inline-block; padding:4px 12px; border-radius:40px;">
+                    🆔 User ID: ${currentUserId}
+                </div>
                 <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:20px 0;">
                     <div style="background:rgba(0,212,255,0.05); padding:12px; border-radius:1rem;"><div style="font-size:1.3rem; font-weight:800;">${allOrders.length}</div><div>စုစုပေါင်း</div></div>
                     <div style="background:rgba(16,185,129,0.05); padding:12px; border-radius:1rem;"><div style="font-size:1.3rem; font-weight:800; color:var(--emerald);">${approved}</div><div>အတည်ပြုပြီး</div></div>
@@ -1295,47 +1358,11 @@
     // ========== Main Functions ==========
     let currentTab = "home";
     
-    async function login() {
-        const username = document.getElementById('loginUsername').value.trim();
-        const phone = document.getElementById('loginPhone').value.trim();
-        if (!username || !phone || phone.length < 9) {
-            showToast("Username နှင့် ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ", true);
-            return;
-        }
-        
-        try {
-            const statsRes = await fetch(`${API_BASE}/api/admin/user-stats`);
-            const statsData = await statsRes.json();
-            if (statsData.stats?.find(u => u.phone === phone)?.blocked) {
-                showToast("သင့်အကောင့်အား ပိတ်ထားပါသည်။ Customer Support ကို ဆက်သွယ်ပါ။", true);
-                return;
-            }
-        } catch(e) {
-            console.log("Block check failed");
-        }
-        
-        currentUser = phone;
-        currentUsername = username;
-        localStorage.setItem('userPhone', phone);
-        localStorage.setItem('userName', username);
-        
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block';
-        document.getElementById('userName').innerHTML = username;
-        document.getElementById('userPhoneDisplay').innerHTML = `📞 ${phone}`;
-        document.getElementById('drawerUsername').innerHTML = username;
-        document.getElementById('drawerPhone').innerHTML = maskPhone(phone);
-        
-        await loadUserOrders();
-        renderPlans();
-        await renderProfile();
-        showToast("အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်။");
-    }
-    
     function logout() {
         localStorage.clear();
         currentUser = null;
         currentUsername = null;
+        currentUserId = null;
         marketLoaded = false;
         liveLoaded = false;
         
@@ -1403,9 +1430,11 @@
     // Auto login check
     const savedPhone = localStorage.getItem('userPhone');
     const savedName = localStorage.getItem('userName');
+    const savedId = localStorage.getItem('userId');
     if (savedPhone && savedName) {
         document.getElementById('loginPhone').value = savedPhone;
         document.getElementById('loginUsername').value = savedName;
+        // Auto login with saved credentials
         login();
     }
     
@@ -1433,7 +1462,6 @@
     window.getCurrentUserPhone = function() { return currentUser; };
     window.refreshAllData = refreshAllData;
     window.exportMyOrders = exportMyOrders;
-    window.hardReload = hardReload;
 </script>
 </body>
 </html>
