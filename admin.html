@@ -282,24 +282,6 @@
             display: block;
         }
         
-        .sync-status {
-            background: rgba(0,212,255,0.15);
-            padding: 5px 12px;
-            border-radius: 40px;
-            font-size: 0.65rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .sync-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #10b981;
-            animation: pulseDot 1.5s infinite;
-        }
-        @keyframes pulseDot { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-        
         /* Stats Grid - For Menu Tab Only */
         .stats-grid {
             display: grid;
@@ -798,6 +780,7 @@
                 </div>
             </div>
             <div class="top-bar-right">
+                <!-- Notification Bell Only (Auto Sync Timer Removed) -->
                 <div class="notification-bell">
                     <button class="top-icon-btn" onclick="toggleNotificationDropdown()" id="notificationBellBtn">
                         <i class="fas fa-bell"></i>
@@ -819,10 +802,6 @@
                 <button class="top-icon-btn" onclick="window.location.href='/'" title="Go to Store">
                     <i class="fas fa-store"></i>
                 </button>
-                <div class="sync-status">
-                    <span class="sync-dot"></span>
-                    <span id="autoSyncTimer">Auto Sync: 30s</span>
-                </div>
             </div>
         </div>
         
@@ -1270,14 +1249,17 @@
         }, 1000);
     }
 
-    function updateCountdown() { const el = document.getElementById('autoSyncTimer'); if (el) el.innerHTML = `Auto Sync: ${secondsLeft}s`; }
+    function updateCountdown() { 
+        // Auto sync timer is hidden, but we still need to update for internal use
+        // No need to update display since it's removed
+    }
 
     function startAutoSync() {
         if (autoSyncInterval) clearInterval(autoSyncInterval);
         if (countdownInterval) clearInterval(countdownInterval);
-        secondsLeft = 30; updateCountdown();
-        countdownInterval = setInterval(() => { secondsLeft--; if (secondsLeft < 0) secondsLeft = 30; updateCountdown(); }, 1000);
-        autoSyncInterval = setInterval(() => { if (token === 'logged_in') { checkForNewOrders(); secondsLeft = 30; updateCountdown(); } }, 30000);
+        secondsLeft = 30;
+        countdownInterval = setInterval(() => { secondsLeft--; if (secondsLeft < 0) secondsLeft = 30; }, 1000);
+        autoSyncInterval = setInterval(() => { if (token === 'logged_in') { checkForNewOrders(); secondsLeft = 30; } }, 30000);
     }
 
     function stopAutoSync() { if (autoSyncInterval) clearInterval(autoSyncInterval); if (countdownInterval) clearInterval(countdownInterval); }
@@ -1445,7 +1427,7 @@
     async function rejectOrder(id) { try { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' }); if (res.ok) { showToast('❌ Rejected'); loadOrders(); loadUserStats(); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); } }
     async function deleteOrder(id) { if (confirm('Delete this order?')) { try { const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' }); if (res.ok) { showToast('🗑 Deleted'); loadOrders(); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); } } }
     
-    function manualRefresh() { loadAllData(); showToast('🔄 Synced'); secondsLeft = 30; updateCountdown(); }
+    function manualRefresh() { loadAllData(); showToast('🔄 Synced'); secondsLeft = 30; }
 
     function toggleDrawer() { document.getElementById('drawer').classList.toggle('open'); document.getElementById('drawerOverlay').classList.toggle('open'); }
     function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open'); }
@@ -1461,7 +1443,6 @@
         if (tab === 'orders') { applyFiltersAndSearch(); } 
         else if (tab === 'users') { renderUsersTab(); } 
         else if (tab === 'market') { loadProducts(); }
-        // menu tab doesn't need special loading
     }
 
     document.querySelectorAll('.nav-item').forEach(btn => { btn.addEventListener('click', () => { switchTab(btn.dataset.tab); }); });
