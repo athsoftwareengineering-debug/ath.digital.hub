@@ -1,0 +1,536 @@
+<!-- live.html -->
+<!DOCTYPE html>
+<div id="liveApp">
+    <style>
+        .live-container {
+            padding: 0;
+        }
+        .live-search-section {
+            background: rgba(0,212,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 1.2rem;
+            padding: 14px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,212,255,0.15);
+        }
+        .live-search-title {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+        .live-search-box {
+            display: flex;
+            gap: 8px;
+        }
+        .live-search-input {
+            flex: 1;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 60px;
+            padding: 10px 16px;
+            color: white;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .live-search-input:focus {
+            border-color: var(--cyan);
+        }
+        .live-search-btn {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            border: none;
+            padding: 8px 18px;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+        .live-clear-btn {
+            background: #334155;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 60px;
+            cursor: pointer;
+            color: white;
+        }
+        .live-search-message {
+            font-size: 0.65rem;
+            margin-top: 10px;
+            text-align: center;
+            padding: 8px;
+            border-radius: 40px;
+            display: none;
+        }
+        .live-search-message.success {
+            background: rgba(16,185,129,0.15);
+            color: #34d399;
+            display: block;
+        }
+        .live-search-message.error {
+            background: rgba(244,63,94,0.15);
+            color: #fb7185;
+            display: block;
+        }
+        .live-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 12px 0 8px;
+        }
+        .live-header h2 {
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .live-badge {
+            font-size: 0.6rem;
+            background: rgba(244,63,94,0.2);
+            color: #f43f5e;
+            padding: 3px 10px;
+            border-radius: 40px;
+            animation: blinkRed 0.8s step-end infinite;
+            display: inline-block;
+        }
+        @keyframes blinkRed {
+            0%,100% { background: rgba(244,63,94,0.2); }
+            50% { background: rgba(244,63,94,0.9); color: white; }
+        }
+        .live-timer {
+            background: #1e293b;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+        }
+        .live-orders-scrollable {
+            max-height: calc(100vh - 340px);
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .live-orders-scrollable::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        .live-card {
+            background: linear-gradient(135deg, #0f111a, #131725);
+            border-radius: 1rem;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(245,158,11,0.2);
+            transition: 0.2s;
+        }
+        .live-card:hover {
+            transform: translateX(4px);
+            border-color: rgba(245,158,11,0.5);
+        }
+        .live-card.new-order {
+            border-left: 3px solid var(--cyan);
+            background: rgba(0,212,255,0.1);
+            animation: blinkCyan 0.5s ease-in-out 2;
+        }
+        @keyframes blinkCyan {
+            0%,100% { background: rgba(0,212,255,0); }
+            50% { background: rgba(0,212,255,0.2); box-shadow: 0 0 15px var(--cyan); }
+        }
+        .live-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .live-plan {
+            font-weight: 700;
+            color: var(--amber);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .live-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 600;
+        }
+        .live-status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .live-status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
+        .live-status.rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        .live-phone {
+            font-size: 0.7rem;
+            font-family: monospace;
+            background: #1e293b;
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 40px;
+            margin-top: 4px;
+        }
+        .live-price {
+            font-weight: 800;
+            color: var(--emerald);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .live-date {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .live-stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.6rem;
+        }
+        .live-remaining {
+            color: var(--cyan);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .live-payment-icon {
+            font-size: 0.6rem;
+            background: rgba(0,212,255,0.1);
+            padding: 2px 8px;
+            border-radius: 40px;
+        }
+        .live-status-bar {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.6rem;
+            color: #64748b;
+        }
+        .live-status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 1.5s infinite;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        @keyframes pulse {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .live-empty {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+        .live-loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+    </style>
+
+    <div class="live-container">
+        <!-- Search Section -->
+        <div class="live-search-section">
+            <div class="live-search-title">
+                <i class="fas fa-search"></i> အခြားသူများ သက်တမ်းစစ်ရန်
+            </div>
+            <div class="live-search-box">
+                <input type="tel" id="liveSearchPhoneInput" class="live-search-input" placeholder="📱 09xxxxxxxxx">
+                <button class="live-search-btn" onclick="window.searchLiveOrderExternal()">
+                    <i class="fas fa-search"></i> ရှာ
+                </button>
+                <button class="live-clear-btn" onclick="window.clearLiveSearchExternal()">
+                    <i class="fas fa-times"></i> ရှင်း
+                </button>
+            </div>
+            <div id="liveSearchMsg" class="live-search-message"></div>
+        </div>
+
+        <!-- Live Orders Header -->
+        <div class="live-header">
+            <h2>
+                <i class="fas fa-broadcast-tower"></i> LIVE အော်ဒါများ
+                <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span>
+            </h2>
+            <span id="liveTimerDisplay" class="live-timer">auto 30s</span>
+        </div>
+
+        <!-- Live Orders Container -->
+        <div class="live-orders-scrollable" id="liveOrdersList">
+            <div class="live-loading">
+                <i class="fas fa-spinner fa-pulse"></i> စောင့်နေသည်...
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="live-status-bar">
+            <span class="live-status-dot"></span>
+            <span id="liveUpdateStatus">အလိုအလျောက်: 30s</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Live Component JavaScript
+    const LIVE_API = window.location.origin;
+    let liveOrdersData = [];
+    let liveCurrentSearchPhone = "";
+    let liveRefreshInterval = null;
+    let liveTimerInterval = null;
+    let liveRefreshSec = 30;
+    let lastOrderIds = [];
+    let currentUserPhoneForLive = null;
+
+    // Get current user phone from parent (if available)
+    function getCurrentUserPhone() {
+        if (typeof window.getCurrentUserPhone === 'function') {
+            return window.getCurrentUserPhone();
+        }
+        return localStorage.getItem('userPhone') || null;
+    }
+
+    // Mask phone number
+    function maskPhone(phone) {
+        if (!phone || phone.length < 8) return phone || '';
+        return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
+    }
+
+    // Get remaining time
+    function getRemainingTime(activatedAt) {
+        if (!activatedAt) return null;
+        const remain = new Date(activatedAt).getTime() + 30*86400000 - Date.now();
+        if (remain <= 0) return "Expired";
+        const d = Math.floor(remain/86400000);
+        const h = Math.floor((remain%86400000)/3600000);
+        const m = Math.floor((remain%3600000)/60000);
+        return `${d}ရက် ${h}နာရီ ${m}မိနစ်`;
+    }
+
+    // Get payment icon
+    function getPaymentIcon(method) {
+        const icons = {
+            'kpay': '🏦 KBZ',
+            'wavepay': '📱 Wave',
+            'ayapay': '💳 AYA'
+        };
+        return icons[method] || '🏦 KBZ';
+    }
+
+    // Fetch live orders from API
+    async function fetchLiveOrders() {
+        try {
+            const res = await fetch(`${LIVE_API}/api/admin/orders`);
+            const data = await res.json();
+            if (data.orders) {
+                const currentPhone = getCurrentUserPhone();
+                let filtered = data.orders.filter(o => o.phone !== currentPhone);
+                if (liveCurrentSearchPhone) {
+                    filtered = filtered.filter(o => o.phone === liveCurrentSearchPhone);
+                }
+                filtered.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                
+                // Check for new orders
+                const newIds = filtered.map(o => o.id);
+                const hasNew = (lastOrderIds.length > 0 && newIds.length > 0 && newIds[0] !== lastOrderIds[0]);
+                lastOrderIds = newIds;
+                liveOrdersData = filtered.slice(0, 50);
+                renderLiveOrders(hasNew);
+            }
+        } catch(e) {
+            console.error('Error fetching live orders:', e);
+            const container = document.getElementById('liveOrdersList');
+            if (container) {
+                container.innerHTML = '<div class="live-empty"><i class="fas fa-exclamation-triangle"></i> Connection error</div>';
+            }
+        }
+    }
+
+    // Render live orders
+    function renderLiveOrders(hasNew = false) {
+        const container = document.getElementById('liveOrdersList');
+        if (!container) return;
+        
+        if (!liveOrdersData.length) {
+            container.innerHTML = '<div class="live-empty"><i class="fas fa-eye-slash"></i> လက်ရှိ LIVE အော်ဒါမရှိ</div>';
+            return;
+        }
+        
+        let html = '';
+        for (let i = 0; i < liveOrdersData.length; i++) {
+            const o = liveOrdersData[i];
+            const isNew = (hasNew && i === 0);
+            const statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+            const statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
+            const paymentIcon = getPaymentIcon(o.payment_method);
+            const remainHtml = (o.status === 'Approved' && o.activated_at) ? 
+                `<div class="live-stats-row">
+                    <span class="live-remaining"><i class="fas fa-hourglass-half"></i> ${getRemainingTime(o.activated_at)}</span>
+                </div>` : '';
+            
+            html += `
+                <div class="live-card ${isNew ? 'new-order' : ''}" data-order-id="${o.id}">
+                    <div class="live-card-header">
+                        <span class="live-plan"><i class="fas fa-mobile-alt"></i> ${o.plan}</span>
+                        <span class="live-status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="live-phone">
+                        <i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}
+                    </div>
+                    <div class="live-price">
+                        ${o.price.toLocaleString()} K
+                        <span class="live-payment-icon">${paymentIcon}</span>
+                    </div>
+                    <div class="live-date">
+                        <i class="fas fa-clock"></i> ${new Date(o.created_at).toLocaleTimeString()}
+                    </div>
+                    ${remainHtml}
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        
+        // Auto-scroll to new order if exists
+        if (hasNew && liveOrdersData.length > 0) {
+            const firstCard = container.querySelector('.live-card');
+            if (firstCard) {
+                firstCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }
+
+    // Search live order by phone
+    async function searchLiveOrder() {
+        const phone = document.getElementById('liveSearchPhoneInput').value.trim();
+        const msgDiv = document.getElementById('liveSearchMsg');
+        
+        if (!phone || phone.length < 9) {
+            if (msgDiv) {
+                msgDiv.className = 'live-search-message error';
+                msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)';
+                msgDiv.style.display = 'block';
+                setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+            }
+            return;
+        }
+        
+        if (msgDiv) {
+            msgDiv.className = 'live-search-message';
+            msgDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ရှာဖွေနေသည်...';
+            msgDiv.style.display = 'block';
+        }
+        
+        try {
+            const res = await fetch(`${LIVE_API}/api/orders/${encodeURIComponent(phone)}`);
+            const data = await res.json();
+            const orders = data.orders || [];
+            
+            if (orders.length === 0) {
+                if (msgDiv) {
+                    msgDiv.className = 'live-search-message error';
+                    msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
+                    setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+                }
+                clearLiveSearch();
+            } else {
+                if (msgDiv) {
+                    msgDiv.className = 'live-search-message success';
+                    msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။';
+                    setTimeout(() => { msgDiv.style.display = 'none'; }, 2000);
+                }
+                liveCurrentSearchPhone = phone;
+                liveOrdersData = orders.slice(0, 50);
+                renderLiveOrders(false);
+            }
+        } catch(e) {
+            if (msgDiv) {
+                msgDiv.className = 'live-search-message error';
+                msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ရှာဖွေရာတွင် အမှားရှိပါသည်။';
+                setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+            }
+        }
+    }
+
+    // Clear live search
+    function clearLiveSearch() {
+        liveCurrentSearchPhone = '';
+        const searchInput = document.getElementById('liveSearchPhoneInput');
+        if (searchInput) searchInput.value = '';
+        const msgDiv = document.getElementById('liveSearchMsg');
+        if (msgDiv) msgDiv.style.display = 'none';
+        fetchLiveOrders();
+    }
+
+    // Start auto refresh
+    function startLiveAutoRefresh() {
+        if (liveRefreshInterval) clearInterval(liveRefreshInterval);
+        if (liveTimerInterval) clearInterval(liveTimerInterval);
+        
+        liveRefreshSec = 30;
+        const timerSpan = document.getElementById('liveTimerDisplay');
+        const updateSpan = document.getElementById('liveUpdateStatus');
+        
+        const updateTimer = () => {
+            if (timerSpan) {
+                timerSpan.innerText = `auto ${liveRefreshSec}s`;
+                if (updateSpan) updateSpan.innerHTML = `အလိုအလျောက်: ${liveRefreshSec}s`;
+                liveRefreshSec--;
+                if (liveRefreshSec < 0) liveRefreshSec = 30;
+            }
+        };
+        
+        liveTimerInterval = setInterval(updateTimer, 1000);
+        
+        liveRefreshInterval = setInterval(async () => {
+            await fetchLiveOrders();
+            liveRefreshSec = 30;
+            if (timerSpan) timerSpan.innerText = 'auto 30s';
+            if (updateSpan) updateSpan.innerHTML = 'အလိုအလျောက်: 30s';
+        }, 30000);
+    }
+
+    // Stop auto refresh
+    function stopLiveAutoRefresh() {
+        if (liveRefreshInterval) {
+            clearInterval(liveRefreshInterval);
+            liveRefreshInterval = null;
+        }
+        if (liveTimerInterval) {
+            clearInterval(liveTimerInterval);
+            liveTimerInterval = null;
+        }
+    }
+
+    // Initialize Live component
+    function initLiveComponent() {
+        fetchLiveOrders();
+        startLiveAutoRefresh();
+    }
+
+    // Cleanup Live component
+    function cleanupLiveComponent() {
+        stopLiveAutoRefresh();
+    }
+
+    // Expose functions to window for external access
+    window.searchLiveOrderExternal = searchLiveOrder;
+    window.clearLiveSearchExternal = clearLiveSearch;
+    window.getCurrentUserPhone = getCurrentUserPhone;
+    window.initLiveComponent = initLiveComponent;
+    window.cleanupLiveComponent = cleanupLiveComponent;
+
+    // Auto-initialize when script loads
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            initLiveComponent();
+        });
+    } else {
+        initLiveComponent();
+    }
+</script>
