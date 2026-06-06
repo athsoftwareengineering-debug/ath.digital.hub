@@ -862,6 +862,7 @@ app.listen(PORT, () => {
 ║     📊 Live Dashboard:  http://localhost:${PORT}/dashboard_live.html      ║
 ║     🔴 Live Events:     http://localhost:${PORT}/api/live/events          ║
 ║     📡 Public Live API: http://localhost:${PORT}/api/live/orders          ║
+║     🔍 Search Live:     http://localhost:${PORT}/api/live/order/09xxxxxxx ║
 ║                                                                          ║
 ║     💳 Payment Methods:                                                  ║
 ║        - KBZ Pay (09789999368)                                           ║
