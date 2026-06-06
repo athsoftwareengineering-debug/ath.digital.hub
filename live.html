@@ -2,6 +2,19 @@
 <!DOCTYPE html>
 <div id="liveApp">
     <style>
+        /* CSS Variables များ သတ်မှတ်ခြင်း */
+        :root {
+            --bg-dark: #0a0c15;
+            --bg-card: #0f111a;
+            --cyan: #00d4ff;
+            --emerald: #10b981;
+            --rose: #f43f5e;
+            --amber: #f59e0b;
+            --violet: #8b5cf6;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
         .live-container {
             padding: 0;
         }
@@ -81,6 +94,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            color: var(--text-primary);
         }
         .live-badge {
             font-size: 0.6rem;
@@ -92,7 +106,7 @@
             display: inline-block;
         }
         @keyframes blinkRed {
-            0%,100% { background: rgba(244,63,94,0.2); }
+            0%, 100% { background: rgba(244,63,94,0.2); color: #f43f5e; }
             50% { background: rgba(244,63,94,0.9); color: white; }
         }
         .live-timer {
@@ -100,6 +114,7 @@
             padding: 4px 12px;
             border-radius: 40px;
             font-size: 0.6rem;
+            color: var(--text-secondary);
         }
         .live-orders-scrollable {
             max-height: calc(100vh - 340px);
@@ -128,7 +143,7 @@
             animation: blinkCyan 0.5s ease-in-out 2;
         }
         @keyframes blinkCyan {
-            0%,100% { background: rgba(0,212,255,0); }
+            0%, 100% { background: rgba(0,212,255,0); }
             50% { background: rgba(0,212,255,0.2); box-shadow: 0 0 15px var(--cyan); }
         }
         .live-card-header {
@@ -162,6 +177,7 @@
             padding: 4px 12px;
             border-radius: 40px;
             margin-top: 4px;
+            color: var(--text-primary);
         }
         .live-price {
             font-weight: 800;
@@ -200,6 +216,7 @@
             background: rgba(0,212,255,0.1);
             padding: 2px 8px;
             border-radius: 40px;
+            color: var(--cyan);
         }
         .live-status-bar {
             display: flex;
@@ -220,7 +237,7 @@
             margin-right: 4px;
         }
         @keyframes pulse {
-            0%,100% { opacity: 1; }
+            0%, 100% { opacity: 1; }
             50% { opacity: 0.4; }
         }
         .live-empty {
@@ -286,7 +303,6 @@
     let liveTimerInterval = null;
     let liveRefreshSec = 30;
     let lastOrderIds = [];
-    let currentUserPhoneForLive = null;
 
     // Get current user phone from parent (if available)
     function getCurrentUserPhone() {
@@ -306,7 +322,7 @@
     function getRemainingTime(activatedAt) {
         if (!activatedAt) return null;
         const remain = new Date(activatedAt).getTime() + 30*86400000 - Date.now();
-        if (remain <= 0) return "Expired";
+        if (remain <= 0) return "သက်တမ်းကုန်";
         const d = Math.floor(remain/86400000);
         const h = Math.floor((remain%86400000)/3600000);
         const m = Math.floor((remain%3600000)/60000);
@@ -342,6 +358,13 @@
                 lastOrderIds = newIds;
                 liveOrdersData = filtered.slice(0, 50);
                 renderLiveOrders(hasNew);
+                
+                // Update last update time
+                const updateSpan = document.getElementById('liveUpdateStatus');
+                if (updateSpan) {
+                    const now = new Date();
+                    updateSpan.innerHTML = `နောက်ဆုံး: ${now.toLocaleTimeString()}`;
+                }
             }
         } catch(e) {
             console.error('Error fetching live orders:', e);
@@ -377,7 +400,7 @@
             html += `
                 <div class="live-card ${isNew ? 'new-order' : ''}" data-order-id="${o.id}">
                     <div class="live-card-header">
-                        <span class="live-plan"><i class="fas fa-mobile-alt"></i> ${o.plan}</span>
+                        <span class="live-plan"><i class="fas fa-mobile-alt"></i> ${escapeHtml(o.plan)}</span>
                         <span class="live-status ${statusClass}">${statusText}</span>
                     </div>
                     <div class="live-phone">
@@ -389,6 +412,7 @@
                     </div>
                     <div class="live-date">
                         <i class="fas fa-clock"></i> ${new Date(o.created_at).toLocaleTimeString()}
+                        <span style="margin-left:8px;"><i class="fas fa-calendar"></i> ${new Date(o.created_at).toLocaleDateString()}</span>
                     </div>
                     ${remainHtml}
                 </div>
@@ -401,8 +425,22 @@
             const firstCard = container.querySelector('.live-card');
             if (firstCard) {
                 firstCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setTimeout(() => {
+                    firstCard.classList.remove('new-order');
+                }, 2000);
             }
         }
+    }
+
+    // Escape HTML
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
     }
 
     // Search live order by phone
@@ -467,6 +505,14 @@
         fetchLiveOrders();
     }
 
+    // Refresh live orders (exposed for parent)
+    function refreshLiveOrders() {
+        fetchLiveOrders();
+        liveRefreshSec = 30;
+        const timerSpan = document.getElementById('liveTimerDisplay');
+        if (timerSpan) timerSpan.innerText = 'auto 30s';
+    }
+
     // Start auto refresh
     function startLiveAutoRefresh() {
         if (liveRefreshInterval) clearInterval(liveRefreshInterval);
@@ -477,9 +523,8 @@
         const updateSpan = document.getElementById('liveUpdateStatus');
         
         const updateTimer = () => {
-            if (timerSpan) {
+            if (timerSpan && document.getElementById('liveTab')?.classList?.contains('active') !== false) {
                 timerSpan.innerText = `auto ${liveRefreshSec}s`;
-                if (updateSpan) updateSpan.innerHTML = `အလိုအလျောက်: ${liveRefreshSec}s`;
                 liveRefreshSec--;
                 if (liveRefreshSec < 0) liveRefreshSec = 30;
             }
@@ -491,7 +536,6 @@
             await fetchLiveOrders();
             liveRefreshSec = 30;
             if (timerSpan) timerSpan.innerText = 'auto 30s';
-            if (updateSpan) updateSpan.innerHTML = 'အလိုအလျောက်: 30s';
         }, 30000);
     }
 
@@ -518,12 +562,14 @@
         stopLiveAutoRefresh();
     }
 
-    // Expose functions to window for external access
+    // Expose functions to window for external access (index.html အတွက်)
     window.searchLiveOrderExternal = searchLiveOrder;
     window.clearLiveSearchExternal = clearLiveSearch;
-    window.getCurrentUserPhone = getCurrentUserPhone;
+    window.fetchLiveOrders = fetchLiveOrders;
+    window.refreshLiveOrders = refreshLiveOrders;
     window.initLiveComponent = initLiveComponent;
     window.cleanupLiveComponent = cleanupLiveComponent;
+    window.getCurrentUserPhone = getCurrentUserPhone;
 
     // Auto-initialize when script loads
     if (document.readyState === 'loading') {
