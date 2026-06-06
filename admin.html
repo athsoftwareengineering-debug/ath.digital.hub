@@ -138,7 +138,7 @@
             50% { transform: scale(1.15); background: #e11d48; }
         }
         
-        /* Notification Dropdown - Fixed to appear ABOVE stats (higher z-index, positioned properly) */
+        /* Notification Dropdown */
         .notification-dropdown {
             position: absolute;
             top: 50px;
@@ -269,14 +269,12 @@
         }
         @keyframes pulseDot { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         
-        /* Stats Grid - positioned below top bar */
+        /* Stats Grid */
         .orders-stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 12px;
             margin-bottom: 16px;
-            position: relative;
-            z-index: 1;
         }
         .stat-card {
             background: linear-gradient(145deg, rgba(18,22,35,0.9), rgba(10,12,21,0.95));
@@ -756,7 +754,7 @@
 <body>
 <div id="app">
     <div class="container" id="adminContent" style="display: none;">
-        <!-- Top Bar with Menu Button and Notification Bell -->
+        <!-- Top Bar -->
         <div class="top-bar">
             <div class="top-bar-left">
                 <button class="menu-btn" onclick="toggleDrawer()">
@@ -767,13 +765,11 @@
                 </div>
             </div>
             <div class="top-bar-right">
-                <!-- Notification Bell -->
                 <div class="notification-bell">
-                    <button class="top-icon-btn" onclick="toggleNotificationDropdown()" id="notificationBellBtn" style="position: relative;">
+                    <button class="top-icon-btn" onclick="toggleNotificationDropdown()" id="notificationBellBtn">
                         <i class="fas fa-bell"></i>
                         <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
                     </button>
-                    <!-- Notification Dropdown - This will appear above stats -->
                     <div id="notificationDropdown" class="notification-dropdown">
                         <div class="notification-header">
                             <h4><i class="fas fa-bell"></i> Notifications</h4>
@@ -831,7 +827,7 @@
             </ul>
         </div>
         
-        <!-- Stats Grid - This will be visible below the top bar, notification dropdown will appear above these -->
+        <!-- Stats Grid -->
         <div class="orders-stats-grid">
             <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label"><i class="fas fa-shopping-cart"></i> Total</div></div>
             <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label"><i class="fas fa-clock"></i> Pending</div></div>
@@ -1004,6 +1000,36 @@
         showToast(`📋 ${text} copied!`);
     }
     
+    // ==================== STATS UPDATE FUNCTIONS ====================
+    function updateAllStats() {
+        // Update main stats grid
+        const total = allOrders.length;
+        const pending = allOrders.filter(o => o.status === 'Pending').length;
+        const approved = allOrders.filter(o => o.status === 'Approved').length;
+        const rejected = allOrders.filter(o => o.status === 'Rejected').length;
+        const revenue = approved.reduce((s, o) => s + o.price, 0);
+        const cost = approved.reduce((s, o) => s + getCostPrice(o.plan), 0);
+        const profit = revenue - cost;
+        
+        document.getElementById('totalOrders').innerHTML = total;
+        document.getElementById('pendingOrders').innerHTML = pending;
+        document.getElementById('approvedOrders').innerHTML = approved;
+        document.getElementById('rejectedOrders').innerHTML = rejected;
+        document.getElementById('totalRevenue').innerHTML = revenue.toLocaleString() + 'K';
+        document.getElementById('totalCost').innerHTML = cost.toLocaleString() + 'K';
+        document.getElementById('totalProfit').innerHTML = profit.toLocaleString() + 'K';
+        document.getElementById('avgProfit').innerHTML = (approved.length ? Math.round(profit / approved.length) : 0).toLocaleString() + 'K';
+        
+        // Update drawer stats
+        document.getElementById('drawerTotalOrders').innerText = total;
+        document.getElementById('drawerTotalUsers').innerText = userStats.length;
+        document.getElementById('drawerPendingOrders').innerText = pending;
+        document.getElementById('drawerApprovedOrders').innerText = approved;
+        document.getElementById('drawerRejectedOrders').innerText = rejected;
+        document.getElementById('drawerTotalRevenue').innerText = revenue.toLocaleString() + 'K';
+        document.getElementById('drawerTotalProfit').innerText = profit.toLocaleString() + 'K';
+    }
+    
     // ==================== NOTIFICATION FUNCTIONS ====================
     function loadNotificationsFromStorage() {
         const saved = localStorage.getItem('adminNotifications');
@@ -1095,8 +1121,7 @@
                 }
                 allOrders = data.orders;
                 if (currentTab === 'orders') { applyFiltersAndSearch(); }
-                updateDrawerStats();
-                updateOrdersStats(allOrders);
+                updateAllStats();
             }
         } catch(e) { console.error('Error checking orders:', e); }
     }
@@ -1207,23 +1232,12 @@
         document.getElementById('bottomNav').style.display = 'none';
     }
 
-    function updateDrawerStats() {
-        const pending = allOrders.filter(o => o.status === 'Pending').length;
-        const approved = allOrders.filter(o => o.status === 'Approved').length;
-        const rejected = allOrders.filter(o => o.status === 'Rejected').length;
-        const revenue = allOrders.filter(o => o.status === 'Approved').reduce((s, o) => s + o.price, 0);
-        const cost = allOrders.filter(o => o.status === 'Approved').reduce((s, o) => s + getCostPrice(o.plan), 0);
-        const profit = revenue - cost;
-        document.getElementById('drawerTotalOrders').innerText = allOrders.length;
-        document.getElementById('drawerTotalUsers').innerText = userStats.length;
-        document.getElementById('drawerPendingOrders').innerText = pending;
-        document.getElementById('drawerApprovedOrders').innerText = approved;
-        document.getElementById('drawerRejectedOrders').innerText = rejected;
-        document.getElementById('drawerTotalRevenue').innerText = revenue.toLocaleString() + 'K';
-        document.getElementById('drawerTotalProfit').innerText = profit.toLocaleString() + 'K';
+    async function loadAllData() { 
+        await loadOrders(); 
+        await loadUserStats(); 
+        await loadProducts(); 
+        updateAllStats();
     }
-
-    async function loadAllData() { await loadOrders(); await loadUserStats(); await loadProducts(); updateDrawerStats(); }
 
     async function loadOrders() {
         try {
@@ -1234,13 +1248,39 @@
                 if (allOrders.length > 0 && lastOrderId === null) { lastOrderId = allOrders[0].id; }
                 applyFiltersAndSearch(); 
                 document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | Total: ${allOrders.length}`;
-                updateDrawerStats();
+                updateAllStats();
+            } else {
+                allOrders = [];
+                applyFiltersAndSearch();
+                updateAllStats();
             }
-        } catch(e) { document.getElementById('ordersList').innerHTML = '<div class="loading">Connection Error</div>'; }
+        } catch(e) { 
+            console.error('Error loading orders:', e);
+            document.getElementById('ordersList').innerHTML = '<div class="loading">Connection Error</div>';
+            allOrders = [];
+            updateAllStats();
+        }
     }
 
     async function loadUserStats() {
-        try { const res = await fetch(`${API_BASE}/api/admin/user-stats`); const data = await res.json(); if (data.stats) { userStats = data.stats; renderUsersTab(); updateDrawerStats(); } } catch(e) { console.error('Error loading user stats:', e); }
+        try { 
+            const res = await fetch(`${API_BASE}/api/admin/user-stats`); 
+            const data = await res.json(); 
+            if (data.stats) { 
+                userStats = data.stats; 
+                renderUsersTab(); 
+                updateAllStats();
+            } else {
+                userStats = [];
+                renderUsersTab();
+                updateAllStats();
+            }
+        } catch(e) { 
+            console.error('Error loading user stats:', e);
+            userStats = [];
+            renderUsersTab();
+            updateAllStats();
+        }
     }
 
     async function loadProducts() {
@@ -1273,25 +1313,6 @@
     function exportUsersToCSV() { if (!userStats.length) { showToast('No users to export', true); return; } let csv = "User ID,Phone,Username,Order Count,Reject Count,Reject Rate,Suspect,Blocked,Joined Date\n"; userStats.forEach(u => { const rejectRate = u.order_count > 0 ? ((u.reject_count / u.order_count) * 100).toFixed(1) : 0; csv += `"${u.user_id || 'N/A'}","${u.phone}","${u.username || ''}",${u.order_count},${u.reject_count},${rejectRate}%,${u.suspect_flag ? 'Yes' : 'No'},${u.blocked ? 'Yes' : 'No'},"${new Date(u.created_at).toLocaleDateString()}"\n`; }); const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); const url = URL.createObjectURL(blob); link.href = url; link.setAttribute('download', `users_${new Date().toISOString().slice(0,19)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); showToast('📁 Users exported to CSV'); }
     function exportOrdersToCSV() { if (!allOrders.length) { showToast('No orders to export', true); return; } let csv = "Order ID,Phone,Plan,Price,Status,Payment Method,Sender Name,Last5 Digits,Order Date,Activated Date\n"; allOrders.forEach(o => { csv += `"${o.id}","${o.phone}","${o.plan}",${o.price},"${o.status}","${o.payment_method || 'kpay'}","${o.sender_name || ''}","${o.last5_digits || ''}","${new Date(o.created_at).toLocaleString()}","${o.activated_at ? new Date(o.activated_at).toLocaleString() : ''}"\n`; }); const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); const url = URL.createObjectURL(blob); link.href = url; link.setAttribute('download', `orders_${new Date().toISOString().slice(0,19)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); showToast('📁 Orders exported to CSV'); }
 
-    function updateOrdersStats(orders) {
-        const total = orders.length;
-        const pending = orders.filter(o => o.status === 'Pending').length;
-        const approved = orders.filter(o => o.status === 'Approved').length;
-        const rejected = orders.filter(o => o.status === 'Rejected').length;
-        const revenue = approved.reduce((s, o) => s + o.price, 0);
-        const cost = approved.reduce((s, o) => s + getCostPrice(o.plan), 0);
-        const profit = revenue - cost;
-        document.getElementById('totalOrders').innerHTML = total;
-        document.getElementById('pendingOrders').innerHTML = pending.length;
-        document.getElementById('approvedOrders').innerHTML = approved.length;
-        document.getElementById('rejectedOrders').innerHTML = rejected.length;
-        document.getElementById('totalRevenue').innerHTML = revenue.toLocaleString() + 'K';
-        document.getElementById('totalCost').innerHTML = cost.toLocaleString() + 'K';
-        document.getElementById('totalProfit').innerHTML = profit.toLocaleString() + 'K';
-        document.getElementById('avgProfit').innerHTML = (approved.length ? Math.round(profit / approved.length) : 0).toLocaleString() + 'K';
-        updateDrawerStats();
-    }
-
     function renderUsersTab() {
         const container = document.getElementById('usersList');
         if (!userStats.length) { container.innerHTML = '<div class="loading">No user data available</div>'; return; }
@@ -1301,11 +1322,10 @@
         let html = '';
         for (const user of filteredUsers) {
             const rejectRate = user.order_count > 0 ? ((user.reject_count / user.order_count) * 100).toFixed(0) : 0;
-            let rateClass = ''; if (rejectRate >= 50) rateClass = 'high'; else if (rejectRate >= 30) rateClass = 'medium';
             let statusClass = 'normal'; let statusText = '🟢 Normal';
             if (user.blocked) { statusClass = 'blocked'; statusText = '🔴 Blocked'; }
             else if (user.suspect_flag) { statusClass = 'suspect'; statusText = '🟡 Suspect'; }
-            html += `<div class="user-card"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05);"><div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;"><span style="font-family:monospace; font-size:0.8rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;" onclick="copyToClipboard('${user.phone}')">📞 ${maskPhone(user.phone)} 📋</span><span style="font-family:monospace; font-size:0.7rem; background:rgba(0,212,255,0.1); padding:3px 10px; border-radius:40px; color:var(--cyan); display:inline-flex; align-items:center; gap:6px;" onclick="copyToClipboard('${user.user_id || ''}')">🆔 ${user.user_id || 'N/A'} 📋</span></div><span style="font-size:0.6rem; padding:3px 8px; border-radius:40px; background:${statusClass === 'blocked' ? 'rgba(244,63,94,0.2)' : (statusClass === 'suspect' ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)')}; color:${statusClass === 'blocked' ? '#fb7185' : (statusClass === 'suspect' ? '#fbbf24' : '#34d399')};">${statusText}</span></div><div style="display:flex; justify-content:space-around; margin-bottom:10px;"><div style="text-align:center;"><div style="font-size:1.1rem; font-weight:700;">${user.order_count || 0}</div><div style="font-size:0.55rem; color:#64748b;">Orders</div></div><div style="text-align:center;"><div style="font-size:1.1rem; font-weight:700; ${rejectRate >= 50 ? 'color:var(--rose)' : (rejectRate >= 30 ? 'color:var(--amber)' : '')}">${user.reject_count || 0}</div><div style="font-size:0.55rem; color:#64748b;">Rejected</div></div><div style="text-align:center;"><div style="font-size:1.1rem; font-weight:700; ${rejectRate >= 50 ? 'color:var(--rose)' : (rejectRate >= 30 ? 'color:var(--amber)' : '')}">${rejectRate}%</div><div style="font-size:0.55rem; color:#64748b;">Reject Rate</div></div></div><div style="display:flex; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05); flex-wrap:wrap;">${!user.blocked ? `<button onclick="blockUser('${user.phone}', true)" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(244,63,94,0.2); color:#fb7185;">🔴 Block</button>` : `<button onclick="blockUser('${user.phone}', false)" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(16,185,129,0.2); color:#34d399;">🟢 Unblock</button>`}<button onclick="deleteUser('${user.phone}')" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(244,63,94,0.2); color:#fb7185;">❌ Delete User</button><button onclick="deleteAllOrders('${user.phone}')" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(245,158,11,0.2); color:#fbbf24;">🗑 Delete All Orders</button>${user.suspect_flag ? `<button onclick="clearSuspectFlag('${user.phone}')" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(0,212,255,0.15); color:var(--cyan);">✓ Clear Flag</button>` : ''}</div></div>`;
+            html += `<div class="user-card"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05);"><div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;"><span style="font-family:monospace; font-size:0.8rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;" onclick="copyToClipboard('${user.phone}')">📞 ${maskPhone(user.phone)} 📋</span><span style="font-family:monospace; font-size:0.7rem; background:rgba(0,212,255,0.1); padding:3px 10px; border-radius:40px; color:var(--cyan); display:inline-flex; align-items:center; gap:6px;" onclick="copyToClipboard('${user.user_id || ''}')">🆔 ${user.user_id || 'N/A'} 📋</span></div><span style="font-size:0.6rem; padding:3px 8px; border-radius:40px; background:${statusClass === 'blocked' ? 'rgba(244,63,94,0.2)' : (statusClass === 'suspect' ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)')}; color:${statusClass === 'blocked' ? '#fb7185' : (statusClass === 'suspect' ? '#fbbf24' : '#34d399')};">${statusText}</span></div><div style="display:flex; justify-content:space-around; margin-bottom:10px;"><div style="text-align:center;"><div style="font-size:1.1rem; font-weight:700;">${user.order_count || 0}</div><div style="font-size:0.55rem; color:#64748b;">Orders</div></div><div style="text-align:center;"><div style="font-size:1.1rem; font-weight:700;">${user.reject_count || 0}</div><div style="font-size:0.55rem; color:#64748b;">Rejected</div></div><div style="text-align:center;"><div style="font-size:1.1rem; font-weight:700;">${rejectRate}%</div><div style="font-size:0.55rem; color:#64748b;">Reject Rate</div></div></div><div style="display:flex; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05); flex-wrap:wrap;">${!user.blocked ? `<button onclick="blockUser('${user.phone}', true)" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(244,63,94,0.2); color:#fb7185;">🔴 Block</button>` : `<button onclick="blockUser('${user.phone}', false)" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(16,185,129,0.2); color:#34d399;">🟢 Unblock</button>`}<button onclick="deleteUser('${user.phone}')" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(244,63,94,0.2); color:#fb7185;">❌ Delete User</button><button onclick="deleteAllOrders('${user.phone}')" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(245,158,11,0.2); color:#fbbf24;">🗑 Delete All Orders</button>${user.suspect_flag ? `<button onclick="clearSuspectFlag('${user.phone}')" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(0,212,255,0.15); color:var(--cyan);">✓ Clear Flag</button>` : ''}</div></div>`;
         }
         container.innerHTML = html;
     }
@@ -1320,7 +1340,7 @@
         if (startDate) { const start = new Date(startDate); start.setHours(0,0,0,0); filtered = filtered.filter(o => new Date(o.created_at) >= start); }
         if (endDate) { const end = new Date(endDate); end.setHours(23,59,59,999); filtered = filtered.filter(o => new Date(o.created_at) <= end); }
         renderOrders(filtered);
-        updateOrdersStats(filtered);
+        updateAllStats();
     }
 
     function searchByPhoneOrId() { const searchValue = document.getElementById('searchInput').value.trim(); if (!searchValue) return; currentSearchPhone = searchValue; applyFiltersAndSearch(); }
