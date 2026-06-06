@@ -282,7 +282,7 @@
             display: block;
         }
         
-        /* Stats Grid - For Menu Tab Only */
+        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -780,11 +780,10 @@
                 </div>
             </div>
             <div class="top-bar-right">
-                <!-- Sync Button -->
                 <button class="top-icon-btn" onclick="manualRefresh()" title="Sync Data">
                     <i class="fas fa-sync-alt"></i>
                 </button>
-                <!-- Notification Bell - Now First in the right section -->
+                <!-- Notification Bell -->
                 <div class="notification-bell">
                     <button class="top-icon-btn" onclick="toggleNotificationDropdown()" id="notificationBellBtn">
                         <i class="fas fa-bell"></i>
@@ -793,16 +792,15 @@
                     <div id="notificationDropdown" class="notification-dropdown">
                         <div class="notification-header">
                             <h4><i class="fas fa-bell"></i> Notifications</h4>
-                            <button class="notification-clear" onclick="clearAllNotifications()">Clear all</button>
+                            <button class="notification-clear" onclick="clearAllNotifications()" id="clearNotificationsBtn">Clear all</button>
                         </div>
                         <div id="notificationList" class="notification-list">
                             <div class="notification-empty">No notifications yet</div>
                         </div>
                     </div>
                 </div>
-                <!-- Store Button - Now Second -->
                 <button class="top-icon-btn" onclick="window.location.href='/'" title="Go to Store">
-                    <i class="fas fa-store"></i>
+                    <i class="fas fa-store</i>
                 </button>
             </div>
         </div>
@@ -842,7 +840,7 @@
             </ul>
         </div>
         
-        <!-- ==================== MENU TAB (Stats Only) ==================== -->
+        <!-- MENU TAB (Stats Only) -->
         <div id="menuTab" class="tab-content active">
             <div class="stats-grid" id="statsGrid">
                 <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label"><i class="fas fa-shopping-cart"></i> Total Orders</div></div>
@@ -856,7 +854,7 @@
             </div>
         </div>
         
-        <!-- ==================== ORDERS TAB ==================== -->
+        <!-- ORDERS TAB -->
         <div id="ordersTab" class="tab-content">
             <div class="search-bar">
                 <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by phone, user ID, or name">
@@ -882,7 +880,7 @@
             <div class="orders-list" id="ordersList"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading orders...</div></div>
         </div>
         
-        <!-- ==================== USERS TAB ==================== -->
+        <!-- USERS TAB -->
         <div id="usersTab" class="tab-content">
             <div class="search-bar">
                 <input type="text" id="userSearchInput" class="search-input" placeholder="🔍 Search by phone, user ID, or name">
@@ -892,7 +890,7 @@
             <div class="users-list" id="usersList"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading users...</div></div>
         </div>
         
-        <!-- ==================== MARKET TAB ==================== -->
+        <!-- MARKET TAB -->
         <div id="marketTab" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <h3><i class="fas fa-store"></i> Products</h3>
@@ -904,24 +902,12 @@
         <div class="last-update" id="lastUpdate"></div>
     </div>
     
-    <!-- Bottom Navigation Bar - Menu, Orders, Users, Market -->
+    <!-- Bottom Navigation Bar -->
     <div class="bottom-nav" id="bottomNav" style="display: none;">
-        <button class="nav-item active" data-tab="menu">
-            <i class="fas fa-chart-line"></i>
-            <span>Menu</span>
-        </button>
-        <button class="nav-item" data-tab="orders">
-            <i class="fas fa-list-ul"></i>
-            <span>Orders</span>
-        </button>
-        <button class="nav-item" data-tab="users">
-            <i class="fas fa-users"></i>
-            <span>Users</span>
-        </button>
-        <button class="nav-item" data-tab="market">
-            <i class="fas fa-store"></i>
-            <span>Market</span>
-        </button>
+        <button class="nav-item active" data-tab="menu"><i class="fas fa-chart-line"></i><span>Menu</span></button>
+        <button class="nav-item" data-tab="orders"><i class="fas fa-list-ul"></i><span>Orders</span></button>
+        <button class="nav-item" data-tab="users"><i class="fas fa-users"></i><span>Users</span></button>
+        <button class="nav-item" data-tab="market"><i class="fas fa-store"></i><span>Market</span></button>
     </div>
     
     <div id="loginBox" class="login-box">
@@ -997,7 +983,7 @@
     let currentTab = "menu";
     let editingProductId = null;
     
-    // Notification System
+    // ==================== NOTIFICATION SYSTEM (FIXED) ====================
     let notifications = [];
     let lastOrderId = null;
     let notificationCheckInterval = null;
@@ -1077,11 +1063,17 @@
         document.getElementById('drawerTotalProfit').innerText = profit.toLocaleString() + 'K';
     }
     
-    // ==================== NOTIFICATION FUNCTIONS ====================
+    // ==================== NOTIFICATION FUNCTIONS (FIXED) ====================
     function loadNotificationsFromStorage() {
         const saved = localStorage.getItem('adminNotifications');
         if (saved) {
-            try { notifications = JSON.parse(saved); updateNotificationUI(); } catch(e) {}
+            try { 
+                notifications = JSON.parse(saved); 
+                updateNotificationUI(); 
+            } catch(e) { 
+                console.error('Error loading notifications:', e);
+                notifications = [];
+            }
         }
     }
     
@@ -1102,17 +1094,35 @@
         if (notifications.length > 50) notifications.pop();
         saveNotificationsToStorage();
         updateNotificationUI();
+        // Show toast notification
         showToast(`🆕 New order! ${order.plan} - ${order.price.toLocaleString()} MMK`);
+        
+        // Play notification sound (optional)
+        try {
+            const audio = new Audio();
+            // Silent - just for vibrancy
+        } catch(e) {}
     }
     
     function updateNotificationUI() {
         const badge = document.getElementById('notificationBadge');
         const listContainer = document.getElementById('notificationList');
         const unreadCount = notifications.filter(n => !n.read).length;
-        if (unreadCount > 0) { badge.style.display = 'flex'; badge.innerText = unreadCount > 99 ? '99+' : unreadCount; }
-        else { badge.style.display = 'none'; }
+        
+        if (unreadCount > 0) { 
+            badge.style.display = 'flex'; 
+            badge.innerText = unreadCount > 99 ? '99+' : unreadCount; 
+        } else { 
+            badge.style.display = 'none'; 
+        }
+        
         if (!listContainer) return;
-        if (notifications.length === 0) { listContainer.innerHTML = '<div class="notification-empty">No notifications yet</div>'; return; }
+        
+        if (notifications.length === 0) { 
+            listContainer.innerHTML = '<div class="notification-empty">📭 No notifications yet</div>'; 
+            return; 
+        }
+        
         let html = '';
         for (const notif of notifications) {
             const date = new Date(notif.time);
@@ -1132,8 +1142,12 @@
     
     function markNotificationRead(notificationId) {
         const notif = notifications.find(n => n.id == notificationId);
-        if (notif && !notif.read) { notif.read = true; saveNotificationsToStorage(); updateNotificationUI(); }
-        closeNotificationDropdown();
+        if (notif && !notif.read) { 
+            notif.read = true; 
+            saveNotificationsToStorage(); 
+            updateNotificationUI(); 
+        }
+        // Don't close dropdown automatically - let user close manually
     }
     
     function clearAllNotifications() {
@@ -1141,7 +1155,6 @@
         saveNotificationsToStorage();
         updateNotificationUI();
         showToast('All notifications cleared');
-        closeNotificationDropdown();
     }
     
     function toggleNotificationDropdown() {
@@ -1168,52 +1181,40 @@
             const data = await res.json();
             if (data.orders && data.orders.length > 0) {
                 const latestOrder = data.orders[0];
+                // Check if this is a new order (not the same as last)
                 if (lastOrderId !== latestOrder.id) {
-                    if (lastOrderId !== null) { addNotification(latestOrder); }
+                    if (lastOrderId !== null) { 
+                        // Only add notification if it's not the first load
+                        addNotification(latestOrder); 
+                    }
                     lastOrderId = latestOrder.id;
                 }
                 allOrders = data.orders;
-                if (currentTab === 'orders') { applyFiltersAndSearch(); }
+                if (currentTab === 'orders') { 
+                    applyFiltersAndSearch(); 
+                }
                 updateAllStats();
             }
-        } catch(e) { console.error('Error checking orders:', e); }
+        } catch(e) { 
+            console.error('Error checking orders:', e); 
+        }
     }
     
     function startNotificationCheck() {
         if (notificationCheckInterval) clearInterval(notificationCheckInterval);
-        notificationCheckInterval = setInterval(() => { if (token === 'logged_in') { checkForNewOrders(); } }, 10000);
+        notificationCheckInterval = setInterval(() => { 
+            if (token === 'logged_in') { 
+                checkForNewOrders(); 
+            } 
+        }, 10000);
     }
     
     function stopNotificationCheck() {
-        if (notificationCheckInterval) { clearInterval(notificationCheckInterval); notificationCheckInterval = null; }
+        if (notificationCheckInterval) { 
+            clearInterval(notificationCheckInterval); 
+            notificationCheckInterval = null; 
+        }
     }
-    
-    // ==================== ALERT FUNCTIONS ====================
-    function showCleanupAlert() { document.getElementById('cleanupAlert').classList.add('active'); }
-    function closeCleanupAlert() { document.getElementById('cleanupAlert').classList.remove('active'); }
-    function showSystemResetAlert() { document.getElementById('resetConfirmInput').value = ''; document.getElementById('keepProductsCheckbox').checked = true; document.getElementById('systemResetAlert').classList.add('active'); }
-    function closeSystemResetAlert() { document.getElementById('systemResetAlert').classList.remove('active'); }
-    
-    async function executeCleanup() {
-        closeCleanupAlert(); showToast('🔄 Cleaning up old orders...');
-        try { const res = await fetch(`${API_BASE}/api/admin/cleanup-old`, { method: 'POST' }); const data = await res.json(); if (data.success) { showToast(`✅ ${data.message}`); loadAllData(); } else { showToast('❌ Cleanup failed: ' + data.error, true); } } catch(e) { showToast('Error: ' + e.message, true); }
-    }
-    
-    async function executeSystemResetFromAlert() {
-        const confirmText = document.getElementById('resetConfirmInput').value.trim();
-        const keepProducts = document.getElementById('keepProductsCheckbox').checked;
-        if (confirmText !== 'RESET_ALL_DATA') { showToast('Please type "RESET_ALL_DATA" to confirm', true); return; }
-        closeSystemResetAlert(); showToast('🔄 Resetting system... Please wait...');
-        try { const res = await fetch(`${API_BASE}/api/admin/system-reset`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirm: confirmText, keepProducts }) }); const data = await res.json(); if (data.success) { showToast('✅ System reset completed!'); notifications = []; saveNotificationsToStorage(); updateNotificationUI(); setTimeout(() => { loadAllData(); }, 1000); } else { showToast('❌ Reset failed: ' + data.error, true); } } catch(e) { showToast('Error: ' + e.message, true); }
-    }
-    
-    function openScreenshot(url) {
-        const modal = document.getElementById('screenshotModal');
-        const img = document.getElementById('modalImage');
-        if (url && url !== 'null') { img.src = url.startsWith('/') ? API_BASE + url : url; } else { img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E'; }
-        modal.classList.add('active');
-    }
-    function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
     
     function getPaymentIcon(method) {
         const icons = { 'kpay': '<i class="fas fa-university" style="color:#1e88e5;"></i> KBZ Pay', 'wavepay': '<i class="fas fa-waveform" style="color:#43a047;"></i> WavePay', 'ayapay': '<i class="fas fa-building" style="color:#f9a825;"></i> AYA Pay' };
@@ -1251,9 +1252,7 @@
         }, 1000);
     }
 
-    function updateCountdown() { 
-        // No display needed
-    }
+    function updateCountdown() { }
 
     function startAutoSync() {
         if (autoSyncInterval) clearInterval(autoSyncInterval);
@@ -1424,6 +1423,33 @@
         for (const o of orders) { if (o.status === 'Approved' && o.activated_at) { startCountdownForOrder(o.id, o.activated_at); } }
     }
 
+    // ==================== ALERT FUNCTIONS ====================
+    function showCleanupAlert() { document.getElementById('cleanupAlert').classList.add('active'); }
+    function closeCleanupAlert() { document.getElementById('cleanupAlert').classList.remove('active'); }
+    function showSystemResetAlert() { document.getElementById('resetConfirmInput').value = ''; document.getElementById('keepProductsCheckbox').checked = true; document.getElementById('systemResetAlert').classList.add('active'); }
+    function closeSystemResetAlert() { document.getElementById('systemResetAlert').classList.remove('active'); }
+    
+    async function executeCleanup() {
+        closeCleanupAlert(); showToast('🔄 Cleaning up old orders...');
+        try { const res = await fetch(`${API_BASE}/api/admin/cleanup-old`, { method: 'POST' }); const data = await res.json(); if (data.success) { showToast(`✅ ${data.message}`); loadAllData(); } else { showToast('❌ Cleanup failed: ' + data.error, true); } } catch(e) { showToast('Error: ' + e.message, true); }
+    }
+    
+    async function executeSystemResetFromAlert() {
+        const confirmText = document.getElementById('resetConfirmInput').value.trim();
+        const keepProducts = document.getElementById('keepProductsCheckbox').checked;
+        if (confirmText !== 'RESET_ALL_DATA') { showToast('Please type "RESET_ALL_DATA" to confirm', true); return; }
+        closeSystemResetAlert(); showToast('🔄 Resetting system... Please wait...');
+        try { const res = await fetch(`${API_BASE}/api/admin/system-reset`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirm: confirmText, keepProducts }) }); const data = await res.json(); if (data.success) { showToast('✅ System reset completed!'); notifications = []; saveNotificationsToStorage(); updateNotificationUI(); setTimeout(() => { loadAllData(); }, 1000); } else { showToast('❌ Reset failed: ' + data.error, true); } } catch(e) { showToast('Error: ' + e.message, true); }
+    }
+    
+    function openScreenshot(url) {
+        const modal = document.getElementById('screenshotModal');
+        const img = document.getElementById('modalImage');
+        if (url && url !== 'null') { img.src = url.startsWith('/') ? API_BASE + url : url; } else { img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E'; }
+        modal.classList.add('active');
+    }
+    function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
+
     async function approveOrder(id) { try { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' }); if (res.ok) { showToast('✅ Approved'); loadOrders(); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); } }
     async function rejectOrder(id) { try { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' }); if (res.ok) { showToast('❌ Rejected'); loadOrders(); loadUserStats(); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); } }
     async function deleteOrder(id) { if (confirm('Delete this order?')) { try { const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' }); if (res.ok) { showToast('🗑 Deleted'); loadOrders(); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); } } }
@@ -1451,6 +1477,12 @@
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
     document.getElementById('searchInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') searchByPhoneOrId(); });
     document.getElementById('userSearchInput').addEventListener('keypress', function(e) { if (e.key === 'Enter') searchUsers(); });
+
+    // Make sure clear button works
+    document.getElementById('clearNotificationsBtn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        clearAllNotifications();
+    });
 
     window.approveOrder = approveOrder; window.rejectOrder = rejectOrder; window.deleteOrder = deleteOrder; window.logout = logout;
     window.applyFilters = applyFilters; window.clearFilters = clearFilters; window.openScreenshot = openScreenshot; window.manualRefresh = manualRefresh;
