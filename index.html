@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>ATH DIGITAL HUB - VIP Plans</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Font ဖယ်ရှားပြီး System Font သုံးမည် -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,7 +25,7 @@
         body {
             background: var(--bg-dark);
             color: var(--text-primary);
-            font-family: 'Inter', 'Noto Sans Myanmar', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans Myanmar', sans-serif;
             background-image: radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.1) 0%, transparent 50%);
             padding-bottom: 70px;
         }
@@ -69,7 +68,14 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-        .logo { font-family: 'Space Grotesk', monospace; font-weight: 700; background: linear-gradient(135deg, #fff, var(--cyan)); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .logo { 
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace; 
+            font-weight: 700; 
+            background: linear-gradient(135deg, #fff, var(--cyan)); 
+            background-clip: text; 
+            -webkit-background-clip: text; 
+            color: transparent; 
+        }
         
         .lang-dropdown {
             position: relative;
@@ -829,6 +835,7 @@
     
     let marketLoaded = false;
     let liveLoaded = false;
+    let currentTab = "home";
 
     // ========== Helper Functions ==========
     function maskPhone(phone) {
@@ -891,7 +898,6 @@
         try {
             const res = await fetch(`${API_BASE}/api/user/${phone}`);
             const data = await res.json();
-            
             if (data.success && data.user) {
                 currentUserId = data.user.user_id;
                 localStorage.setItem('userId', currentUserId);
@@ -1226,7 +1232,6 @@
         const approved = allOrders.filter(o => o.status === 'Approved').length;
         const pending = allOrders.filter(o => o.status === 'Pending').length;
         
-        // Get User ID from currentUserId or localStorage
         const userId = currentUserId || localStorage.getItem('userId') || 'Loading...';
         
         container.innerHTML = `
@@ -1378,8 +1383,6 @@
     }
     
     // ========== Main Functions ==========
-    let currentTab = "home";
-    
     function logout() {
         localStorage.clear();
         currentUser = null;
@@ -1455,12 +1458,10 @@
     const savedId = localStorage.getItem('userId');
     
     if (savedPhone && savedName) {
-        // Set values to variables
         currentUser = savedPhone;
         currentUsername = savedName;
         currentUserId = savedId || null;
         
-        // Show dashboard immediately
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
         document.getElementById('userName').innerHTML = savedName;
@@ -1470,12 +1471,10 @@
         document.getElementById('drawerPhone').innerHTML = maskPhone(savedPhone);
         document.getElementById('drawerUserId').innerHTML = savedId ? `🆔 ${savedId}` : '🆔 Loading...';
         
-        // Load data
         loadUserOrders();
         renderPlans();
         renderProfile();
         
-        // If no userId in localStorage, fetch from server
         if (!savedId) {
             fetchUserData(savedPhone);
         }
