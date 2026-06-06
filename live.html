@@ -260,10 +260,10 @@
             </div>
             <div class="live-search-box">
                 <input type="tel" id="liveSearchPhoneInput" class="live-search-input" placeholder="📱 09xxxxxxxxx">
-                <button class="live-search-btn" onclick="window.searchLiveOrderExternal()">
+                <button class="live-search-btn" onclick="searchLiveOrder()">
                     <i class="fas fa-search"></i> ရှာ
                 </button>
-                <button class="live-clear-btn" onclick="window.clearLiveSearchExternal()">
+                <button class="live-clear-btn" onclick="clearLiveSearch()">
                     <i class="fas fa-times"></i> ရှင်း
                 </button>
             </div>
@@ -295,288 +295,303 @@
 </div>
 
 <script>
-    // Live Component JavaScript
-    const LIVE_API = window.location.origin;
-    let liveOrdersData = [];
-    let liveCurrentSearchPhone = "";
-    let liveRefreshInterval = null;
-    let liveTimerInterval = null;
-    let liveRefreshSec = 30;
-    let lastOrderIds = [];
+    // Live Component JavaScript - No duplicate declarations
+    (function() {
+        // ဒီအတွင်းမှာ variable တွေကို သတ်မှတ်မယ်
+        const LIVE_API = window.location.origin;
+        let liveOrdersData = [];
+        let liveCurrentSearchPhone = "";
+        let liveRefreshInterval = null;
+        let liveTimerInterval = null;
+        let liveRefreshSec = 30;
+        let lastOrderIds = [];
 
-    // Get current user phone from parent (if available)
-    function getCurrentUserPhone() {
-        if (typeof window.getCurrentUserPhone === 'function') {
-            return window.getCurrentUserPhone();
+        // Get current user phone from parent (if available)
+        function getCurrentUserPhone() {
+            if (typeof window.getCurrentUserPhone === 'function') {
+                return window.getCurrentUserPhone();
+            }
+            return localStorage.getItem('userPhone') || null;
         }
-        return localStorage.getItem('userPhone') || null;
-    }
 
-    // Mask phone number
-    function maskPhone(phone) {
-        if (!phone || phone.length < 8) return phone || '';
-        return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
-    }
+        // Mask phone number
+        function maskPhone(phone) {
+            if (!phone || phone.length < 8) return phone || '';
+            return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
+        }
 
-    // Get remaining time
-    function getRemainingTime(activatedAt) {
-        if (!activatedAt) return null;
-        const remain = new Date(activatedAt).getTime() + 30*86400000 - Date.now();
-        if (remain <= 0) return "သက်တမ်းကုန်";
-        const d = Math.floor(remain/86400000);
-        const h = Math.floor((remain%86400000)/3600000);
-        const m = Math.floor((remain%3600000)/60000);
-        return `${d}ရက် ${h}နာရီ ${m}မိနစ်`;
-    }
+        // Get remaining time
+        function getRemainingTime(activatedAt) {
+            if (!activatedAt) return null;
+            const remain = new Date(activatedAt).getTime() + 30*86400000 - Date.now();
+            if (remain <= 0) return "သက်တမ်းကုန်";
+            const d = Math.floor(remain/86400000);
+            const h = Math.floor((remain%86400000)/3600000);
+            const m = Math.floor((remain%3600000)/60000);
+            return `${d}ရက် ${h}နာရီ ${m}မိနစ်`;
+        }
 
-    // Get payment icon
-    function getPaymentIcon(method) {
-        const icons = {
-            'kpay': '🏦 KBZ',
-            'wavepay': '📱 Wave',
-            'ayapay': '💳 AYA'
-        };
-        return icons[method] || '🏦 KBZ';
-    }
+        // Get payment icon
+        function getPaymentIcon(method) {
+            const icons = {
+                'kpay': '🏦 KBZ',
+                'wavepay': '📱 Wave',
+                'ayapay': '💳 AYA'
+            };
+            return icons[method] || '🏦 KBZ';
+        }
 
-    // Fetch live orders from API
-    async function fetchLiveOrders() {
-        try {
-            const res = await fetch(`${LIVE_API}/api/admin/orders`);
-            const data = await res.json();
-            if (data.orders) {
-                const currentPhone = getCurrentUserPhone();
-                let filtered = data.orders.filter(o => o.phone !== currentPhone);
-                if (liveCurrentSearchPhone) {
-                    filtered = filtered.filter(o => o.phone === liveCurrentSearchPhone);
+        // Escape HTML
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // Fetch live orders from API - ✅ Public endpoint ကိုသုံးပါ
+        async function fetchLiveOrders() {
+            try {
+                // ✅ Public live orders endpoint (no admin auth needed)
+                const res = await fetch(`${LIVE_API}/api/live/orders`);
+                const data = await res.json();
+                
+                if (data.orders) {
+                    const currentPhone = getCurrentUserPhone();
+                    let filtered = data.orders.filter(o => o.phone !== currentPhone);
+                    if (liveCurrentSearchPhone) {
+                        filtered = filtered.filter(o => o.phone === liveCurrentSearchPhone);
+                    }
+                    filtered.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                    
+                    // Check for new orders
+                    const newIds = filtered.map(o => o.id);
+                    const hasNew = (lastOrderIds.length > 0 && newIds.length > 0 && newIds[0] !== lastOrderIds[0]);
+                    lastOrderIds = newIds;
+                    liveOrdersData = filtered.slice(0, 50);
+                    renderLiveOrders(hasNew);
+                    
+                    // Update last update time
+                    const updateSpan = document.getElementById('liveUpdateStatus');
+                    if (updateSpan) {
+                        const now = new Date();
+                        updateSpan.innerHTML = `နောက်ဆုံး: ${now.toLocaleTimeString()}`;
+                    }
                 }
-                filtered.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-                
-                // Check for new orders
-                const newIds = filtered.map(o => o.id);
-                const hasNew = (lastOrderIds.length > 0 && newIds.length > 0 && newIds[0] !== lastOrderIds[0]);
-                lastOrderIds = newIds;
-                liveOrdersData = filtered.slice(0, 50);
-                renderLiveOrders(hasNew);
-                
-                // Update last update time
-                const updateSpan = document.getElementById('liveUpdateStatus');
-                if (updateSpan) {
-                    const now = new Date();
-                    updateSpan.innerHTML = `နောက်ဆုံး: ${now.toLocaleTimeString()}`;
+            } catch(e) {
+                console.error('Error fetching live orders:', e);
+                const container = document.getElementById('liveOrdersList');
+                if (container) {
+                    container.innerHTML = '<div class="live-empty"><i class="fas fa-exclamation-triangle"></i> Connection error. Please refresh the page.</div>';
                 }
             }
-        } catch(e) {
-            console.error('Error fetching live orders:', e);
+        }
+
+        // Render live orders
+        function renderLiveOrders(hasNew = false) {
             const container = document.getElementById('liveOrdersList');
-            if (container) {
-                container.innerHTML = '<div class="live-empty"><i class="fas fa-exclamation-triangle"></i> Connection error</div>';
-            }
-        }
-    }
-
-    // Render live orders
-    function renderLiveOrders(hasNew = false) {
-        const container = document.getElementById('liveOrdersList');
-        if (!container) return;
-        
-        if (!liveOrdersData.length) {
-            container.innerHTML = '<div class="live-empty"><i class="fas fa-eye-slash"></i> လက်ရှိ LIVE အော်ဒါမရှိ</div>';
-            return;
-        }
-        
-        let html = '';
-        for (let i = 0; i < liveOrdersData.length; i++) {
-            const o = liveOrdersData[i];
-            const isNew = (hasNew && i === 0);
-            const statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
-            const statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
-            const paymentIcon = getPaymentIcon(o.payment_method);
-            const remainHtml = (o.status === 'Approved' && o.activated_at) ? 
-                `<div class="live-stats-row">
-                    <span class="live-remaining"><i class="fas fa-hourglass-half"></i> ${getRemainingTime(o.activated_at)}</span>
-                </div>` : '';
+            if (!container) return;
             
-            html += `
-                <div class="live-card ${isNew ? 'new-order' : ''}" data-order-id="${o.id}">
-                    <div class="live-card-header">
-                        <span class="live-plan"><i class="fas fa-mobile-alt"></i> ${escapeHtml(o.plan)}</span>
-                        <span class="live-status ${statusClass}">${statusText}</span>
-                    </div>
-                    <div class="live-phone">
-                        <i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}
-                    </div>
-                    <div class="live-price">
-                        ${o.price.toLocaleString()} K
-                        <span class="live-payment-icon">${paymentIcon}</span>
-                    </div>
-                    <div class="live-date">
-                        <i class="fas fa-clock"></i> ${new Date(o.created_at).toLocaleTimeString()}
-                        <span style="margin-left:8px;"><i class="fas fa-calendar"></i> ${new Date(o.created_at).toLocaleDateString()}</span>
-                    </div>
-                    ${remainHtml}
-                </div>
-            `;
-        }
-        container.innerHTML = html;
-        
-        // Auto-scroll to new order if exists
-        if (hasNew && liveOrdersData.length > 0) {
-            const firstCard = container.querySelector('.live-card');
-            if (firstCard) {
-                firstCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                setTimeout(() => {
-                    firstCard.classList.remove('new-order');
-                }, 2000);
+            if (!liveOrdersData.length) {
+                container.innerHTML = '<div class="live-empty"><i class="fas fa-eye-slash"></i> လက်ရှိ LIVE အော်ဒါမရှိ</div>';
+                return;
             }
-        }
-    }
-
-    // Escape HTML
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    // Search live order by phone
-    async function searchLiveOrder() {
-        const phone = document.getElementById('liveSearchPhoneInput').value.trim();
-        const msgDiv = document.getElementById('liveSearchMsg');
-        
-        if (!phone || phone.length < 9) {
-            if (msgDiv) {
-                msgDiv.className = 'live-search-message error';
-                msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)';
-                msgDiv.style.display = 'block';
-                setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
-            }
-            return;
-        }
-        
-        if (msgDiv) {
-            msgDiv.className = 'live-search-message';
-            msgDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ရှာဖွေနေသည်...';
-            msgDiv.style.display = 'block';
-        }
-        
-        try {
-            const res = await fetch(`${LIVE_API}/api/orders/${encodeURIComponent(phone)}`);
-            const data = await res.json();
-            const orders = data.orders || [];
             
-            if (orders.length === 0) {
+            let html = '';
+            for (let i = 0; i < liveOrdersData.length; i++) {
+                const o = liveOrdersData[i];
+                const isNew = (hasNew && i === 0);
+                const statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+                const statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
+                const paymentIcon = getPaymentIcon(o.payment_method);
+                const remainHtml = (o.status === 'Approved' && o.activated_at) ? 
+                    `<div class="live-stats-row">
+                        <span class="live-remaining"><i class="fas fa-hourglass-half"></i> ${getRemainingTime(o.activated_at)}</span>
+                    </div>` : '';
+                
+                html += `
+                    <div class="live-card ${isNew ? 'new-order' : ''}" data-order-id="${o.id}">
+                        <div class="live-card-header">
+                            <span class="live-plan"><i class="fas fa-mobile-alt"></i> ${escapeHtml(o.plan)}</span>
+                            <span class="live-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="live-phone">
+                            <i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}
+                        </div>
+                        <div class="live-price">
+                            ${o.price.toLocaleString()} K
+                            <span class="live-payment-icon">${paymentIcon}</span>
+                        </div>
+                        <div class="live-date">
+                            <i class="fas fa-clock"></i> ${new Date(o.created_at).toLocaleTimeString()}
+                            <span style="margin-left:8px;"><i class="fas fa-calendar"></i> ${new Date(o.created_at).toLocaleDateString()}</span>
+                        </div>
+                        ${remainHtml}
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+            
+            // Auto-scroll to new order if exists
+            if (hasNew && liveOrdersData.length > 0) {
+                const firstCard = container.querySelector('.live-card');
+                if (firstCard) {
+                    firstCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    setTimeout(() => {
+                        firstCard.classList.remove('new-order');
+                    }, 2000);
+                }
+            }
+        }
+
+        // Search live order by phone - ✅ Public search endpoint ကိုသုံးပါ
+        async function searchLiveOrder() {
+            const phone = document.getElementById('liveSearchPhoneInput').value.trim();
+            const msgDiv = document.getElementById('liveSearchMsg');
+            
+            if (!phone || phone.length < 9) {
                 if (msgDiv) {
                     msgDiv.className = 'live-search-message error';
-                    msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
+                    msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)';
+                    msgDiv.style.display = 'block';
                     setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
                 }
-                clearLiveSearch();
-            } else {
-                if (msgDiv) {
-                    msgDiv.className = 'live-search-message success';
-                    msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။';
-                    setTimeout(() => { msgDiv.style.display = 'none'; }, 2000);
-                }
-                liveCurrentSearchPhone = phone;
-                liveOrdersData = orders.slice(0, 50);
-                renderLiveOrders(false);
+                return;
             }
-        } catch(e) {
+            
             if (msgDiv) {
-                msgDiv.className = 'live-search-message error';
-                msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ရှာဖွေရာတွင် အမှားရှိပါသည်။';
-                setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+                msgDiv.className = 'live-search-message';
+                msgDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ရှာဖွေနေသည်...';
+                msgDiv.style.display = 'block';
+            }
+            
+            try {
+                // ✅ Public search endpoint (no admin auth needed)
+                const res = await fetch(`${LIVE_API}/api/live/order/${encodeURIComponent(phone)}`);
+                const data = await res.json();
+                const orders = data.orders || [];
+                
+                if (orders.length === 0) {
+                    if (msgDiv) {
+                        msgDiv.className = 'live-search-message error';
+                        msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
+                        setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+                    }
+                    clearLiveSearch();
+                } else {
+                    if (msgDiv) {
+                        msgDiv.className = 'live-search-message success';
+                        msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။';
+                        setTimeout(() => { msgDiv.style.display = 'none'; }, 2000);
+                    }
+                    liveCurrentSearchPhone = phone;
+                    liveOrdersData = orders.slice(0, 50);
+                    renderLiveOrders(false);
+                }
+            } catch(e) {
+                if (msgDiv) {
+                    msgDiv.className = 'live-search-message error';
+                    msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ရှာဖွေရာတွင် အမှားရှိပါသည်။';
+                    setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+                }
             }
         }
-    }
 
-    // Clear live search
-    function clearLiveSearch() {
-        liveCurrentSearchPhone = '';
-        const searchInput = document.getElementById('liveSearchPhoneInput');
-        if (searchInput) searchInput.value = '';
-        const msgDiv = document.getElementById('liveSearchMsg');
-        if (msgDiv) msgDiv.style.display = 'none';
-        fetchLiveOrders();
-    }
+        // Clear live search
+        function clearLiveSearch() {
+            liveCurrentSearchPhone = '';
+            const searchInput = document.getElementById('liveSearchPhoneInput');
+            if (searchInput) searchInput.value = '';
+            const msgDiv = document.getElementById('liveSearchMsg');
+            if (msgDiv) msgDiv.style.display = 'none';
+            fetchLiveOrders();
+        }
 
-    // Refresh live orders (exposed for parent)
-    function refreshLiveOrders() {
-        fetchLiveOrders();
-        liveRefreshSec = 30;
-        const timerSpan = document.getElementById('liveTimerDisplay');
-        if (timerSpan) timerSpan.innerText = 'auto 30s';
-    }
-
-    // Start auto refresh
-    function startLiveAutoRefresh() {
-        if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-        if (liveTimerInterval) clearInterval(liveTimerInterval);
-        
-        liveRefreshSec = 30;
-        const timerSpan = document.getElementById('liveTimerDisplay');
-        const updateSpan = document.getElementById('liveUpdateStatus');
-        
-        const updateTimer = () => {
-            if (timerSpan && document.getElementById('liveTab')?.classList?.contains('active') !== false) {
-                timerSpan.innerText = `auto ${liveRefreshSec}s`;
-                liveRefreshSec--;
-                if (liveRefreshSec < 0) liveRefreshSec = 30;
-            }
-        };
-        
-        liveTimerInterval = setInterval(updateTimer, 1000);
-        
-        liveRefreshInterval = setInterval(async () => {
-            await fetchLiveOrders();
+        // Refresh live orders
+        function refreshLiveOrders() {
+            fetchLiveOrders();
             liveRefreshSec = 30;
+            const timerSpan = document.getElementById('liveTimerDisplay');
             if (timerSpan) timerSpan.innerText = 'auto 30s';
-        }, 30000);
-    }
-
-    // Stop auto refresh
-    function stopLiveAutoRefresh() {
-        if (liveRefreshInterval) {
-            clearInterval(liveRefreshInterval);
-            liveRefreshInterval = null;
         }
-        if (liveTimerInterval) {
-            clearInterval(liveTimerInterval);
-            liveTimerInterval = null;
+
+        // Start auto refresh
+        function startLiveAutoRefresh() {
+            if (liveRefreshInterval) clearInterval(liveRefreshInterval);
+            if (liveTimerInterval) clearInterval(liveTimerInterval);
+            
+            liveRefreshSec = 30;
+            const timerSpan = document.getElementById('liveTimerDisplay');
+            const updateSpan = document.getElementById('liveUpdateStatus');
+            
+            const updateTimer = () => {
+                if (timerSpan) {
+                    timerSpan.innerText = `auto ${liveRefreshSec}s`;
+                    if (updateSpan && updateSpan.innerHTML.includes('အလိုအလျောက်')) {
+                        updateSpan.innerHTML = `အလိုအလျောက်: ${liveRefreshSec}s`;
+                    }
+                    liveRefreshSec--;
+                    if (liveRefreshSec < 0) liveRefreshSec = 30;
+                }
+            };
+            
+            liveTimerInterval = setInterval(updateTimer, 1000);
+            
+            liveRefreshInterval = setInterval(async () => {
+                await fetchLiveOrders();
+                liveRefreshSec = 30;
+                if (timerSpan) timerSpan.innerText = 'auto 30s';
+            }, 30000);
         }
-    }
 
-    // Initialize Live component
-    function initLiveComponent() {
-        fetchLiveOrders();
-        startLiveAutoRefresh();
-    }
+        // Stop auto refresh
+        function stopLiveAutoRefresh() {
+            if (liveRefreshInterval) {
+                clearInterval(liveRefreshInterval);
+                liveRefreshInterval = null;
+            }
+            if (liveTimerInterval) {
+                clearInterval(liveTimerInterval);
+                liveTimerInterval = null;
+            }
+        }
 
-    // Cleanup Live component
-    function cleanupLiveComponent() {
-        stopLiveAutoRefresh();
-    }
+        // Initialize Live component
+        function initLiveComponent() {
+            // Clear existing intervals first
+            stopLiveAutoRefresh();
+            // Reset data
+            liveOrdersData = [];
+            liveCurrentSearchPhone = "";
+            lastOrderIds = [];
+            // Start fresh
+            fetchLiveOrders();
+            startLiveAutoRefresh();
+        }
 
-    // Expose functions to window for external access (index.html အတွက်)
-    window.searchLiveOrderExternal = searchLiveOrder;
-    window.clearLiveSearchExternal = clearLiveSearch;
-    window.fetchLiveOrders = fetchLiveOrders;
-    window.refreshLiveOrders = refreshLiveOrders;
-    window.initLiveComponent = initLiveComponent;
-    window.cleanupLiveComponent = cleanupLiveComponent;
-    window.getCurrentUserPhone = getCurrentUserPhone;
+        // Cleanup Live component
+        function cleanupLiveComponent() {
+            stopLiveAutoRefresh();
+        }
 
-    // Auto-initialize when script loads
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
+        // Expose functions to window for external access
+        window.searchLiveOrderExternal = searchLiveOrder;
+        window.clearLiveSearchExternal = clearLiveSearch;
+        window.fetchLiveOrders = fetchLiveOrders;
+        window.refreshLiveOrders = refreshLiveOrders;
+        window.initLiveComponent = initLiveComponent;
+        window.cleanupLiveComponent = cleanupLiveComponent;
+        
+        // Auto-initialize when script loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                initLiveComponent();
+            });
+        } else {
             initLiveComponent();
-        });
-    } else {
-        initLiveComponent();
-    }
+        }
+    })();
 </script>
