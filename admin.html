@@ -992,14 +992,14 @@
         listContainer.innerHTML = html;
     }
     
-    // FIXED: clearAllNotifications - working properly
+    // FIXED: clearAllNotifications - dropdown closes properly now
     window.clearAllNotifications = function() { 
-        console.log("Clearing all notifications..."); // Debug
+        console.log("Clearing all notifications..."); 
         notifications = []; 
         saveNotificationsToStorage(); 
         updateNotificationUI(); 
         showToast('All notifications cleared'); 
-        window.closeNotificationDropdown(); 
+        closeNotificationDropdown(); 
     };
     
     window.markNotificationRead = function(notificationId) {
@@ -1018,12 +1018,14 @@
         if (overlay) overlay.classList.toggle('show');
     };
     
-    window.closeNotificationDropdown = function() { 
+    // FIX GLOBAL REFERENCE FOR NOTIFICATION CLOSE
+    function closeNotificationDropdown() { 
         const dropdown = document.getElementById('notificationDropdown');
         const overlay = document.getElementById('notificationOverlay');
         if (dropdown) dropdown.classList.remove('show');
         if (overlay) overlay.classList.remove('show');
-    };
+    }
+    window.closeNotificationDropdown = closeNotificationDropdown;
     
     let isCheckingOrders = false;
     async function checkForNewOrders() {
