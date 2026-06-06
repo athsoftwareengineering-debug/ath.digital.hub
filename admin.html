@@ -108,17 +108,17 @@
             transform: rotate(15deg);
         }
         
-        /* Notification Bell with Badge */
+        /* Notification Bell with Badge - ပိုမိုမြင်သာအောင် */
         .notification-bell {
             position: relative;
         }
         .notification-badge {
             position: absolute;
-            top: -5px;
-            right: -5px;
+            top: -8px;
+            right: -8px;
             background: #f43f5e;
             color: white;
-            font-size: 0.6rem;
+            font-size: 0.65rem;
             font-weight: bold;
             min-width: 18px;
             height: 18px;
@@ -126,116 +126,127 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 4px;
+            padding: 0 5px;
+            box-shadow: 0 0 5px rgba(244,63,94,0.5);
             animation: pulse 1s infinite;
+            z-index: 10;
         }
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50% { transform: scale(1.15); background: #e11d48; }
         }
         
-        /* Notification Dropdown */
+        /* Notification Dropdown - ပိုမိုမြင်သာအောင် */
         .notification-dropdown {
             position: absolute;
             top: 45px;
-            right: 0;
-            width: 320px;
-            max-height: 400px;
-            background: linear-gradient(145deg, #0f111a, #0a0c15);
-            border: 1px solid rgba(0,212,255,0.3);
+            right: -10px;
+            width: 360px;
+            max-height: 450px;
+            background: linear-gradient(145deg, #1a1d2e, #0f111a);
+            border: 1px solid rgba(0,212,255,0.4);
             border-radius: 1rem;
             z-index: 300;
             overflow: hidden;
             display: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
         }
         .notification-dropdown.show {
             display: block;
             animation: slideDown 0.2s ease;
         }
         @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .notification-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(0,212,255,0.1);
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(0,212,255,0.15);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: rgba(0,212,255,0.05);
         }
         .notification-header h4 {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: var(--cyan);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .notification-clear {
-            font-size: 0.65rem;
-            background: none;
-            border: none;
-            color: var(--text-secondary);
+            font-size: 0.7rem;
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 5px 12px;
+            border-radius: 40px;
+            color: var(--cyan);
             cursor: pointer;
+            transition: all 0.2s;
         }
         .notification-clear:hover {
-            color: var(--cyan);
+            background: var(--cyan);
+            color: #030712;
         }
         .notification-list {
-            max-height: 340px;
+            max-height: 380px;
             overflow-y: auto;
         }
         .notification-item {
-            padding: 12px 16px;
+            padding: 14px 16px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
-            gap: 12px;
+            gap: 14px;
             align-items: flex-start;
         }
         .notification-item:hover {
-            background: rgba(0,212,255,0.05);
+            background: rgba(0,212,255,0.08);
         }
         .notification-item.unread {
-            background: rgba(0,212,255,0.08);
+            background: rgba(0,212,255,0.12);
             border-left: 3px solid var(--cyan);
         }
         .notification-icon {
-            width: 32px;
-            height: 32px;
-            background: rgba(0,212,255,0.1);
+            width: 40px;
+            height: 40px;
+            background: rgba(0,212,255,0.15);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            font-size: 1rem;
+            color: var(--cyan);
         }
         .notification-content {
             flex: 1;
         }
         .notification-title {
-            font-size: 0.75rem;
-            font-weight: 600;
+            font-size: 0.8rem;
+            font-weight: 700;
             margin-bottom: 4px;
+            color: var(--text-primary);
         }
         .notification-message {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             color: var(--text-secondary);
+            line-height: 1.4;
         }
         .notification-time {
-            font-size: 0.55rem;
+            font-size: 0.6rem;
             color: #475569;
-            margin-top: 4px;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
         .notification-empty {
             text-align: center;
-            padding: 40px;
+            padding: 50px 20px;
             color: var(--text-secondary);
-            font-size: 0.7rem;
+            font-size: 0.75rem;
         }
         
         .sync-status {
@@ -256,181 +267,10 @@
         }
         @keyframes pulseDot { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         
-        /* Bottom Navigation Bar */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(10,12,21,0.95);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(0,212,255,0.1);
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 12px;
-            padding-bottom: env(safe-area-inset-bottom, 12px);
-            z-index: 100;
-        }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            transition: all 0.2s;
-        }
-        .nav-item i {
-            font-size: 1.3rem;
-        }
-        .nav-item.active {
-            color: var(--cyan);
-            background: rgba(0,212,255,0.1);
-        }
-        .nav-item:hover {
-            background: rgba(0,212,255,0.05);
-        }
-        
-        /* Drawer Menu */
-        .drawer-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 200;
-            visibility: hidden;
-            opacity: 0;
-            transition: all 0.3s;
-        }
-        .drawer-overlay.open {
-            visibility: visible;
-            opacity: 1;
-        }
-        .drawer {
-            position: fixed;
-            top: 0;
-            left: -280px;
-            width: 280px;
-            height: 100%;
-            background: linear-gradient(145deg, #0f111a, #0a0c15);
-            border-right: 1px solid rgba(0,212,255,0.2);
-            z-index: 201;
-            transition: left 0.3s ease;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        .drawer.open {
-            left: 0;
-        }
-        .drawer-header {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(0,212,255,0.1);
-            margin-bottom: 20px;
-        }
-        .drawer-avatar {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, var(--cyan), #0891b2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 12px;
-            font-size: 1.8rem;
-        }
-        .drawer-title {
-            font-weight: 700;
-            font-size: 1rem;
-        }
-        .drawer-subtitle {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-        
-        .drawer-stats {
-            background: rgba(0,212,255,0.05);
-            border-radius: 1rem;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(0,212,255,0.1);
-        }
-        .drawer-stats-title {
-            font-size: 0.7rem;
-            color: var(--cyan);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .drawer-stat-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .drawer-stat-item:last-child {
-            border-bottom: none;
-        }
-        .drawer-stat-label {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-        }
-        .drawer-stat-value {
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: var(--cyan);
-        }
-        
-        .drawer-menu {
-            list-style: none;
-        }
-        .drawer-menu li {
-            margin-bottom: 8px;
-        }
-        .drawer-menu a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: 1rem;
-            color: var(--text-primary);
-            text-decoration: none;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .drawer-menu a:hover {
-            background: rgba(0,212,255,0.1);
-        }
-        .drawer-menu a i {
-            width: 24px;
-            color: var(--cyan);
-        }
-        .drawer-divider {
-            height: 1px;
-            background: rgba(255,255,255,0.05);
-            margin: 16px 0;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        
+        /* Stats Grid */
         .orders-stats-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 12px;
             margin-bottom: 16px;
         }
@@ -459,6 +299,128 @@
         }
         .stat-number.profit { color: var(--emerald); }
         .stat-number.cost { color: var(--amber); }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10,12,21,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0,212,255,0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 12px;
+            padding-bottom: env(safe-area-inset-bottom, 12px);
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .nav-item i { font-size: 1.3rem; }
+        .nav-item.active { color: var(--cyan); background: rgba(0,212,255,0.1); }
+        .nav-item:hover { background: rgba(0,212,255,0.05); }
+        
+        /* Drawer Menu */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        .drawer-overlay.open { visibility: visible; opacity: 1; }
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(145deg, #0f111a, #0a0c15);
+            border-right: 1px solid rgba(0,212,255,0.2);
+            z-index: 201;
+            transition: left 0.3s ease;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .drawer.open { left: 0; }
+        .drawer-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(0,212,255,0.1); margin-bottom: 20px; }
+        .drawer-avatar {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--cyan), #0891b2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 1.8rem;
+        }
+        .drawer-title { font-weight: 700; font-size: 1rem; }
+        .drawer-subtitle { font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px; }
+        
+        .drawer-stats {
+            background: rgba(0,212,255,0.05);
+            border-radius: 1rem;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,212,255,0.1);
+        }
+        .drawer-stats-title {
+            font-size: 0.7rem;
+            color: var(--cyan);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .drawer-stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .drawer-stat-item:last-child { border-bottom: none; }
+        .drawer-stat-label { font-size: 0.7rem; color: var(--text-secondary); }
+        .drawer-stat-value { font-size: 0.8rem; font-weight: 700; color: var(--cyan); }
+        
+        .drawer-menu { list-style: none; }
+        .drawer-menu li { margin-bottom: 8px; }
+        .drawer-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .drawer-menu a:hover { background: rgba(0,212,255,0.1); }
+        .drawer-menu a i { width: 24px; color: var(--cyan); }
+        .drawer-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 16px 0; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         
         .search-bar {
             background: rgba(18,22,35,0.8);
@@ -604,10 +566,7 @@
             visibility: hidden;
             transition: all 0.3s ease;
         }
-        .custom-alert.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        .custom-alert.active { opacity: 1; visibility: visible; }
         .alert-card {
             background: linear-gradient(145deg, #0f111a, #0a0c15);
             border-radius: 1.5rem;
@@ -619,9 +578,7 @@
             transform: scale(0.9);
             transition: transform 0.3s ease;
         }
-        .custom-alert.active .alert-card {
-            transform: scale(1);
-        }
+        .custom-alert.active .alert-card { transform: scale(1); }
         .alert-icon {
             width: 70px;
             height: 70px;
@@ -632,29 +589,12 @@
             margin: 0 auto 20px;
             font-size: 2rem;
         }
-        .alert-icon.warning {
-            background: rgba(245,158,11,0.15);
-            color: var(--amber);
-            border: 2px solid var(--amber);
-        }
-        .alert-icon.danger {
-            background: rgba(244,63,94,0.15);
-            color: var(--rose);
-            border: 2px solid var(--rose);
-        }
-        .alert-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
+        .alert-icon.warning { background: rgba(245,158,11,0.15); color: var(--amber); border: 2px solid var(--amber); }
+        .alert-icon.danger { background: rgba(244,63,94,0.15); color: var(--rose); border: 2px solid var(--rose); }
+        .alert-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; }
         .alert-title.warning { color: var(--amber); }
         .alert-title.danger { color: var(--rose); }
-        .alert-message {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-            line-height: 1.5;
-        }
+        .alert-message { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; }
         .alert-items {
             background: rgba(0,0,0,0.3);
             border-radius: 1rem;
@@ -663,18 +603,9 @@
             text-align: left;
             font-size: 0.75rem;
         }
-        .alert-items ul {
-            margin-left: 20px;
-            color: var(--text-secondary);
-        }
-        .alert-items li {
-            margin: 6px 0;
-        }
-        .alert-buttons {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-        }
+        .alert-items ul { margin-left: 20px; color: var(--text-secondary); }
+        .alert-items li { margin: 6px 0; }
+        .alert-buttons { display: flex; gap: 12px; margin-top: 20px; }
         .alert-btn {
             flex: 1;
             padding: 12px;
@@ -684,18 +615,9 @@
             border: none;
             transition: all 0.2s;
         }
-        .alert-btn.confirm {
-            background: var(--rose);
-            color: white;
-        }
-        .alert-btn.confirm:hover {
-            background: #e11d48;
-            transform: scale(0.98);
-        }
-        .alert-btn.cancel {
-            background: #334155;
-            color: white;
-        }
+        .alert-btn.confirm { background: var(--rose); color: white; }
+        .alert-btn.confirm:hover { background: #e11d48; transform: scale(0.98); }
+        .alert-btn.cancel { background: #334155; color: white; }
         .alert-input {
             width: 100%;
             padding: 12px;
@@ -749,13 +671,7 @@
             border-radius: 60px;
             color: white;
         }
-        .modal-btn {
-            padding: 10px 20px;
-            border-radius: 60px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-        }
+        .modal-btn { padding: 10px 20px; border-radius: 60px; font-weight: 600; cursor: pointer; border: none; }
         .modal-btn.save { background: var(--emerald); color: white; }
         .modal-btn.cancel { background: #334155; color: white; }
         
@@ -836,7 +752,7 @@
 <body>
 <div id="app">
     <div class="container" id="adminContent" style="display: none;">
-        <!-- Top Bar with Menu Button and Notification Bell -->
+        <!-- Top Bar -->
         <div class="top-bar">
             <div class="top-bar-left">
                 <button class="menu-btn" onclick="toggleDrawer()">
@@ -849,7 +765,7 @@
             <div class="top-bar-right">
                 <!-- Notification Bell -->
                 <div class="notification-bell">
-                    <button class="top-icon-btn" onclick="toggleNotificationDropdown()" id="notificationBellBtn">
+                    <button class="top-icon-btn" onclick="toggleNotificationDropdown()" id="notificationBellBtn" style="position: relative;">
                         <i class="fas fa-bell"></i>
                         <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
                     </button>
@@ -881,48 +797,21 @@
         <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
         <div id="drawer" class="drawer">
             <div class="drawer-header">
-                <div class="drawer-avatar">
-                    <i class="fas fa-user-shield"></i>
-                </div>
+                <div class="drawer-avatar"><i class="fas fa-user-shield"></i></div>
                 <div class="drawer-title">Admin Panel</div>
                 <div class="drawer-subtitle">ATH DIGITAL HUB</div>
             </div>
             <div class="drawer-stats">
-                <div class="drawer-stats-title">
-                    <i class="fas fa-database"></i> Database Statistics
-                </div>
-                <div class="drawer-stat-item">
-                    <span class="drawer-stat-label"><i class="fas fa-shopping-cart"></i> Total Orders</span>
-                    <span class="drawer-stat-value" id="drawerTotalOrders">0</span>
-                </div>
-                <div class="drawer-stat-item">
-                    <span class="drawer-stat-label"><i class="fas fa-users"></i> Total Users</span>
-                    <span class="drawer-stat-value" id="drawerTotalUsers">0</span>
-                </div>
-                <div class="drawer-stat-item">
-                    <span class="drawer-stat-label"><i class="fas fa-clock"></i> Pending Orders</span>
-                    <span class="drawer-stat-value" id="drawerPendingOrders">0</span>
-                </div>
-                <div class="drawer-stat-item">
-                    <span class="drawer-stat-label"><i class="fas fa-check-circle"></i> Approved Orders</span>
-                    <span class="drawer-stat-value" id="drawerApprovedOrders">0</span>
-                </div>
-                <div class="drawer-stat-item">
-                    <span class="drawer-stat-label"><i class="fas fa-times-circle"></i> Rejected Orders</span>
-                    <span class="drawer-stat-value" id="drawerRejectedOrders">0</span>
-                </div>
-                <div class="drawer-stat-item">
-                    <span class="drawer-stat-label"><i class="fas fa-coins"></i> Total Revenue</span>
-                    <span class="drawer-stat-value" id="drawerTotalRevenue">0</span>
-                </div>
-                <div class="drawer-stat-item">
-                    <span class="drawer-stat-label"><i class="fas fa-chart-line"></i> Total Profit</span>
-                    <span class="drawer-stat-value" id="drawerTotalProfit">0</span>
-                </div>
+                <div class="drawer-stats-title"><i class="fas fa-database"></i> Database Statistics</div>
+                <div class="drawer-stat-item"><span class="drawer-stat-label"><i class="fas fa-shopping-cart"></i> Total Orders</span><span class="drawer-stat-value" id="drawerTotalOrders">0</span></div>
+                <div class="drawer-stat-item"><span class="drawer-stat-label"><i class="fas fa-users"></i> Total Users</span><span class="drawer-stat-value" id="drawerTotalUsers">0</span></div>
+                <div class="drawer-stat-item"><span class="drawer-stat-label"><i class="fas fa-clock"></i> Pending Orders</span><span class="drawer-stat-value" id="drawerPendingOrders">0</span></div>
+                <div class="drawer-stat-item"><span class="drawer-stat-label"><i class="fas fa-check-circle"></i> Approved Orders</span><span class="drawer-stat-value" id="drawerApprovedOrders">0</span></div>
+                <div class="drawer-stat-item"><span class="drawer-stat-label"><i class="fas fa-times-circle"></i> Rejected Orders</span><span class="drawer-stat-value" id="drawerRejectedOrders">0</span></div>
+                <div class="drawer-stat-item"><span class="drawer-stat-label"><i class="fas fa-coins"></i> Total Revenue</span><span class="drawer-stat-value" id="drawerTotalRevenue">0</span></div>
+                <div class="drawer-stat-item"><span class="drawer-stat-label"><i class="fas fa-chart-line"></i> Total Profit</span><span class="drawer-stat-value" id="drawerTotalProfit">0</span></div>
             </div>
-            <div class="drawer-stats-title" style="margin-top: 10px;">
-                <i class="fas fa-bars"></i> Menu
-            </div>
+            <div class="drawer-stats-title" style="margin-top: 10px;"><i class="fas fa-bars"></i> Menu</div>
             <ul class="drawer-menu">
                 <li><a onclick="closeDrawer(); switchTab('orders')"><i class="fas fa-list-ul"></i> Orders</a></li>
                 <li><a onclick="closeDrawer(); switchTab('users')"><i class="fas fa-users"></i> Users</a></li>
@@ -932,26 +821,26 @@
                 <li><a onclick="closeDrawer(); exportOrdersToCSV()"><i class="fas fa-file-excel"></i> Export Orders (CSV)</a></li>
                 <li><div class="drawer-divider"></div></li>
                 <li><a onclick="closeDrawer(); showCleanupAlert()"><i class="fas fa-trash-alt"></i> Cleanup Old Orders</a></li>
-                <li><a onclick="closeDrawer(); showSystemResetAlert()" style="color: #f43f5e;">
-                    <i class="fas fa-database"></i> System Reset (Danger)
-                </a></li>
+                <li><a onclick="closeDrawer(); showSystemResetAlert()" style="color: #f43f5e;"><i class="fas fa-database"></i> System Reset (Danger)</a></li>
                 <li><div class="drawer-divider"></div></li>
                 <li><a onclick="closeDrawer(); logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </div>
         
+        <!-- Stats Grid -->
+        <div class="orders-stats-grid">
+            <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label"><i class="fas fa-shopping-cart"></i> Total</div></div>
+            <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label"><i class="fas fa-clock"></i> Pending</div></div>
+            <div class="stat-card"><div class="stat-number" id="approvedOrders">0</div><div class="stat-label"><i class="fas fa-check-circle"></i> Approved</div></div>
+            <div class="stat-card"><div class="stat-number" id="rejectedOrders">0</div><div class="stat-label"><i class="fas fa-times-circle"></i> Rejected</div></div>
+            <div class="stat-card"><div class="stat-number" id="totalRevenue">0</div><div class="stat-label"><i class="fas fa-coins"></i> Revenue</div></div>
+            <div class="stat-card"><div class="stat-number cost" id="totalCost">0</div><div class="stat-label"><i class="fas fa-boxes"></i> Cost</div></div>
+            <div class="stat-card"><div class="stat-number profit" id="totalProfit">0</div><div class="stat-label"><i class="fas fa-chart-line"></i> Profit</div></div>
+            <div class="stat-card"><div class="stat-number" id="avgProfit">0</div><div class="stat-label"><i class="fas fa-percent"></i> Avg</div></div>
+        </div>
+        
         <!-- Orders Tab -->
         <div id="ordersTab" class="tab-content active">
-            <div class="orders-stats-grid">
-                <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label"><i class="fas fa-shopping-cart"></i> Total</div></div>
-                <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label"><i class="fas fa-clock"></i> Pending</div></div>
-                <div class="stat-card"><div class="stat-number" id="approvedOrders">0</div><div class="stat-label"><i class="fas fa-check-circle"></i> Approved</div></div>
-                <div class="stat-card"><div class="stat-number" id="rejectedOrders">0</div><div class="stat-label"><i class="fas fa-times-circle"></i> Rejected</div></div>
-                <div class="stat-card"><div class="stat-number" id="totalRevenue">0</div><div class="stat-label"><i class="fas fa-coins"></i> Revenue</div></div>
-                <div class="stat-card"><div class="stat-number cost" id="totalCost">0</div><div class="stat-label"><i class="fas fa-boxes"></i> Cost</div></div>
-                <div class="stat-card"><div class="stat-number profit" id="totalProfit">0</div><div class="stat-label"><i class="fas fa-chart-line"></i> Profit</div></div>
-                <div class="stat-card"><div class="stat-number" id="avgProfit">0</div><div class="stat-label"><i class="fas fa-percent"></i> Avg</div></div>
-            </div>
             <div class="search-bar">
                 <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by phone, user ID, or name">
                 <button class="search-btn" onclick="searchByPhoneOrId()"><i class="fas fa-search"></i> Search</button>
@@ -1016,38 +905,24 @@
 <!-- Cleanup Alert Modal -->
 <div id="cleanupAlert" class="custom-alert">
     <div class="alert-card">
-        <div class="alert-icon warning">
-            <i class="fas fa-trash-alt"></i>
-        </div>
+        <div class="alert-icon warning"><i class="fas fa-trash-alt"></i></div>
         <div class="alert-title warning">⚠️ Cleanup Old Orders</div>
         <div class="alert-message">Are you sure you want to delete ALL Pending/Rejected orders older than 30 days?</div>
-        <div class="alert-items">
-            <ul><li>❌ All Pending orders older than 30 days</li><li>❌ All Rejected orders older than 30 days</li><li>✅ Approved orders will be kept</li><li>✅ Products will not be affected</li></ul>
-        </div>
-        <div class="alert-buttons">
-            <button class="alert-btn confirm" onclick="executeCleanup()">Yes, Delete</button>
-            <button class="alert-btn cancel" onclick="closeCleanupAlert()">Cancel</button>
-        </div>
+        <div class="alert-items"><ul><li>❌ All Pending orders older than 30 days</li><li>❌ All Rejected orders older than 30 days</li><li>✅ Approved orders will be kept</li><li>✅ Products will not be affected</li></ul></div>
+        <div class="alert-buttons"><button class="alert-btn confirm" onclick="executeCleanup()">Yes, Delete</button><button class="alert-btn cancel" onclick="closeCleanupAlert()">Cancel</button></div>
     </div>
 </div>
 
 <!-- System Reset Alert Modal -->
 <div id="systemResetAlert" class="custom-alert">
     <div class="alert-card">
-        <div class="alert-icon danger">
-            <i class="fas fa-exclamation-triangle"></i>
-        </div>
+        <div class="alert-icon danger"><i class="fas fa-exclamation-triangle"></i></div>
         <div class="alert-title danger">⚠️ SYSTEM RESET</div>
         <div class="alert-message">This action <strong>CANNOT be undone!</strong> Please type <strong style="color:#f43f5e;">"RESET_ALL_DATA"</strong> to confirm.</div>
-        <div class="alert-items">
-            <ul><li>❌ All Users will be deleted</li><li>❌ All Orders will be deleted</li><li>❌ All User Statistics will be deleted</li><li>❌ All Uploaded Screenshots will be deleted</li><li>✅ Products will be kept (you can choose below)</li></ul>
-        </div>
+        <div class="alert-items"><ul><li>❌ All Users will be deleted</li><li>❌ All Orders will be deleted</li><li>❌ All User Statistics will be deleted</li><li>❌ All Uploaded Screenshots will be deleted</li><li>✅ Products will be kept (you can choose below)</li></ul></div>
         <input type="text" id="resetConfirmInput" class="alert-input" placeholder='Type "RESET_ALL_DATA"'>
         <label class="checkbox-label"><input type="checkbox" id="keepProductsCheckbox" checked> Keep Products (don't delete)</label>
-        <div class="alert-buttons">
-            <button class="alert-btn confirm" onclick="executeSystemResetFromAlert()">Yes, Reset Everything</button>
-            <button class="alert-btn cancel" onclick="closeSystemResetAlert()">Cancel</button>
-        </div>
+        <div class="alert-buttons"><button class="alert-btn confirm" onclick="executeSystemResetFromAlert()">Yes, Reset Everything</button><button class="alert-btn cancel" onclick="closeSystemResetAlert()">Cancel</button></div>
     </div>
 </div>
 
@@ -1058,9 +933,9 @@
         <input type="text" id="productName" placeholder="Product Name *">
         <input type="number" id="productPrice" placeholder="Price (MMK) *">
         <input type="text" id="productImage" placeholder="Image URL (optional)">
-        <input type="text" id="productCategory" placeholder="Category (e.g., Men, Women, Accessories)">
-        <input type="text" id="productIcon" placeholder="FontAwesome Icon (e.g., fas fa-tshirt)">
-        <input type="number" id="productDiscount" placeholder="Discount % (optional)">
+        <input type="text" id="productCategory" placeholder="Category">
+        <input type="text" id="productIcon" placeholder="Icon (e.g., fas fa-tshirt)">
+        <input type="number" id="productDiscount" placeholder="Discount %">
         <div style="display: flex; gap: 12px; margin-top: 16px;">
             <button class="modal-btn save" onclick="saveProduct()">Save</button>
             <button class="modal-btn cancel" onclick="closeProductModal()">Cancel</button>
@@ -1070,7 +945,7 @@
 
 <div id="screenshotModal" class="image-modal" onclick="closeModal()">
     <div class="image-modal-content" onclick="event.stopPropagation()">
-        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid rgba(0,212,255,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid rgba(0,212,255,0.2);">
             <span><i class="fas fa-image"></i> Payment Screenshot</span>
             <button class="close-modal" onclick="closeModal()" style="background:rgba(255,255,255,0.1); border:none; color:white; width:30px; height:30px; border-radius:50%; cursor:pointer;">&times;</button>
         </div>
@@ -1129,10 +1004,7 @@
     function loadNotificationsFromStorage() {
         const saved = localStorage.getItem('adminNotifications');
         if (saved) {
-            try {
-                notifications = JSON.parse(saved);
-                updateNotificationUI();
-            } catch(e) {}
+            try { notifications = JSON.parse(saved); updateNotificationUI(); } catch(e) {}
         }
     }
     
@@ -1153,50 +1025,28 @@
         if (notifications.length > 50) notifications.pop();
         saveNotificationsToStorage();
         updateNotificationUI();
-        
-        // Show toast for new order
         showToast(`🆕 New order! ${order.plan} - ${order.price.toLocaleString()} MMK`);
-        
-        // Play sound if supported
-        try {
-            const audio = new Audio('data:audio/wav;base64,U3RlYWx0aCBpcwo=');
-            // Silent fallback
-        } catch(e) {}
+        try { new Audio().play().catch(e=>{}); } catch(e) {}
     }
     
     function updateNotificationUI() {
         const badge = document.getElementById('notificationBadge');
         const listContainer = document.getElementById('notificationList');
         const unreadCount = notifications.filter(n => !n.read).length;
-        
-        if (unreadCount > 0) {
-            badge.style.display = 'flex';
-            badge.innerText = unreadCount > 99 ? '99+' : unreadCount;
-        } else {
-            badge.style.display = 'none';
-        }
-        
+        if (unreadCount > 0) { badge.style.display = 'flex'; badge.innerText = unreadCount > 99 ? '99+' : unreadCount; }
+        else { badge.style.display = 'none'; }
         if (!listContainer) return;
-        
-        if (notifications.length === 0) {
-            listContainer.innerHTML = '<div class="notification-empty">No notifications yet</div>';
-            return;
-        }
-        
+        if (notifications.length === 0) { listContainer.innerHTML = '<div class="notification-empty">No notifications yet</div>'; return; }
         let html = '';
         for (const notif of notifications) {
             const date = new Date(notif.time);
-            const timeStr = date.toLocaleTimeString();
-            const dateStr = date.toLocaleDateString();
             html += `
                 <div class="notification-item ${!notif.read ? 'unread' : ''}" onclick="markNotificationRead('${notif.id}')">
-                    <div class="notification-icon">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
+                    <div class="notification-icon"><i class="fas fa-shopping-cart"></i></div>
                     <div class="notification-content">
                         <div class="notification-title">${escapeHtml(notif.title)}</div>
                         <div class="notification-message">${escapeHtml(notif.message)}</div>
-                        <div class="notification-time">${dateStr} ${timeStr}</div>
+                        <div class="notification-time"><i class="fas fa-clock"></i> ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</div>
                     </div>
                 </div>
             `;
@@ -1206,11 +1056,7 @@
     
     function markNotificationRead(notificationId) {
         const notif = notifications.find(n => n.id == notificationId);
-        if (notif && !notif.read) {
-            notif.read = true;
-            saveNotificationsToStorage();
-            updateNotificationUI();
-        }
+        if (notif && !notif.read) { notif.read = true; saveNotificationsToStorage(); updateNotificationUI(); }
     }
     
     function clearAllNotifications() {
@@ -1225,7 +1071,6 @@
         dropdown.classList.toggle('show');
     }
     
-    // Close dropdown when clicking outside
     document.addEventListener('click', function(event) {
         const dropdown = document.getElementById('notificationDropdown');
         const bellBtn = document.getElementById('notificationBellBtn');
@@ -1234,7 +1079,6 @@
         }
     });
     
-    // Check for new orders
     async function checkForNewOrders() {
         try {
             const res = await fetch(`${API_BASE}/api/admin/orders`);
@@ -1242,121 +1086,55 @@
             if (data.orders && data.orders.length > 0) {
                 const latestOrder = data.orders[0];
                 if (lastOrderId !== latestOrder.id) {
-                    if (lastOrderId !== null) {
-                        // New order detected
-                        addNotification(latestOrder);
-                    }
+                    if (lastOrderId !== null) { addNotification(latestOrder); }
                     lastOrderId = latestOrder.id;
                 }
                 allOrders = data.orders;
-                if (currentTab === 'orders') {
-                    applyFiltersAndSearch();
-                }
+                if (currentTab === 'orders') { applyFiltersAndSearch(); }
                 updateDrawerStats();
                 updateOrdersStats(allOrders);
             }
-        } catch(e) {
-            console.error('Error checking orders:', e);
-        }
+        } catch(e) { console.error('Error checking orders:', e); }
     }
     
     function startNotificationCheck() {
         if (notificationCheckInterval) clearInterval(notificationCheckInterval);
-        notificationCheckInterval = setInterval(() => {
-            if (token === 'logged_in') {
-                checkForNewOrders();
-            }
-        }, 10000); // Check every 10 seconds
+        notificationCheckInterval = setInterval(() => { if (token === 'logged_in') { checkForNewOrders(); } }, 10000);
     }
     
     function stopNotificationCheck() {
-        if (notificationCheckInterval) {
-            clearInterval(notificationCheckInterval);
-            notificationCheckInterval = null;
-        }
+        if (notificationCheckInterval) { clearInterval(notificationCheckInterval); notificationCheckInterval = null; }
     }
     
     // ==================== ALERT FUNCTIONS ====================
-    function showCleanupAlert() {
-        document.getElementById('cleanupAlert').classList.add('active');
-    }
-    function closeCleanupAlert() {
-        document.getElementById('cleanupAlert').classList.remove('active');
-    }
-    function showSystemResetAlert() {
-        document.getElementById('resetConfirmInput').value = '';
-        document.getElementById('keepProductsCheckbox').checked = true;
-        document.getElementById('systemResetAlert').classList.add('active');
-    }
-    function closeSystemResetAlert() {
-        document.getElementById('systemResetAlert').classList.remove('active');
-    }
+    function showCleanupAlert() { document.getElementById('cleanupAlert').classList.add('active'); }
+    function closeCleanupAlert() { document.getElementById('cleanupAlert').classList.remove('active'); }
+    function showSystemResetAlert() { document.getElementById('resetConfirmInput').value = ''; document.getElementById('keepProductsCheckbox').checked = true; document.getElementById('systemResetAlert').classList.add('active'); }
+    function closeSystemResetAlert() { document.getElementById('systemResetAlert').classList.remove('active'); }
     
     async function executeCleanup() {
-        closeCleanupAlert();
-        showToast('🔄 Cleaning up old orders...');
-        try {
-            const res = await fetch(`${API_BASE}/api/admin/cleanup-old`, { method: 'POST' });
-            const data = await res.json();
-            if (data.success) {
-                showToast(`✅ ${data.message}`);
-                loadAllData();
-            } else {
-                showToast('❌ Cleanup failed: ' + data.error, true);
-            }
-        } catch(e) {
-            showToast('Error: ' + e.message, true);
-        }
+        closeCleanupAlert(); showToast('🔄 Cleaning up old orders...');
+        try { const res = await fetch(`${API_BASE}/api/admin/cleanup-old`, { method: 'POST' }); const data = await res.json(); if (data.success) { showToast(`✅ ${data.message}`); loadAllData(); } else { showToast('❌ Cleanup failed: ' + data.error, true); } } catch(e) { showToast('Error: ' + e.message, true); }
     }
     
     async function executeSystemResetFromAlert() {
         const confirmText = document.getElementById('resetConfirmInput').value.trim();
         const keepProducts = document.getElementById('keepProductsCheckbox').checked;
-        if (confirmText !== 'RESET_ALL_DATA') {
-            showToast('Please type "RESET_ALL_DATA" to confirm', true);
-            return;
-        }
-        closeSystemResetAlert();
-        showToast('🔄 Resetting system... Please wait...');
-        try {
-            const res = await fetch(`${API_BASE}/api/admin/system-reset`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ confirm: confirmText, keepProducts })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showToast('✅ System reset completed!');
-                notifications = [];
-                saveNotificationsToStorage();
-                updateNotificationUI();
-                setTimeout(() => { loadAllData(); }, 1000);
-            } else {
-                showToast('❌ Reset failed: ' + data.error, true);
-            }
-        } catch(e) {
-            showToast('Error: ' + e.message, true);
-        }
+        if (confirmText !== 'RESET_ALL_DATA') { showToast('Please type "RESET_ALL_DATA" to confirm', true); return; }
+        closeSystemResetAlert(); showToast('🔄 Resetting system... Please wait...');
+        try { const res = await fetch(`${API_BASE}/api/admin/system-reset`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirm: confirmText, keepProducts }) }); const data = await res.json(); if (data.success) { showToast('✅ System reset completed!'); notifications = []; saveNotificationsToStorage(); updateNotificationUI(); setTimeout(() => { loadAllData(); }, 1000); } else { showToast('❌ Reset failed: ' + data.error, true); } } catch(e) { showToast('Error: ' + e.message, true); }
     }
     
     function openScreenshot(url) {
         const modal = document.getElementById('screenshotModal');
         const img = document.getElementById('modalImage');
-        if (url && url !== 'null') {
-            img.src = url.startsWith('/') ? API_BASE + url : url;
-        } else {
-            img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E';
-        }
+        if (url && url !== 'null') { img.src = url.startsWith('/') ? API_BASE + url : url; } else { img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E'; }
         modal.classList.add('active');
     }
     function closeModal() { document.getElementById('screenshotModal').classList.remove('active'); }
     
     function getPaymentIcon(method) {
-        const icons = {
-            'kpay': '<i class="fas fa-university" style="color:#1e88e5;"></i> KBZ Pay',
-            'wavepay': '<i class="fas fa-waveform" style="color:#43a047;"></i> WavePay',
-            'ayapay': '<i class="fas fa-building" style="color:#f9a825;"></i> AYA Pay'
-        };
+        const icons = { 'kpay': '<i class="fas fa-university" style="color:#1e88e5;"></i> KBZ Pay', 'wavepay': '<i class="fas fa-waveform" style="color:#43a047;"></i> WavePay', 'ayapay': '<i class="fas fa-building" style="color:#f9a825;"></i> AYA Pay' };
         return icons[method] || icons['kpay'];
     }
     
@@ -1385,22 +1163,13 @@
             const elem = document.getElementById(`countdown-${orderId}`);
             if (elem) {
                 const formatted = formatCountdown(activatedAt);
-                if (formatted === "Expired") {
-                    elem.innerHTML = `<i class="fas fa-calendar-times"></i> <span style="color:#f43f5e;">Expired</span>`;
-                    clearInterval(activeCountdowns[orderId]);
-                } else {
-                    elem.innerHTML = `<i class="fas fa-hourglass-half"></i> <span class="countdown-timer">${formatted}</span>`;
-                }
-            } else {
-                clearInterval(activeCountdowns[orderId]);
-            }
+                if (formatted === "Expired") { elem.innerHTML = `<i class="fas fa-calendar-times"></i> <span style="color:#f43f5e;">Expired</span>`; clearInterval(activeCountdowns[orderId]); }
+                else { elem.innerHTML = `<i class="fas fa-hourglass-half"></i> <span class="countdown-timer">${formatted}</span>`; }
+            } else { clearInterval(activeCountdowns[orderId]); }
         }, 1000);
     }
 
-    function updateCountdown() {
-        const el = document.getElementById('autoSyncTimer');
-        if (el) el.innerHTML = `Auto Sync: ${secondsLeft}s`;
-    }
+    function updateCountdown() { const el = document.getElementById('autoSyncTimer'); if (el) el.innerHTML = `Auto Sync: ${secondsLeft}s`; }
 
     function startAutoSync() {
         if (autoSyncInterval) clearInterval(autoSyncInterval);
@@ -1415,38 +1184,23 @@
     async function login() {
         const password = document.getElementById('adminPassword').value;
         try {
-            const res = await fetch(`${API_BASE}/api/admin/login`, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ password }) 
-            });
+            const res = await fetch(`${API_BASE}/api/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
             const data = await res.json();
             if (data.success) {
-                localStorage.setItem('adminToken', 'logged_in'); 
-                token = 'logged_in';
+                localStorage.setItem('adminToken', 'logged_in'); token = 'logged_in';
                 document.getElementById('loginBox').style.display = 'none';
                 document.getElementById('adminContent').style.display = 'block';
                 document.getElementById('bottomNav').style.display = 'flex';
-                loadAllData(); 
-                startAutoSync();
-                startNotificationCheck();
-                loadNotificationsFromStorage();
-            } else { 
-                showToast('Invalid Password', true); 
-            }
-        } catch(e) {
-            showToast('Connection error', true);
-        }
+                loadAllData(); startAutoSync(); startNotificationCheck(); loadNotificationsFromStorage();
+            } else { showToast('Invalid Password', true); }
+        } catch(e) { showToast('Connection error', true); }
     }
 
     function logout() { 
-        stopAutoSync(); 
-        stopNotificationCheck();
-        localStorage.removeItem('adminToken'); 
-        token = null; 
-        document.getElementById('loginBox').style.display = 'block'; 
-        document.getElementById('adminContent').style.display = 'none'; 
-        document.getElementById('bottomNav').style.display = 'none'; 
+        stopAutoSync(); stopNotificationCheck(); localStorage.removeItem('adminToken'); token = null;
+        document.getElementById('loginBox').style.display = 'block';
+        document.getElementById('adminContent').style.display = 'none';
+        document.getElementById('bottomNav').style.display = 'none';
     }
 
     function updateDrawerStats() {
@@ -1465,235 +1219,61 @@
         document.getElementById('drawerTotalProfit').innerText = profit.toLocaleString() + 'K';
     }
 
-    async function loadAllData() {
-        await loadOrders();
-        await loadUserStats();
-        await loadProducts();
-        updateDrawerStats();
-    }
+    async function loadAllData() { await loadOrders(); await loadUserStats(); await loadProducts(); updateDrawerStats(); }
 
     async function loadOrders() {
         try {
             const res = await fetch(`${API_BASE}/api/admin/orders`);
             const data = await res.json();
             if (data.orders) { 
-                allOrders = data.orders; 
-                if (allOrders.length > 0 && lastOrderId === null) {
-                    lastOrderId = allOrders[0].id;
-                }
+                allOrders = data.orders;
+                if (allOrders.length > 0 && lastOrderId === null) { lastOrderId = allOrders[0].id; }
                 applyFiltersAndSearch(); 
-                document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | Total: ${allOrders.length}`; 
+                document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | Total: ${allOrders.length}`;
                 updateDrawerStats();
             }
-        } catch(e) { 
-            document.getElementById('ordersList').innerHTML = '<div class="loading">Connection Error</div>'; 
-        }
+        } catch(e) { document.getElementById('ordersList').innerHTML = '<div class="loading">Connection Error</div>'; }
     }
 
     async function loadUserStats() {
-        try {
-            const res = await fetch(`${API_BASE}/api/admin/user-stats`);
-            const data = await res.json();
-            if (data.stats) { 
-                userStats = data.stats; 
-                renderUsersTab(); 
-                updateDrawerStats();
-            }
-        } catch(e) { 
-            console.error('Error loading user stats:', e); 
-        }
+        try { const res = await fetch(`${API_BASE}/api/admin/user-stats`); const data = await res.json(); if (data.stats) { userStats = data.stats; renderUsersTab(); updateDrawerStats(); } } catch(e) { console.error('Error loading user stats:', e); }
     }
 
     async function loadProducts() {
-        try {
-            const res = await fetch(`${API_BASE}/api/market/products`);
-            const data = await res.json();
-            products = data.products || [];
-            renderProducts();
-        } catch(e) { 
-            console.error('Error loading products:', e); 
-            renderProducts(); 
-        }
+        try { const res = await fetch(`${API_BASE}/api/market/products`); const data = await res.json(); products = data.products || []; renderProducts(); } catch(e) { console.error('Error loading products:', e); renderProducts(); }
     }
     
-    function escapeHtml(str) { 
-        if (!str) return ''; 
-        return str.replace(/[&<>]/g, function(m) { 
-            if (m === '&') return '&amp;'; 
-            if (m === '<') return '&lt;'; 
-            if (m === '>') return '&gt;'; 
-            return m; 
-        }); 
-    }
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
     
     function renderProducts() {
         const container = document.getElementById('productList');
-        if (!products.length) { 
-            container.innerHTML = '<div class="loading">No products found. Click "Add Product" to create.</div>'; 
-            return; 
-        }
+        if (!products.length) { container.innerHTML = '<div class="loading">No products found. Click "Add Product" to create.</div>'; return; }
         let html = '';
         for (const p of products) {
-            html += `
-                <div class="product-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05);">
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            ${p.image ? `<img src="${p.image}" style="width:50px; height:50px; object-fit:cover; border-radius:8px; background:rgba(0,0,0,0.3);" onerror="this.style.display='none'">` : `<div style="width:50px; height:50px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.3); border-radius:8px;"><i class="${p.icon || 'fas fa-box'}"></i></div>`}
-                            <div><strong>${escapeHtml(p.name)}</strong><br><span style="font-size:0.65rem;">💰 ${p.price.toLocaleString()} MMK</span></div>
-                        </div>
-                        <span style="font-size:0.65rem; background:rgba(0,212,255,0.15); padding:3px 10px; border-radius:40px;">${escapeHtml(p.category || 'Uncategorized')}</span>
-                    </div>
-                    <div style="margin:8px 0;">${p.discount ? `<span style="background:rgba(245,158,11,0.2); color:#fbbf24; font-size:0.6rem; display:inline-block; padding:2px 8px; border-radius:40px;">-${p.discount}% OFF</span>` : ''}</div>
-                    <div style="display:flex; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05);">
-                        <button onclick="openEditProductModal(${p.id})" style="flex:1; border:none; padding:6px; border-radius:40px; font-size:0.65rem; cursor:pointer; font-weight:600; background:rgba(0,212,255,0.2); color:var(--cyan);"><i class="fas fa-edit"></i> Edit</button>
-                        <button onclick="deleteProduct(${p.id})" style="flex:1; border:none; padding:6px; border-radius:40px; font-size:0.65rem; cursor:pointer; font-weight:600; background:rgba(244,63,94,0.2); color:#fb7185;"><i class="fas fa-trash"></i> Delete</button>
-                    </div>
-                </div>
-            `;
+            html += `<div class="product-card"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05);"><div style="display:flex; align-items:center; gap:12px;">${p.image ? `<img src="${p.image}" style="width:50px; height:50px; object-fit:cover; border-radius:8px; background:rgba(0,0,0,0.3);" onerror="this.style.display='none'">` : `<div style="width:50px; height:50px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.3); border-radius:8px;"><i class="${p.icon || 'fas fa-box'}"></i></div>`}<div><strong>${escapeHtml(p.name)}</strong><br><span style="font-size:0.65rem;">💰 ${p.price.toLocaleString()} MMK</span></div></div><span style="font-size:0.65rem; background:rgba(0,212,255,0.15); padding:3px 10px; border-radius:40px;">${escapeHtml(p.category || 'Uncategorized')}</span></div><div style="margin:8px 0;">${p.discount ? `<span style="background:rgba(245,158,11,0.2); color:#fbbf24; font-size:0.6rem; display:inline-block; padding:2px 8px; border-radius:40px;">-${p.discount}% OFF</span>` : ''}</div><div style="display:flex; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05);"><button onclick="openEditProductModal(${p.id})" style="flex:1; border:none; padding:6px; border-radius:40px; font-size:0.65rem; cursor:pointer; font-weight:600; background:rgba(0,212,255,0.2); color:var(--cyan);"><i class="fas fa-edit"></i> Edit</button><button onclick="deleteProduct(${p.id})" style="flex:1; border:none; padding:6px; border-radius:40px; font-size:0.65rem; cursor:pointer; font-weight:600; background:rgba(244,63,94,0.2); color:#fb7185;"><i class="fas fa-trash"></i> Delete</button></div></div>`;
         }
         container.innerHTML = html;
     }
     
-    function openAddProductModal() { 
-        editingProductId = null; 
-        document.getElementById('productModalTitle').innerText = 'Add Product'; 
-        document.getElementById('productName').value = '';
-        document.getElementById('productPrice').value = '';
-        document.getElementById('productImage').value = '';
-        document.getElementById('productCategory').value = '';
-        document.getElementById('productIcon').value = 'fas fa-box';
-        document.getElementById('productDiscount').value = '';
-        document.getElementById('productModal').classList.add('active'); 
-    }
-    
-    function openEditProductModal(id) {
-        const product = products.find(p => p.id === id);
-        if (!product) return;
-        editingProductId = id;
-        document.getElementById('productModalTitle').innerText = 'Edit Product';
-        document.getElementById('productName').value = product.name;
-        document.getElementById('productPrice').value = product.price;
-        document.getElementById('productImage').value = product.image || '';
-        document.getElementById('productCategory').value = product.category || '';
-        document.getElementById('productIcon').value = product.icon || 'fas fa-box';
-        document.getElementById('productDiscount').value = product.discount || '';
-        document.getElementById('productModal').classList.add('active');
-    }
-    
+    function openAddProductModal() { editingProductId = null; document.getElementById('productModalTitle').innerText = 'Add Product'; document.getElementById('productName').value = ''; document.getElementById('productPrice').value = ''; document.getElementById('productImage').value = ''; document.getElementById('productCategory').value = ''; document.getElementById('productIcon').value = 'fas fa-box'; document.getElementById('productDiscount').value = ''; document.getElementById('productModal').classList.add('active'); }
+    function openEditProductModal(id) { const product = products.find(p => p.id === id); if (!product) return; editingProductId = id; document.getElementById('productModalTitle').innerText = 'Edit Product'; document.getElementById('productName').value = product.name; document.getElementById('productPrice').value = product.price; document.getElementById('productImage').value = product.image || ''; document.getElementById('productCategory').value = product.category || ''; document.getElementById('productIcon').value = product.icon || 'fas fa-box'; document.getElementById('productDiscount').value = product.discount || ''; document.getElementById('productModal').classList.add('active'); }
     function closeProductModal() { document.getElementById('productModal').classList.remove('active'); }
-    
-    async function saveProduct() {
-        const name = document.getElementById('productName').value.trim();
-        const price = parseInt(document.getElementById('productPrice').value);
-        const image = document.getElementById('productImage').value.trim();
-        const category = document.getElementById('productCategory').value.trim();
-        const icon = document.getElementById('productIcon').value.trim();
-        const discount = parseInt(document.getElementById('productDiscount').value) || 0;
-        if (!name || !price) { 
-            showToast("Please fill product name and price", true); 
-            return; 
-        }
-        const url = editingProductId ? `${API_BASE}/api/market/products/${editingProductId}` : `${API_BASE}/api/market/products`;
-        const method = editingProductId ? 'PUT' : 'POST';
-        try {
-            const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, price, image, category, icon, discount }) });
-            if (res.ok) { 
-                showToast(editingProductId ? 'Product updated' : 'Product added'); 
-                closeProductModal(); 
-                loadProducts(); 
-            } else { 
-                showToast('Error saving product', true); 
-            }
-        } catch(e) { showToast('Error saving product', true); }
-    }
-    
-    async function deleteProduct(id) {
-        if (!confirm('Delete this product?')) return;
-        try {
-            const res = await fetch(`${API_BASE}/api/market/products/${id}`, { method: 'DELETE' });
-            if (res.ok) { showToast('Product deleted'); loadProducts(); } 
-            else { showToast('Error deleting product', true); }
-        } catch(e) { showToast('Error deleting product', true); }
-    }
+    async function saveProduct() { const name = document.getElementById('productName').value.trim(); const price = parseInt(document.getElementById('productPrice').value); const image = document.getElementById('productImage').value.trim(); const category = document.getElementById('productCategory').value.trim(); const icon = document.getElementById('productIcon').value.trim(); const discount = parseInt(document.getElementById('productDiscount').value) || 0; if (!name || !price) { showToast("Please fill product name and price", true); return; } const url = editingProductId ? `${API_BASE}/api/market/products/${editingProductId}` : `${API_BASE}/api/market/products`; const method = editingProductId ? 'PUT' : 'POST'; try { const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, price, image, category, icon, discount }) }); if (res.ok) { showToast(editingProductId ? 'Product updated' : 'Product added'); closeProductModal(); loadProducts(); } else { showToast('Error saving product', true); } } catch(e) { showToast('Error saving product', true); } }
+    async function deleteProduct(id) { if (!confirm('Delete this product?')) return; try { const res = await fetch(`${API_BASE}/api/market/products/${id}`, { method: 'DELETE' }); if (res.ok) { showToast('Product deleted'); loadProducts(); } else { showToast('Error deleting product', true); } } catch(e) { showToast('Error deleting product', true); } }
 
-    async function blockUser(phone, block) {
-        try {
-            const res = await fetch(`${API_BASE}/api/admin/user-block`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone, block }) });
-            if (res.ok) { loadUserStats(); showToast(block ? '✅ User blocked' : '✅ User unblocked'); } 
-            else { showToast('Error', true); }
-        } catch(e) { showToast('Error', true); }
-    }
-
-    async function clearSuspectFlag(phone) {
-        try {
-            const res = await fetch(`${API_BASE}/api/admin/clear-suspect`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) });
-            if (res.ok) { loadUserStats(); showToast('✅ Suspect flag cleared'); } 
-            else { showToast('Error', true); }
-        } catch(e) { showToast('Error', true); }
-    }
-
-    async function deleteUser(phone) {
-        if (confirm(`⚠️ Are you sure you want to delete user ${maskPhone(phone)}?\nThis will remove the user from stats. Orders will remain.`)) {
-            try {
-                const res = await fetch(`${API_BASE}/api/admin/user-delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) });
-                if (res.ok) { loadUserStats(); showToast('✅ User deleted from stats'); } 
-                else { showToast('Error', true); }
-            } catch(e) { showToast('Error', true); }
-        }
-    }
-
-    async function deleteAllOrders(phone) {
-        if (confirm(`⚠️ Are you sure you want to delete ALL orders for ${maskPhone(phone)}?\nThis action cannot be undone!`)) {
-            try {
-                const res = await fetch(`${API_BASE}/api/admin/user-delete-orders`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) });
-                if (res.ok) { loadAllData(); showToast('✅ All orders deleted'); } 
-                else { showToast('Error', true); }
-            } catch(e) { showToast('Error', true); }
-        }
-    }
+    async function blockUser(phone, block) { try { const res = await fetch(`${API_BASE}/api/admin/user-block`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone, block }) }); if (res.ok) { loadUserStats(); showToast(block ? '✅ User blocked' : '✅ User unblocked'); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); } }
+    async function clearSuspectFlag(phone) { try { const res = await fetch(`${API_BASE}/api/admin/clear-suspect`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) }); if (res.ok) { loadUserStats(); showToast('✅ Suspect flag cleared'); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); } }
+    async function deleteUser(phone) { if (confirm(`⚠️ Are you sure you want to delete user ${maskPhone(phone)}?`)) { try { const res = await fetch(`${API_BASE}/api/admin/user-delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) }); if (res.ok) { loadUserStats(); showToast('✅ User deleted from stats'); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); } } }
+    async function deleteAllOrders(phone) { if (confirm(`⚠️ Delete ALL orders for ${maskPhone(phone)}?`)) { try { const res = await fetch(`${API_BASE}/api/admin/user-delete-orders`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone }) }); if (res.ok) { loadAllData(); showToast('✅ All orders deleted'); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); } } }
     
-    function exportUsersToCSV() {
-        if (!userStats.length) { showToast('No users to export', true); return; }
-        let csv = "User ID,Phone,Username,Order Count,Reject Count,Reject Rate,Suspect,Blocked,Joined Date\n";
-        userStats.forEach(u => {
-            const rejectRate = u.order_count > 0 ? ((u.reject_count / u.order_count) * 100).toFixed(1) : 0;
-            csv += `"${u.user_id || 'N/A'}","${u.phone}","${u.username || ''}",${u.order_count},${u.reject_count},${rejectRate}%,${u.suspect_flag ? 'Yes' : 'No'},${u.blocked ? 'Yes' : 'No'},"${new Date(u.created_at).toLocaleDateString()}"\n`;
-        });
-        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.href = url;
-        link.setAttribute('download', `users_${new Date().toISOString().slice(0,19)}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        showToast('📁 Users exported to CSV');
-    }
-    
-    function exportOrdersToCSV() {
-        if (!allOrders.length) { showToast('No orders to export', true); return; }
-        let csv = "Order ID,Phone,Plan,Price,Status,Payment Method,Sender Name,Last5 Digits,Order Date,Activated Date\n";
-        allOrders.forEach(o => {
-            csv += `"${o.id}","${o.phone}","${o.plan}",${o.price},"${o.status}","${o.payment_method || 'kpay'}","${o.sender_name || ''}","${o.last5_digits || ''}","${new Date(o.created_at).toLocaleString()}","${o.activated_at ? new Date(o.activated_at).toLocaleString() : ''}"\n`;
-        });
-        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.href = url;
-        link.setAttribute('download', `orders_${new Date().toISOString().slice(0,19)}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        showToast('📁 Orders exported to CSV');
-    }
+    function exportUsersToCSV() { if (!userStats.length) { showToast('No users to export', true); return; } let csv = "User ID,Phone,Username,Order Count,Reject Count,Reject Rate,Suspect,Blocked,Joined Date\n"; userStats.forEach(u => { const rejectRate = u.order_count > 0 ? ((u.reject_count / u.order_count) * 100).toFixed(1) : 0; csv += `"${u.user_id || 'N/A'}","${u.phone}","${u.username || ''}",${u.order_count},${u.reject_count},${rejectRate}%,${u.suspect_flag ? 'Yes' : 'No'},${u.blocked ? 'Yes' : 'No'},"${new Date(u.created_at).toLocaleDateString()}"\n`; }); const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); const url = URL.createObjectURL(blob); link.href = url; link.setAttribute('download', `users_${new Date().toISOString().slice(0,19)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); showToast('📁 Users exported to CSV'); }
+    function exportOrdersToCSV() { if (!allOrders.length) { showToast('No orders to export', true); return; } let csv = "Order ID,Phone,Plan,Price,Status,Payment Method,Sender Name,Last5 Digits,Order Date,Activated Date\n"; allOrders.forEach(o => { csv += `"${o.id}","${o.phone}","${o.plan}",${o.price},"${o.status}","${o.payment_method || 'kpay'}","${o.sender_name || ''}","${o.last5_digits || ''}","${new Date(o.created_at).toLocaleString()}","${o.activated_at ? new Date(o.activated_at).toLocaleString() : ''}"\n`; }); const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); const url = URL.createObjectURL(blob); link.href = url; link.setAttribute('download', `orders_${new Date().toISOString().slice(0,19)}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); showToast('📁 Orders exported to CSV'); }
 
     function updateOrdersStats(orders) {
         const total = orders.length;
-        const pending = orders.filter(o => o.status === 'Pending');
-        const approved = orders.filter(o => o.status === 'Approved');
-        const rejected = orders.filter(o => o.status === 'Rejected');
+        const pending = orders.filter(o => o.status === 'Pending').length;
+        const approved = orders.filter(o => o.status === 'Approved').length;
+        const rejected = orders.filter(o => o.status === 'Rejected').length;
         const revenue = approved.reduce((s, o) => s + o.price, 0);
         const cost = approved.reduce((s, o) => s + getCostPrice(o.plan), 0);
         const profit = revenue - cost;
@@ -1712,42 +1292,16 @@
         const container = document.getElementById('usersList');
         if (!userStats.length) { container.innerHTML = '<div class="loading">No user data available</div>'; return; }
         let filteredUsers = [...userStats];
-        if (currentUserSearchPhone) {
-            filteredUsers = filteredUsers.filter(u => u.phone === currentUserSearchPhone || u.user_id === currentUserSearchPhone || (u.username && u.username.toLowerCase().includes(currentUserSearchPhone.toLowerCase())));
-        }
+        if (currentUserSearchPhone) { filteredUsers = filteredUsers.filter(u => u.phone === currentUserSearchPhone || u.user_id === currentUserSearchPhone || (u.username && u.username.toLowerCase().includes(currentUserSearchPhone.toLowerCase()))); }
         if (filteredUsers.length === 0 && currentUserSearchPhone) { container.innerHTML = `<div class="loading">No user found for "${currentUserSearchPhone}"</div>`; return; }
         let html = '';
         for (const user of filteredUsers) {
             const rejectRate = user.order_count > 0 ? ((user.reject_count / user.order_count) * 100).toFixed(0) : 0;
-            let rateClass = '';
-            if (rejectRate >= 50) rateClass = 'high';
-            else if (rejectRate >= 30) rateClass = 'medium';
-            let statusClass = 'normal';
-            let statusText = '🟢 Normal';
+            let rateClass = ''; if (rejectRate >= 50) rateClass = 'high'; else if (rejectRate >= 30) rateClass = 'medium';
+            let statusClass = 'normal'; let statusText = '🟢 Normal';
             if (user.blocked) { statusClass = 'blocked'; statusText = '🔴 Blocked'; }
             else if (user.suspect_flag) { statusClass = 'suspect'; statusText = '🟡 Suspect'; }
-            html += `
-                <div class="user-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05);">
-                        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                            <span style="font-family:monospace; font-size:0.8rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;" onclick="copyToClipboard('${user.phone}')">📞 ${maskPhone(user.phone)} 📋</span>
-                            <span style="font-family:monospace; font-size:0.7rem; background:rgba(0,212,255,0.1); padding:3px 10px; border-radius:40px; color:var(--cyan); display:inline-flex; align-items:center; gap:6px;" onclick="copyToClipboard('${user.user_id || ''}')">🆔 ${user.user_id || 'N/A'} 📋</span>
-                        </div>
-                        <span style="font-size:0.6rem; padding:3px 8px; border-radius:40px; background:${statusClass === 'blocked' ? 'rgba(244,63,94,0.2)' : (statusClass === 'suspect' ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)')}; color:${statusClass === 'blocked' ? '#fb7185' : (statusClass === 'suspect' ? '#fbbf24' : '#34d399')};">${statusText}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-around; margin-bottom:10px;">
-                        <div style="text-align:center;"><div style="font-size:1.1rem; font-weight:700;">${user.order_count || 0}</div><div style="font-size:0.55rem; color:#64748b;">Orders</div></div>
-                        <div style="text-align:center;"><div style="font-size:1.1rem; font-weight:700; ${rejectRate >= 50 ? 'color:var(--rose)' : (rejectRate >= 30 ? 'color:var(--amber)' : '')}">${user.reject_count || 0}</div><div style="font-size:0.55rem; color:#64748b;">Rejected</div></div>
-                        <div style="text-align:center;"><div style="font-size:1.1rem; font-weight:700; ${rejectRate >= 50 ? 'color:var(--rose)' : (rejectRate >= 30 ? 'color:var(--amber)' : '')}">${rejectRate}%</div><div style="font-size:0.55rem; color:#64748b;">Reject Rate</div></div>
-                    </div>
-                    <div style="display:flex; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05); flex-wrap:wrap;">
-                        ${!user.blocked ? `<button onclick="blockUser('${user.phone}', true)" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(244,63,94,0.2); color:#fb7185;">🔴 Block</button>` : `<button onclick="blockUser('${user.phone}', false)" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(16,185,129,0.2); color:#34d399;">🟢 Unblock</button>`}
-                        <button onclick="deleteUser('${user.phone}')" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(244,63,94,0.2); color:#fb7185;">❌ Delete User</button>
-                        <button onclick="deleteAllOrders('${user.phone}')" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(245,158,11,0.2); color:#fbbf24;">🗑 Delete All Orders</button>
-                        ${user.suspect_flag ? `<button onclick="clearSuspectFlag('${user.phone}')" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(0,212,255,0.15); color:var(--cyan);">✓ Clear Flag</button>` : ''}
-                    </div>
-                </div>
-            `;
+            html += `<div class="user-card"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05);"><div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;"><span style="font-family:monospace; font-size:0.8rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;" onclick="copyToClipboard('${user.phone}')">📞 ${maskPhone(user.phone)} 📋</span><span style="font-family:monospace; font-size:0.7rem; background:rgba(0,212,255,0.1); padding:3px 10px; border-radius:40px; color:var(--cyan); display:inline-flex; align-items:center; gap:6px;" onclick="copyToClipboard('${user.user_id || ''}')">🆔 ${user.user_id || 'N/A'} 📋</span></div><span style="font-size:0.6rem; padding:3px 8px; border-radius:40px; background:${statusClass === 'blocked' ? 'rgba(244,63,94,0.2)' : (statusClass === 'suspect' ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)')}; color:${statusClass === 'blocked' ? '#fb7185' : (statusClass === 'suspect' ? '#fbbf24' : '#34d399')};">${statusText}</span></div><div style="display:flex; justify-content:space-around; margin-bottom:10px;"><div style="text-align:center;"><div style="font-size:1.1rem; font-weight:700;">${user.order_count || 0}</div><div style="font-size:0.55rem; color:#64748b;">Orders</div></div><div style="text-align:center;"><div style="font-size:1.1rem; font-weight:700; ${rejectRate >= 50 ? 'color:var(--rose)' : (rejectRate >= 30 ? 'color:var(--amber)' : '')}">${user.reject_count || 0}</div><div style="font-size:0.55rem; color:#64748b;">Rejected</div></div><div style="text-align:center;"><div style="font-size:1.1rem; font-weight:700; ${rejectRate >= 50 ? 'color:var(--rose)' : (rejectRate >= 30 ? 'color:var(--amber)' : '')}">${rejectRate}%</div><div style="font-size:0.55rem; color:#64748b;">Reject Rate</div></div></div><div style="display:flex; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05); flex-wrap:wrap;">${!user.blocked ? `<button onclick="blockUser('${user.phone}', true)" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(244,63,94,0.2); color:#fb7185;">🔴 Block</button>` : `<button onclick="blockUser('${user.phone}', false)" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(16,185,129,0.2); color:#34d399;">🟢 Unblock</button>`}<button onclick="deleteUser('${user.phone}')" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(244,63,94,0.2); color:#fb7185;">❌ Delete User</button><button onclick="deleteAllOrders('${user.phone}')" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(245,158,11,0.2); color:#fbbf24;">🗑 Delete All Orders</button>${user.suspect_flag ? `<button onclick="clearSuspectFlag('${user.phone}')" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; background:rgba(0,212,255,0.15); color:var(--cyan);">✓ Clear Flag</button>` : ''}</div></div>`;
         }
         container.innerHTML = html;
     }
@@ -1765,33 +1319,12 @@
         updateOrdersStats(filtered);
     }
 
-    function searchByPhoneOrId() {
-        const searchValue = document.getElementById('searchInput').value.trim();
-        if (!searchValue) return;
-        currentSearchPhone = searchValue;
-        applyFiltersAndSearch();
-    }
-    
+    function searchByPhoneOrId() { const searchValue = document.getElementById('searchInput').value.trim(); if (!searchValue) return; currentSearchPhone = searchValue; applyFiltersAndSearch(); }
     function clearSearch() { currentSearchPhone = ""; document.getElementById('searchInput').value = ""; applyFiltersAndSearch(); showToast('🔍 Search cleared'); }
-
-    function searchUsers() {
-        const searchValue = document.getElementById('userSearchInput').value.trim();
-        if (!searchValue) return;
-        currentUserSearchPhone = searchValue;
-        renderUsersTab();
-    }
-    
+    function searchUsers() { const searchValue = document.getElementById('userSearchInput').value.trim(); if (!searchValue) return; currentUserSearchPhone = searchValue; renderUsersTab(); }
     function clearUserSearch() { currentUserSearchPhone = ""; document.getElementById('userSearchInput').value = ""; renderUsersTab(); showToast('🔍 Search cleared'); }
-
     function applyFilters() { applyFiltersAndSearch(); }
-    
-    function clearFilters() {
-        document.getElementById('startDate').value = '';
-        document.getElementById('endDate').value = '';
-        document.getElementById('statusFilter').value = 'all';
-        applyFiltersAndSearch();
-        showToast('✅ Filters cleared');
-    }
+    function clearFilters() { document.getElementById('startDate').value = ''; document.getElementById('endDate').value = ''; document.getElementById('statusFilter').value = 'all'; applyFiltersAndSearch(); showToast('✅ Filters cleared'); }
 
     function renderOrders(orders) {
         const container = document.getElementById('ordersList');
@@ -1806,50 +1339,17 @@
                 countdownHtml = `<div class="countdown-box" id="countdown-${o.id}" style="background:rgba(0,212,255,0.08); border-radius:40px; padding:6px 12px; margin-top:8px; display:flex; align-items:center; justify-content:center; gap:8px; font-size:0.7rem; font-family:monospace; border:1px solid rgba(0,212,255,0.2);"><i class="fas fa-hourglass-half"></i><span class="countdown-timer" style="font-weight:700; color:var(--cyan); letter-spacing:1px;">${initialCountdown || 'Calculating...'}</span></div>`;
             }
             let proofHtml = '';
-            if (o.sender_name && o.last5_digits) {
-                proofHtml = `<div style="display:flex; justify-content:center; align-items:center; gap:24px; flex-wrap:wrap; background:rgba(0,212,255,0.05); border-radius:40px; padding:8px 16px; margin:8px 0; border:1px solid rgba(0,212,255,0.1);"><div style="display:flex; align-items:center; gap:8px; font-size:0.7rem;"><span style="color:var(--text-secondary); font-weight:500;"><i class="fas fa-user-circle"></i> Sender:</span><span style="font-weight:600; color:var(--emerald);">${escapeHtml(o.sender_name)}</span></div><div style="display:flex; align-items:center; gap:8px; font-size:0.7rem;"><span style="color:var(--text-secondary); font-weight:500;"><i class="fas fa-receipt"></i> Last 5:</span><span style="font-weight:600; color:var(--amber); font-family:monospace; letter-spacing:1px;">${escapeHtml(o.last5_digits)}</span></div><div style="display:flex; align-items:center; gap:8px; font-size:0.7rem;"><span style="color:var(--text-secondary); font-weight:500;"><i class="fas fa-credit-card"></i> Payment:</span><span style="font-weight:600; color:var(--violet);">${getPaymentIcon(o.payment_method || 'kpay')}</span></div></div>`;
-            } else if (o.payment_method) {
-                proofHtml = `<div style="display:flex; justify-content:center; align-items:center; gap:24px; flex-wrap:wrap; background:rgba(0,212,255,0.05); border-radius:40px; padding:8px 16px; margin:8px 0; border:1px solid rgba(0,212,255,0.1);"><div style="display:flex; align-items:center; gap:8px; font-size:0.7rem;"><span style="color:var(--text-secondary); font-weight:500;"><i class="fas fa-credit-card"></i> Payment:</span><span style="font-weight:600; color:var(--violet);">${getPaymentIcon(o.payment_method)}</span></div></div>`;
-            }
-            html += `
-                <div class="order-card">
-                    <div class="order-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05);">
-                        <span class="order-id" style="font-family:monospace; font-size:0.7rem; background:rgba(0,212,255,0.1); padding:3px 8px; border-radius:20px; color:var(--cyan);"><i class="fas fa-hashtag"></i> ${o.id}</span>
-                        <span class="status-badge ${statusClass}" style="display:inline-block; padding:4px 10px; border-radius:40px; font-size:0.6rem; font-weight:700; background:${o.status === 'Pending' ? 'rgba(245,158,11,0.2)' : (o.status === 'Approved' ? 'rgba(16,185,129,0.2)' : 'rgba(244,63,94,0.2)')}; color:${o.status === 'Pending' ? '#fbbf24' : (o.status === 'Approved' ? '#34d399' : '#fb7185')};">${statusText}</span>
-                    </div>
-                    <div class="order-details" style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:10px;">
-                        <div class="detail-item" style="flex:1; min-width:80px;"><div class="detail-label" style="font-size:0.55rem; color:#64748b; margin-bottom:2px;"><i class="fas fa-mobile-alt"></i> Phone</div><div class="detail-value clickable-phone" style="font-size:0.8rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;" onclick="copyToClipboard('${o.phone}')">📞 ${maskPhone(o.phone)} 📋</div></div>
-                        <div class="detail-item" style="flex:1; min-width:80px;"><div class="detail-label" style="font-size:0.55rem; color:#64748b; margin-bottom:2px;"><i class="fas fa-tag"></i> Plan</div><div class="detail-value" style="font-size:0.8rem; font-weight:600; font-size:0.7rem;">${o.plan}</div></div>
-                        <div class="detail-item" style="flex:1; min-width:80px;"><div class="detail-label" style="font-size:0.55rem; color:#64748b; margin-bottom:2px;"><i class="fas fa-coins"></i> Price</div><div class="detail-value price" style="font-size:0.8rem; font-weight:600; color:var(--emerald);">${o.price.toLocaleString()}K</div></div>
-                        <div class="detail-item" style="flex:1; min-width:80px;"><div class="detail-label" style="font-size:0.55rem; color:#64748b; margin-bottom:2px;"><i class="fas fa-box"></i> Cost</div><div class="detail-value cost" style="font-size:0.8rem; font-weight:600; color:var(--amber);">${getCostPrice(o.plan).toLocaleString()}K</div></div>
-                        <div class="detail-item" style="flex:1; min-width:80px;"><div class="detail-label" style="font-size:0.55rem; color:#64748b; margin-bottom:2px;"><i class="fas fa-chart-line"></i> Profit</div><div class="detail-value profit" style="font-size:0.8rem; font-weight:600; color:var(--cyan);">${getProfit(o.price, o.plan).toLocaleString()}K</div></div>
-                        <div class="detail-item" style="flex:1; min-width:80px;"><div class="detail-label" style="font-size:0.55rem; color:#64748b; margin-bottom:2px;"><i class="fas fa-calendar"></i> Date</div><div class="detail-value" style="font-size:0.8rem; font-weight:600; font-size:0.65rem;">${new Date(o.created_at).toLocaleString()}</div></div>
-                    </div>
-                    ${proofHtml}
-                    ${countdownHtml}
-                    <div class="order-actions" style="display:flex; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05); flex-wrap:wrap;">
-                        ${o.slip_url ? `<button class="screenshot-btn" onclick="openScreenshot('${o.slip_url}')" style="background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.3); padding:6px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px; color:var(--cyan);"><i class="fas fa-image"></i> View Slip</button>` : '<span style="font-size:0.6rem;color:#64748b;">No slip</span>'}
-                        ${o.status === 'Pending' ? `<button class="action-btn approve" onclick="approveOrder(${o.id})" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px; background:#10b981; color:white;"><i class="fas fa-check"></i> Approve</button><button class="action-btn reject" onclick="rejectOrder(${o.id})" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px; background:#f43f5e; color:white;"><i class="fas fa-times"></i> Reject</button>` : ''}
-                        <button class="action-btn delete" onclick="deleteOrder(${o.id})" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px; background:#475569; color:white;"><i class="fas fa-trash"></i> Delete</button>
-                    </div>
-                </div>
-            `;
+            if (o.sender_name && o.last5_digits) { proofHtml = `<div style="display:flex; justify-content:center; align-items:center; gap:24px; flex-wrap:wrap; background:rgba(0,212,255,0.05); border-radius:40px; padding:8px 16px; margin:8px 0; border:1px solid rgba(0,212,255,0.1);"><div style="display:flex; align-items:center; gap:8px; font-size:0.7rem;"><span style="color:var(--text-secondary); font-weight:500;"><i class="fas fa-user-circle"></i> Sender:</span><span style="font-weight:600; color:var(--emerald);">${escapeHtml(o.sender_name)}</span></div><div style="display:flex; align-items:center; gap:8px; font-size:0.7rem;"><span style="color:var(--text-secondary); font-weight:500;"><i class="fas fa-receipt"></i> Last 5:</span><span style="font-weight:600; color:var(--amber); font-family:monospace; letter-spacing:1px;">${escapeHtml(o.last5_digits)}</span></div><div style="display:flex; align-items:center; gap:8px; font-size:0.7rem;"><span style="color:var(--text-secondary); font-weight:500;"><i class="fas fa-credit-card"></i> Payment:</span><span style="font-weight:600; color:var(--violet);">${getPaymentIcon(o.payment_method || 'kpay')}</span></div></div>`; }
+            else if (o.payment_method) { proofHtml = `<div style="display:flex; justify-content:center; align-items:center; gap:24px; flex-wrap:wrap; background:rgba(0,212,255,0.05); border-radius:40px; padding:8px 16px; margin:8px 0; border:1px solid rgba(0,212,255,0.1);"><div style="display:flex; align-items:center; gap:8px; font-size:0.7rem;"><span style="color:var(--text-secondary); font-weight:500;"><i class="fas fa-credit-card"></i> Payment:</span><span style="font-weight:600; color:var(--violet);">${getPaymentIcon(o.payment_method)}</span></div></div>`; }
+            html += `<div class="order-card"><div class="order-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05);"><span class="order-id" style="font-family:monospace; font-size:0.7rem; background:rgba(0,212,255,0.1); padding:3px 8px; border-radius:20px; color:var(--cyan);"><i class="fas fa-hashtag"></i> ${o.id}</span><span class="status-badge ${statusClass}" style="display:inline-block; padding:4px 10px; border-radius:40px; font-size:0.6rem; font-weight:700; background:${o.status === 'Pending' ? 'rgba(245,158,11,0.2)' : (o.status === 'Approved' ? 'rgba(16,185,129,0.2)' : 'rgba(244,63,94,0.2)')}; color:${o.status === 'Pending' ? '#fbbf24' : (o.status === 'Approved' ? '#34d399' : '#fb7185')};">${statusText}</span></div><div class="order-details" style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:10px;"><div class="detail-item" style="flex:1; min-width:80px;"><div class="detail-label" style="font-size:0.55rem; color:#64748b; margin-bottom:2px;"><i class="fas fa-mobile-alt"></i> Phone</div><div class="detail-value clickable-phone" style="font-size:0.8rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;" onclick="copyToClipboard('${o.phone}')">📞 ${maskPhone(o.phone)} 📋</div></div><div class="detail-item" style="flex:1; min-width:80px;"><div class="detail-label" style="font-size:0.55rem; color:#64748b; margin-bottom:2px;"><i class="fas fa-tag"></i> Plan</div><div class="detail-value" style="font-size:0.8rem; font-weight:600; font-size:0.7rem;">${o.plan}</div></div><div class="detail-item" style="flex:1; min-width:80px;"><div class="detail-label" style="font-size:0.55rem; color:#64748b; margin-bottom:2px;"><i class="fas fa-coins"></i> Price</div><div class="detail-value price" style="font-size:0.8rem; font-weight:600; color:var(--emerald);">${o.price.toLocaleString()}K</div></div><div class="detail-item" style="flex:1; min-width:80px;"><div class="detail-label" style="font-size:0.55rem; color:#64748b; margin-bottom:2px;"><i class="fas fa-box"></i> Cost</div><div class="detail-value cost" style="font-size:0.8rem; font-weight:600; color:var(--amber);">${getCostPrice(o.plan).toLocaleString()}K</div></div><div class="detail-item" style="flex:1; min-width:80px;"><div class="detail-label" style="font-size:0.55rem; color:#64748b; margin-bottom:2px;"><i class="fas fa-chart-line"></i> Profit</div><div class="detail-value profit" style="font-size:0.8rem; font-weight:600; color:var(--cyan);">${getProfit(o.price, o.plan).toLocaleString()}K</div></div><div class="detail-item" style="flex:1; min-width:80px;"><div class="detail-label" style="font-size:0.55rem; color:#64748b; margin-bottom:2px;"><i class="fas fa-calendar"></i> Date</div><div class="detail-value" style="font-size:0.8rem; font-weight:600; font-size:0.65rem;">${new Date(o.created_at).toLocaleString()}</div></div></div>${proofHtml}${countdownHtml}<div class="order-actions" style="display:flex; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05); flex-wrap:wrap;">${o.slip_url ? `<button class="screenshot-btn" onclick="openScreenshot('${o.slip_url}')" style="background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.3); padding:6px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px; color:var(--cyan);"><i class="fas fa-image"></i> View Slip</button>` : '<span style="font-size:0.6rem;color:#64748b;">No slip</span>'}${o.status === 'Pending' ? `<button class="action-btn approve" onclick="approveOrder(${o.id})" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px; background:#10b981; color:white;"><i class="fas fa-check"></i> Approve</button><button class="action-btn reject" onclick="rejectOrder(${o.id})" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px; background:#f43f5e; color:white;"><i class="fas fa-times"></i> Reject</button>` : ''}<button class="action-btn delete" onclick="deleteOrder(${o.id})" style="flex:1; border:none; padding:8px 12px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px; background:#475569; color:white;"><i class="fas fa-trash"></i> Delete</button></div></div>`;
         }
         container.innerHTML = html;
         for (const o of orders) { if (o.status === 'Approved' && o.activated_at) { startCountdownForOrder(o.id, o.activated_at); } }
     }
 
-    async function approveOrder(id) { 
-        try { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' }); if (res.ok) { showToast('✅ Approved'); loadOrders(); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); }
-    }
-    
-    async function rejectOrder(id) { 
-        try { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' }); if (res.ok) { showToast('❌ Rejected'); loadOrders(); loadUserStats(); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); }
-    }
-    
-    async function deleteOrder(id) { 
-        if (confirm('Delete this order?')) { try { const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' }); if (res.ok) { showToast('🗑 Deleted'); loadOrders(); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); } } 
-    }
+    async function approveOrder(id) { try { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' }); if (res.ok) { showToast('✅ Approved'); loadOrders(); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); } }
+    async function rejectOrder(id) { try { const res = await fetch(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' }); if (res.ok) { showToast('❌ Rejected'); loadOrders(); loadUserStats(); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); } }
+    async function deleteOrder(id) { if (confirm('Delete this order?')) { try { const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' }); if (res.ok) { showToast('🗑 Deleted'); loadOrders(); } else { showToast('Error', true); } } catch(e) { showToast('Error', true); } } }
     
     function manualRefresh() { loadAllData(); showToast('🔄 Synced'); secondsLeft = 30; updateCountdown(); }
 
@@ -1861,9 +1361,7 @@
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
         document.getElementById(`${tab}Tab`).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(item => { if (item.dataset.tab === tab) { item.classList.add('active'); } else { item.classList.remove('active'); } });
-        if (tab === 'orders') { applyFiltersAndSearch(); } 
-        else if (tab === 'users') { renderUsersTab(); } 
-        else if (tab === 'market') { loadProducts(); }
+        if (tab === 'orders') { applyFiltersAndSearch(); } else if (tab === 'users') { renderUsersTab(); } else if (tab === 'market') { loadProducts(); }
     }
 
     document.querySelectorAll('.nav-item').forEach(btn => { btn.addEventListener('click', () => { switchTab(btn.dataset.tab); }); });
@@ -1892,10 +1390,7 @@
         document.getElementById('loginBox').style.display = 'none'; 
         document.getElementById('adminContent').style.display = 'block'; 
         document.getElementById('bottomNav').style.display = 'flex'; 
-        loadAllData(); 
-        startAutoSync();
-        startNotificationCheck();
-        loadNotificationsFromStorage();
+        loadAllData(); startAutoSync(); startNotificationCheck(); loadNotificationsFromStorage();
     }
 </script>
 </body>
