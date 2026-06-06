@@ -789,13 +789,9 @@
     let selectedPayment = "kpay";
     let currentRenewMode = 'other';
     
-    // Component loaded flags
+    // Component loaded flags (ထပ်ခါထပ်ခါ load မဖြစ်အောင်)
     let marketLoaded = false;
     let liveLoaded = false;
-    
-    // Live refresh intervals (for cleanup)
-    let liveRefreshInterval = null;
-    let liveTimerInterval = null;
 
     // ========== Helper Functions ==========
     function maskPhone(phone) {
@@ -867,7 +863,6 @@
             container.innerHTML = html;
             marketLoaded = true;
             
-            // Execute scripts in the loaded content
             const scripts = container.querySelectorAll('script');
             scripts.forEach(script => {
                 const newScript = document.createElement('script');
@@ -880,26 +875,19 @@
             });
         } catch (error) {
             console.error('Error loading market:', error);
-            container.innerHTML = `
-                <div style="text-align:center; padding:40px; color:var(--rose);">
-                    <i class="fas fa-exclamation-triangle"></i> Failed to load market<br>
-                    <small>Please check your connection and try again.</small>
-                    <br><br>
-                    <button onclick="location.reload()" style="background:var(--cyan); border:none; padding:8px 20px; border-radius:40px; cursor:pointer;">Refresh</button>
-                </div>
-            `;
+            container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--rose);">
+                <i class="fas fa-exclamation-triangle"></i> Failed to load market
+            </div>`;
         }
     }
     
-    // ========== Load Live from external file ==========
+    // ========== Load Live from external file (တစ်ကြိမ်သာ) ==========
     async function loadLiveContent() {
         const container = document.getElementById('liveContainer');
         if (!container) return;
+        
+        // ✅ အကယ်၍ ပြီးခဲ့ရင် ပြန် load မလုပ်ပါနဲ့
         if (liveLoaded) {
-            // Re-initialize live component if needed
-            if (typeof window.initLiveComponent === 'function') {
-                window.initLiveComponent();
-            }
             return;
         }
         
@@ -910,7 +898,6 @@
             container.innerHTML = html;
             liveLoaded = true;
             
-            // Execute scripts in the loaded content
             const scripts = container.querySelectorAll('script');
             scripts.forEach(script => {
                 const newScript = document.createElement('script');
@@ -923,14 +910,10 @@
             });
         } catch (error) {
             console.error('Error loading live:', error);
-            container.innerHTML = `
-                <div style="text-align:center; padding:40px; color:var(--rose);">
-                    <i class="fas fa-exclamation-triangle"></i> Failed to load live orders<br>
-                    <small>Please check your connection and try again.</small>
-                    <br><br>
-                    <button onclick="location.reload()" style="background:var(--cyan); border:none; padding:8px 20px; border-radius:40px; cursor:pointer;">Refresh</button>
-                </div>
-            `;
+            container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--rose);">
+                <i class="fas fa-exclamation-triangle"></i> Failed to load live orders<br>
+                <small>Please refresh the page and try again.</small>
+            </div>`;
         }
     }
     
@@ -1208,10 +1191,6 @@
                     await loadUserOrders();
                     if (document.getElementById('ordersTab').classList.contains('active')) renderMyOrders();
                 }
-                // Refresh live if it's loaded
-                if (typeof window.fetchLiveOrders === 'function') {
-                    window.fetchLiveOrders();
-                }
             } else {
                 showToast(data.error || "အော်ဒါတင်ရာတွင် အမှားရှိပါသည်", true);
             }
@@ -1263,14 +1242,9 @@
     
     function logout() {
         localStorage.clear();
-        
-        // Cleanup live component
-        if (typeof window.cleanupLiveComponent === 'function') {
-            window.cleanupLiveComponent();
-        }
-        
         currentUser = null;
         currentUsername = null;
+        // Reset loaded flags so content can be reloaded on next login
         marketLoaded = false;
         liveLoaded = false;
         
