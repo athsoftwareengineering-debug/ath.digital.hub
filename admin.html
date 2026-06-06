@@ -31,7 +31,7 @@
             padding: 12px;
         }
         
-        .container { max-width: 600px; margin: 0 auto; }
+        .container { max-width: 700px; margin: 0 auto; }
         
         .header {
             backdrop-filter: blur(20px);
@@ -425,6 +425,45 @@
         }
         .clickable-phone:hover { color: var(--cyan); }
         
+        /* Proof Info Row - Centered Layout */
+        .proof-info-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            background: rgba(0,212,255,0.05);
+            border-radius: 40px;
+            padding: 8px 16px;
+            margin: 8px 0;
+            border: 1px solid rgba(0,212,255,0.1);
+        }
+        .proof-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.7rem;
+        }
+        .proof-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .proof-value {
+            font-weight: 600;
+            color: var(--cyan);
+        }
+        .proof-value.sender {
+            color: var(--emerald);
+        }
+        .proof-value.last5 {
+            color: var(--amber);
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+        .proof-value.payment {
+            color: var(--violet);
+        }
+        
         .countdown-box {
             background: rgba(0,212,255,0.08);
             border-radius: 40px;
@@ -796,6 +835,15 @@
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text);
         showToast(`📞 ${text} copied!`);
+    }
+    
+    function getPaymentIcon(method) {
+        const icons = {
+            'kpay': '<i class="fas fa-university" style="color:#1e88e5;"></i> KBZ Pay',
+            'wavepay': '<i class="fas fa-waveform" style="color:#43a047;"></i> WavePay',
+            'ayapay': '<i class="fas fa-building" style="color:#f9a825;"></i> AYA Pay'
+        };
+        return icons[method] || icons['kpay'];
     }
     
     function getRemainingTime(activatedAt) {
@@ -1321,13 +1369,32 @@
                 `;
             }
             
+            // Proof Info - Centered Layout
             let proofHtml = '';
             if (o.sender_name && o.last5_digits) {
                 proofHtml = `
-                    <div style="background:rgba(0,212,255,0.05); border-radius:8px; padding:8px; margin:8px 0; font-size:0.65rem;">
-                        <div><i class="fas fa-user"></i> Sender: ${escapeHtml(o.sender_name)}</div>
-                        <div><i class="fas fa-receipt"></i> Last 5: ${escapeHtml(o.last5_digits)}</div>
-                        <div><i class="fas fa-credit-card"></i> Payment: ${o.payment_method || 'kpay'}</div>
+                    <div class="proof-info-row">
+                        <div class="proof-item">
+                            <span class="proof-label"><i class="fas fa-user-circle"></i> Sender:</span>
+                            <span class="proof-value sender">${escapeHtml(o.sender_name)}</span>
+                        </div>
+                        <div class="proof-item">
+                            <span class="proof-label"><i class="fas fa-receipt"></i> Last 5:</span>
+                            <span class="proof-value last5">${escapeHtml(o.last5_digits)}</span>
+                        </div>
+                        <div class="proof-item">
+                            <span class="proof-label"><i class="fas fa-credit-card"></i> Payment:</span>
+                            <span class="proof-value payment">${getPaymentIcon(o.payment_method || 'kpay')}</span>
+                        </div>
+                    </div>
+                `;
+            } else if (o.payment_method) {
+                proofHtml = `
+                    <div class="proof-info-row">
+                        <div class="proof-item">
+                            <span class="proof-label"><i class="fas fa-credit-card"></i> Payment:</span>
+                            <span class="proof-value payment">${getPaymentIcon(o.payment_method)}</span>
+                        </div>
                     </div>
                 `;
             }
@@ -1351,8 +1418,6 @@
                             <div class="detail-label"><i class="fas fa-coins"></i> Price</div>
                             <div class="detail-value price">${o.price.toLocaleString()}K</div>
                         </div>
-                    </div>
-                    <div class="order-details">
                         <div class="detail-item">
                             <div class="detail-label"><i class="fas fa-box"></i> Cost</div>
                             <div class="detail-value cost">${getCostPrice(o.plan).toLocaleString()}K</div>
