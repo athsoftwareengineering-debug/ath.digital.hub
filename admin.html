@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Admin Panel | ATH DIGITAL HUB</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,7 +20,7 @@
         body {
             background: #0a0c15;
             color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             min-height: 100vh;
             background-image: 
                 radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.15) 0%, transparent 60%),
@@ -48,7 +45,7 @@
         }
         .header h1 {
             font-size: 1.2rem;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: monospace;
             background: linear-gradient(135deg, #fff, var(--cyan));
             background-clip: text;
             -webkit-background-clip: text;
@@ -119,7 +116,7 @@
         .stat-number {
             font-size: 1.5rem;
             font-weight: 800;
-            font-family: 'Space Grotesk', monospace;
+            font-family: monospace;
             color: var(--cyan);
         }
         .stat-label {
@@ -425,7 +422,6 @@
         }
         .clickable-phone:hover { color: var(--cyan); }
         
-        /* Proof Info Row - Centered Layout */
         .proof-info-row {
             display: flex;
             justify-content: center;
@@ -452,17 +448,9 @@
             font-weight: 600;
             color: var(--cyan);
         }
-        .proof-value.sender {
-            color: var(--emerald);
-        }
-        .proof-value.last5 {
-            color: var(--amber);
-            font-family: monospace;
-            letter-spacing: 1px;
-        }
-        .proof-value.payment {
-            color: var(--violet);
-        }
+        .proof-value.sender { color: var(--emerald); }
+        .proof-value.last5 { color: var(--amber); font-family: monospace; letter-spacing: 1px; }
+        .proof-value.payment { color: var(--violet); }
         
         .countdown-box {
             background: rgba(0,212,255,0.08);
@@ -474,7 +462,7 @@
             justify-content: center;
             gap: 8px;
             font-size: 0.7rem;
-            font-family: 'Space Grotesk', monospace;
+            font-family: monospace;
             border: 1px solid rgba(0,212,255,0.2);
         }
         .countdown-box i { color: var(--cyan); }
@@ -537,6 +525,17 @@
             gap: 6px;
         }
         .user-phone:hover { color: var(--cyan); }
+        .user-userid {
+            font-family: monospace;
+            font-size: 0.7rem;
+            background: rgba(0,212,255,0.1);
+            padding: 3px 10px;
+            border-radius: 40px;
+            color: var(--cyan);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
         .user-status {
             font-size: 0.6rem;
             padding: 3px 8px;
@@ -716,7 +715,7 @@
         </div>
         
         <div class="search-bar">
-            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by phone (09xxxxxxxxx) or User ID">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by phone, user ID, or name">
             <button class="search-btn" onclick="searchByPhoneOrId()"><i class="fas fa-search"></i> Search</button>
             <button class="clear-search" onclick="clearSearch()"><i class="fas fa-times"></i> Clear</button>
         </div>
@@ -760,6 +759,7 @@
     
     <div class="fab-container" id="fabContainer" style="display: none;">
         <button class="fab" onclick="manualRefresh()" title="Sync"><i class="fas fa-sync-alt"></i></button>
+        <button class="fab" onclick="exportUsersToCSV()" title="Export Users" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="fas fa-file-excel"></i></button>
         <button class="fab" onclick="window.location.href='/'" title="Store"><i class="fas fa-store"></i></button>
         <button class="fab logout" onclick="logout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
     </div>
@@ -834,7 +834,7 @@
     
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text);
-        showToast(`📞 ${text} copied!`);
+        showToast(`📋 ${text} copied!`);
     }
     
     function getPaymentIcon(method) {
@@ -1200,6 +1200,31 @@
             }
         }
     }
+    
+    function exportUsersToCSV() {
+        if (!userStats.length) {
+            showToast('No users to export', true);
+            return;
+        }
+        
+        let csv = "User ID,Phone,Username,Order Count,Reject Count,Reject Rate,Suspect,Blocked,Joined Date\n";
+        userStats.forEach(u => {
+            const rejectRate = u.order_count > 0 ? ((u.reject_count / u.order_count) * 100).toFixed(1) : 0;
+            csv += `"${u.user_id || 'N/A'}","${u.phone}","${u.username || ''}",${u.order_count},${u.reject_count},${rejectRate}%,${u.suspect_flag ? 'Yes' : 'No'},${u.blocked ? 'Yes' : 'No'},"${new Date(u.created_at).toLocaleDateString()}"\n`;
+        });
+        
+        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.setAttribute('download', `users_${new Date().toISOString().slice(0,19)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        showToast('📁 Users exported to CSV');
+    }
 
     function updateStats(orders) {
         const total = orders.length;
@@ -1228,11 +1253,15 @@
         
         let filteredUsers = [...userStats];
         if (currentSearchPhone) {
-            filteredUsers = filteredUsers.filter(u => u.phone === currentSearchPhone);
+            filteredUsers = filteredUsers.filter(u => 
+                u.phone === currentSearchPhone || 
+                u.user_id === currentSearchPhone ||
+                (u.username && u.username.toLowerCase().includes(currentSearchPhone.toLowerCase()))
+            );
         }
         
         if (filteredUsers.length === 0 && currentSearchPhone) {
-            container.innerHTML = `<div class="loading">No user found for ${maskPhone(currentSearchPhone)}</div>`;
+            container.innerHTML = `<div class="loading">No user found for "${currentSearchPhone}"</div>`;
             return;
         }
         
@@ -1248,13 +1277,23 @@
             if (user.blocked) { statusClass = 'blocked'; statusText = '🔴 Blocked'; }
             else if (user.suspect_flag) { statusClass = 'suspect'; statusText = '🟡 Suspect'; }
             
-            const isHighlighted = currentSearchPhone && user.phone === currentSearchPhone;
+            const isHighlighted = currentSearchPhone && (
+                user.phone === currentSearchPhone || 
+                user.user_id === currentSearchPhone
+            );
             const highlightClass = isHighlighted ? 'search-highlight' : '';
             
             html += `
                 <div class="user-card ${highlightClass}">
                     <div class="user-header">
-                        <span class="user-phone" onclick="copyToClipboard('${user.phone}')">📞 ${maskPhone(user.phone)} 📋</span>
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <span class="user-phone" onclick="copyToClipboard('${user.phone}')">
+                                📞 ${maskPhone(user.phone)} 📋
+                            </span>
+                            <span class="user-userid" onclick="copyToClipboard('${user.user_id || ''}')">
+                                🆔 ${user.user_id || 'N/A'} 📋
+                            </span>
+                        </div>
                         <span class="user-status ${statusClass}">${statusText}</span>
                     </div>
                     <div class="user-stats">
@@ -1301,7 +1340,7 @@
                 msgDiv.style.justifyContent = 'center';
                 document.querySelector('.filter-bar').after(msgDiv);
             }
-            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Phone: ${maskPhone(currentSearchPhone)} | Found: ${filtered.length} order(s)`;
+            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Search: ${currentSearchPhone} | Found: ${filtered.length} order(s)`;
         } else {
             if (document.getElementById('searchResultMsg')) {
                 document.getElementById('searchResultMsg').remove();
@@ -1369,7 +1408,6 @@
                 `;
             }
             
-            // Proof Info - Centered Layout
             let proofHtml = '';
             if (o.sender_name && o.last5_digits) {
                 proofHtml = `
@@ -1551,6 +1589,7 @@
     window.deleteAllOrders = deleteAllOrders;
     window.copyToClipboard = copyToClipboard;
     window.manualCleanup = manualCleanup;
+    window.exportUsersToCSV = exportUsersToCSV;
     window.openAddProductModal = openAddProductModal; 
     window.openEditProductModal = openEditProductModal;
     window.closeProductModal = closeProductModal; 
