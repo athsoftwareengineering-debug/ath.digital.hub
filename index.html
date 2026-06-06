@@ -684,6 +684,32 @@
         
         .note-text { font-size: 0.6rem; color: var(--text-secondary); margin-top: 8px; }
         .payment-method-icon { width: 20px; height: 20px; border-radius: 4px; object-fit: cover; }
+        
+        /* Renew Buttons inside Orders Tab */
+        .orders-renew-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .orders-renew-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 60px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .orders-renew-btn.self { background: linear-gradient(135deg, var(--cyan), #0891b2); }
+        .orders-renew-btn.other { background: linear-gradient(135deg, var(--amber), #d97706); }
+        .orders-renew-btn:hover { transform: scale(0.98); filter: brightness(1.05); }
     </style>
 </head>
 <body>
@@ -747,9 +773,11 @@
                 <div id="userPhoneDisplay" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;"></div>
             </div>
             
-            <div class="renew-buttons">
-                <button class="renew-btn self" onclick="openRenewModal('self')"><i class="fas fa-user"></i> ကိုယ်တိုင်ထပ်ဝယ်ရန်</button>
-                <button class="renew-btn other" onclick="openRenewModal('other')"><i class="fas fa-users"></i> အခြားသူအတွက် ထပ်ဝယ်ပေးရန်</button>
+            <!-- Home Tab မှာ ရှိခဲ့တဲ့ Renew Buttons ကို ဖယ်ရှားပြီး အကြောင်းအရာအသစ်ထည့်ထားပါတယ် -->
+            <div style="background:linear-gradient(135deg, rgba(0,212,255,0.08), rgba(139,92,246,0.05)); border-radius: 1rem; padding: 20px; text-align: center;">
+                <i class="fas fa-gem" style="font-size: 2rem; color: var(--cyan); margin-bottom: 10px;"></i>
+                <h3>Welcome to ATH DIGITAL HUB</h3>
+                <p style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 8px;">သင့်အတွက် အကောင်းဆုံး VIP Plan များ</p>
             </div>
             
             <div style="background:rgba(245,158,11,0.1); border-left:3px solid var(--amber); padding:12px; border-radius:0.8rem; margin-top: 16px;">
@@ -762,8 +790,17 @@
             <div id="plansContainer"></div>
         </div>
 
-        <!-- My Orders Tab -->
+        <!-- My Orders Tab (Renew Buttons များ ဤနေရာသို့ ပြောင်းထည့်ပြီး) -->
         <div id="ordersTab" class="tab-content">
+            <!-- Renew Buttons - ဤနေရာတွင် ထည့်သွင်းထားပါသည် -->
+            <div class="orders-renew-buttons">
+                <button class="orders-renew-btn self" onclick="openRenewModal('self')">
+                    <i class="fas fa-user"></i> ကိုယ်တိုင်ထပ်ဝယ်ရန်
+                </button>
+                <button class="orders-renew-btn other" onclick="openRenewModal('other')">
+                    <i class="fas fa-users"></i> အခြားသူအတွက် ထပ်ဝယ်ပေးရန်
+                </button>
+            </div>
             <div id="myOrdersContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading...</div></div>
         </div>
 
