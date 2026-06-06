@@ -48,6 +48,8 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
+            position: relative;
+            z-index: 200;
         }
         .top-bar-left {
             display: flex;
@@ -108,7 +110,7 @@
             transform: rotate(15deg);
         }
         
-        /* Notification Bell with Badge - ပိုမိုမြင်သာအောင် */
+        /* Notification Bell with Badge */
         .notification-bell {
             position: relative;
         }
@@ -136,17 +138,17 @@
             50% { transform: scale(1.15); background: #e11d48; }
         }
         
-        /* Notification Dropdown - ပိုမိုမြင်သာအောင် */
+        /* Notification Dropdown - Fixed to appear ABOVE stats (higher z-index, positioned properly) */
         .notification-dropdown {
             position: absolute;
-            top: 45px;
+            top: 50px;
             right: -10px;
             width: 360px;
             max-height: 450px;
             background: linear-gradient(145deg, #1a1d2e, #0f111a);
             border: 1px solid rgba(0,212,255,0.4);
             border-radius: 1rem;
-            z-index: 300;
+            z-index: 1000;
             overflow: hidden;
             display: none;
             box-shadow: 0 15px 35px rgba(0,0,0,0.5);
@@ -267,12 +269,14 @@
         }
         @keyframes pulseDot { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         
-        /* Stats Grid */
+        /* Stats Grid - positioned below top bar */
         .orders-stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 12px;
             margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
         }
         .stat-card {
             background: linear-gradient(145deg, rgba(18,22,35,0.9), rgba(10,12,21,0.95));
@@ -752,7 +756,7 @@
 <body>
 <div id="app">
     <div class="container" id="adminContent" style="display: none;">
-        <!-- Top Bar -->
+        <!-- Top Bar with Menu Button and Notification Bell -->
         <div class="top-bar">
             <div class="top-bar-left">
                 <button class="menu-btn" onclick="toggleDrawer()">
@@ -769,7 +773,7 @@
                         <i class="fas fa-bell"></i>
                         <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
                     </button>
-                    <!-- Notification Dropdown -->
+                    <!-- Notification Dropdown - This will appear above stats -->
                     <div id="notificationDropdown" class="notification-dropdown">
                         <div class="notification-header">
                             <h4><i class="fas fa-bell"></i> Notifications</h4>
@@ -827,7 +831,7 @@
             </ul>
         </div>
         
-        <!-- Stats Grid -->
+        <!-- Stats Grid - This will be visible below the top bar, notification dropdown will appear above these -->
         <div class="orders-stats-grid">
             <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label"><i class="fas fa-shopping-cart"></i> Total</div></div>
             <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label"><i class="fas fa-clock"></i> Pending</div></div>
