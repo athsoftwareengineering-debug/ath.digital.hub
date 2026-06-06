@@ -138,25 +138,39 @@
             50% { transform: scale(1.15); background: #e11d48; }
         }
         
-        /* Notification Dropdown */
+        /* Notification Dropdown - Mobile Friendly, Positioned Absolutely Above Everything */
         .notification-dropdown {
-            position: absolute;
-            top: 50px;
-            right: -10px;
-            width: 360px;
-            max-height: 450px;
+            position: fixed;
+            top: 70px;
+            right: 12px;
+            left: 12px;
+            width: auto;
+            max-width: 400px;
+            margin: 0 auto;
             background: linear-gradient(145deg, #1a1d2e, #0f111a);
             border: 1px solid rgba(0,212,255,0.4);
             border-radius: 1rem;
-            z-index: 1000;
+            z-index: 10000;
             overflow: hidden;
             display: none;
             box-shadow: 0 15px 35px rgba(0,0,0,0.5);
             backdrop-filter: blur(10px);
+            max-height: 80vh;
         }
         .notification-dropdown.show {
             display: block;
             animation: slideDown 0.2s ease;
+        }
+        /* Desktop styles */
+        @media (min-width: 768px) {
+            .notification-dropdown {
+                position: absolute;
+                top: 50px;
+                right: -10px;
+                left: auto;
+                width: 360px;
+                max-width: 360px;
+            }
         }
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px); }
@@ -169,6 +183,9 @@
             justify-content: space-between;
             align-items: center;
             background: rgba(0,212,255,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
         .notification-header h4 {
             font-size: 0.9rem;
@@ -192,7 +209,7 @@
             color: #030712;
         }
         .notification-list {
-            max-height: 380px;
+            max-height: 60vh;
             overflow-y: auto;
         }
         .notification-item {
@@ -221,6 +238,7 @@
             justify-content: center;
             font-size: 1rem;
             color: var(--cyan);
+            flex-shrink: 0;
         }
         .notification-content {
             flex: 1;
@@ -249,6 +267,21 @@
             padding: 50px 20px;
             color: var(--text-secondary);
             font-size: 0.75rem;
+        }
+        
+        /* Overlay for mobile when notification is open */
+        .notification-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            display: none;
+        }
+        .notification-overlay.show {
+            display: block;
         }
         
         .sync-status {
@@ -753,6 +786,9 @@
 </head>
 <body>
 <div id="app">
+    <!-- Notification Overlay for mobile -->
+    <div id="notificationOverlay" class="notification-overlay" onclick="closeNotificationDropdown()"></div>
+    
     <div class="container" id="adminContent" style="display: none;">
         <!-- Top Bar -->
         <div class="top-bar">
@@ -1000,9 +1036,27 @@
         showToast(`📋 ${text} copied!`);
     }
     
+    // ==================== NOTIFICATION DROPDOWN FUNCTIONS ====================
+    function toggleNotificationDropdown() {
+        const dropdown = document.getElementById('notificationDropdown');
+        const overlay = document.getElementById('notificationOverlay');
+        dropdown.classList.toggle('show');
+        if (dropdown.classList.contains('show')) {
+            overlay.classList.add('show');
+        } else {
+            overlay.classList.remove('show');
+        }
+    }
+    
+    function closeNotificationDropdown() {
+        const dropdown = document.getElementById('notificationDropdown');
+        const overlay = document.getElementById('notificationOverlay');
+        dropdown.classList.remove('show');
+        overlay.classList.remove('show');
+    }
+    
     // ==================== STATS UPDATE FUNCTIONS ====================
     function updateAllStats() {
-        // Update main stats grid
         const total = allOrders.length;
         const pending = allOrders.filter(o => o.status === 'Pending').length;
         const approved = allOrders.filter(o => o.status === 'Approved').length;
@@ -1020,7 +1074,6 @@
         document.getElementById('totalProfit').innerHTML = profit.toLocaleString() + 'K';
         document.getElementById('avgProfit').innerHTML = (approved.length ? Math.round(profit / approved.length) : 0).toLocaleString() + 'K';
         
-        // Update drawer stats
         document.getElementById('drawerTotalOrders').innerText = total;
         document.getElementById('drawerTotalUsers').innerText = userStats.length;
         document.getElementById('drawerPendingOrders').innerText = pending;
@@ -1056,7 +1109,6 @@
         saveNotificationsToStorage();
         updateNotificationUI();
         showToast(`🆕 New order! ${order.plan} - ${order.price.toLocaleString()} MMK`);
-        try { new Audio().play().catch(e=>{}); } catch(e) {}
     }
     
     function updateNotificationUI() {
@@ -1087,6 +1139,7 @@
     function markNotificationRead(notificationId) {
         const notif = notifications.find(n => n.id == notificationId);
         if (notif && !notif.read) { notif.read = true; saveNotificationsToStorage(); updateNotificationUI(); }
+        closeNotificationDropdown();
     }
     
     function clearAllNotifications() {
@@ -1094,20 +1147,8 @@
         saveNotificationsToStorage();
         updateNotificationUI();
         showToast('All notifications cleared');
+        closeNotificationDropdown();
     }
-    
-    function toggleNotificationDropdown() {
-        const dropdown = document.getElementById('notificationDropdown');
-        dropdown.classList.toggle('show');
-    }
-    
-    document.addEventListener('click', function(event) {
-        const dropdown = document.getElementById('notificationDropdown');
-        const bellBtn = document.getElementById('notificationBellBtn');
-        if (dropdown && bellBtn && !bellBtn.contains(event.target) && !dropdown.contains(event.target)) {
-            dropdown.classList.remove('show');
-        }
-    });
     
     async function checkForNewOrders() {
         try {
@@ -1407,6 +1448,7 @@
     window.closeProductModal = closeProductModal; window.saveProduct = saveProduct; window.deleteProduct = deleteProduct;
     window.closeModal = closeModal;
     window.toggleNotificationDropdown = toggleNotificationDropdown;
+    window.closeNotificationDropdown = closeNotificationDropdown;
     window.clearAllNotifications = clearAllNotifications;
     window.markNotificationRead = markNotificationRead;
 
