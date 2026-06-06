@@ -4,7 +4,7 @@ const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
 const crypto = require('crypto');
-const { supabase, supabaseAdmin } = require('./database');
+const { supabase, supabaseAdmin, createNewUser, getUserByPhone, getUserStats, updateUserStats, isPhoneBlocked } = require('./database');
 require('dotenv').config();
 
 const app = express();
@@ -75,70 +75,6 @@ const PAYMENT_METHODS = {
 
 function calculateImageHash(fileBuffer) {
     return crypto.createHash('md5').update(fileBuffer).digest('hex');
-}
-
-async function getUserStats(phone) {
-    try {
-        const { data, error } = await supabaseAdmin
-            .from('user_stats')
-            .select('*')
-            .eq('phone', phone)
-            .maybeSingle();
-        
-        if (error && error.code !== 'PGRST116') {
-            console.error('Error getting user stats:', error);
-        }
-        return data;
-    } catch (e) {
-        console.error('Exception in getUserStats:', e);
-        return null;
-    }
-}
-
-async function updateUserStats(phone, isRejected = false) {
-    try {
-        const existing = await getUserStats(phone);
-        
-        if (existing) {
-            const updateData = {
-                order_count: (existing.order_count || 0) + 1,
-                updated_at: new Date().toISOString()
-            };
-            if (isRejected) {
-                updateData.reject_count = (existing.reject_count || 0) + 1;
-                const newRejectCount = (existing.reject_count || 0) + 1;
-                const newOrderCount = (existing.order_count || 0) + 1;
-                if (newOrderCount >= 5 && (newRejectCount / newOrderCount) > 0.5) {
-                    updateData.suspect_flag = true;
-                }
-            }
-            
-            await supabaseAdmin
-                .from('user_stats')
-                .update(updateData)
-                .eq('phone', phone);
-        } else {
-            await supabaseAdmin
-                .from('user_stats')
-                .insert([{
-                    phone: phone,
-                    order_count: 1,
-                    reject_count: isRejected ? 1 : 0,
-                    suspect_flag: false,
-                    blocked: false,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                }]);
-        }
-        console.log(`📊 Updated stats for ${phone}: ${isRejected ? 'rejected' : 'new order'}`);
-    } catch (e) {
-        console.error('Error updating user stats:', e);
-    }
-}
-
-async function isPhoneBlocked(phone) {
-    const stats = await getUserStats(phone);
-    return stats?.blocked === true;
 }
 
 async function isDuplicateOrder(phone, plan) {
@@ -225,7 +161,7 @@ async function autoCleanupOldOrders() {
         if (error) {
             console.error('Auto cleanup error:', error);
         } else {
-            console.log(`✅ Auto cleanup completed at ${new Date().toISOString()} - Deleted ${ordersToDelete?.length || 0} old orders`);
+            console.log(`✅ Auto cleanup completed at ${new Date().toISOString()}`);
         }
     } catch (e) {
         console.error('Auto cleanup failed:', e);
@@ -235,11 +171,9 @@ async function autoCleanupOldOrders() {
 setTimeout(autoCleanupOldOrders, 5000);
 setInterval(autoCleanupOldOrders, 24 * 60 * 60 * 1000);
 
-// ==================== LIVE SYSTEM - WebSocket Alternative (SSE) ====================
-// Store connected clients for Server-Sent Events
+// ==================== LIVE SYSTEM - Server-Sent Events ====================
 let liveClients = [];
 
-// SSE endpoint for live orders
 app.get('/api/live/events', (req, res) => {
     res.writeHead(200, {
         'Content-Type': 'text/event-stream',
@@ -260,7 +194,6 @@ app.get('/api/live/events', (req, res) => {
     });
 });
 
-// Broadcast new order to all live clients
 async function broadcastNewOrder(order) {
     const message = `data: ${JSON.stringify({ type: 'new_order', order })}\n\n`;
     liveClients.forEach(client => {
@@ -272,7 +205,6 @@ async function broadcastNewOrder(order) {
     });
 }
 
-// Get payment methods
 app.get('/api/payment-methods', (req, res) => {
     res.json({ methods: PAYMENT_METHODS });
 });
@@ -288,9 +220,86 @@ app.get('/dashboard_live.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'dashboard_live.html'));
 });
 
-// Health check endpoint
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// ==================== USER REGISTRATION & AUTH ====================
+// Register or login user (auto-create user ID)
+app.post('/api/user/register', async (req, res) => {
+    try {
+        const { phone, username } = req.body;
+        
+        if (!phone || !username) {
+            return res.status(400).json({ success: false, error: 'Phone and username required' });
+        }
+        
+        if (phone.length < 9) {
+            return res.status(400).json({ success: false, error: 'Invalid phone number' });
+        }
+        
+        // Check if user exists
+        let user = await getUserByPhone(phone);
+        let isNewUser = false;
+        
+        if (!user) {
+            // Create new user with auto-generated ID
+            user = await createNewUser(phone, username);
+            isNewUser = true;
+        }
+        
+        if (!user) {
+            return res.status(500).json({ success: false, error: 'Failed to create user' });
+        }
+        
+        // Check if blocked
+        if (user.blocked) {
+            return res.status(403).json({ success: false, error: 'Your account has been blocked. Contact support.' });
+        }
+        
+        res.json({ 
+            success: true, 
+            user: {
+                phone: user.phone,
+                username: user.username,
+                user_id: user.user_id,
+                order_count: user.order_count,
+                blocked: user.blocked
+            },
+            isNewUser: isNewUser
+        });
+        
+    } catch (error) {
+        console.error('Error registering user:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get user by phone
+app.get('/api/user/:phone', async (req, res) => {
+    try {
+        const { phone } = req.params;
+        
+        const user = await getUserByPhone(phone);
+        
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+        
+        res.json({ 
+            success: true, 
+            user: {
+                phone: user.phone,
+                username: user.username,
+                user_id: user.user_id,
+                order_count: user.order_count,
+                blocked: user.blocked
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
 // ==================== MARKET API ====================
@@ -424,8 +433,7 @@ app.get('/api/orders/:phone', async (req, res) => {
     }
 });
 
-// ==================== PUBLIC LIVE API (No Authentication Required) ====================
-// Public endpoint for live orders - no admin authentication needed
+// ==================== PUBLIC LIVE API ====================
 app.get('/api/live/orders', async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -446,7 +454,6 @@ app.get('/api/live/orders', async (req, res) => {
     }
 });
 
-// Public endpoint for single order check (for search)
 app.get('/api/live/order/:phone', async (req, res) => {
     try {
         const { phone } = req.params;
@@ -539,14 +546,12 @@ app.post('/api/orders', upload.single('slip'), async (req, res) => {
         
         await updateUserStats(phone, false);
         
-        // Get the created order for broadcast
         const { data: newOrder } = await supabase
             .from('orders')
             .select('*')
             .eq('id', orderId)
             .single();
         
-        // Broadcast to live clients
         if (newOrder) {
             await broadcastNewOrder(newOrder);
         }
@@ -587,7 +592,7 @@ app.get('/api/admin/user-stats', async (req, res) => {
         const { data, error } = await supabaseAdmin
             .from('user_stats')
             .select('*')
-            .order('order_count', { ascending: false });
+            .order('created_at', { ascending: false });
         
         if (error) {
             return res.status(500).json({ stats: [], error: error.message });
@@ -862,7 +867,9 @@ app.listen(PORT, () => {
 ║     📊 Live Dashboard:  http://localhost:${PORT}/dashboard_live.html      ║
 ║     🔴 Live Events:     http://localhost:${PORT}/api/live/events          ║
 ║     📡 Public Live API: http://localhost:${PORT}/api/live/orders          ║
-║     🔍 Search Live:     http://localhost:${PORT}/api/live/order/09xxxxxxx ║
+║                                                                          ║
+║     👤 User Registration:                                                ║
+║        POST /api/user/register - Auto-generates User ID (ATH-xxxxx)     ║
 ║                                                                          ║
 ║     💳 Payment Methods:                                                  ║
 ║        - KBZ Pay (09789999368)                                           ║
