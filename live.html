@@ -125,98 +125,231 @@
             width: 0px;
             background: transparent;
         }
+        
+        /* ========== BEAUTIFUL LIVE CARD DESIGN ========== */
         .live-card {
-            background: linear-gradient(135deg, #0f111a, #131725);
-            border-radius: 1rem;
-            padding: 14px;
-            margin-bottom: 12px;
-            border: 1px solid rgba(245,158,11,0.2);
-            transition: 0.2s;
+            background: linear-gradient(145deg, #0f111a, #0a0c15);
+            border-radius: 1.2rem;
+            margin-bottom: 14px;
+            border: 1px solid rgba(0,212,255,0.12);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
         }
         .live-card:hover {
-            transform: translateX(4px);
-            border-color: rgba(245,158,11,0.5);
+            border-color: rgba(0,212,255,0.35);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
         }
         .live-card.new-order {
+            animation: slideInNew 0.5s ease-out;
             border-left: 3px solid var(--cyan);
-            background: rgba(0,212,255,0.1);
-            animation: blinkCyan 0.5s ease-in-out 2;
         }
-        @keyframes blinkCyan {
-            0%, 100% { background: rgba(0,212,255,0); }
-            50% { background: rgba(0,212,255,0.2); box-shadow: 0 0 15px var(--cyan); }
+        @keyframes slideInNew {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
+        
+        /* Card Header - First Row */
         .live-card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            padding: 14px 16px 8px 16px;
+            border-bottom: 1px solid rgba(0,212,255,0.08);
         }
-        .live-plan {
-            font-weight: 700;
-            color: var(--amber);
-            display: flex;
+        
+        /* Left side: Payment Method */
+        .live-payment-badge {
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
         }
+        .live-payment-badge.kpay { background: rgba(30,136,229,0.15); color: #64b5f6; }
+        .live-payment-badge.wavepay { background: rgba(67,160,71,0.15); color: #81c784; }
+        .live-payment-badge.ayapay { background: rgba(249,168,37,0.15); color: #ffb74d; }
+        
+        /* Right side: Status */
         .live-status {
             display: inline-block;
             padding: 4px 12px;
             border-radius: 40px;
-            font-size: 0.6rem;
-            font-weight: 600;
+            font-size: 0.65rem;
+            font-weight: 700;
         }
         .live-status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .live-status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
         .live-status.rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
-        .live-phone {
-            font-size: 0.7rem;
-            font-family: monospace;
-            background: #1e293b;
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 40px;
-            margin-top: 4px;
-            color: var(--text-primary);
-        }
-        .live-price {
-            font-weight: 800;
-            color: var(--emerald);
-            font-size: 0.85rem;
+        
+        /* Card Second Row - Plan and Price */
+        .live-card-plan-row {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
-            margin-top: 6px;
+            padding: 10px 16px 0 16px;
         }
-        .live-date {
-            font-size: 0.6rem;
-            color: var(--text-secondary);
-            margin-top: 6px;
+        .live-plan {
+            font-weight: 800;
+            font-size: 0.9rem;
+            background: linear-gradient(135deg, var(--cyan), #7dd3fc);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
             display: flex;
             align-items: center;
             gap: 6px;
         }
-        .live-stats-row {
+        .live-plan i {
+            color: var(--cyan);
+            background: none;
+            -webkit-background-clip: unset;
+            font-size: 0.9rem;
+        }
+        .live-price {
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: var(--emerald);
+            display: flex;
+            align-items: baseline;
+            gap: 2px;
+        }
+        .live-price small {
+            font-size: 0.55rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+        
+        /* Card Body */
+        .live-card-body {
+            padding: 12px 16px;
+        }
+        
+        /* Phone and Time Row - Same line */
+        .live-info-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 8px;
-            padding-top: 6px;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .live-phone {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-family: monospace;
+            font-weight: 600;
+            color: var(--cyan);
+            background: rgba(0,212,255,0.08);
+            padding: 6px 14px;
+            border-radius: 40px;
+        }
+        .live-phone i {
+            font-size: 0.7rem;
+            color: var(--cyan);
+        }
+        .live-time {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            background: rgba(0,0,0,0.2);
+            padding: 6px 12px;
+            border-radius: 40px;
+        }
+        .live-time i {
             font-size: 0.6rem;
         }
+        
+        /* Date Range Row */
+        .live-daterange-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.65rem;
+            background: rgba(0,212,255,0.04);
+            padding: 8px 12px;
+            border-radius: 40px;
+            border: 1px solid rgba(0,212,255,0.08);
+        }
+        .date-range-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .date-range-label {
+            color: var(--text-secondary);
+        }
+        .date-range-value {
+            font-weight: 600;
+            color: var(--cyan);
+            font-family: monospace;
+        }
+        
+        /* Remaining Time Row - Centered */
+        .live-remaining-row {
+            background: rgba(0,212,255,0.06);
+            border-radius: 40px;
+            padding: 8px 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 1px solid rgba(0,212,255,0.15);
+        }
         .live-remaining {
+            font-size: 0.7rem;
+            font-weight: 600;
             color: var(--cyan);
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 8px;
+            font-family: monospace;
+            letter-spacing: 0.5px;
         }
-        .live-payment-icon {
-            font-size: 0.6rem;
-            background: rgba(0,212,255,0.1);
-            padding: 2px 8px;
-            border-radius: 40px;
+        .live-remaining i {
+            font-size: 0.7rem;
             color: var(--cyan);
+        }
+        
+        /* Expired Badge */
+        .expired-badge {
+            background: rgba(244,63,94,0.15);
+            color: #fb7185;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .live-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+            background: rgba(0,212,255,0.03);
+            border-radius: 1rem;
+        }
+        .live-loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
         }
         .live-status-bar {
             display: flex;
@@ -239,16 +372,6 @@
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.4; }
-        }
-        .live-empty {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-secondary);
-        }
-        .live-loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-secondary);
         }
     </style>
 
@@ -295,9 +418,8 @@
 </div>
 
 <script>
-    // Live Component JavaScript - No duplicate declarations
+    // Live Component JavaScript
     (function() {
-        // ဒီအတွင်းမှာ variable တွေကို သတ်မှတ်မယ်
         const LIVE_API = window.location.origin;
         let liveOrdersData = [];
         let liveCurrentSearchPhone = "";
@@ -306,7 +428,7 @@
         let liveRefreshSec = 30;
         let lastOrderIds = [];
 
-        // Get current user phone from parent (if available)
+        // Get current user phone from parent
         function getCurrentUserPhone() {
             if (typeof window.getCurrentUserPhone === 'function') {
                 return window.getCurrentUserPhone();
@@ -323,22 +445,44 @@
         // Get remaining time
         function getRemainingTime(activatedAt) {
             if (!activatedAt) return null;
-            const remain = new Date(activatedAt).getTime() + 30*86400000 - Date.now();
-            if (remain <= 0) return "သက်တမ်းကုန်";
-            const d = Math.floor(remain/86400000);
-            const h = Math.floor((remain%86400000)/3600000);
-            const m = Math.floor((remain%3600000)/60000);
-            return `${d}ရက် ${h}နာရီ ${m}မိနစ်`;
+            const endDate = new Date(activatedAt).getTime() + 30 * 24 * 60 * 60 * 1000;
+            const remain = endDate - Date.now();
+            if (remain <= 0) return { expired: true };
+            const d = Math.floor(remain / (24 * 60 * 60 * 1000));
+            const h = Math.floor((remain % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+            const m = Math.floor((remain % (60 * 60 * 1000)) / (60 * 1000));
+            return { days: d, hours: h, minutes: m, expired: false };
         }
 
-        // Get payment icon
-        function getPaymentIcon(method) {
-            const icons = {
-                'kpay': '🏦 KBZ',
-                'wavepay': '📱 Wave',
-                'ayapay': '💳 AYA'
+        // Format remaining time string
+        function formatRemainingTime(activatedAt) {
+            const time = getRemainingTime(activatedAt);
+            if (!time) return null;
+            if (time.expired) return "Expired";
+            return `${time.days}ရက် ${time.hours}နာရီ ${time.minutes}မိနစ်`;
+        }
+
+        // Get end date
+        function getEndDate(activatedAt) {
+            if (!activatedAt) return null;
+            return new Date(new Date(activatedAt).getTime() + 30 * 24 * 60 * 60 * 1000);
+        }
+
+        // Format date
+        function formatDate(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+        }
+
+        // Get payment badge class and text
+        function getPaymentInfo(method) {
+            const payments = {
+                'kpay': { class: 'kpay', text: 'KBZ Pay', icon: 'fa-university' },
+                'wavepay': { class: 'wavepay', text: 'WavePay', icon: 'fa-waveform' },
+                'ayapay': { class: 'ayapay', text: 'AYA Pay', icon: 'fa-building' }
             };
-            return icons[method] || '🏦 KBZ';
+            return payments[method] || payments['kpay'];
         }
 
         // Escape HTML
@@ -352,10 +496,18 @@
             });
         }
 
-        // Fetch live orders from API - ✅ Public endpoint ကိုသုံးပါ
+        // Get plan icon
+        function getPlanIcon(plan) {
+            if (plan.includes("VIP 1") || plan.includes("LEVEL - 1")) return '<i class="fas fa-fire"></i>';
+            if (plan.includes("VIP 2") || plan.includes("LEVEL - 2")) return '<i class="fas fa-star"></i>';
+            if (plan.includes("VIP 3") || plan.includes("LEVEL - 3")) return '<i class="fas fa-gem"></i>';
+            if (plan.includes("VIP 4") || plan.includes("ULTRA")) return '<i class="fas fa-crown"></i>';
+            return '<i class="fas fa-mobile-alt"></i>';
+        }
+
+        // Fetch live orders from API
         async function fetchLiveOrders() {
             try {
-                // ✅ Public live orders endpoint (no admin auth needed)
                 const res = await fetch(`${LIVE_API}/api/live/orders`);
                 const data = await res.json();
                 
@@ -367,14 +519,12 @@
                     }
                     filtered.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
                     
-                    // Check for new orders
                     const newIds = filtered.map(o => o.id);
                     const hasNew = (lastOrderIds.length > 0 && newIds.length > 0 && newIds[0] !== lastOrderIds[0]);
                     lastOrderIds = newIds;
                     liveOrdersData = filtered.slice(0, 50);
                     renderLiveOrders(hasNew);
                     
-                    // Update last update time
                     const updateSpan = document.getElementById('liveUpdateStatus');
                     if (updateSpan) {
                         const now = new Date();
@@ -390,7 +540,7 @@
             }
         }
 
-        // Render live orders
+        // Render live orders with exact requested layout
         function renderLiveOrders(hasNew = false) {
             const container = document.getElementById('liveOrdersList');
             if (!container) return;
@@ -406,36 +556,97 @@
                 const isNew = (hasNew && i === 0);
                 const statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
                 const statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
-                const paymentIcon = getPaymentIcon(o.payment_method);
-                const remainHtml = (o.status === 'Approved' && o.activated_at) ? 
-                    `<div class="live-stats-row">
-                        <span class="live-remaining"><i class="fas fa-hourglass-half"></i> ${getRemainingTime(o.activated_at)}</span>
-                    </div>` : '';
+                const planIcon = getPlanIcon(o.plan);
+                const payment = getPaymentInfo(o.payment_method || 'kpay');
+                const orderDate = new Date(o.created_at);
+                const startDate = o.activated_at ? new Date(o.activated_at) : null;
+                const endDate = startDate ? getEndDate(o.activated_at) : null;
+                const remaining = (o.status === 'Approved' && o.activated_at) ? getRemainingTime(o.activated_at) : null;
+                const isExpired = remaining && remaining.expired;
+                
+                // Date Range HTML
+                let dateRangeHtml = '';
+                if (startDate && endDate && o.status === 'Approved') {
+                    dateRangeHtml = `
+                        <div class="live-daterange-row">
+                            <div class="date-range-item">
+                                <span class="date-range-label"><i class="fas fa-calendar-plus"></i> စတင်:</span>
+                                <span class="date-range-value">${formatDate(startDate)}</span>
+                            </div>
+                            <div class="date-range-item">
+                                <span class="date-range-label"><i class="fas fa-calendar-times"></i> ကုန်ဆုံး:</span>
+                                <span class="date-range-value">${formatDate(endDate)}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Remaining time HTML
+                let remainingHtml = '';
+                if (o.status === 'Approved' && o.activated_at) {
+                    if (isExpired) {
+                        remainingHtml = `
+                            <div class="live-remaining-row">
+                                <div class="expired-badge">
+                                    <i class="fas fa-calendar-times"></i> သက်တမ်းကုန်ဆုံးပြီ
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        const remainStr = formatRemainingTime(o.activated_at);
+                        remainingHtml = `
+                            <div class="live-remaining-row">
+                                <div class="live-remaining">
+                                    <i class="fas fa-hourglass-half"></i>
+                                    <span>ကျန်ရှိ: ${remainStr}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
                 
                 html += `
                     <div class="live-card ${isNew ? 'new-order' : ''}" data-order-id="${o.id}">
+                        <!-- Row 1: Payment on left, Status on right -->
                         <div class="live-card-header">
-                            <span class="live-plan"><i class="fas fa-mobile-alt"></i> ${escapeHtml(o.plan)}</span>
+                            <div class="live-payment-badge ${payment.class}">
+                                <i class="fas ${payment.icon}"></i> ${payment.text}
+                            </div>
                             <span class="live-status ${statusClass}">${statusText}</span>
                         </div>
-                        <div class="live-phone">
-                            <i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}
+                        
+                        <!-- Row 2: Plan on left, Price on right -->
+                        <div class="live-card-plan-row">
+                            <div class="live-plan">
+                                ${planIcon} ${escapeHtml(o.plan)}
+                            </div>
+                            <div class="live-price">
+                                ${o.price.toLocaleString()} <small>MMK</small>
+                            </div>
                         </div>
-                        <div class="live-price">
-                            ${o.price.toLocaleString()} K
-                            <span class="live-payment-icon">${paymentIcon}</span>
+                        
+                        <!-- Card Body -->
+                        <div class="live-card-body">
+                            <!-- Phone and Time - Same line (left and right) -->
+                            <div class="live-info-row">
+                                <div class="live-phone">
+                                    <i class="fas fa-phone-alt"></i>
+                                    <span>${maskPhone(o.phone)}</span>
+                                </div>
+                                <div class="live-time">
+                                    <i class="fas fa-clock"></i>
+                                    <span>${orderDate.toLocaleTimeString()}</span>
+                                </div>
+                            </div>
+                            
+                            ${dateRangeHtml}
+                            ${remainingHtml}
                         </div>
-                        <div class="live-date">
-                            <i class="fas fa-clock"></i> ${new Date(o.created_at).toLocaleTimeString()}
-                            <span style="margin-left:8px;"><i class="fas fa-calendar"></i> ${new Date(o.created_at).toLocaleDateString()}</span>
-                        </div>
-                        ${remainHtml}
                     </div>
                 `;
             }
             container.innerHTML = html;
             
-            // Auto-scroll to new order if exists
             if (hasNew && liveOrdersData.length > 0) {
                 const firstCard = container.querySelector('.live-card');
                 if (firstCard) {
@@ -447,7 +658,7 @@
             }
         }
 
-        // Search live order by phone - ✅ Public search endpoint ကိုသုံးပါ
+        // Search live order by phone
         async function searchLiveOrder() {
             const phone = document.getElementById('liveSearchPhoneInput').value.trim();
             const msgDiv = document.getElementById('liveSearchMsg');
@@ -469,7 +680,6 @@
             }
             
             try {
-                // ✅ Public search endpoint (no admin auth needed)
                 const res = await fetch(`${LIVE_API}/api/live/order/${encodeURIComponent(phone)}`);
                 const data = await res.json();
                 const orders = data.orders || [];
@@ -530,7 +740,7 @@
             const updateTimer = () => {
                 if (timerSpan) {
                     timerSpan.innerText = `auto ${liveRefreshSec}s`;
-                    if (updateSpan && updateSpan.innerHTML.includes('အလိုအလျောက်')) {
+                    if (updateSpan && !updateSpan.innerHTML.includes('နောက်ဆုံး')) {
                         updateSpan.innerHTML = `အလိုအလျောက်: ${liveRefreshSec}s`;
                     }
                     liveRefreshSec--;
@@ -561,13 +771,10 @@
 
         // Initialize Live component
         function initLiveComponent() {
-            // Clear existing intervals first
             stopLiveAutoRefresh();
-            // Reset data
             liveOrdersData = [];
             liveCurrentSearchPhone = "";
             lastOrderIds = [];
-            // Start fresh
             fetchLiveOrders();
             startLiveAutoRefresh();
         }
@@ -577,15 +784,15 @@
             stopLiveAutoRefresh();
         }
 
-        // Expose functions to window for external access
-        window.searchLiveOrderExternal = searchLiveOrder;
-        window.clearLiveSearchExternal = clearLiveSearch;
+        // Expose functions to window
+        window.searchLiveOrder = searchLiveOrder;
+        window.clearLiveSearch = clearLiveSearch;
         window.fetchLiveOrders = fetchLiveOrders;
         window.refreshLiveOrders = refreshLiveOrders;
         window.initLiveComponent = initLiveComponent;
         window.cleanupLiveComponent = cleanupLiveComponent;
         
-        // Auto-initialize when script loads
+        // Auto-initialize
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
                 initLiveComponent();
