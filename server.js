@@ -225,7 +225,6 @@ app.get('/api/health', (req, res) => {
 });
 
 // ==================== USER REGISTRATION & AUTH ====================
-// Register or login user (auto-create user ID)
 app.post('/api/user/register', async (req, res) => {
     try {
         const { phone, username } = req.body;
@@ -238,12 +237,10 @@ app.post('/api/user/register', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Invalid phone number' });
         }
         
-        // Check if user exists
         let user = await getUserByPhone(phone);
         let isNewUser = false;
         
         if (!user) {
-            // Create new user with auto-generated ID
             user = await createNewUser(phone, username);
             isNewUser = true;
         }
@@ -252,7 +249,6 @@ app.post('/api/user/register', async (req, res) => {
             return res.status(500).json({ success: false, error: 'Failed to create user' });
         }
         
-        // Check if blocked
         if (user.blocked) {
             return res.status(403).json({ success: false, error: 'Your account has been blocked. Contact support.' });
         }
@@ -275,7 +271,6 @@ app.post('/api/user/register', async (req, res) => {
     }
 });
 
-// Get user by phone
 app.get('/api/user/:phone', async (req, res) => {
     try {
         const { phone } = req.params;
@@ -855,6 +850,142 @@ app.post('/api/admin/login', (req, res) => {
     }
 });
 
+// ==================== SYSTEM RESET API ====================
+// Reset entire system (delete all users, orders, uploads)
+// WARNING: This action cannot be undone!
+app.post('/api/admin/system-reset', async (req, res) => {
+    try {
+        const { confirm, keepProducts } = req.body;
+        
+        // Security: Require confirmation
+        if (confirm !== 'RESET_ALL_DATA') {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Please type "RESET_ALL_DATA" to confirm' 
+            });
+        }
+        
+        // 1. Delete all screenshots from uploads folder
+        const uploadsFolder = path.join(__dirname, 'uploads');
+        if (fs.existsSync(uploadsFolder)) {
+            const files = fs.readdirSync(uploadsFolder);
+            for (const file of files) {
+                const filePath = path.join(uploadsFolder, file);
+                if (fs.statSync(filePath).isFile()) {
+                    fs.unlinkSync(filePath);
+                    console.log(`🗑 Deleted file: ${file}`);
+                }
+            }
+            console.log('✅ All screenshots deleted');
+        }
+        
+        // 2. Delete all orders from database
+        const { error: ordersError } = await supabaseAdmin
+            .from('orders')
+            .delete()
+            .neq('id', 0);
+        
+        if (ordersError) throw ordersError;
+        console.log('✅ All orders deleted');
+        
+        // 3. Delete all users from user_stats
+        const { error: usersError } = await supabaseAdmin
+            .from('user_stats')
+            .delete()
+            .neq('phone', '');
+        
+        if (usersError) throw usersError;
+        console.log('✅ All users deleted');
+        
+        // 4. Reset order rate limit map
+        orderRateLimit.clear();
+        
+        // 5. (Optional) Keep products or delete them
+        if (!keepProducts) {
+            const { error: productsError } = await supabaseAdmin
+                .from('market_products')
+                .delete()
+                .neq('id', 0);
+            
+            if (!productsError) {
+                console.log('✅ All products deleted');
+            }
+        }
+        
+        res.json({ 
+            success: true, 
+            message: 'System reset completed successfully',
+            details: {
+                ordersDeleted: true,
+                usersDeleted: true,
+                screenshotsDeleted: true,
+                productsDeleted: !keepProducts
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error during system reset:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete single user and all their data (orders + screenshots)
+app.post('/api/admin/user-reset/:phone', async (req, res) => {
+    try {
+        const { phone } = req.params;
+        
+        if (!phone) {
+            return res.status(400).json({ success: false, error: 'Phone required' });
+        }
+        
+        // Get user's orders to delete screenshots
+        const { data: orders } = await supabaseAdmin
+            .from('orders')
+            .select('slip_url')
+            .eq('phone', phone);
+        
+        // Delete user's screenshots
+        if (orders && orders.length > 0) {
+            for (const order of orders) {
+                if (order.slip_url) {
+                    const filePath = path.join(__dirname, order.slip_url);
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                        console.log(`🗑 Deleted screenshot for user ${phone}: ${order.slip_url}`);
+                    }
+                }
+            }
+        }
+        
+        // Delete user's orders
+        const { error: ordersError } = await supabaseAdmin
+            .from('orders')
+            .delete()
+            .eq('phone', phone);
+        
+        if (ordersError) throw ordersError;
+        
+        // Delete user from stats
+        const { error: userError } = await supabaseAdmin
+            .from('user_stats')
+            .delete()
+            .eq('phone', phone);
+        
+        if (userError) throw userError;
+        
+        console.log(`✅ User ${phone} and all their data deleted`);
+        
+        res.json({ 
+            success: true, 
+            message: `User ${phone} and all their data deleted successfully` 
+        });
+        
+    } catch (error) {
+        console.error('Error deleting user data:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // ==================== START SERVER ====================
 app.listen(PORT, () => {
     console.log(`
@@ -870,6 +1001,10 @@ app.listen(PORT, () => {
 ║                                                                          ║
 ║     👤 User Registration:                                                ║
 ║        POST /api/user/register - Auto-generates User ID (ATH-xxxxx)     ║
+║                                                                          ║
+║     🗑️ System Reset:                                                     ║
+║        POST /api/admin/system-reset - Reset entire database              ║
+║        POST /api/admin/user-reset/:phone - Delete single user & data    ║
 ║                                                                          ║
 ║     💳 Payment Methods:                                                  ║
 ║        - KBZ Pay (09789999368)                                           ║
