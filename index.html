@@ -211,24 +211,30 @@
             font-size: 1rem;
         }
         
-        .renew-buttons {
+        .orders-renew-buttons {
             display: flex;
             gap: 12px;
-            margin: 16px 0;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
-        .renew-btn {
+        .orders-renew-btn {
             flex: 1;
-            padding: 12px;
+            padding: 14px;
             border-radius: 60px;
             font-weight: bold;
             color: white;
             cursor: pointer;
             border: none;
             transition: all 0.2s;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        .renew-btn:hover { transform: scale(0.98); filter: brightness(1.05); }
-        .renew-btn.self { background: linear-gradient(135deg, var(--cyan), #0891b2); }
-        .renew-btn.other { background: linear-gradient(135deg, var(--amber), #d97706); }
+        .orders-renew-btn.self { background: linear-gradient(135deg, var(--cyan), #0891b2); }
+        .orders-renew-btn.other { background: linear-gradient(135deg, var(--amber), #d97706); }
+        .orders-renew-btn:hover { transform: scale(0.98); filter: brightness(1.05); }
         
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -326,7 +332,6 @@
             color: white;
         }
         
-        /* Order Card */
         .order-card {
             background: linear-gradient(145deg, var(--bg-card), #0d0f17);
             border-radius: 1rem;
@@ -500,40 +505,6 @@
         }
         .plan-card { border-left-color: var(--amber); }
         
-        /* Market Styles */
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        .product-card {
-            background: var(--bg-card);
-            border-radius: 1rem;
-            padding: 12px;
-            border: 1px solid rgba(0,212,255,0.1);
-            text-align: center;
-            transition: all 0.2s;
-        }
-        .product-card:hover {
-            border-color: var(--cyan);
-            transform: translateY(-2px);
-        }
-        .product-icon { font-size: 2rem; margin-bottom: 8px; }
-        .product-name { font-weight: 700; font-size: 0.8rem; }
-        .product-price { font-weight: 800; color: var(--emerald); font-size: 0.8rem; }
-        .product-buy-btn {
-            width: 100%;
-            background: linear-gradient(135deg, var(--cyan), #0891b2);
-            border: none;
-            padding: 6px;
-            border-radius: 60px;
-            font-size: 0.65rem;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-        .market-section-title { font-size: 0.85rem; font-weight: 600; color: var(--cyan); margin: 16px 0 8px; }
-        
         /* Live Styles */
         .live-badge {
             font-size: 0.6rem;
@@ -685,31 +656,10 @@
         .note-text { font-size: 0.6rem; color: var(--text-secondary); margin-top: 8px; }
         .payment-method-icon { width: 20px; height: 20px; border-radius: 4px; object-fit: cover; }
         
-        /* Renew Buttons inside Orders Tab */
-        .orders-renew-buttons {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+        /* Market Container - for loaded content */
+        #marketContainer {
+            min-height: 200px;
         }
-        .orders-renew-btn {
-            flex: 1;
-            padding: 14px;
-            border-radius: 60px;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .orders-renew-btn.self { background: linear-gradient(135deg, var(--cyan), #0891b2); }
-        .orders-renew-btn.other { background: linear-gradient(135deg, var(--amber), #d97706); }
-        .orders-renew-btn:hover { transform: scale(0.98); filter: brightness(1.05); }
     </style>
 </head>
 <body>
@@ -773,7 +723,6 @@
                 <div id="userPhoneDisplay" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;"></div>
             </div>
             
-            <!-- Home Tab မှာ ရှိခဲ့တဲ့ Renew Buttons ကို ဖယ်ရှားပြီး အကြောင်းအရာအသစ်ထည့်ထားပါတယ် -->
             <div style="background:linear-gradient(135deg, rgba(0,212,255,0.08), rgba(139,92,246,0.05)); border-radius: 1rem; padding: 20px; text-align: center;">
                 <i class="fas fa-gem" style="font-size: 2rem; color: var(--cyan); margin-bottom: 10px;"></i>
                 <h3>Welcome to ATH DIGITAL HUB</h3>
@@ -790,9 +739,8 @@
             <div id="plansContainer"></div>
         </div>
 
-        <!-- My Orders Tab (Renew Buttons များ ဤနေရာသို့ ပြောင်းထည့်ပြီး) -->
+        <!-- My Orders Tab -->
         <div id="ordersTab" class="tab-content">
-            <!-- Renew Buttons - ဤနေရာတွင် ထည့်သွင်းထားပါသည် -->
             <div class="orders-renew-buttons">
                 <button class="orders-renew-btn self" onclick="openRenewModal('self')">
                     <i class="fas fa-user"></i> ကိုယ်တိုင်ထပ်ဝယ်ရန်
@@ -839,9 +787,13 @@
             </div>
         </div>
 
-        <!-- Market Tab -->
+        <!-- Market Tab - Content will be loaded from market.html -->
         <div id="marketTab" class="tab-content">
-            <div id="marketContainer"><div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> Loading products...</div></div>
+            <div id="marketContainer">
+                <div style="text-align:center; padding:40px;">
+                    <i class="fas fa-spinner fa-pulse"></i> Loading market...
+                </div>
+            </div>
         </div>
 
         <!-- Profile Tab -->
@@ -867,7 +819,6 @@
             <button onclick="closePaymentModal()" style="background:none; border:none; color:white; font-size:1.3rem; cursor:pointer;">&times;</button>
         </div>
         
-        <!-- Payment Method Tabs -->
         <div class="payment-tab-buttons">
             <button type="button" id="kpayTabBtn" class="payment-tab-btn kpay-tab active" onclick="selectPayment('kpay')">
                 <img src="https://i.ibb.co/CpyBHvrS/1000011452.jpg" alt="KBZ Pay" class="payment-method-icon" onerror="this.style.display='none'">
@@ -883,20 +834,17 @@
             </button>
         </div>
         
-        <!-- Account Info -->
         <div class="account-info">
             <div class="info-row"><span>ငွေလွှဲနည်းလမ်း</span><span id="paymentMethodName">KBZ Pay</span></div>
             <div class="info-row"><span>အကောင့်အမည်</span><span>AUNG THU HTWE</span></div>
             <div class="info-row"><span>ဖုန်းနံပါတ်</span><span id="accountPhone" style="cursor:pointer;">09789999368 📋</span></div>
         </div>
         
-        <!-- Proof Method Tabs -->
         <div style="display: flex; gap: 10px; margin: 16px 0;">
             <button id="screenshotTabBtn" class="proof-tab-btn screenshot-tab active" onclick="switchToScreenshot()">📸 Screenshot</button>
             <button id="textTabBtn" class="proof-tab-btn text-tab" onclick="switchToText()">✏️ စာသားဖြည့်</button>
         </div>
         
-        <!-- Screenshot Panel -->
         <div id="screenshotPanel">
             <div style="margin-bottom: 16px;">
                 <label>📱 လက်ခံမည့်သူ ဖုန်းနံပါတ် *</label>
@@ -913,7 +861,6 @@
             </div>
         </div>
         
-        <!-- Text Panel -->
         <div id="textPanel" style="display: none;">
             <div style="margin-bottom: 16px;">
                 <label>📱 လက်ခံမည့်သူ ဖုန်းနံပါတ် *</label>
@@ -931,7 +878,6 @@
             </div>
         </div>
         
-        <!-- Plan Selection -->
         <div style="margin: 16px 0;">
             <label>🎯 Plan ရွေးရန် *</label>
             <select id="orderPlan" class="form-control">
@@ -972,8 +918,8 @@
     let liveRefreshInterval = null, liveTimerInterval = null;
     let refreshSec = 30;
     
-    // Market variables
-    let marketProducts = [];
+    // Market loaded flag
+    let marketLoaded = false;
 
     // ========== Helper Functions ==========
     function maskPhone(phone) {
@@ -1023,6 +969,49 @@
             if (m === '>') return '&gt;';
             return m;
         });
+    }
+    
+    // ========== Load Market from external file ==========
+    async function loadMarketContent() {
+        const container = document.getElementById('marketContainer');
+        if (!container) return;
+        
+        // If already loaded, just return
+        if (marketLoaded) {
+            return;
+        }
+        
+        try {
+            const response = await fetch('/market.html');
+            if (!response.ok) {
+                throw new Error('Failed to load market');
+            }
+            const html = await response.text();
+            container.innerHTML = html;
+            marketLoaded = true;
+            
+            // Execute any scripts in the loaded content
+            const scripts = container.querySelectorAll('script');
+            scripts.forEach(script => {
+                const newScript = document.createElement('script');
+                if (script.src) {
+                    newScript.src = script.src;
+                } else {
+                    newScript.textContent = script.textContent;
+                }
+                document.body.appendChild(newScript);
+            });
+        } catch (error) {
+            console.error('Error loading market:', error);
+            container.innerHTML = `
+                <div style="text-align:center; padding:40px; color:var(--rose);">
+                    <i class="fas fa-exclamation-triangle"></i> Failed to load market<br>
+                    <small>Please check your connection and try again.</small>
+                    <br><br>
+                    <button onclick="location.reload()" style="background:var(--cyan); border:none; padding:8px 20px; border-radius:40px; cursor:pointer;">Refresh</button>
+                </div>
+            `;
+        }
     }
     
     // ========== Plans Data ==========
@@ -1157,61 +1146,6 @@
         } catch(e) {
             console.error('Error loading orders:', e);
         }
-    }
-    
-    // ========== Market Functions ==========
-    async function loadMarketProducts() {
-        try {
-            const res = await fetch(`${API_BASE}/api/market/products`);
-            const data = await res.json();
-            marketProducts = data.products || [];
-            renderMarket();
-        } catch(e) {
-            console.error('Error loading products:', e);
-            renderMarketFallback();
-        }
-    }
-    
-    function renderMarket() {
-        const container = document.getElementById('marketContainer');
-        if (!marketProducts.length) {
-            renderMarketFallback();
-            return;
-        }
-        const categories = {};
-        for (const p of marketProducts) {
-            if (!categories[p.category]) categories[p.category] = [];
-            categories[p.category].push(p);
-        }
-        let html = '';
-        for (const [category, products] of Object.entries(categories)) {
-            html += `<div class="market-section-title"><i class="fas fa-tag"></i> ${category}</div><div class="product-grid">`;
-            for (const p of products) {
-                html += `
-                    <div class="product-card">
-                        <div class="product-icon"><i class="${p.icon || 'fas fa-box'}"></i></div>
-                        <div class="product-name">${escapeHtml(p.name)}</div>
-                        <div class="product-price">${p.price.toLocaleString()} MMK</div>
-                        ${p.discount ? `<div class="product-discount" style="font-size:0.6rem; color:var(--amber);">-${p.discount}% OFF</div>` : ''}
-                        <button class="product-buy-btn" onclick="showToast('Product: ${escapeHtml(p.name)} - Coming Soon')">ဝယ်မည်</button>
-                    </div>
-                `;
-            }
-            html += '</div>';
-        }
-        container.innerHTML = html;
-    }
-    
-    function renderMarketFallback() {
-        const container = document.getElementById('marketContainer');
-        container.innerHTML = `
-            <div class="market-section-title"><i class="fas fa-fire"></i> 🔥 အထူးကမ်းလှမ်းချက်များ</div>
-            <div class="product-grid">
-                <div class="product-card"><div class="product-icon"><i class="fas fa-tshirt"></i></div><div class="product-name">Premium T-Shirt</div><div class="product-price">25,000 MMK</div><button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button></div>
-                <div class="product-card"><div class="product-icon"><i class="fas fa-shopping-bag"></i></div><div class="product-name">Casual Bag</div><div class="product-price">35,000 MMK</div><button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button></div>
-                <div class="product-card"><div class="product-icon"><i class="fas fa-shoe-prints"></i></div><div class="product-name">Sports Shoes</div><div class="product-price">45,000 MMK</div><button class="product-buy-btn" onclick="showToast('Product coming soon')">ဝယ်မည်</button></div>
-            </div>
-        `;
     }
     
     // ========== LIVE Functions ==========
@@ -1351,7 +1285,6 @@
         const container = document.getElementById('profileContainer');
         const approved = allOrders.filter(o => o.status === 'Approved').length;
         const pending = allOrders.filter(o => o.status === 'Pending').length;
-        const rejected = allOrders.filter(o => o.status === 'Rejected').length;
         
         container.innerHTML = `
             <div class="profile-card" style="text-align:center;">
@@ -1509,7 +1442,7 @@
             showToast("Username နှင့် ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ", true);
             return;
         }
-        // Check if user is blocked
+        
         try {
             const statsRes = await fetch(`${API_BASE}/api/admin/user-stats`);
             const statsData = await statsRes.json();
@@ -1537,7 +1470,6 @@
         renderPlans();
         await renderProfile();
         await fetchLiveOrders();
-        await loadMarketProducts();
         startLiveRefresh();
         showToast("အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်။");
     }
@@ -1548,6 +1480,7 @@
         if (liveTimerInterval) clearInterval(liveTimerInterval);
         currentUser = null;
         currentUsername = null;
+        marketLoaded = false;
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('mainApp').style.display = 'none';
         showToast("ထွက်ရန် အောင်မြင်ပါသည်။");
@@ -1560,11 +1493,12 @@
             if (item.dataset.tab === tab) item.classList.add('active');
             else item.classList.remove('active');
         });
+        
         if (tab === 'orders') renderMyOrders();
         if (tab === 'plans') renderPlans();
         if (tab === 'profile') renderProfile();
         if (tab === 'live') fetchLiveOrders();
-        if (tab === 'market') loadMarketProducts();
+        if (tab === 'market') loadMarketContent();
     }
     
     function toggleDrawer() {
@@ -1638,6 +1572,7 @@
     window.copyToClipboard = copyToClipboard;
     window.searchLiveOrder = searchLiveOrder;
     window.clearLiveSearch = clearLiveSearch;
+    window.showToast = showToast;
 </script>
 </body>
 </html>
