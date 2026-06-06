@@ -43,6 +43,23 @@
             flex-wrap: wrap;
             gap: 10px;
         }
+        .menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .menu-btn:hover {
+            background: rgba(0,212,255,0.1);
+        }
         .header h1 {
             font-size: 1.2rem;
             font-family: monospace;
@@ -71,6 +88,95 @@
             animation: pulse 1.5s infinite;
         }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        
+        /* Drawer Menu Styles */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        .drawer-overlay.open {
+            visibility: visible;
+            opacity: 1;
+        }
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(145deg, #0f111a, #0a0c15);
+            border-right: 1px solid rgba(0,212,255,0.2);
+            z-index: 201;
+            transition: left 0.3s ease;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .drawer.open {
+            left: 0;
+        }
+        .drawer-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0,212,255,0.1);
+            margin-bottom: 20px;
+        }
+        .drawer-avatar {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--cyan), #0891b2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 1.8rem;
+        }
+        .drawer-title {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .drawer-subtitle {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .drawer-menu {
+            list-style: none;
+        }
+        .drawer-menu li {
+            margin-bottom: 8px;
+        }
+        .drawer-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .drawer-menu a:hover {
+            background: rgba(0,212,255,0.1);
+        }
+        .drawer-menu a i {
+            width: 24px;
+            color: var(--cyan);
+        }
+        .drawer-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.05);
+            margin: 16px 0;
+        }
         
         .tab-bar {
             display: flex;
@@ -575,6 +681,7 @@
         
         .hidden { display: none; }
         
+        /* FAB Buttons - လက်ယာဘက်အောက်ခြေတွင် အဓိက action များ */
         .fab-container {
             position: fixed;
             bottom: 20px;
@@ -600,7 +707,6 @@
             justify-content: center;
         }
         .fab:hover { transform: scale(1.05); }
-        .fab.logout { background: linear-gradient(135deg, #f43f5e, #e11d48); box-shadow: 0 4px 15px rgba(244,63,94,0.4); }
         
         .image-modal {
             position: fixed;
@@ -689,12 +795,41 @@
 <body>
 <div id="app">
     <div class="container" id="adminContent" style="display: none;">
+        <!-- Header with Menu Button -->
         <div class="header">
+            <button class="menu-btn" onclick="toggleDrawer()">
+                <i class="fas fa-bars"></i>
+            </button>
             <h1><i class="fas fa-crown"></i> ATH Admin</h1>
             <div class="sync-status">
                 <span class="sync-dot"></span>
                 <span id="autoSyncTimer">Auto Sync: 30s</span>
             </div>
+        </div>
+        
+        <!-- Drawer Menu -->
+        <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+        <div id="drawer" class="drawer">
+            <div class="drawer-header">
+                <div class="drawer-avatar">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="drawer-title">Admin Panel</div>
+                <div class="drawer-subtitle">ATH DIGITAL HUB</div>
+            </div>
+            <ul class="drawer-menu">
+                <li><a onclick="closeDrawer(); switchTab('orders')"><i class="fas fa-list-ul"></i> Orders</a></li>
+                <li><a onclick="closeDrawer(); switchTab('users')"><i class="fas fa-users"></i> Users</a></li>
+                <li><a onclick="closeDrawer(); switchTab('market')"><i class="fas fa-store"></i> Market</a></li>
+                <li><div class="drawer-divider"></div></li>
+                <li><a onclick="closeDrawer(); exportUsersToCSV()"><i class="fas fa-file-excel"></i> Export Users (CSV)</a></li>
+                <li><a onclick="closeDrawer(); exportOrdersToCSV()"><i class="fas fa-file-excel"></i> Export Orders (CSV)</a></li>
+                <li><div class="drawer-divider"></div></li>
+                <li><a onclick="closeDrawer(); manualRefresh()"><i class="fas fa-sync-alt"></i> Refresh Data</a></li>
+                <li><a onclick="closeDrawer(); manualCleanup()"><i class="fas fa-trash-alt"></i> Cleanup Old Orders</a></li>
+                <li><div class="drawer-divider"></div></li>
+                <li><a onclick="closeDrawer(); logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
         </div>
         
         <div class="tab-bar">
@@ -732,7 +867,6 @@
                 </select>
             </div>
             <div style="display: flex; gap: 8px;">
-                <button class="filter-btn cleanup-btn" onclick="manualCleanup()"><i class="fas fa-trash-alt"></i> Delete Old</button>
                 <button class="filter-btn" onclick="applyFilters()"><i class="fas fa-filter"></i> Filter</button>
                 <button class="filter-btn" onclick="clearFilters()" style="background:#334155;"><i class="fas fa-undo"></i></button>
             </div>
@@ -757,11 +891,14 @@
         <div class="last-update" id="lastUpdate"></div>
     </div>
     
+    <!-- FAB Buttons (Quick Actions) -->
     <div class="fab-container" id="fabContainer" style="display: none;">
-        <button class="fab" onclick="manualRefresh()" title="Sync"><i class="fas fa-sync-alt"></i></button>
-        <button class="fab" onclick="exportUsersToCSV()" title="Export Users" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="fas fa-file-excel"></i></button>
-        <button class="fab" onclick="window.location.href='/'" title="Store"><i class="fas fa-store"></i></button>
-        <button class="fab logout" onclick="logout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+        <button class="fab" onclick="manualRefresh()" title="Sync">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+        <button class="fab" onclick="window.location.href='/'" title="Store">
+            <i class="fas fa-store"></i>
+        </button>
     </div>
     
     <div id="loginBox" class="login-box">
@@ -1225,6 +1362,30 @@
         
         showToast('📁 Users exported to CSV');
     }
+    
+    function exportOrdersToCSV() {
+        if (!allOrders.length) {
+            showToast('No orders to export', true);
+            return;
+        }
+        
+        let csv = "Order ID,Phone,Plan,Price,Status,Payment Method,Sender Name,Last5 Digits,Order Date,Activated Date\n";
+        allOrders.forEach(o => {
+            csv += `"${o.id}","${o.phone}","${o.plan}",${o.price},"${o.status}","${o.payment_method || 'kpay'}","${o.sender_name || ''}","${o.last5_digits || ''}","${new Date(o.created_at).toLocaleString()}","${o.activated_at ? new Date(o.activated_at).toLocaleString() : ''}"\n`;
+        });
+        
+        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.setAttribute('download', `orders_${new Date().toISOString().slice(0,19)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        showToast('📁 Orders exported to CSV');
+    }
 
     function updateStats(orders) {
         const total = orders.length;
@@ -1340,7 +1501,7 @@
                 msgDiv.style.justifyContent = 'center';
                 document.querySelector('.filter-bar').after(msgDiv);
             }
-            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-phone-alt"></i> Search: ${currentSearchPhone} | Found: ${filtered.length} order(s)`;
+            document.getElementById('searchResultMsg').innerHTML = `<i class="fas fa-search"></i> Search: ${currentSearchPhone} | Found: ${filtered.length} order(s)`;
         } else {
             if (document.getElementById('searchResultMsg')) {
                 document.getElementById('searchResultMsg').remove();
@@ -1543,6 +1704,17 @@
         updateCountdown(); 
     }
 
+    // Drawer Functions
+    function toggleDrawer() {
+        document.getElementById('drawer').classList.toggle('open');
+        document.getElementById('drawerOverlay').classList.toggle('open');
+    }
+    
+    function closeDrawer() {
+        document.getElementById('drawer').classList.remove('open');
+        document.getElementById('drawerOverlay').classList.remove('open');
+    }
+
     // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1590,6 +1762,9 @@
     window.copyToClipboard = copyToClipboard;
     window.manualCleanup = manualCleanup;
     window.exportUsersToCSV = exportUsersToCSV;
+    window.exportOrdersToCSV = exportOrdersToCSV;
+    window.toggleDrawer = toggleDrawer;
+    window.closeDrawer = closeDrawer;
     window.openAddProductModal = openAddProductModal; 
     window.openEditProductModal = openEditProductModal;
     window.closeProductModal = closeProductModal; 
