@@ -159,7 +159,7 @@
             background: rgba(0,212,255,0.05);
         }
         
-        /* Drawer Menu */
+        /* Drawer Menu - ဒီမှာ DB Statistics နဲ့ Menu များ */
         .drawer-overlay {
             position: fixed;
             top: 0;
@@ -218,6 +218,43 @@
             color: var(--text-secondary);
             margin-top: 4px;
         }
+        
+        /* DB Statistics in Drawer */
+        .drawer-stats {
+            background: rgba(0,212,255,0.05);
+            border-radius: 1rem;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,212,255,0.1);
+        }
+        .drawer-stats-title {
+            font-size: 0.7rem;
+            color: var(--cyan);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .drawer-stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .drawer-stat-item:last-child {
+            border-bottom: none;
+        }
+        .drawer-stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        .drawer-stat-value {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--cyan);
+        }
+        
         .drawer-menu {
             list-style: none;
         }
@@ -723,56 +760,6 @@
         .user-action-btn.delete-orders { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .user-action-btn.clear { background: rgba(0,212,255,0.15); color: var(--cyan); }
         
-        /* Profile Tab Styles with Logo */
-        .profile-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-        .profile-logo {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .profile-logo-icon {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, var(--cyan), #0891b2, var(--violet));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            box-shadow: 0 0 30px rgba(0,212,255,0.3);
-        }
-        .profile-logo-icon i {
-            font-size: 3rem;
-            color: white;
-        }
-        .profile-logo-text {
-            font-size: 1.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #fff, var(--cyan));
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-        .profile-logo-sub {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            margin-top: 5px;
-        }
-        
-        .profile-card {
-            background: linear-gradient(145deg, rgba(18,22,35,0.9), rgba(10,12,21,0.95));
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,212,255,0.1);
-            border-radius: 1.2rem;
-            padding: 20px;
-            text-align: center;
-            width: 100%;
-        }
-        
         .hidden { display: none; }
         
         .image-modal {
@@ -857,52 +844,12 @@
             display: none;
             white-space: nowrap;
         }
-        
-        .support-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin: 16px 0;
-            justify-content: center;
-        }
-        .support-link {
-            background: rgba(0,212,255,0.1);
-            padding: 8px 16px;
-            border-radius: 40px;
-            text-decoration: none;
-            color: var(--text-primary);
-            font-size: 0.75rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-        .support-link:hover {
-            background: rgba(0,212,255,0.2);
-            transform: translateY(-2px);
-        }
-        .logout-btn {
-            width: 100%;
-            background: rgba(244,63,94,0.2);
-            border: none;
-            padding: 12px;
-            border-radius: 60px;
-            color: #fb7185;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 16px;
-            transition: all 0.2s;
-        }
-        .logout-btn:hover {
-            background: #f43f5e;
-            color: white;
-        }
     </style>
 </head>
 <body>
 <div id="app">
     <div class="container" id="adminContent" style="display: none;">
-        <!-- Top Bar with Menu Button and Action Icons -->
+        <!-- Top Bar with Menu Button -->
         <div class="top-bar">
             <div class="top-bar-left">
                 <button class="menu-btn" onclick="toggleDrawer()">
@@ -926,7 +873,7 @@
             </div>
         </div>
         
-        <!-- Drawer Menu -->
+        <!-- Drawer Menu (Sidebar) - ဒီမှာ DB Statistics နဲ့ Menu များ -->
         <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
         <div id="drawer" class="drawer">
             <div class="drawer-header">
@@ -936,11 +883,50 @@
                 <div class="drawer-title">Admin Panel</div>
                 <div class="drawer-subtitle">ATH DIGITAL HUB</div>
             </div>
+            
+            <!-- DB Statistics Section (Drawer ထဲမှာ သပ်သပ်) -->
+            <div class="drawer-stats">
+                <div class="drawer-stats-title">
+                    <i class="fas fa-database"></i> Database Statistics
+                </div>
+                <div class="drawer-stat-item">
+                    <span class="drawer-stat-label"><i class="fas fa-shopping-cart"></i> Total Orders</span>
+                    <span class="drawer-stat-value" id="drawerTotalOrders">0</span>
+                </div>
+                <div class="drawer-stat-item">
+                    <span class="drawer-stat-label"><i class="fas fa-users"></i> Total Users</span>
+                    <span class="drawer-stat-value" id="drawerTotalUsers">0</span>
+                </div>
+                <div class="drawer-stat-item">
+                    <span class="drawer-stat-label"><i class="fas fa-clock"></i> Pending Orders</span>
+                    <span class="drawer-stat-value" id="drawerPendingOrders">0</span>
+                </div>
+                <div class="drawer-stat-item">
+                    <span class="drawer-stat-label"><i class="fas fa-check-circle"></i> Approved Orders</span>
+                    <span class="drawer-stat-value" id="drawerApprovedOrders">0</span>
+                </div>
+                <div class="drawer-stat-item">
+                    <span class="drawer-stat-label"><i class="fas fa-times-circle"></i> Rejected Orders</span>
+                    <span class="drawer-stat-value" id="drawerRejectedOrders">0</span>
+                </div>
+                <div class="drawer-stat-item">
+                    <span class="drawer-stat-label"><i class="fas fa-coins"></i> Total Revenue</span>
+                    <span class="drawer-stat-value" id="drawerTotalRevenue">0</span>
+                </div>
+                <div class="drawer-stat-item">
+                    <span class="drawer-stat-label"><i class="fas fa-chart-line"></i> Total Profit</span>
+                    <span class="drawer-stat-value" id="drawerTotalProfit">0</span>
+                </div>
+            </div>
+            
+            <!-- Menu Section (Drawer ထဲမှာ သပ်သပ်) -->
+            <div class="drawer-stats-title" style="margin-top: 10px;">
+                <i class="fas fa-bars"></i> Menu
+            </div>
             <ul class="drawer-menu">
                 <li><a onclick="closeDrawer(); switchTab('orders')"><i class="fas fa-list-ul"></i> Orders</a></li>
                 <li><a onclick="closeDrawer(); switchTab('users')"><i class="fas fa-users"></i> Users</a></li>
                 <li><a onclick="closeDrawer(); switchTab('market')"><i class="fas fa-store"></i> Market</a></li>
-                <li><a onclick="closeDrawer(); switchTab('profile')"><i class="fas fa-user-circle"></i> Profile</a></li>
                 <li><div class="drawer-divider"></div></li>
                 <li><a onclick="closeDrawer(); exportUsersToCSV()"><i class="fas fa-file-excel"></i> Export Users (CSV)</a></li>
                 <li><a onclick="closeDrawer(); exportOrdersToCSV()"><i class="fas fa-file-excel"></i> Export Orders (CSV)</a></li>
@@ -954,7 +940,7 @@
             </ul>
         </div>
         
-        <!-- Stats Grid -->
+        <!-- Stats Grid (Main Content) -->
         <div class="stats-grid" id="statsGrid">
             <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label"><i class="fas fa-shopping-cart"></i> Total</div></div>
             <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label"><i class="fas fa-clock"></i> Pending</div></div>
@@ -1010,51 +996,10 @@
             <div class="product-list" id="productList"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading products...</div></div>
         </div>
         
-        <!-- Tab Content: Profile with Logo -->
-        <div id="profileTab" class="tab-content">
-            <div class="profile-container" id="profileContainer">
-                <div class="profile-logo">
-                    <div class="profile-logo-icon">
-                        <i class="fas fa-crown"></i>
-                    </div>
-                    <div class="profile-logo-text">ATH DIGITAL HUB</div>
-                    <div class="profile-logo-sub">Admin Control Panel</div>
-                </div>
-                <div class="profile-card">
-                    <div style="display: flex; justify-content: center; margin-bottom: 15px;">
-                        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--cyan), #0891b2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                            <i class="fas fa-user-shield"></i>
-                        </div>
-                    </div>
-                    <h3 id="adminName">Administrator</h3>
-                    <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;">
-                        <i class="fas fa-shield-alt"></i> Super Admin
-                    </div>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0;">
-                        <div style="background: rgba(0,212,255,0.05); padding: 12px; border-radius: 1rem;">
-                            <div style="font-size: 1.3rem; font-weight: 800; color: var(--cyan);" id="adminTotalOrders">0</div>
-                            <div>Total Orders</div>
-                        </div>
-                        <div style="background: rgba(16,185,129,0.05); padding: 12px; border-radius: 1rem;">
-                            <div style="font-size: 1.3rem; font-weight: 800; color: var(--emerald);" id="adminTotalUsers">0</div>
-                            <div>Total Users</div>
-                        </div>
-                    </div>
-                    <div class="support-links">
-                        <a href="https://t.me/ATHsupport" class="support-link" target="_blank"><i class="fab fa-telegram"></i> Telegram</a>
-                        <a href="https://www.facebook.com/athdigitalhub" class="support-link" target="_blank"><i class="fab fa-facebook"></i> Facebook</a>
-                        <a href="tel:09789999368" class="support-link"><i class="fas fa-phone"></i> Phone</a>
-                        <a href="viber://chat?number=09799480995" class="support-link"><i class="fab fa-viber"></i> Viber</a>
-                    </div>
-                    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                </div>
-            </div>
-        </div>
-        
         <div class="last-update" id="lastUpdate"></div>
     </div>
     
-    <!-- Bottom Navigation Bar -->
+    <!-- Bottom Navigation Bar - Orders, Users, Market သုံးခုပဲ -->
     <div class="bottom-nav" id="bottomNav" style="display: none;">
         <button class="nav-item active" data-tab="orders">
             <i class="fas fa-list-ul"></i>
@@ -1067,10 +1012,6 @@
         <button class="nav-item" data-tab="market">
             <i class="fas fa-store"></i>
             <span>Market</span>
-        </button>
-        <button class="nav-item" data-tab="profile">
-            <i class="fas fa-user-circle"></i>
-            <span>Profile</span>
         </button>
     </div>
     
@@ -1307,6 +1248,24 @@
         }
     }
 
+    // Update Drawer Statistics
+    function updateDrawerStats() {
+        const pending = allOrders.filter(o => o.status === 'Pending').length;
+        const approved = allOrders.filter(o => o.status === 'Approved').length;
+        const rejected = allOrders.filter(o => o.status === 'Rejected').length;
+        const revenue = allOrders.filter(o => o.status === 'Approved').reduce((s, o) => s + o.price, 0);
+        const cost = allOrders.filter(o => o.status === 'Approved').reduce((s, o) => s + getCostPrice(o.plan), 0);
+        const profit = revenue - cost;
+        
+        document.getElementById('drawerTotalOrders').innerText = allOrders.length;
+        document.getElementById('drawerTotalUsers').innerText = userStats.length;
+        document.getElementById('drawerPendingOrders').innerText = pending;
+        document.getElementById('drawerApprovedOrders').innerText = approved;
+        document.getElementById('drawerRejectedOrders').innerText = rejected;
+        document.getElementById('drawerTotalRevenue').innerText = revenue.toLocaleString() + 'K';
+        document.getElementById('drawerTotalProfit').innerText = profit.toLocaleString() + 'K';
+    }
+
     async function login() {
         const password = document.getElementById('adminPassword').value;
         try {
@@ -1324,7 +1283,6 @@
                 document.getElementById('bottomNav').style.display = 'flex';
                 loadAllData(); 
                 startAutoSync();
-                updateProfileStats();
             } else { 
                 showToast('Invalid Password', true); 
             }
@@ -1342,16 +1300,11 @@
         document.getElementById('bottomNav').style.display = 'none'; 
     }
 
-    function updateProfileStats() {
-        document.getElementById('adminTotalOrders').innerText = allOrders.length || 0;
-        document.getElementById('adminTotalUsers').innerText = userStats.length || 0;
-    }
-
     async function loadAllData() {
         await loadOrders();
         await loadUserStats();
         await loadProducts();
-        updateProfileStats();
+        updateDrawerStats();
     }
 
     async function loadOrders() {
@@ -1362,7 +1315,7 @@
                 allOrders = data.orders; 
                 applyFiltersAndSearch(); 
                 document.getElementById('lastUpdate').innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | Total: ${allOrders.length}`; 
-                updateProfileStats();
+                updateDrawerStats();
             }
         } catch(e) { 
             document.getElementById('ordersList').innerHTML = '<div class="loading">Connection Error</div>'; 
@@ -1376,7 +1329,7 @@
             if (data.stats) { 
                 userStats = data.stats; 
                 renderUsersTab(); 
-                updateProfileStats();
+                updateDrawerStats();
             }
         } catch(e) { 
             console.error('Error loading user stats:', e); 
@@ -1671,6 +1624,7 @@
         document.getElementById('totalCost').innerHTML = cost.toLocaleString() + 'K';
         document.getElementById('totalProfit').innerHTML = profit.toLocaleString() + 'K';
         document.getElementById('avgProfit').innerHTML = (approved.length ? Math.round(profit / approved.length) : 0).toLocaleString() + 'K';
+        updateDrawerStats();
     }
 
     function renderUsersTab() {
@@ -2004,8 +1958,6 @@
             renderUsersTab();
         } else if (tab === 'market') {
             loadProducts();
-        } else if (tab === 'profile') {
-            updateProfileStats();
         }
     }
 
