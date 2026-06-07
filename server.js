@@ -28,11 +28,17 @@ const orderSchema = Joi.object({
     payment_method: Joi.string().valid('kpay', 'wavepay', 'ayapay').default('kpay')
 });
 
+// Helper function to mask phone
+function maskPhone(phone) {
+    if (!phone || phone.length < 8) return phone || '';
+    return phone.substring(0, 5) + '***' + phone.substring(phone.length - 3);
+}
+
 // ==================== SECURITY MIDDLEWARE ====================
 app.use(compression());
 app.use(morgan('combined'));
 
-// ==================== FULLY UPDATED CSP CONFIGURATION ====================
+// ==================== UPDATED CSP CONFIGURATION ====================
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -240,6 +246,26 @@ function isAuthenticated(req, res, next) {
         next();
     } else {
         res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+}
+
+// ==================== DATABASE NOTIFICATION FUNCTIONS ====================
+
+// Add notification to database
+async function addNotificationToDatabase(order) {
+    try {
+        const { error } = await supabaseAdmin
+            .from('admin_notifications')
+            .insert([{
+                order_id: order.id,
+                title: `🆕 New Order #${order.id}`,
+                message: `${order.plan} - ${order.price.toLocaleString()} MMK from ${maskPhone(order.phone)}`,
+                is_read: false,
+                created_at: new Date().toISOString()
+            }]);
+        if (error) console.error('Error saving notification:', error);
+    } catch (e) {
+        console.error('Exception saving notification:', e);
     }
 }
 
@@ -536,7 +562,10 @@ app.post('/api/orders', orderLimiter, upload.single('slip'), async (req, res) =>
         await updateUserStats(phone, false);
         
         const { data: newOrder } = await supabase.from('orders').select('*').eq('id', orderId).single();
-        if (newOrder) await broadcastNewOrder(newOrder);
+        if (newOrder) {
+            await broadcastNewOrder(newOrder);
+            await addNotificationToDatabase(newOrder);  // Save to database
+        }
         
         res.json({ success: true, orderId: orderId, message: 'Order created successfully' });
     } catch (error) {
@@ -602,6 +631,108 @@ app.get('/api/admin/search-users', isAuthenticated, async (req, res) => {
     }
 });
 
+// ==================== DATABASE NOTIFICATIONS ENDPOINTS ====================
+
+// Get all notifications from database
+app.get('/api/admin/notifications', isAuthenticated, async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('admin_notifications')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(100);
+        
+        if (error) throw error;
+        res.json({ success: true, notifications: data || [] });
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Clear all notifications from database
+app.post('/api/admin/notifications/clear', isAuthenticated, csrfProtection, async (req, res) => {
+    try {
+        const { error } = await supabaseAdmin
+            .from('admin_notifications')
+            .delete()
+            .neq('id', 0);
+        
+        if (error) throw error;
+        res.json({ success: true, message: 'All notifications cleared from database' });
+    } catch (error) {
+        console.error('Error clearing notifications:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete single notification from database
+app.delete('/api/admin/notifications/:id', isAuthenticated, csrfProtection, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { error } = await supabaseAdmin
+            .from('admin_notifications')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+        res.json({ success: true, message: 'Notification deleted' });
+    } catch (error) {
+        console.error('Error deleting notification:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Mark notification as read
+app.put('/api/admin/notifications/:id/read', isAuthenticated, csrfProtection, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { error } = await supabaseAdmin
+            .from('admin_notifications')
+            .update({ is_read: true })
+            .eq('id', id);
+        
+        if (error) throw error;
+        res.json({ success: true, message: 'Marked as read' });
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Mark all notifications as read
+app.put('/api/admin/notifications/read-all', isAuthenticated, csrfProtection, async (req, res) => {
+    try {
+        const { error } = await supabaseAdmin
+            .from('admin_notifications')
+            .update({ is_read: true })
+            .neq('id', 0);
+        
+        if (error) throw error;
+        res.json({ success: true, message: 'All notifications marked as read' });
+    } catch (error) {
+        console.error('Error marking all as read:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get unread count
+app.get('/api/admin/notifications/unread-count', isAuthenticated, async (req, res) => {
+    try {
+        const { count, error } = await supabaseAdmin
+            .from('admin_notifications')
+            .select('*', { count: 'exact', head: true })
+            .eq('is_read', false);
+        
+        if (error) throw error;
+        res.json({ success: true, unreadCount: count || 0 });
+    } catch (error) {
+        console.error('Error getting unread count:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ==================== ADMIN USER MANAGEMENT ====================
 app.post('/api/admin/user-block', isAuthenticated, csrfProtection, async (req, res) => {
     try {
         const { phone, block } = req.body;
@@ -764,6 +895,7 @@ app.post('/api/admin/system-reset', isAuthenticated, csrfProtection, async (req,
         
         await supabaseAdmin.from('orders').delete().neq('id', 0);
         await supabaseAdmin.from('user_stats').delete().neq('phone', '');
+        await supabaseAdmin.from('admin_notifications').delete().neq('id', 0);
         orderRateLimit.clear();
         
         if (!keepProducts) {
@@ -796,20 +928,11 @@ app.post('/api/admin/user-reset/:phone', isAuthenticated, csrfProtection, async 
         
         await supabaseAdmin.from('orders').delete().eq('phone', phone);
         await supabaseAdmin.from('user_stats').delete().eq('phone', phone);
+        await supabaseAdmin.from('admin_notifications').delete().eq('order_id', phone);
+        
         res.json({ success: true, message: `User ${phone} and all their data deleted successfully` });
     } catch (error) {
         console.error('Error deleting user data:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ==================== NOTIFICATION CLEAR ENDPOINT ====================
-app.post('/api/admin/clear-notifications', isAuthenticated, (req, res) => {
-    try {
-        // This clears server-side notifications if any
-        // For client-side, it's handled by localStorage
-        res.json({ success: true, message: 'Notifications cleared successfully' });
-    } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -835,7 +958,14 @@ app.listen(PORT, () => {
 ║        ✅ CSRF Protection                                                ║
 ║        ✅ Input Validation (Joi)                                        ║
 ║        ✅ Image Processing (Sharp)                                      ║
-║        ✅ Notification Clear Endpoint                                    ║
+║                                                                          ║
+║     📢 DATABASE NOTIFICATIONS ENDPOINTS:                                 ║
+║        GET    /api/admin/notifications - Get all notifications          ║
+║        POST   /api/admin/notifications/clear - Clear all                ║
+║        DELETE /api/admin/notifications/:id - Delete single              ║
+║        PUT    /api/admin/notifications/:id/read - Mark as read          ║
+║        PUT    /api/admin/notifications/read-all - Mark all as read      ║
+║        GET    /api/admin/notifications/unread-count - Get unread count  ║
 ║                                                                          ║
 ║     💳 Payment Methods: KBZ Pay, WavePay, AYA Pay                        ║
 ║                                                                          ║
