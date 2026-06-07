@@ -3,14 +3,7 @@ const CHAT_API_BASE = window.location.origin;
 let currentChatUser = null;
 let currentChatUsername = null;
 let currentChatUserId = null;
-let chatSubscription = null;
-
-// Supabase configuration
-const SUPABASE_URL = 'https://your-project.supabase.co';  // ← Replace with your URL
-const SUPABASE_ANON_KEY = 'your-anon-key';  // ← Replace with your key
-
-// Initialize Supabase client
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let refreshInterval = null;
 
 // ============ GET USER INFO ============
 function getCurrentUserInfo() {
@@ -19,7 +12,7 @@ function getCurrentUserInfo() {
     currentChatUsername = localStorage.getItem('userName');
     currentChatUserId = localStorage.getItem('userId');
     
-    // Try to get from parent window
+    // Try to get from parent window (index.html)
     try {
         if (window.parent && window.parent.getCurrentUserPhone) {
             currentChatUser = window.parent.getCurrentUserPhone();
@@ -34,12 +27,14 @@ function getCurrentUserInfo() {
         console.log('Cannot access parent window');
     }
     
-    // Demo mode fallback
+    // Demo mode fallback (for testing)
     if (!currentChatUser) {
         currentChatUser = 'guest';
         currentChatUsername = 'Guest User';
         currentChatUserId = 'guest_' + Date.now();
     }
+    
+    console.log('Chat User:', currentChatUser, 'User ID:', currentChatUserId);
 }
 
 // ============ LOAD MESSAGES ============
@@ -51,7 +46,7 @@ async function loadChatMessages() {
         const response = await fetch(`${CHAT_API_BASE}/api/chat/messages`);
         const data = await response.json();
         
-        if (data.success && data.messages) {
+        if (data.success && data.messages && data.messages.length > 0) {
             renderChatMessages(data.messages);
         } else {
             container.innerHTML = `
@@ -90,6 +85,7 @@ function renderChatMessages(messages) {
     let html = '';
     for (const msg of messages) {
         const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        // Check if message is from current user
         const isUser = !msg.is_admin && msg.user_id === currentChatUserId;
         const senderName = msg.is_admin ? '👑 Admin' : (msg.username || 'User');
         const senderIcon = msg.is_admin ? '<i class="fas fa-shield-alt"></i>' : '<i class="fas fa-user"></i>';
@@ -125,6 +121,7 @@ async function sendChatMessage() {
         return;
     }
     
+    // Disable input while sending
     input.disabled = true;
     sendBtn.disabled = true;
     
@@ -158,12 +155,14 @@ async function sendChatMessage() {
     }
 }
 
-// ============ SHOW NOTIFICATION ============
+// ============ SHOW NOTIFICATION (Toast) ============
 function showChatNotification(message, isError = false) {
+    // Try to use parent window toast
     try {
         if (window.parent && window.parent.showToast) {
             window.parent.showToast(message, isError);
         } else {
+            // Create temporary toast
             const toast = document.createElement('div');
             toast.textContent = message;
             toast.style.cssText = `
@@ -178,16 +177,20 @@ function showChatNotification(message, isError = false) {
                 font-size: 0.75rem;
                 z-index: 2000;
                 white-space: nowrap;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             `;
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2500);
+            setTimeout(() => {
+                if (toast && toast.remove) toast.remove();
+            }, 2500);
         }
     } catch(e) {
         console.log('Toast error:', e);
+        alert(message);
     }
 }
 
-// ============ ESCAPE HTML ============
+// ============ ESCAPE HTML (XSS Protection) ============
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, function(m) {
@@ -218,28 +221,21 @@ function toggleChat() {
     }
 }
 
-// ============ SETUP REALTIME (Supabase) ============
-function setupRealtimeChat() {
-    if (chatSubscription) return;
-    
-    chatSubscription = supabaseClient
-        .channel('chat_messages_realtime')
-        .on('postgres_changes', 
-            { event: 'INSERT', schema: 'public', table: 'chat_messages' },
-            (payload) => {
-                const newMsg = payload.new;
-                if (newMsg) {
-                    loadChatMessages();
-                }
-            }
-        )
-        .subscribe();
+// ============ CLOSE CHAT WIDGET ============
+function closeChatWidget() {
+    const container = document.querySelector('.chat-widget-container');
+    if (container && window.parent && window.parent.closeChatWidget) {
+        window.parent.closeChatWidget();
+    } else if (container) {
+        container.style.display = 'none';
+    }
 }
 
 // ============ KEYBOARD SHORTCUTS ============
 function setupKeyboardShortcuts() {
     const input = document.getElementById('chatMessageInput');
     if (input) {
+        // Send on Enter (Shift+Enter for new line)
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -247,30 +243,46 @@ function setupKeyboardShortcuts() {
             }
         });
         
+        // Auto resize on input
         input.addEventListener('input', autoResizeTextarea);
     }
 }
 
 // ============ INITIALIZE CHAT ============
 async function initChat() {
+    console.log('Initializing chat...');
     getCurrentUserInfo();
     await loadChatMessages();
-    setupRealtimeChat();
     setupKeyboardShortcuts();
     
-    // Refresh messages every 10 seconds as fallback
-    setInterval(() => {
+    // Refresh messages every 5 seconds (polling - no Supabase Realtime needed)
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(() => {
         const container = document.querySelector('.chat-widget-container');
         if (container && !container.classList.contains('minimized')) {
             loadChatMessages();
         }
-    }, 10000);
+    }, 5000);
+    
+    console.log('Chat initialized successfully');
+}
+
+// ============ CLEANUP ============
+function cleanupChat() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+    }
+    console.log('Chat cleaned up');
 }
 
 // ============ START ============
 document.addEventListener('DOMContentLoaded', initChat);
+window.addEventListener('beforeunload', cleanupChat);
 
-// Expose functions globally
+// ============ EXPOSE GLOBAL FUNCTIONS ============
 window.sendChatMessage = sendChatMessage;
 window.toggleChat = toggleChat;
 window.loadChatMessages = loadChatMessages;
+window.closeChatWidget = closeChatWidget;
+window.chatEscapeHtml = escapeHtml;
