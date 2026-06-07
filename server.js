@@ -17,6 +17,27 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ==================== SALES HOURS CONFIGURATION ====================
+// Default sales hours (9 AM to 7 PM Myanmar time)
+let salesHours = {
+    enabled: true,
+    startHour: 9,      // 9 AM
+    endHour: 19,       // 7 PM (24-hour format)
+    timezone: 'Asia/Yangon',
+    message: 'ကျေးဇူးပြု၍ နံနက် ၉ နာရီမှ ညနေ ၇ နာရီအတွင်းမှသာ ဝယ်ယူနိုင်ပါသည်။'
+};
+
+// Check if order can be placed based on time
+function canPlaceOrder() {
+    if (!salesHours.enabled) return true;
+    
+    const now = new Date();
+    const myanmarTime = new Date(now.toLocaleString('en-US', { timeZone: salesHours.timezone }));
+    const currentHour = myanmarTime.getHours();
+    
+    return currentHour >= salesHours.startHour && currentHour < salesHours.endHour;
+}
+
 // ==================== VALIDATION SCHEMAS ====================
 const phoneSchema = Joi.string().pattern(/^09[0-9]{7,9}$/).required();
 const usernameSchema = Joi.string().min(2).max(50).pattern(/^[a-zA-Z0-9\u1000-\u109F\s]+$/).required();
@@ -83,7 +104,7 @@ app.use((req, res, next) => {
 });
 
 // ==================== RATE LIMITING ====================
-// General API limiter - 500 requests per 15 minutes (increased for chat)
+// General API limiter - 500 requests per 15 minutes
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 500,
@@ -344,6 +365,52 @@ app.get('/api/payment-methods', (req, res) => {
     res.json({ methods: PAYMENT_METHODS });
 });
 
+// ==================== SALES HOURS API ====================
+
+// Get current sales status (public)
+app.get('/api/sales/status', (req, res) => {
+    const now = new Date();
+    const myanmarTime = new Date(now.toLocaleString('en-US', { timeZone: salesHours.timezone }));
+    const currentHour = myanmarTime.getHours();
+    const isOpen = canPlaceOrder();
+    
+    let message = '';
+    if (isOpen) {
+        message = `🟢 ဆိုင်ဖွင့်ချိန် (${salesHours.startHour.toString().padStart(2,'0')}:00 - ${salesHours.endHour.toString().padStart(2,'0')}:00)`;
+    } else {
+        message = `🔴 ဆိုင်ပိတ်ချိန်။ ကျေးဇူးပြု၍ နံနက် ${salesHours.startHour}:00 မှ ညနေ ${salesHours.endHour}:00 အတွင်းမှသာ ဝယ်ယူနိုင်ပါသည်။`;
+    }
+    
+    res.json({
+        success: true,
+        isOpen: isOpen,
+        currentHour: currentHour,
+        startHour: salesHours.startHour,
+        endHour: salesHours.endHour,
+        message: message
+    });
+});
+
+// Admin endpoint to update sales hours
+app.post('/api/admin/sales-hours', isAuthenticated, (req, res) => {
+    const { enabled, startHour, endHour } = req.body;
+    
+    if (enabled !== undefined) salesHours.enabled = enabled;
+    if (startHour !== undefined && startHour >= 0 && startHour <= 23) salesHours.startHour = startHour;
+    if (endHour !== undefined && endHour >= 0 && endHour <= 23) salesHours.endHour = endHour;
+    
+    res.json({ 
+        success: true, 
+        salesHours: salesHours,
+        message: 'ရောင်းချချိန် သတ်မှတ်ချက်ကို ပြင်ဆင်ပြီးပါပြီ။'
+    });
+});
+
+// Admin endpoint to get current sales hours
+app.get('/api/admin/sales-hours', isAuthenticated, (req, res) => {
+    res.json({ success: true, salesHours: salesHours });
+});
+
 // ==================== STATIC ROUTES ====================
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 app.get('/admin.html', (req, res) => { res.sendFile(path.join(__dirname, 'admin.html')); });
@@ -525,6 +592,18 @@ app.get('/api/live/order/:phone', async (req, res) => {
 // ==================== CREATE ORDER ====================
 app.post('/api/orders', orderLimiter, upload.single('slip'), async (req, res) => {
     try {
+        // ============ CHECK SALES HOURS ============
+        if (!canPlaceOrder()) {
+            if (req.file) fs.unlinkSync(req.file.path);
+            return res.status(403).json({ 
+                success: false, 
+                error: salesHours.message,
+                isOpen: false,
+                startHour: salesHours.startHour,
+                endHour: salesHours.endHour
+            });
+        }
+        
         const { phone, plan, price, sender_name, last5_digits, payment_method } = req.body;
         const slipFile = req.file;
         
@@ -1174,6 +1253,7 @@ app.listen(PORT, () => {
 ║        ✅ Helmet.js (Security Headers)                                   ║
 ║        ✅ CSP with iframe support                                        ║
 ║        ✅ Rate Limiting (General: 500/15min, Chat: 60/min)              ║
+║        ✅ Sales Hours Control (9 AM - 7 PM Myanmar Time)                ║
 ║        ✅ SameSite=Strict Cookie (CSRF Protection)                       ║
 ║        ✅ Session-based Admin Auth (HttpOnly Cookie)                     ║
 ║        ✅ Input Validation (Joi)                                         ║
