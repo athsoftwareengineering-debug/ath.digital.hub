@@ -83,25 +83,49 @@ app.use((req, res, next) => {
 });
 
 // ==================== RATE LIMITING ====================
+// General API limiter - 100 requests per 15 minutes
 const apiLimiter = rateLimit({
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
-    max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { error: 'Too many requests, please try again later.' },
+    keyGenerator: (req) => req.ip,
+    skip: (req) => req.path === '/api/health'
+});
+
+// Admin API limiter - 300 requests per 15 minutes (for admin panel)
+const adminLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 300,
+    message: { error: 'Too many admin requests. Please wait before refreshing.' },
+    keyGenerator: (req) => req.session?.isAdmin ? req.ip : req.ip,
+    skip: (req) => !req.session?.isAdmin
+});
+
+// Market API limiter - 200 requests per 15 minutes
+const marketLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
     message: { error: 'Too many requests, please try again later.' }
 });
 
+// Login limiter - 5 attempts per 15 minutes
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: parseInt(process.env.LOGIN_RATE_LIMIT_MAX) || 5,
+    max: 5,
     message: { error: 'Too many login attempts, please try again later.' },
     skipSuccessfulRequests: true
 });
 
+// Order limiter - 3 orders per minute
 const orderLimiter = rateLimit({
     windowMs: 60 * 1000,
     max: 3,
     message: { error: 'Too many orders. Please wait a moment.' },
     keyGenerator: (req) => req.body.phone || req.ip
 });
+
+// Apply general limiter to all /api/ routes
+app.use('/api/', apiLimiter);
 
 // ==================== SESSION CONFIGURATION ====================
 const sessionConfig = {
@@ -134,7 +158,6 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(__dirname));
-app.use('/api/', apiLimiter);
 
 // ==================== FILE UPLOAD ====================
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -386,7 +409,7 @@ app.get('/api/user/:phone', async (req, res) => {
 });
 
 // ==================== MARKET API ====================
-app.get('/api/market/products', async (req, res) => {
+app.get('/api/market/products', marketLimiter, async (req, res) => {
     try {
         const { data, error } = await supabase.from('market_products').select('*').order('created_at', { ascending: false });
         if (error) throw error;
@@ -561,8 +584,8 @@ app.post('/api/orders', orderLimiter, upload.single('slip'), async (req, res) =>
     }
 });
 
-// ==================== ADMIN API ====================
-app.get('/api/admin/orders', isAuthenticated, async (req, res) => {
+// ==================== ADMIN API (with adminLimiter) ====================
+app.get('/api/admin/orders', isAuthenticated, adminLimiter, async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin.from('orders').select('*').order('created_at', { ascending: false });
         if (error) throw error;
@@ -573,7 +596,7 @@ app.get('/api/admin/orders', isAuthenticated, async (req, res) => {
     }
 });
 
-app.get('/api/admin/user-stats', isAuthenticated, async (req, res) => {
+app.get('/api/admin/user-stats', isAuthenticated, adminLimiter, async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin.from('user_stats').select('*').order('created_at', { ascending: false });
         if (error) throw error;
@@ -584,7 +607,7 @@ app.get('/api/admin/user-stats', isAuthenticated, async (req, res) => {
     }
 });
 
-app.get('/api/admin/suspect-users', isAuthenticated, async (req, res) => {
+app.get('/api/admin/suspect-users', isAuthenticated, adminLimiter, async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin.from('user_stats').select('*').eq('suspect_flag', true).order('reject_count', { ascending: false });
         if (error) throw error;
@@ -594,7 +617,7 @@ app.get('/api/admin/suspect-users', isAuthenticated, async (req, res) => {
     }
 });
 
-app.get('/api/admin/blocked-users', isAuthenticated, async (req, res) => {
+app.get('/api/admin/blocked-users', isAuthenticated, adminLimiter, async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin.from('user_stats').select('*').eq('blocked', true).order('created_at', { ascending: false });
         if (error) throw error;
@@ -604,7 +627,7 @@ app.get('/api/admin/blocked-users', isAuthenticated, async (req, res) => {
     }
 });
 
-app.get('/api/admin/search-users', isAuthenticated, async (req, res) => {
+app.get('/api/admin/search-users', isAuthenticated, adminLimiter, async (req, res) => {
     try {
         const { q } = req.query;
         if (!q || q.trim() === '') {
@@ -619,7 +642,7 @@ app.get('/api/admin/search-users', isAuthenticated, async (req, res) => {
 });
 
 // ==================== DATABASE NOTIFICATIONS ENDPOINTS ====================
-app.get('/api/admin/notifications', isAuthenticated, async (req, res) => {
+app.get('/api/admin/notifications', isAuthenticated, adminLimiter, async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
             .from('admin_notifications')
@@ -1145,7 +1168,7 @@ app.listen(PORT, () => {
 ║     🔒 SECURITY FEATURES ENABLED:                                        ║
 ║        ✅ Helmet.js (Security Headers)                                   ║
 ║        ✅ CSP with iframe support                                        ║
-║        ✅ Rate Limiting (Multiple levels)                                ║
+║        ✅ Rate Limiting (15min/100 for general, 15min/300 for admin)    ║
 ║        ✅ SameSite=Strict Cookie (CSRF Protection)                       ║
 ║        ✅ Session-based Admin Auth (HttpOnly Cookie)                     ║
 ║        ✅ Input Validation (Joi)                                         ║
