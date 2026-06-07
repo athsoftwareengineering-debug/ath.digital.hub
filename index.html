@@ -6,6 +6,7 @@
     <title>ATH DIGITAL HUB - VIP Plans</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Your existing CSS here - keep as is */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --bg-dark: #0a0c15;
@@ -75,35 +76,6 @@
             -webkit-background-clip: text; 
             color: transparent; 
         }
-        
-        .lang-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        .lang-dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 45px;
-            background: var(--bg-card);
-            min-width: 140px;
-            border-radius: 1rem;
-            border: 1px solid rgba(0,212,255,0.3);
-            z-index: 200;
-            overflow: hidden;
-        }
-        .lang-dropdown-content button {
-            width: 100%;
-            padding: 10px 16px;
-            text-align: left;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-        .lang-dropdown-content button:hover { background: rgba(0,212,255,0.1); }
-        .lang-dropdown.show .lang-dropdown-content { display: block; }
         
         .drawer-overlay {
             position: fixed;
@@ -612,7 +584,6 @@
         <input type="text" id="loginUsername" placeholder="👤 Username">
         <input type="tel" id="loginPhone" placeholder="📱 09xxxxxxxxx">
         
-        <!-- အကြံပြုချက် အပိုင်း -->
         <div style="background: rgba(0,212,255,0.08); border-left: 3px solid var(--cyan); padding: 10px 12px; border-radius: 0.8rem; margin: 15px 0 10px 0; text-align: left;">
             <div style="font-size: 0.7rem; font-weight: 600; color: var(--cyan); margin-bottom: 6px;">
                 <i class="fas fa-info-circle"></i> အကြံပြုချက်
@@ -625,7 +596,6 @@
         
         <button class="login-submit" onclick="login()">ဝင်ရောက်မည်</button>
         
-        <!-- Copyright (Login Page မှာပဲ) -->
         <div style="margin-top: 20px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05);">
             <div style="font-size: 0.55rem; color: #64748b;">
                 <i class="fas fa-copyright"></i> 2026 Developed by <span style="color: #00d4ff;">AUNG THU HTWE</span>
@@ -638,28 +608,28 @@
 </div>
 
 <div id="mainApp" style="display: none;">
+    <!-- App Bar with Market Button on Top Right -->
     <div class="app-bar">
-        <button class="menu-btn" onclick="toggleDrawer()"><i class="fas fa-bars"></i></button>
+        <button class="menu-btn" onclick="toggleDrawer()">
+            <i class="fas fa-bars"></i>
+        </button>
         <div class="logo">⚡ ATH DIGITAL HUB</div>
         <div style="display: flex; gap: 8px; align-items: center;">
             <button class="icon-btn refresh-btn" onclick="refreshAllData()" title="Refresh Data">
                 <i class="fas fa-sync-alt"></i>
             </button>
-            <button class="icon-btn" onclick="showNotifications()"><i class="fas fa-bell"></i></button>
-            <div class="lang-dropdown">
-                <button class="icon-btn" onclick="toggleLanguageDropdown()" id="langBtn">
-                    <i class="fas fa-globe"></i> <span id="currentLangFlag">🇲🇲</span>
-                </button>
-                <div class="lang-dropdown-content" id="langDropdown">
-                    <button onclick="changeLanguage('my')">🇲🇲 မြန်မာ</button>
-                    <button onclick="changeLanguage('en')">🇬🇧 English</button>
-                    <button onclick="changeLanguage('zh')">🇨🇳 中文</button>
-                </div>
-            </div>
+            <button class="icon-btn" onclick="showNotifications()">
+                <i class="fas fa-bell"></i>
+            </button>
+            
+            <!-- Market Button - Top Right Corner -->
+            <button class="icon-btn" onclick="switchTab('market')" title="Market">
+                <i class="fas fa-store"></i>
+            </button>
         </div>
     </div>
 
-    <!-- Drawer Menu -->
+    <!-- Drawer Menu with Language Switcher -->
     <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
     <div id="drawer" class="drawer">
         <div class="drawer-header">
@@ -675,7 +645,21 @@
             <li><a onclick="closeDrawer(); switchTab('live')"><i class="fas fa-broadcast-tower"></i> LIVE</a></li>
             <li><a onclick="closeDrawer(); switchTab('market')"><i class="fas fa-store"></i> Market</a></li>
             <li><a onclick="closeDrawer(); switchTab('profile')"><i class="fas fa-user-circle"></i> My Profile</a></li>
-            <li><a onclick="closeDrawer(); openChatWidget()"><i class="fas fa-comments"></i> Chat Support</a></li>
+            <li><div class="drawer-divider"></div></li>
+            
+            <!-- Language Switcher in Drawer -->
+            <li>
+                <div style="padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                    <i class="fas fa-globe" style="width: 24px; color: var(--cyan);"></i>
+                    <span style="font-size: 0.8rem;">ဘာသာစကား / Language</span>
+                </div>
+                <div style="display: flex; gap: 8px; padding: 8px 16px 12px 52px;">
+                    <button onclick="changeLanguage('my')" style="background: rgba(0,212,255,0.1); border: none; padding: 6px 12px; border-radius: 40px; color: white; cursor: pointer; font-size: 0.7rem;">🇲🇲 မြန်မာ</button>
+                    <button onclick="changeLanguage('en')" style="background: rgba(0,212,255,0.1); border: none; padding: 6px 12px; border-radius: 40px; color: white; cursor: pointer; font-size: 0.7rem;">🇬🇧 English</button>
+                    <button onclick="changeLanguage('zh')" style="background: rgba(0,212,255,0.1); border: none; padding: 6px 12px; border-radius: 40px; color: white; cursor: pointer; font-size: 0.7rem;">🇨🇳 中文</button>
+                </div>
+            </li>
+            
             <li><div class="drawer-divider"></div></li>
             <li><a onclick="closeDrawer(); exportMyOrders()"><i class="fas fa-file-excel"></i> Export Orders (CSV)</a></li>
             <li><a onclick="closeDrawer(); showSupport()"><i class="fas fa-headset"></i> Customer Support</a></li>
@@ -703,7 +687,7 @@
             </div>
         </div>
 
-        <!-- Plans Tab - iframe with plans-widget.html -->
+        <!-- Plans Tab -->
         <div id="plansTab" class="tab-content">
             <iframe src="plans-widget.html" style="width:100%; border:none; background:transparent; min-height: 600px;"></iframe>
         </div>
@@ -751,7 +735,7 @@
         <button class="nav-item" data-tab="orders"><i class="fas fa-list-ul"></i><span>Orders</span></button>
         <button class="nav-item" data-tab="live"><i class="fas fa-broadcast-tower"></i><span>LIVE</span></button>
         <button class="nav-item" data-tab="market"><i class="fas fa-store"></i><span>Market</span></button>
-        <button class="nav-item" data-tab="chat" onclick="openChatWidget()"><i class="fas fa-comments"></i><span>Chat</span></button>
+        <button class="nav-item" data-tab="chat" onclick="openUserChatWidget()"><i class="fas fa-comments"></i><span>Chat</span></button>
     </div>
 </div>
 
@@ -859,7 +843,7 @@
     let marketLoaded = false;
     let liveLoaded = false;
     let currentTab = "home";
-    let chatWidgetOpen = false;
+    let userChatWidgetOpen = false;
 
     function maskPhone(phone) {
         if (!phone || phone.length < 8) return phone || '';
@@ -912,9 +896,9 @@
         });
     }
     
-    // ============ CHAT WIDGET FUNCTIONS ============
-    function openChatWidget() {
-        if (chatWidgetOpen) return;
+    // ============ USER CHAT WIDGET ============
+    function openUserChatWidget() {
+        if (userChatWidgetOpen) return;
         
         const chatIframe = document.createElement('iframe');
         chatIframe.src = '/chat.html';
@@ -927,19 +911,17 @@
         chatIframe.style.borderRadius = '1.2rem';
         chatIframe.style.zIndex = '999';
         chatIframe.style.background = 'transparent';
-        chatIframe.id = 'chatIframe';
+        chatIframe.id = 'userChatIframe';
         document.body.appendChild(chatIframe);
-        chatWidgetOpen = true;
-        
-        // Close drawer if open
+        userChatWidgetOpen = true;
         closeDrawer();
     }
     
-    function closeChatWidget() {
-        const iframe = document.getElementById('chatIframe');
+    function closeUserChatWidget() {
+        const iframe = document.getElementById('userChatIframe');
         if (iframe) {
             iframe.remove();
-            chatWidgetOpen = false;
+            userChatWidgetOpen = false;
         }
     }
     
@@ -1088,7 +1070,6 @@
             if (!response.ok) throw new Error('Failed to load market');
             const html = await response.text();
             
-            // Market content + Copyright (Market မှာပဲ)
             container.innerHTML = html + `
                 <div style="text-align: center; padding: 16px; margin-top: 20px; border-top: 1px solid rgba(0,212,255,0.1);">
                     <div style="font-size: 0.55rem; color: #64748b;">
@@ -1410,13 +1391,13 @@
     }
     
     function logout() {
+        closeUserChatWidget();
         localStorage.clear();
         currentUser = null;
         currentUsername = null;
         currentUserId = null;
         marketLoaded = false;
         liveLoaded = false;
-        closeChatWidget();
         
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('mainApp').style.display = 'none';
@@ -1449,20 +1430,17 @@
     function showSupport() { closeDrawer(); showToast("Contact: Telegram @ATHsupport, Viber 09799480995"); }
     function showNotifications() { showToast("No new notifications"); }
     
-    function toggleLanguageDropdown() {
-        document.getElementById('langDropdown').classList.toggle('show');
-    }
     function changeLanguage(lang) {
         localStorage.setItem('app_language', lang);
         const flags = { my: '🇲🇲', en: '🇬🇧', zh: '🇨🇳' };
-        document.getElementById('currentLangFlag').innerHTML = flags[lang];
-        document.getElementById('langDropdown').classList.remove('show');
+        showToast(`Language changed to ${flags[lang]}`);
+        closeDrawer();
     }
     
     document.querySelectorAll('.nav-item').forEach(btn => {
         btn.addEventListener('click', () => {
             if (btn.dataset.tab === 'chat') {
-                openChatWidget();
+                openUserChatWidget();
             } else {
                 switchTab(btn.dataset.tab);
             }
@@ -1476,12 +1454,6 @@
             showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ");
         });
     }
-    
-    document.addEventListener('click', function(event) {
-        const dropdown = document.getElementById('langDropdown');
-        const langBtn = document.getElementById('langBtn');
-        if (!langBtn?.contains(event.target) && dropdown) dropdown.classList.remove('show');
-    });
     
     const savedPhone = localStorage.getItem('userPhone');
     const savedName = localStorage.getItem('userName');
@@ -1517,7 +1489,6 @@
     window.showSupport = showSupport;
     window.showNotifications = showNotifications;
     window.changeLanguage = changeLanguage;
-    window.toggleLanguageDropdown = toggleLanguageDropdown;
     window.openRenewModal = openRenewModal;
     window.openPaymentModalFromPlan = openPaymentModalFromPlan;
     window.closePaymentModal = closePaymentModal;
@@ -1535,8 +1506,8 @@
     window.refreshAllData = refreshAllData;
     window.exportMyOrders = exportMyOrders;
     window.fetchUserData = fetchUserData;
-    window.openChatWidget = openChatWidget;
-    window.closeChatWidget = closeChatWidget;
+    window.openUserChatWidget = openUserChatWidget;
+    window.closeUserChatWidget = closeUserChatWidget;
 </script>
 </body>
 </html>
