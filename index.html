@@ -571,6 +571,30 @@
             margin-top: 6px;
         }
         
+        /* Sales Status Banner */
+        .sales-status-banner {
+            background: rgba(0,212,255,0.08);
+            border-radius: 1rem;
+            padding: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .sales-status-banner.open {
+            background: rgba(16,185,129,0.12);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #34d399;
+        }
+        .sales-status-banner.closed {
+            background: rgba(244,63,94,0.12);
+            border: 1px solid rgba(244,63,94,0.3);
+            color: #fb7185;
+        }
+        
         /* Market Close Button */
         .market-close-btn {
             background: rgba(244,63,94,0.15);
@@ -585,7 +609,6 @@
             align-items: center;
             gap: 6px;
         }
-        
         .market-close-btn:hover {
             background: #f43f5e;
             color: white;
@@ -689,8 +712,13 @@
     </div>
 
     <div class="container">
-        <!-- Home Tab -->
+        <!-- Home Tab with Sales Status Banner -->
         <div id="homeTab" class="tab-content active">
+            <!-- Sales Status Banner -->
+            <div id="salesStatusBanner" class="sales-status-banner">
+                <i class="fas fa-spinner fa-pulse"></i> Loading...
+            </div>
+            
             <div style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(139,92,246,0.05)); border-radius: 1.5rem; padding: 20px; margin: 16px 0; text-align: center;">
                 <div style="font-size: 1.2rem;">🌤️ မင်္ဂလာပါ, <span id="userName">User</span></div>
                 <div id="userPhoneDisplay" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;"></div>
@@ -870,6 +898,7 @@
     let liveLoaded = false;
     let currentTab = "home";
     let userChatWidgetOpen = false;
+    let isShopOpen = true;
 
     function maskPhone(phone) {
         if (!phone || phone.length < 8) return phone || '';
@@ -920,6 +949,28 @@
             if (m === '>') return '&gt;';
             return m;
         });
+    }
+    
+    // ============ SALES STATUS FOR USERS ============
+    async function loadSalesStatus() {
+        try {
+            const response = await fetch('/api/sales/status');
+            const data = await response.json();
+            
+            isShopOpen = data.isOpen;
+            
+            const banner = document.getElementById('salesStatusBanner');
+            if (banner) {
+                const icon = data.isOpen ? '<i class="fas fa-store"></i>' : '<i class="fas fa-clock"></i>';
+                banner.innerHTML = `${icon} ${data.message}`;
+                banner.className = `sales-status-banner ${data.isOpen ? 'open' : 'closed'}`;
+            }
+            
+            return data.isOpen;
+        } catch(e) {
+            console.error('Error loading sales status:', e);
+            return true;
+        }
     }
     
     // ============ CLOSE MARKET TAB ============
@@ -1034,6 +1085,7 @@
             
             await loadUserOrders();
             await renderProfile();
+            await loadSalesStatus();
             
         } catch(e) {
             showToast("Connection error", true);
@@ -1047,6 +1099,7 @@
         showToast('🔄 Refreshing data...');
         
         await loadUserOrders();
+        await loadSalesStatus();
         
         if (currentTab === 'orders') renderMyOrders();
         if (currentTab === 'profile') await renderProfile();
@@ -1367,6 +1420,16 @@
     });
     
     async function submitOrder() {
+        // Check if shop is open
+        if (!isShopOpen) {
+            const statusResponse = await fetch('/api/sales/status');
+            const statusData = await statusResponse.json();
+            if (!statusData.isOpen) {
+                showToast(statusData.message, true);
+                return;
+            }
+        }
+        
         const isScreenshot = document.getElementById('screenshotPanel').style.display !== 'none';
         let phone, file, sender, last5;
         if (isScreenshot) {
@@ -1507,11 +1570,15 @@
         
         loadUserOrders();
         renderProfile();
+        loadSalesStatus();
         
         if (!savedId) {
             fetchUserData(savedPhone);
         }
     }
+    
+    // Auto refresh sales status every minute
+    setInterval(loadSalesStatus, 60000);
     
     window.login = login;
     window.logout = logout;
@@ -1541,6 +1608,7 @@
     window.openUserChatWidget = openUserChatWidget;
     window.closeUserChatWidget = closeUserChatWidget;
     window.closeMarketTab = closeMarketTab;
+    window.loadSalesStatus = loadSalesStatus;
 </script>
 </body>
 </html>
