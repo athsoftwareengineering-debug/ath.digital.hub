@@ -143,7 +143,6 @@
         }
         .notification-header h4 { font-size: 0.9rem; color: var(--cyan); display: flex; align-items: center; gap: 8px; }
         
-        /* ========== FIXED: Clear All Button Style - Fully Clickable ========== */
         .notification-clear {
             font-size: 0.7rem;
             background: rgba(0,212,255,0.15);
@@ -839,8 +838,9 @@
     let currentTab = "menu";
     let editingProductId = null;
     
-    let notifications = [];
-    let lastOrderId = null;
+    // Database notifications array
+    let dbNotifications = [];
+    let lastNotificationId = null;
     
     const costPriceMap = {
         "VIP LEVEL - 1": 14500,
@@ -941,55 +941,51 @@
         if (drawerTotalProfitEl) drawerTotalProfitEl.innerText = profit.toLocaleString() + 'K';
     }
     
-    // ==================== NOTIFICATION SYSTEM ====================
-    function loadNotificationsFromStorage() {
-        const saved = localStorage.getItem('adminNotifications');
-        if (saved) {
-            try { 
-                notifications = JSON.parse(saved); 
-                updateNotificationUI(); 
-            } catch(e) { 
-                console.error('Failed to parse notifications:', e);
-                notifications = []; 
-            }
-        } else {
-            notifications = [];
-        }
-    }
+    // ==================== DATABASE NOTIFICATION FUNCTIONS ====================
     
-    function saveNotificationsToStorage() {
+    async function loadNotificationsFromDatabase() {
         try {
-            localStorage.setItem('adminNotifications', JSON.stringify(notifications.slice(0, 50)));
-        } catch(e) { 
-            if (e.name === 'QuotaExceededError') { 
-                notifications = notifications.slice(0, 25); 
-                localStorage.setItem('adminNotifications', JSON.stringify(notifications)); 
-            } else {
-                console.error('Failed to save notifications:', e);
+            const res = await fetchWithRetry(`${API_BASE}/api/admin/notifications`);
+            const data = await res.json();
+            if (data.success && data.notifications) {
+                dbNotifications = data.notifications;
+                updateNotificationUI();
+                updateNotificationBadge();
+                if (dbNotifications.length > 0 && lastNotificationId === null) {
+                    lastNotificationId = dbNotifications[0].id;
+                }
             }
+        } catch(e) {
+            console.error('Error loading notifications from database:', e);
         }
     }
     
-    function addNotification(order) {
-        const newNotification = {
-            id: order.id,
-            title: `🆕 New Order #${order.id}`,
-            message: `${order.plan} - ${order.price.toLocaleString()} MMK from ${maskPhone(order.phone)}`,
-            time: new Date().toISOString(),
-            read: false,
-            orderData: order
-        };
-        notifications.unshift(newNotification);
-        if (notifications.length > 50) notifications.pop();
-        saveNotificationsToStorage();
-        updateNotificationUI();
-        showToast(`🆕 New order! ${order.plan} - ${order.price.toLocaleString()} MMK`);
+    async function checkForNewNotifications() {
+        try {
+            const res = await fetchWithRetry(`${API_BASE}/api/admin/notifications`);
+            const data = await res.json();
+            if (data.success && data.notifications && data.notifications.length > 0) {
+                const latestNotification = data.notifications[0];
+                if (lastNotificationId !== null && lastNotificationId !== latestNotification.id) {
+                    // New notification detected
+                    showToast(`🔔 ${latestNotification.title}`);
+                    dbNotifications = data.notifications;
+                    updateNotificationUI();
+                    updateNotificationBadge();
+                }
+                lastNotificationId = latestNotification.id;
+                dbNotifications = data.notifications;
+                updateNotificationUI();
+                updateNotificationBadge();
+            }
+        } catch(e) {
+            console.error('Error checking for new notifications:', e);
+        }
     }
     
-    function updateNotificationUI() {
+    function updateNotificationBadge() {
         const badge = document.getElementById('notificationBadge');
-        const listContainer = document.getElementById('notificationList');
-        const unreadCount = notifications.filter(n => !n.read).length;
+        const unreadCount = dbNotifications.filter(n => !n.is_read).length;
         
         if (badge) {
             if (unreadCount > 0) { 
@@ -999,27 +995,30 @@
                 badge.style.display = 'none'; 
             }
         }
-        
+    }
+    
+    function updateNotificationUI() {
+        const listContainer = document.getElementById('notificationList');
         if (!listContainer) return;
         
-        if (notifications.length === 0) { 
+        if (dbNotifications.length === 0) { 
             listContainer.innerHTML = '<div class="notification-empty">📭 No notifications yet</div>'; 
             return; 
         }
         
         let html = '';
-        for (let i = 0; i < notifications.length; i++) {
-            const notif = notifications[i];
-            const date = new Date(notif.time);
+        for (let i = 0; i < dbNotifications.length; i++) {
+            const notif = dbNotifications[i];
+            const date = new Date(notif.created_at);
             html += `
-                <div class="notification-item ${!notif.read ? 'unread' : ''}" data-notif-id="${escapeHtml(String(notif.id))}">
+                <div class="notification-item ${!notif.is_read ? 'unread' : ''}" data-notif-id="${notif.id}">
                     <div class="notification-icon"><i class="fas fa-shopping-cart"></i></div>
-                    <div class="notification-content" onclick="window.markNotificationRead('${escapeHtml(String(notif.id))}')">
+                    <div class="notification-content" onclick="window.markNotificationRead(${notif.id})">
                         <div class="notification-title">${escapeHtml(notif.title)}</div>
                         <div class="notification-message">${escapeHtml(notif.message)}</div>
-                        <div class="notification-time"><i class="fas fa-clock"></i> ${escapeHtml(date.toLocaleDateString())} ${escapeHtml(date.toLocaleTimeString())}</div>
+                        <div class="notification-time"><i class="fas fa-clock"></i> ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</div>
                     </div>
-                    <button class="notification-delete" onclick="window.deleteNotification('${escapeHtml(String(notif.id))}')" title="Delete">
+                    <button class="notification-delete" onclick="window.deleteNotification(${notif.id})" title="Delete">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -1028,62 +1027,74 @@
         listContainer.innerHTML = html;
     }
     
-    // ========== FIXED: Clear All Notifications - Works 100% ==========
-    window.clearAllNotifications = function() { 
-        console.log("Clearing all notifications...");
+    // Clear all notifications from database
+    window.clearAllNotifications = async function() { 
+        console.log("Clearing all notifications from database...");
         try {
-            // Clear the notifications array
-            notifications = [];
-            
-            // Clear from localStorage
-            localStorage.removeItem('adminNotifications');
-            
-            // Update the UI
-            updateNotificationUI();
-            
-            // Show success message
-            showToast('✅ All notifications cleared');
-            
-            // Close the dropdown
-            window.closeNotificationDropdown();
-            
-            // Update badge to 0
-            const badge = document.getElementById('notificationBadge');
-            if (badge) {
-                badge.style.display = 'none';
-                badge.innerText = '0';
+            const res = await fetchWithRetry(`${API_BASE}/api/admin/notifications/clear`, { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
+            if (data.success) {
+                dbNotifications = [];
+                updateNotificationUI();
+                updateNotificationBadge();
+                showToast('✅ All notifications cleared from database');
+                window.closeNotificationDropdown();
+                console.log("Notifications cleared successfully!");
+            } else {
+                showToast('❌ Failed to clear notifications', true);
             }
-            
-            console.log("Notifications cleared successfully!");
-            return true;
         } catch(e) {
             console.error("Error clearing notifications:", e);
             showToast('Error clearing notifications', true);
-            return false;
         }
     };
     
-    // ========== FIXED: Delete single notification ==========
-    window.deleteNotification = function(notificationId) {
+    // Delete single notification from database
+    window.deleteNotification = async function(notificationId) {
         console.log("Deleting notification:", notificationId);
-        const index = notifications.findIndex(n => String(n.id) === String(notificationId));
-        if (index !== -1) {
-            notifications.splice(index, 1);
-            saveNotificationsToStorage();
-            updateNotificationUI();
-            showToast('Notification deleted');
+        try {
+            const res = await fetchWithRetry(`${API_BASE}/api/admin/notifications/${notificationId}`, { 
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
+            if (data.success) {
+                dbNotifications = dbNotifications.filter(n => n.id !== notificationId);
+                updateNotificationUI();
+                updateNotificationBadge();
+                showToast('Notification deleted');
+            } else {
+                showToast('❌ Failed to delete notification', true);
+            }
+        } catch(e) {
+            console.error("Error deleting notification:", e);
+            showToast('Error deleting notification', true);
         }
     };
     
-    // ========== FIXED: Mark as read ==========
-    window.markNotificationRead = function(notificationId) {
+    // Mark notification as read
+    window.markNotificationRead = async function(notificationId) {
         console.log("Marking notification as read:", notificationId);
-        const notif = notifications.find(n => String(n.id) === String(notificationId));
-        if (notif && !notif.read) { 
-            notif.read = true; 
-            saveNotificationsToStorage(); 
-            updateNotificationUI(); 
-            showToast('Marked as read');
+        try {
+            const res = await fetchWithRetry(`${API_BASE}/api/admin/notifications/${notificationId}/read`, { 
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
+            if (data.success) {
+                const notif = dbNotifications.find(n => n.id === notificationId);
+                if (notif && !notif.is_read) {
+                    notif.is_read = true;
+                    updateNotificationUI();
+                    updateNotificationBadge();
+                    showToast('Marked as read');
+                }
+            }
+        } catch(e) {
+            console.error("Error marking notification as read:", e);
         }
     };
     
@@ -1101,36 +1112,12 @@
         if (overlay) overlay.classList.remove('show');
     };
     
-    let isCheckingOrders = false;
-    async function checkForNewOrders() {
-        if (isCheckingOrders) return;
-        isCheckingOrders = true;
-        try {
-            const res = await fetchWithRetry(`${API_BASE}/api/admin/orders`);
-            const data = await res.json();
-            if (data.orders && data.orders.length > 0) {
-                const latestOrder = data.orders[0];
-                const currentLastId = lastOrderId;
-                if (currentLastId !== null && String(currentLastId) !== String(latestOrder.id)) {
-                    addNotification(latestOrder);
-                }
-                lastOrderId = latestOrder.id;
-                allOrders = data.orders;
-                if (currentTab === 'orders') applyFiltersAndSearch();
-                updateAllStats();
-            }
-        } catch(e) { 
-            console.error('Error checking orders:', e); 
-        } finally { 
-            isCheckingOrders = false; 
-        }
-    }
-    
+    // Start notification check interval
     function startNotificationCheck() { 
         if (notificationCheckInterval) clearInterval(notificationCheckInterval); 
         notificationCheckInterval = setInterval(() => { 
-            if (token === 'logged_in') checkForNewOrders(); 
-        }, 10000); 
+            if (token === 'logged_in') checkForNewNotifications(); 
+        }, 15000); 
     }
     
     function stopNotificationCheck() { 
@@ -1197,9 +1184,9 @@
             const data = await res.json(); 
             if (data.success) { 
                 showToast('✅ System reset completed!'); 
-                notifications = []; 
-                saveNotificationsToStorage(); 
-                updateNotificationUI(); 
+                dbNotifications = [];
+                updateNotificationUI();
+                updateNotificationBadge();
                 setTimeout(() => { loadAllData(); }, 1000); 
             } else { 
                 showToast('❌ Reset failed: ' + data.error, true); 
@@ -1292,7 +1279,8 @@
         countdownInterval = setInterval(() => { secondsLeft--; if (secondsLeft < 0) secondsLeft = 30; }, 1000);
         autoSyncInterval = setInterval(() => { 
             if (token === 'logged_in') { 
-                checkForNewOrders(); 
+                loadAllData();
+                checkForNewNotifications();
                 secondsLeft = 30; 
             } 
         }, 30000);
@@ -1327,9 +1315,9 @@
                 if (adminContent) adminContent.style.display = 'block';
                 if (bottomNav) bottomNav.style.display = 'flex';
                 loadAllData(); 
+                loadNotificationsFromDatabase();
                 startAutoSync(); 
                 startNotificationCheck(); 
-                loadNotificationsFromStorage();
             } else { 
                 showToast('Invalid Password', true); 
             }
@@ -1365,7 +1353,6 @@
             const data = await res.json();
             if (data.orders && Array.isArray(data.orders)) { 
                 allOrders = data.orders;
-                if (allOrders.length > 0 && lastOrderId === null) lastOrderId = allOrders[0].id;
                 if (currentTab === 'orders') applyFiltersAndSearch();
                 const lastUpdateEl = document.getElementById('lastUpdate');
                 if (lastUpdateEl) lastUpdateEl.innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | Total: ${allOrders.length}`;
@@ -1817,6 +1804,7 @@
     
     window.manualRefresh = function() { 
         loadAllData(); 
+        loadNotificationsFromDatabase();
         showToast('🔄 Synced'); 
         secondsLeft = 30; 
     };
@@ -1858,67 +1846,17 @@
         });
     }
     
-    // ========== FIXED: Clear Button - 100% Working ==========
+    // Clear Notifications Button - Database version
     const clearBtn = document.getElementById('clearNotificationsBtn');
     if (clearBtn) {
-        // Remove any existing listeners by cloning and replacing
         const newClearBtn = clearBtn.cloneNode(true);
         clearBtn.parentNode.replaceChild(newClearBtn, clearBtn);
         
         newClearBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             e.preventDefault();
-            console.log("Clear button clicked - manual clear");
-            
-            // Direct clear without calling external function
-            try {
-                // Clear notifications array
-                if(typeof notifications !== 'undefined') {
-                    notifications.length = 0;
-                }
-                
-                // Clear localStorage
-                localStorage.removeItem('adminNotifications');
-                
-                // Update UI
-                if(typeof updateNotificationUI === 'function') {
-                    updateNotificationUI();
-                }
-                
-                // Update badge
-                const badge = document.getElementById('notificationBadge');
-                if(badge) {
-                    badge.style.display = 'none';
-                    badge.innerText = '0';
-                }
-                
-                // Update list container directly
-                const listContainer = document.getElementById('notificationList');
-                if(listContainer) {
-                    listContainer.innerHTML = '<div class="notification-empty">📭 No notifications yet</div>';
-                }
-                
-                // Show toast
-                if(typeof showToast === 'function') {
-                    showToast('✅ All notifications cleared');
-                } else {
-                    console.log('✅ All notifications cleared');
-                }
-                
-                // Close dropdown
-                const dropdown = document.getElementById('notificationDropdown');
-                if(dropdown) dropdown.classList.remove('show');
-                
-                console.log("Notifications cleared successfully!");
-                
-                // Optional: Refresh the page to ensure everything is reset
-                // setTimeout(() => location.reload(), 500);
-            } catch(err) {
-                console.error("Error clearing notifications:", err);
-                if(typeof showToast === 'function') {
-                    showToast('Error clearing notifications', true);
-                }
-            }
+            console.log("Clear button clicked - clearing database notifications");
+            window.clearAllNotifications();
         });
     }
     
@@ -1963,6 +1901,7 @@
         });
     }
     
+    // Auto login if token exists
     if (token === 'logged_in') { 
         const loginBox = document.getElementById('loginBox');
         const adminContent = document.getElementById('adminContent');
@@ -1971,9 +1910,9 @@
         if (adminContent) adminContent.style.display = 'block';
         if (bottomNav) bottomNav.style.display = 'flex';
         loadAllData(); 
+        loadNotificationsFromDatabase();
         startAutoSync(); 
-        startNotificationCheck(); 
-        loadNotificationsFromStorage();
+        startNotificationCheck();
     }
 })();
 </script>
