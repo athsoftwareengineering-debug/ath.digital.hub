@@ -15,16 +15,15 @@
         body {
             background: transparent;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            padding: 0;
-            margin: 0;
         }
         
+        /* Chat Container */
         .admin-chat-container {
             position: fixed;
             bottom: 70px;
             right: 16px;
-            width: 380px;
-            height: 520px;
+            width: 420px;
+            height: 560px;
             background: linear-gradient(145deg, #0f111a, #0a0c15);
             border-radius: 1.2rem;
             border: 1px solid rgba(0,212,255,0.25);
@@ -33,26 +32,39 @@
             flex-direction: column;
             overflow: hidden;
             z-index: 1000;
+            transition: all 0.3s ease;
         }
         
+        .admin-chat-container.minimized {
+            height: 55px;
+            width: 280px;
+        }
+        
+        .admin-chat-container.minimized .chat-main,
+        .admin-chat-container.minimized .chat-sidebar {
+            display: none;
+        }
+        
+        /* Header */
         .admin-chat-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
+            padding: 10px 16px;
             background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.05));
             border-bottom: 1px solid rgba(0,212,255,0.15);
+            cursor: pointer;
         }
         
         .admin-chat-header-info {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
         
         .admin-chat-avatar {
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             background: linear-gradient(135deg, #f43f5e, #e11d48);
             border-radius: 50%;
             display: flex;
@@ -61,7 +73,7 @@
         }
         
         .admin-chat-avatar i {
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             color: white;
         }
         
@@ -77,10 +89,9 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            margin-top: 2px;
         }
         
-        .admin-online-dot {
+        .online-dot {
             width: 8px;
             height: 8px;
             background: #10b981;
@@ -90,37 +101,130 @@
         }
         
         @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
+            0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.5; transform: scale(1.2); }
-            100% { opacity: 1; transform: scale(1); }
         }
         
-        .admin-chat-close-btn {
+        .admin-chat-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .admin-chat-actions button {
             background: none;
             border: none;
             color: #94a3b8;
             cursor: pointer;
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             transition: all 0.2s;
         }
         
-        .admin-chat-close-btn:hover {
+        .admin-chat-actions button:hover {
             background: rgba(0,212,255,0.15);
             color: #00d4ff;
         }
         
-        .admin-chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
+        /* Main Layout */
+        .admin-chat-layout {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            flex: 1;
+            overflow: hidden;
         }
         
-        .admin-chat-message {
+        /* Sidebar - User List */
+        .chat-sidebar {
+            width: 140px;
+            background: rgba(0,0,0,0.3);
+            border-right: 1px solid rgba(0,212,255,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .sidebar-header {
+            padding: 12px;
+            border-bottom: 1px solid rgba(0,212,255,0.1);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--cyan);
+            background: rgba(0,212,255,0.05);
+        }
+        
+        .user-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .user-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .user-item:hover {
+            background: rgba(0,212,255,0.1);
+        }
+        
+        .user-item.active {
+            background: rgba(0,212,255,0.15);
+            border-left: 3px solid var(--cyan);
+        }
+        
+        .user-name {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        
+        .user-id {
+            font-size: 0.55rem;
+            color: #64748b;
+            margin-top: 2px;
+        }
+        
+        .unread-badge {
+            background: #f43f5e;
+            color: white;
+            font-size: 0.5rem;
+            border-radius: 40px;
+            padding: 2px 6px;
+            margin-left: 8px;
+        }
+        
+        /* Chat Main Area */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-main-header {
+            padding: 10px 12px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(0,212,255,0.1);
+        }
+        
+        .chat-with {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--cyan);
+        }
+        
+        .chat-messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        /* Message Bubbles */
+        .chat-message {
             display: flex;
             flex-direction: column;
             max-width: 85%;
@@ -128,129 +232,152 @@
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        .admin-chat-message.user {
-            align-items: flex-start;
-            margin-right: auto;
-        }
-        
-        .admin-chat-message.admin {
+        .chat-message.admin {
             align-items: flex-end;
             margin-left: auto;
         }
         
-        .admin-message-bubble {
-            padding: 10px 14px;
-            border-radius: 18px;
+        .chat-message.user {
+            align-items: flex-start;
+            margin-right: auto;
+        }
+        
+        .message-bubble {
+            padding: 8px 12px;
+            border-radius: 16px;
             word-wrap: break-word;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             line-height: 1.4;
         }
         
-        .admin-chat-message.user .admin-message-bubble {
+        .chat-message.admin .message-bubble {
+            background: linear-gradient(135deg, #00d4ff, #0891b2);
+            color: white;
+            border-bottom-right-radius: 3px;
+        }
+        
+        .chat-message.user .message-bubble {
             background: rgba(255,255,255,0.08);
             color: #e2e8f0;
-            border-bottom-left-radius: 4px;
+            border-bottom-left-radius: 3px;
         }
         
-        .admin-chat-message.admin .admin-message-bubble {
-            background: linear-gradient(135deg, #f43f5e, #e11d48);
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-        
-        .admin-message-sender {
-            font-size: 0.55rem;
-            color: #94a3b8;
-            margin-bottom: 4px;
-            padding: 0 6px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .admin-message-time {
+        .message-sender {
             font-size: 0.5rem;
-            color: #64748b;
-            margin-top: 4px;
+            color: #94a3b8;
+            margin-bottom: 3px;
             padding: 0 6px;
         }
         
-        .admin-chat-input-container {
-            padding: 12px;
-            background: rgba(0,0,0,0.4);
+        .message-time {
+            font-size: 0.45rem;
+            color: #64748b;
+            margin-top: 3px;
+            padding: 0 6px;
+        }
+        
+        /* Input Area */
+        .chat-input-container {
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
             border-top: 1px solid rgba(0,212,255,0.1);
         }
         
-        .admin-chat-input-wrapper {
+        .chat-input-wrapper {
             display: flex;
-            gap: 10px;
-            align-items: flex-end;
+            gap: 8px;
+            align-items: center;
         }
         
-        .admin-chat-input {
+        .chat-input {
             flex: 1;
-            padding: 10px 14px;
+            padding: 8px 12px;
             background: rgba(0,0,0,0.5);
             border: 1px solid #2d3a5e;
             border-radius: 20px;
             color: white;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             resize: none;
             font-family: inherit;
-            max-height: 80px;
         }
         
-        .admin-chat-input:focus {
+        .chat-input:focus {
             outline: none;
             border-color: #00d4ff;
         }
         
-        .admin-chat-send-btn {
+        .chat-send-btn {
             background: linear-gradient(135deg, #00d4ff, #0891b2);
             border: none;
-            width: 38px;
-            height: 38px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             color: white;
             cursor: pointer;
             transition: all 0.3s;
         }
         
-        .admin-chat-send-btn:hover {
+        .chat-send-btn:hover {
             transform: scale(1.05);
         }
         
-        .admin-chat-note {
-            font-size: 0.55rem;
+        .chat-note {
+            font-size: 0.5rem;
             color: #64748b;
             text-align: center;
-            margin-top: 8px;
+            margin-top: 6px;
         }
         
-        .admin-chat-loading {
+        .no-selection {
             text-align: center;
             padding: 40px;
+            color: #64748b;
+            font-size: 0.75rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
             color: #94a3b8;
+        }
+        
+        /* Scrollbar */
+        .chat-messages-container::-webkit-scrollbar,
+        .user-list::-webkit-scrollbar {
+            width: 3px;
+        }
+        
+        .chat-messages-container::-webkit-scrollbar-track,
+        .user-list::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.03);
+        }
+        
+        .chat-messages-container::-webkit-scrollbar-thumb,
+        .user-list::-webkit-scrollbar-thumb {
+            background: rgba(0,212,255,0.3);
+            border-radius: 3px;
         }
         
         @media (max-width: 480px) {
             .admin-chat-container {
-                width: calc(100vw - 32px);
-                right: 16px;
-                left: 16px;
+                width: calc(100vw - 20px);
+                right: 10px;
+                left: 10px;
                 height: 65vh;
-                bottom: 75px;
+            }
+            .chat-sidebar {
+                width: 110px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="admin-chat-container">
-        <div class="admin-chat-header">
+    <div class="admin-chat-container" id="adminChatContainer">
+        <div class="admin-chat-header" onclick="toggleMinimize()">
             <div class="admin-chat-header-info">
                 <div class="admin-chat-avatar">
                     <i class="fas fa-user-shield"></i>
@@ -258,81 +385,179 @@
                 <div>
                     <div class="admin-chat-header-title">Admin Support</div>
                     <div class="admin-chat-header-status">
-                        <span class="admin-online-dot"></span>
-                        <span>Online - Admin Mode</span>
+                        <span class="online-dot"></span>
+                        <span>Online</span>
                     </div>
                 </div>
             </div>
-            <button class="admin-chat-close-btn" onclick="closeAdminChat()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="admin-chat-messages" id="adminChatMessages">
-            <div class="admin-chat-loading">
-                <i class="fas fa-spinner fa-pulse"></i> Loading messages...
-            </div>
-        </div>
-        
-        <div class="admin-chat-input-container">
-            <div class="admin-chat-input-wrapper">
-                <textarea id="adminChatInput" class="admin-chat-input" placeholder="Type reply as Admin..." rows="1" maxlength="500"></textarea>
-                <button class="admin-chat-send-btn" onclick="sendAdminMessage()">
-                    <i class="fas fa-paper-plane"></i>
+            <div class="admin-chat-actions">
+                <button onclick="event.stopPropagation(); toggleMinimize()" title="Minimize">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button onclick="event.stopPropagation(); closeAdminChat()" title="Close">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="admin-chat-note">
-                <i class="fas fa-shield-alt"></i> Replying as Admin
+        </div>
+        
+        <div class="admin-chat-layout">
+            <!-- User List Sidebar -->
+            <div class="chat-sidebar">
+                <div class="sidebar-header">
+                    <i class="fas fa-users"></i> Users
+                </div>
+                <div class="user-list" id="userList">
+                    <div class="loading">Loading users...</div>
+                </div>
+            </div>
+            
+            <!-- Chat Main Area -->
+            <div class="chat-main">
+                <div class="chat-main-header" id="chatMainHeader">
+                    <div class="chat-with">
+                        <i class="fas fa-comment-dots"></i> Select a user to start chatting
+                    </div>
+                </div>
+                <div class="chat-messages-container" id="chatMessages">
+                    <div class="no-selection">👈 Select a user from the left</div>
+                </div>
+                <div class="chat-input-container" id="chatInputContainer" style="display: none;">
+                    <div class="chat-input-wrapper">
+                        <textarea id="chatInput" class="chat-input" placeholder="Type your reply..." rows="1" maxlength="500"></textarea>
+                        <button class="chat-send-btn" onclick="sendPrivateMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div class="chat-note">
+                        <i class="fas fa-shield-alt"></i> Replying as Admin
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         const API_BASE = window.location.origin;
-        let refreshInterval = null;
+        let currentSelectedUser = null;
+        let currentAdminId = 'admin';
+        let currentAdminName = 'Admin';
+        let messageRefreshInterval = null;
+        let userListRefreshInterval = null;
+        let isMinimized = false;
         
-        async function loadAdminChatMessages() {
-            const container = document.getElementById('adminChatMessages');
+        // Load user list for admin
+        async function loadUserList() {
+            const container = document.getElementById('userList');
             if (!container) return;
             
             try {
-                const response = await fetch(`${API_BASE}/api/chat/messages`);
+                const response = await fetch(`${API_BASE}/api/chat/admin/users`, {
+                    credentials: 'include'
+                });
                 const data = await response.json();
                 
-                if (data.success && data.messages) {
-                    renderAdminChatMessages(data.messages);
+                if (data.success && data.users && data.users.length > 0) {
+                    renderUserList(data.users);
                 } else {
-                    container.innerHTML = '<div class="admin-chat-loading">No messages yet</div>';
+                    container.innerHTML = '<div class="loading">No users yet</div>';
                 }
             } catch (error) {
-                console.error('Error loading messages:', error);
-                container.innerHTML = '<div class="admin-chat-loading">Connection error</div>';
+                console.error('Error loading users:', error);
+                container.innerHTML = '<div class="loading">Error loading users</div>';
             }
         }
         
-        function renderAdminChatMessages(messages) {
-            const container = document.getElementById('adminChatMessages');
+        function renderUserList(users) {
+            const container = document.getElementById('userList');
+            if (!container) return;
+            
+            let html = '';
+            for (const user of users) {
+                const isActive = currentSelectedUser === user.user_id;
+                html += `
+                    <div class="user-item ${isActive ? 'active' : ''}" onclick="selectUser('${escapeHtml(user.user_id)}', '${escapeHtml(user.username)}')">
+                        <div class="user-name">
+                            <i class="fas fa-user"></i> ${escapeHtml(user.username)}
+                        </div>
+                        <div class="user-id">🆔 ${escapeHtml(user.user_id)}</div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+        
+        // Select user to chat with
+        async function selectUser(userId, username) {
+            currentSelectedUser = userId;
+            
+            // Update header
+            const header = document.getElementById('chatMainHeader');
+            if (header) {
+                header.innerHTML = `
+                    <div class="chat-with">
+                        <i class="fas fa-comment-dots"></i> Chat with: <strong style="color:#00d4ff;">${escapeHtml(username)}</strong>
+                        <span style="font-size:0.6rem; margin-left:8px;">🆔 ${escapeHtml(userId)}</span>
+                    </div>
+                `;
+            }
+            
+            // Show input area
+            const inputContainer = document.getElementById('chatInputContainer');
+            if (inputContainer) inputContainer.style.display = 'block';
+            
+            // Load messages
+            await loadPrivateMessages(userId);
+            
+            // Highlight selected user in list
+            document.querySelectorAll('.user-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const activeItem = document.querySelector(`.user-item[onclick*="${userId}"]`);
+            if (activeItem) activeItem.classList.add('active');
+        }
+        
+        // Load private messages
+        async function loadPrivateMessages(userId) {
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+            
+            const currentUserId = localStorage.getItem('userId') || 'admin';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/private/${userId}?currentUserId=${currentAdminId}`);
+                const data = await response.json();
+                
+                if (data.success && data.messages) {
+                    renderPrivateMessages(data.messages);
+                } else {
+                    container.innerHTML = '<div class="no-selection">No messages yet. Start the conversation!</div>';
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                container.innerHTML = '<div class="no-selection">Error loading messages</div>';
+            }
+        }
+        
+        function renderPrivateMessages(messages) {
+            const container = document.getElementById('chatMessages');
             if (!container) return;
             
             if (!messages || messages.length === 0) {
-                container.innerHTML = '<div class="admin-chat-loading">✨ No messages yet</div>';
+                container.innerHTML = '<div class="no-selection">✨ No messages yet. Say hello!</div>';
                 return;
             }
             
             let html = '';
             for (const msg of messages) {
                 const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const isAdmin = msg.is_admin;
-                const senderName = isAdmin ? '👑 Admin' : (msg.username || 'User');
-                const senderIcon = isAdmin ? '<i class="fas fa-shield-alt"></i>' : '<i class="fas fa-user"></i>';
+                const isAdmin = msg.sender_id === 'admin';
+                const senderName = isAdmin ? '👑 Admin' : (msg.sender_name || 'User');
                 
                 html += `
-                    <div class="admin-chat-message ${isAdmin ? 'admin' : 'user'}">
-                        <div class="admin-message-sender">
-                            ${senderIcon} ${escapeHtml(senderName)}
-                        </div>
-                        <div class="admin-message-bubble">${escapeHtml(msg.message)}</div>
-                        <div class="admin-message-time">${time}</div>
+                    <div class="chat-message ${isAdmin ? 'admin' : 'user'}">
+                        <div class="message-sender">${senderName}</div>
+                        <div class="message-bubble">${escapeHtml(msg.message)}</div>
+                        <div class="message-time">${time}</div>
                     </div>
                 `;
             }
@@ -340,23 +565,28 @@
             container.scrollTop = container.scrollHeight;
         }
         
-        async function sendAdminMessage() {
-            const input = document.getElementById('adminChatInput');
+        // Send private message
+        async function sendPrivateMessage() {
+            const input = document.getElementById('chatInput');
             const message = input.value.trim();
-            const sendBtn = document.querySelector('.admin-chat-send-btn');
             
             if (!message) return;
+            if (!currentSelectedUser) {
+                showNotification("Please select a user first", true);
+                return;
+            }
             
             input.disabled = true;
-            sendBtn.disabled = true;
             
             try {
-                const response = await fetch(`${API_BASE}/api/chat/admin/send`, {
+                const response = await fetch(`${API_BASE}/api/chat/private/send`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        user_id: 'admin',
-                        username: 'Admin',
+                        sender_id: currentAdminId,
+                        receiver_id: currentSelectedUser,
+                        sender_name: currentAdminName,
+                        receiver_name: 'User',
                         message: message
                     })
                 });
@@ -366,79 +596,107 @@
                 if (data.success) {
                     input.value = '';
                     input.style.height = 'auto';
-                    await loadAdminChatMessages();
+                    await loadPrivateMessages(currentSelectedUser);
                 } else {
-                    showChatNotification('Failed to send', true);
+                    showNotification(data.error || "Failed to send", true);
                 }
             } catch (error) {
                 console.error('Send error:', error);
-                showChatNotification('Connection error', true);
+                showNotification("Connection error", true);
             } finally {
                 input.disabled = false;
-                sendBtn.disabled = false;
                 input.focus();
             }
         }
         
-        function showChatNotification(message, isError) {
-            // Try to use parent toast
-            if (window.parent && window.parent.showToast) {
-                window.parent.showToast(message, isError);
-            } else {
-                alert(message);
+        // Toggle minimize
+        function toggleMinimize() {
+            const container = document.getElementById('adminChatContainer');
+            if (container) {
+                container.classList.toggle('minimized');
+                isMinimized = container.classList.contains('minimized');
+                if (!isMinimized && currentSelectedUser) {
+                    loadPrivateMessages(currentSelectedUser);
+                }
             }
         }
         
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;'
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-        
-        function autoResizeTextarea() {
-            const textarea = document.getElementById('adminChatInput');
-            if (textarea) {
-                textarea.style.height = 'auto';
-                textarea.style.height = Math.min(textarea.scrollHeight, 80) + 'px';
-            }
-        }
-        
-        function setupKeyboardShortcuts() {
-            const input = document.getElementById('adminChatInput');
-            if (input) {
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendAdminMessage();
-                    }
-                });
-                input.addEventListener('input', autoResizeTextarea);
-            }
-        }
-        
+        // Close chat
         function closeAdminChat() {
             if (window.parent && window.parent.closeAdminChatWidget) {
                 window.parent.closeAdminChatWidget();
             }
         }
         
-        async function initAdminChat() {
-            await loadAdminChatMessages();
-            setupKeyboardShortcuts();
-            
-            // Refresh every 5 seconds (no Supabase Realtime needed)
-            refreshInterval = setInterval(() => {
-                loadAdminChatMessages();
-            }, 5000);
+        // Helper functions
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
         }
         
-        initAdminChat();
+        function showNotification(message, isError = false) {
+            if (window.parent && window.parent.showToast) {
+                window.parent.showToast(message, isError);
+            }
+        }
         
-        window.sendAdminMessage = sendAdminMessage;
+        function autoResizeTextarea() {
+            const textarea = document.getElementById('chatInput');
+            if (textarea) {
+                textarea.style.height = 'auto';
+                textarea.style.height = Math.min(textarea.scrollHeight, 60) + 'px';
+            }
+        }
+        
+        function setupKeyboardShortcuts() {
+            const input = document.getElementById('chatInput');
+            if (input) {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendPrivateMessage();
+                    }
+                });
+                input.addEventListener('input', autoResizeTextarea);
+            }
+        }
+        
+        // Initialize
+        async function init() {
+            await loadUserList();
+            setupKeyboardShortcuts();
+            
+            // Refresh messages every 3 seconds
+            messageRefreshInterval = setInterval(() => {
+                if (currentSelectedUser && !isMinimized) {
+                    loadPrivateMessages(currentSelectedUser);
+                }
+            }, 3000);
+            
+            // Refresh user list every 10 seconds
+            userListRefreshInterval = setInterval(() => {
+                if (!isMinimized) {
+                    loadUserList();
+                }
+            }, 10000);
+        }
+        
+        init();
+        
+        // Cleanup on unload
+        window.addEventListener('beforeunload', () => {
+            if (messageRefreshInterval) clearInterval(messageRefreshInterval);
+            if (userListRefreshInterval) clearInterval(userListRefreshInterval);
+        });
+        
+        window.sendPrivateMessage = sendPrivateMessage;
+        window.selectUser = selectUser;
+        window.toggleMinimize = toggleMinimize;
         window.closeAdminChat = closeAdminChat;
     </script>
 </body>
