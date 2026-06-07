@@ -825,6 +825,13 @@
     let currentTab = "menu";
     let editingProductId = null;
     
+    // ========== ADDED VARIABLES FOR FILTERS ==========
+    let showSuspectOnly = false;
+    let showBlockedOnly = false;
+    let suspectUsersList = [];
+    let blockedUsersList = [];
+    // =================================================
+    
     let notifications = [];
     let lastOrderId = null;
     
@@ -927,7 +934,7 @@
         if (drawerTotalProfitEl) drawerTotalProfitEl.innerText = profit.toLocaleString() + 'K';
     }
     
-    // ==================== NOTIFICATION SYSTEM (COMPLETELY FIXED) ====================
+    // ==================== NOTIFICATION SYSTEM ====================
     function loadNotificationsFromStorage() {
         const saved = localStorage.getItem('adminNotifications');
         if (saved) {
@@ -1014,7 +1021,6 @@
         listContainer.innerHTML = html;
     }
     
-    // FIXED: Clear All Notifications
     window.clearAllNotifications = function() { 
         console.log("Clearing all notifications...");
         try {
@@ -1035,7 +1041,6 @@
         }
     };
     
-    // FIXED: Delete single notification
     window.deleteNotification = function(notificationId) {
         console.log("Deleting notification:", notificationId);
         const index = notifications.findIndex(n => String(n.id) === String(notificationId));
@@ -1047,7 +1052,6 @@
         }
     };
     
-    // FIXED: Mark as read
     window.markNotificationRead = function(notificationId) {
         console.log("Marking notification as read:", notificationId);
         const notif = notifications.find(n => String(n.id) === String(notificationId));
@@ -1615,6 +1619,7 @@
         showToast('📁 Orders exported to CSV'); 
     };
     
+    // ========== UPDATED renderUsersTab WITH FILTERS ==========
     function renderUsersTab() {
         const container = document.getElementById('usersList');
         if (!container) return;
@@ -1622,14 +1627,36 @@
             container.innerHTML = '<div class="loading">No user data available</div>'; 
             return; 
         }
+        
         let filteredUsers = [...userStats];
+        
+        // Apply search filter
         if (currentUserSearchPhone) { 
-            filteredUsers = filteredUsers.filter(u => u.phone === currentUserSearchPhone || u.user_id === currentUserSearchPhone || (u.username && u.username.toLowerCase().includes(currentUserSearchPhone.toLowerCase()))); 
+            filteredUsers = filteredUsers.filter(u => 
+                u.phone === currentUserSearchPhone || 
+                u.user_id === currentUserSearchPhone || 
+                (u.username && u.username.toLowerCase().includes(currentUserSearchPhone.toLowerCase()))
+            ); 
         }
-        if (filteredUsers.length === 0 && currentUserSearchPhone) { 
-            container.innerHTML = `<div class="loading">No user found for "${escapeHtml(currentUserSearchPhone)}"</div>`; 
+        
+        // ========== ADDED SUSPECT/BLOCKED FILTERS ==========
+        if (showSuspectOnly) {
+            filteredUsers = filteredUsers.filter(u => u.suspect_flag === true);
+        }
+        
+        if (showBlockedOnly) {
+            filteredUsers = filteredUsers.filter(u => u.blocked === true);
+        }
+        // ====================================================
+        
+        if (filteredUsers.length === 0 && (currentUserSearchPhone || showSuspectOnly || showBlockedOnly)) { 
+            let message = 'No user found';
+            if (showSuspectOnly) message = 'No suspect users found';
+            if (showBlockedOnly) message = 'No blocked users found';
+            container.innerHTML = `<div class="loading">${message}</div>`; 
             return; 
         }
+        
         let html = '';
         for (const user of filteredUsers) {
             const rejectRate = user.order_count > 0 ? ((user.reject_count / user.order_count) * 100).toFixed(0) : 0;
@@ -1822,7 +1849,6 @@
     };
     
     // EVENT LISTENERS & INIT
-    // Notification Bell Click
     const bellBtn = document.getElementById('notificationBellBtn');
     if (bellBtn) {
         bellBtn.addEventListener('click', function(e) {
@@ -1831,10 +1857,12 @@
         });
     }
     
-    // Clear Notifications Button
+    // Fixed Clear Notifications Button
     const clearBtn = document.getElementById('clearNotificationsBtn');
     if (clearBtn) {
-        clearBtn.addEventListener('click', function(e) {
+        const newClearBtn = clearBtn.cloneNode(true);
+        clearBtn.parentNode.replaceChild(newClearBtn, clearBtn);
+        newClearBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             e.preventDefault();
             console.log("Clear button clicked");
@@ -1842,7 +1870,6 @@
         });
     }
     
-    // Close dropdown when clicking outside
     document.addEventListener('click', function(e) {
         const dropdown = document.getElementById('notificationDropdown');
         const bell = document.getElementById('notificationBellBtn');
