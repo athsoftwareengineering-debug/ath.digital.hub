@@ -1,10 +1,8 @@
 -- ============================================================
--- ATH DIGITAL HUB - DATABASE SCHEMA (COMPLETE)
+-- ATH DIGITAL HUB - DATABASE SCHEMA (COMPLETE - FIXED)
 -- ============================================================
 
--- ============================================================
--- 1. ORDERS TABLE (အော်ဒါများ သိမ်းဆည်းရန်)
--- ============================================================
+-- 1. ORDERS TABLE
 CREATE TABLE IF NOT EXISTS orders (
     id BIGINT PRIMARY KEY,
     phone TEXT NOT NULL,
@@ -20,14 +18,12 @@ CREATE TABLE IF NOT EXISTS orders (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- ============================================================
--- 2. USER STATS TABLE (အသုံးပြုသူ စာရင်းအင်း - with User ID)
--- ============================================================
+-- 2. USER STATS TABLE
 CREATE TABLE IF NOT EXISTS user_stats (
     id SERIAL PRIMARY KEY,
     phone TEXT UNIQUE NOT NULL,
     username TEXT,
-    user_id TEXT UNIQUE NOT NULL,
+    user_id TEXT UNIQUE,
     order_count INTEGER DEFAULT 0,
     reject_count INTEGER DEFAULT 0,
     suspect_flag BOOLEAN DEFAULT FALSE,
@@ -36,9 +32,7 @@ CREATE TABLE IF NOT EXISTS user_stats (
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- ============================================================
--- 3. MARKET PRODUCTS TABLE (ထုတ်ကုန်များ)
--- ============================================================
+-- 3. MARKET PRODUCTS TABLE
 CREATE TABLE IF NOT EXISTS market_products (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -51,9 +45,7 @@ CREATE TABLE IF NOT EXISTS market_products (
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- ============================================================
--- 4. PAYMENT METHODS TABLE (ငွေပေးချေမှုနည်းလမ်းများ)
--- ============================================================
+-- 4. PAYMENT METHODS TABLE
 CREATE TABLE IF NOT EXISTS payment_methods (
     id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL,
@@ -65,47 +57,28 @@ CREATE TABLE IF NOT EXISTS payment_methods (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- ============================================================
--- 5. ADMIN NOTIFICATIONS TABLE (Database Notifications)
--- ============================================================
+-- 5. ADMIN NOTIFICATIONS TABLE (FIXED - No foreign key constraint)
 CREATE TABLE IF NOT EXISTS admin_notifications (
     id SERIAL PRIMARY KEY,
-    order_id BIGINT NOT NULL,
+    order_id BIGINT,
     title TEXT NOT NULL,
     message TEXT NOT NULL,
+    type VARCHAR(50) DEFAULT 'info' CHECK (type IN ('info', 'warning', 'success', 'error', 'new_order')),
     is_read BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT NOW(),
-    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
--- ============================================================
--- INDEXES (အမြန်ရှာဖွေရန်)
--- ============================================================
--- Orders table indexes
+-- INDEXES
 CREATE INDEX IF NOT EXISTS idx_orders_phone ON orders(phone);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);
-CREATE INDEX IF NOT EXISTS idx_orders_payment_method ON orders(payment_method);
-CREATE INDEX IF NOT EXISTS idx_orders_image_hash ON orders(image_hash);
-
--- User stats table indexes
 CREATE INDEX IF NOT EXISTS idx_user_stats_phone ON user_stats(phone);
 CREATE INDEX IF NOT EXISTS idx_user_stats_user_id ON user_stats(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_stats_username ON user_stats(username);
-CREATE INDEX IF NOT EXISTS idx_user_stats_blocked ON user_stats(blocked);
-CREATE INDEX IF NOT EXISTS idx_user_stats_created_at ON user_stats(created_at);
-
--- Market products table indexes
-CREATE INDEX IF NOT EXISTS idx_market_products_category ON market_products(category);
-
--- Admin notifications table indexes
 CREATE INDEX IF NOT EXISTS idx_admin_notifications_order_id ON admin_notifications(order_id);
 CREATE INDEX IF NOT EXISTS idx_admin_notifications_is_read ON admin_notifications(is_read);
 CREATE INDEX IF NOT EXISTS idx_admin_notifications_created_at ON admin_notifications(created_at);
 
--- ============================================================
 -- AUTO-INCREMENT FUNCTION FOR USER_ID
--- ============================================================
 CREATE OR REPLACE FUNCTION generate_user_id()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -130,58 +103,34 @@ CREATE TRIGGER trigger_generate_user_id
     WHEN (NEW.user_id IS NULL)
     EXECUTE FUNCTION generate_user_id();
 
--- ============================================================
--- INSERT PAYMENT METHODS
--- ============================================================
+-- INSERT DEFAULT DATA
 INSERT INTO payment_methods (name, account_name, account_number, display_order) VALUES
 ('KBZ Pay', 'AUNG THU HTWE', '09789999368', 1),
 ('WavePay', 'AUNG THU HTWE', '09789999368', 2),
 ('AYA Pay', 'AUNG THU HTWE', '09789999368', 3)
 ON CONFLICT (name) DO NOTHING;
 
--- ============================================================
--- INSERT SAMPLE PRODUCTS
--- ============================================================
 INSERT INTO market_products (name, price, category, icon, discount) VALUES
 ('Premium T-Shirt', 25000, 'Men', 'fas fa-tshirt', 20),
 ('Casual Bag', 35000, 'Accessories', 'fas fa-shopping-bag', 15),
-('Sports Shoes', 45000, 'Men', 'fas fa-shoe-prints', 10),
-('Formal Shirt', 55000, 'Men', 'fas fa-user-tie', 0),
-('Summer Dress', 49000, 'Women', 'fas fa-female', 0),
-('Leather Bag', 39000, 'Women', 'fas fa-bag-shopping', 0)
+('Sports Shoes', 45000, 'Men', 'fas fa-shoe-prints', 10)
 ON CONFLICT (id) DO NOTHING;
 
--- ============================================================
--- INSERT SAMPLE USER (Optional - for testing)
--- ============================================================
-INSERT INTO user_stats (phone, username, order_count, reject_count) VALUES
-('09789999368', 'Admin User', 0, 0)
-ON CONFLICT (phone) DO NOTHING;
+-- AUTO NOTIFICATION TRIGGERS
+CREATE OR REPLACE FUNCTION notify_new_order()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO admin_notifications (order_id, title, message, type)
+    VALUES (NEW.id, '🆕 New Order', 'Order #' || NEW.id || ' from ' || NEW.phone, 'new_order');
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
--- ============================================================
--- VERIFY TABLES (စစ်ဆေးရန်)
--- ============================================================
-SELECT '✅ Orders table' as status, COUNT(*) as count FROM orders
-UNION ALL
-SELECT '✅ User Stats table', COUNT(*) FROM user_stats
-UNION ALL
-SELECT '✅ Market Products table', COUNT(*) FROM market_products
-UNION ALL
-SELECT '✅ Payment Methods table', COUNT(*) FROM payment_methods
-UNION ALL
-SELECT '✅ Admin Notifications table', COUNT(*) FROM admin_notifications;
+DROP TRIGGER IF EXISTS trigger_notify_new_order ON orders;
+CREATE TRIGGER trigger_notify_new_order
+    AFTER INSERT ON orders
+    FOR EACH ROW
+    EXECUTE FUNCTION notify_new_order();
 
--- ============================================================
--- SHOW USER ID FORMAT EXAMPLE
--- ============================================================
-SELECT '📌 User ID Format: ATH-10001, ATH-10002, ...' as info;
-
--- ============================================================
--- OPTIONAL: DROP TABLES (ပြန်လည်စတင်လိုပါက သုံးရန်)
--- ============================================================
--- DROP TABLE IF EXISTS admin_notifications;
--- DROP TABLE IF EXISTS orders;
--- DROP TABLE IF EXISTS user_stats;
--- DROP TABLE IF EXISTS market_products;
--- DROP TABLE IF EXISTS payment_methods;
--- DROP FUNCTION IF EXISTS generate_user_id();
+-- VERIFY
+SELECT '✅ Database schema fixed successfully!' as status;
