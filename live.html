@@ -156,20 +156,38 @@
             }
         }
         
-        /* Rotate Animation */
-        @keyframes blinkRotate {
+        /* Rotate Animation - အစိမ်းရောင် */
+        @keyframes blinkRotateGreen {
             0%, 100% { 
                 background: linear-gradient(145deg, #0f111a, #0a0c15); 
                 border-color: rgba(0,212,255,0.12);
+                box-shadow: 0 0 0px rgba(16,185,129,0);
             }
             50% { 
-                background: rgba(0,212,255,0.15); 
-                border-color: #00d4ff; 
-                box-shadow: 0 0 15px #00d4ff;
+                background: rgba(16,185,129,0.2); 
+                border-color: #10b981; 
+                box-shadow: 0 0 20px #10b981;
             }
         }
         .blink-rotate {
-            animation: blinkRotate 0.5s ease-in-out 2;
+            animation: blinkRotateGreen 0.5s ease-in-out 2;
+        }
+        
+        /* Search Result Highlight - အဝါရောင် 3 စက္ကန့် */
+        @keyframes blinkYellow {
+            0%, 100% { 
+                background: linear-gradient(145deg, #0f111a, #0a0c15); 
+                border-color: rgba(245,158,11,0.3);
+                box-shadow: 0 0 0px rgba(245,158,11,0);
+            }
+            30%, 70% { 
+                background: rgba(245,158,11,0.25); 
+                border-color: #f59e0b; 
+                box-shadow: 0 0 25px #f59e0b;
+            }
+        }
+        .search-highlight {
+            animation: blinkYellow 0.8s ease-in-out 3;
         }
         
         /* Card Header - First Row */
@@ -441,7 +459,7 @@
         let liveCurrentSearchPhone = "";
         let liveRefreshInterval = null;
         let liveTimerInterval = null;
-        let rotateInterval = null;  // ← ထည့်ပါ
+        let rotateInterval = null;
         let liveRefreshSec = 30;
         let lastOrderIds = [];
 
@@ -522,6 +540,13 @@
             return '<i class="fas fa-mobile-alt"></i>';
         }
 
+        // Remove highlight from all cards
+        function removeAllHighlights() {
+            document.querySelectorAll('.live-card').forEach(card => {
+                card.classList.remove('search-highlight');
+            });
+        }
+
         // Fetch live orders from API
         async function fetchLiveOrders() {
             try {
@@ -557,18 +582,14 @@
             }
         }
 
-        // Rotate live orders (move last to front)
+        // Rotate live orders (move last to front) - အစိမ်းရောင်နဲ့ မှိတ်တုတ်
         function rotateLiveOrders() {
             if (liveOrdersData.length <= 1) return;
             
-            // Remove last item and move to front
             const lastItem = liveOrdersData.pop();
             liveOrdersData.unshift(lastItem);
-            
-            // Re-render
             renderLiveOrders(false);
             
-            // Add blink effect
             const firstCard = document.querySelector('.live-card');
             if (firstCard) {
                 firstCard.classList.add('blink-rotate');
@@ -585,7 +606,7 @@
                 if (liveOrdersData.length > 1) {
                     rotateLiveOrders();
                 }
-            }, 10000); // 10 seconds
+            }, 10000);
         }
 
         // Render live orders
@@ -652,7 +673,7 @@
                 }
                 
                 html += `
-                    <div class="live-card ${isNew ? 'new-order' : ''}" data-order-id="${o.id}">
+                    <div class="live-card ${isNew ? 'new-order' : ''}" data-order-id="${o.id}" data-phone="${escapeHtml(o.phone)}">
                         <div class="live-card-header">
                             <div class="live-payment-badge ${payment.class}">
                                 <i class="fas ${payment.icon}"></i> ${payment.text}
@@ -700,7 +721,7 @@
             }
         }
 
-        // Search live order by phone
+        // Search live order by phone - အဝါရောင်နဲ့ 3 စက္ကန့် မှိတ်တုတ်
         async function searchLiveOrder() {
             const phone = document.getElementById('liveSearchPhoneInput').value.trim();
             const msgDiv = document.getElementById('liveSearchMsg');
@@ -736,12 +757,39 @@
                 } else {
                     if (msgDiv) {
                         msgDiv.className = 'live-search-message success';
-                        msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။';
-                        setTimeout(() => { msgDiv.style.display = 'none'; }, 2000);
+                        msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။ 🟡 အဝါရောင် မှိတ်တုတ်ပြသပါမည်။';
+                        setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
                     }
+                    
+                    // Remove previous highlights
+                    removeAllHighlights();
+                    
+                    // Update data and highlight matching cards
                     liveCurrentSearchPhone = phone;
                     liveOrdersData = orders.slice(0, 50);
                     renderLiveOrders(false);
+                    
+                    // Highlight cards with matching phone number
+                    setTimeout(() => {
+                        const cards = document.querySelectorAll('.live-card');
+                        let found = false;
+                        cards.forEach(card => {
+                            const cardPhone = card.getAttribute('data-phone');
+                            if (cardPhone === phone) {
+                                card.classList.add('search-highlight');
+                                found = true;
+                                // Scroll to first found card
+                                if (!found) {
+                                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                            }
+                        });
+                        
+                        // Remove highlight after 3 seconds
+                        setTimeout(() => {
+                            removeAllHighlights();
+                        }, 3000);
+                    }, 100);
                 }
             } catch(e) {
                 if (msgDiv) {
@@ -759,6 +807,7 @@
             if (searchInput) searchInput.value = '';
             const msgDiv = document.getElementById('liveSearchMsg');
             if (msgDiv) msgDiv.style.display = 'none';
+            removeAllHighlights();
             fetchLiveOrders();
         }
 
@@ -799,7 +848,6 @@
                 if (timerSpan) timerSpan.innerText = 'auto 30s';
             }, 30000);
             
-            // Start rotate
             startLiveRotate();
         }
 
@@ -825,6 +873,7 @@
             liveOrdersData = [];
             liveCurrentSearchPhone = "";
             lastOrderIds = [];
+            removeAllHighlights();
             fetchLiveOrders();
             startLiveAutoRefresh();
         }
