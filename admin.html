@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Admin Panel | ATH DIGITAL HUB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="/css/notifications.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { touch-action: pan-x pan-y; -webkit-text-size-adjust: 100%; }
@@ -492,6 +491,227 @@
             white-space: nowrap;
         }
         .hidden { display: none; }
+        
+        /* Notification Bell Styles */
+        .notification-bell {
+            position: relative;
+            display: inline-block;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #f43f5e;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: bold;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+            box-shadow: 0 0 5px rgba(244,63,94,0.5);
+            animation: notificationPulse 1s infinite;
+            z-index: 10;
+        }
+        @keyframes notificationPulse {
+            0%, 100% { transform: scale(1); background: #f43f5e; }
+            50% { transform: scale(1.15); background: #e11d48; }
+        }
+        .notification-dropdown {
+            position: fixed;
+            top: 70px;
+            right: 12px;
+            left: 12px;
+            width: auto;
+            max-width: 400px;
+            margin: 0 auto;
+            background: linear-gradient(145deg, #1a1d2e, #0f111a);
+            border: 1px solid rgba(0,212,255,0.4);
+            border-radius: 1rem;
+            z-index: 10000;
+            overflow: hidden;
+            display: none;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            max-height: 80vh;
+        }
+        .notification-dropdown.show {
+            display: block;
+            animation: notificationSlideDown 0.2s ease;
+        }
+        @media (min-width: 768px) {
+            .notification-dropdown {
+                position: absolute;
+                top: 50px;
+                right: -10px;
+                left: auto;
+                width: 360px;
+                max-width: 360px;
+            }
+        }
+        @keyframes notificationSlideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .notification-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(0,212,255,0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,212,255,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .notification-header h4 {
+            font-size: 0.9rem;
+            color: #00d4ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+        .notification-clear {
+            font-size: 0.7rem;
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 5px 12px;
+            border-radius: 40px;
+            color: #00d4ff;
+            cursor: pointer;
+            transition: all 0.2s;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            display: inline-block;
+        }
+        .notification-clear:hover {
+            background: #00d4ff;
+            color: #030712;
+            transform: scale(0.98);
+        }
+        .notification-list {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .notification-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .notification-list::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+        .notification-list::-webkit-scrollbar-thumb {
+            background: rgba(0,212,255,0.3);
+            border-radius: 4px;
+        }
+        .notification-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.2s;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            position: relative;
+        }
+        .notification-item:hover {
+            background: rgba(0,212,255,0.08);
+        }
+        .notification-item.unread {
+            background: rgba(0,212,255,0.12);
+            border-left: 3px solid #00d4ff;
+        }
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(0,212,255,0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: #00d4ff;
+            flex-shrink: 0;
+        }
+        .notification-content {
+            flex: 1;
+            cursor: pointer;
+        }
+        .notification-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #f1f5f9;
+        }
+        .notification-message {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+        .notification-time {
+            font-size: 0.6rem;
+            color: #475569;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .notification-delete {
+            opacity: 0;
+            transition: opacity 0.2s;
+            background: rgba(244,63,94,0.2);
+            border: none;
+            color: #fb7185;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .notification-item:hover .notification-delete {
+            opacity: 1;
+        }
+        .notification-delete:hover {
+            background: #f43f5e;
+            color: white;
+        }
+        .notification-empty {
+            text-align: center;
+            padding: 50px 20px;
+            color: #94a3b8;
+            font-size: 0.75rem;
+        }
+        .notification-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            display: none;
+        }
+        .notification-overlay.show {
+            display: block;
+        }
+        .notification-loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+        .notification-loading i {
+            animation: notificationSpin 1s linear infinite;
+        }
+        @keyframes notificationSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -811,8 +1031,6 @@
         const drawerTotalProfitEl = document.getElementById('drawerTotalProfit');
         if (drawerTotalProfitEl) drawerTotalProfitEl.innerText = profit.toLocaleString() + 'K';
     }
-    
-    // REMOVED: Old notification functions - Now handled by notifications.js
     
     // ALERTS
     window.showCleanupAlert = function() { 
@@ -1522,9 +1740,6 @@
         else if (tab === 'market') loadProducts();
     };
     
-    // NOTE: Notification event listeners are now handled by notifications.js
-    // The notification bell HTML is present, but the JS is in the separate file
-    
     document.querySelectorAll('.nav-item').forEach(btn => { 
         btn.addEventListener('click', () => { 
             window.switchTab(btn.dataset.tab); 
@@ -1570,7 +1785,7 @@
 })();
 </script>
 
-<!-- Notification Component - Separate file -->
+<!-- ==================== NOTIFICATION COMPONENT ==================== -->
 <script src="/js/notifications.js"></script>
 
 </body>
