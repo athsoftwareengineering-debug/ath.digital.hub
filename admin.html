@@ -162,6 +162,7 @@
             display: flex;
             gap: 14px;
             align-items: flex-start;
+            position: relative;
         }
         .notification-item:hover { background: rgba(0,212,255,0.08); }
         .notification-item.unread { background: rgba(0,212,255,0.12); border-left: 3px solid var(--cyan); }
@@ -177,10 +178,26 @@
             color: var(--cyan);
             flex-shrink: 0;
         }
-        .notification-content { flex: 1; }
+        .notification-content { flex: 1; cursor: pointer; }
         .notification-title { font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; color: var(--text-primary); }
         .notification-message { font-size: 0.7rem; color: var(--text-secondary); line-height: 1.4; }
         .notification-time { font-size: 0.6rem; color: #475569; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+        .notification-delete {
+            opacity: 0;
+            transition: opacity 0.2s;
+            background: rgba(244,63,94,0.2);
+            border: none;
+            color: #fb7185;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .notification-item:hover .notification-delete { opacity: 1; }
+        .notification-delete:hover { background: #f43f5e; color: white; }
         .notification-empty { text-align: center; padding: 50px 20px; color: var(--text-secondary); font-size: 0.75rem; }
         .notification-overlay {
             position: fixed;
@@ -616,7 +633,7 @@
                     <i class="fas fa-sync-alt"></i>
                 </button>
                 <div class="notification-bell">
-                    <button class="top-icon-btn" onclick="window.toggleNotificationDropdown()" id="notificationBellBtn">
+                    <button class="top-icon-btn" id="notificationBellBtn">
                         <i class="fas fa-bell"></i>
                         <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
                     </button>
@@ -977,23 +994,27 @@
         }
         
         let html = '';
-        for (const notif of notifications) {
+        for (let i = 0; i < notifications.length; i++) {
+            const notif = notifications[i];
             const date = new Date(notif.time);
             html += `
-                <div class="notification-item ${!notif.read ? 'unread' : ''}" onclick="window.markNotificationRead('${escapeHtml(String(notif.id))}')">
+                <div class="notification-item ${!notif.read ? 'unread' : ''}" data-notif-id="${escapeHtml(String(notif.id))}">
                     <div class="notification-icon"><i class="fas fa-shopping-cart"></i></div>
-                    <div class="notification-content">
+                    <div class="notification-content" onclick="window.markNotificationRead('${escapeHtml(String(notif.id))}')">
                         <div class="notification-title">${escapeHtml(notif.title)}</div>
                         <div class="notification-message">${escapeHtml(notif.message)}</div>
                         <div class="notification-time"><i class="fas fa-clock"></i> ${escapeHtml(date.toLocaleDateString())} ${escapeHtml(date.toLocaleTimeString())}</div>
                     </div>
+                    <button class="notification-delete" onclick="window.deleteNotification('${escapeHtml(String(notif.id))}')" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             `;
         }
         listContainer.innerHTML = html;
     }
     
-    // FIXED: Clear All Notifications - Working properly
+    // FIXED: Clear All Notifications
     window.clearAllNotifications = function() { 
         console.log("Clearing all notifications...");
         try {
@@ -1001,9 +1022,7 @@
             localStorage.removeItem('adminNotifications');
             updateNotificationUI();
             showToast('✅ All notifications cleared');
-            if (typeof window.closeNotificationDropdown === 'function') {
-                window.closeNotificationDropdown();
-            }
+            window.closeNotificationDropdown();
             const badge = document.getElementById('notificationBadge');
             if (badge) {
                 badge.style.display = 'none';
@@ -1016,12 +1035,27 @@
         }
     };
     
+    // FIXED: Delete single notification
+    window.deleteNotification = function(notificationId) {
+        console.log("Deleting notification:", notificationId);
+        const index = notifications.findIndex(n => String(n.id) === String(notificationId));
+        if (index !== -1) {
+            notifications.splice(index, 1);
+            saveNotificationsToStorage();
+            updateNotificationUI();
+            showToast('Notification deleted');
+        }
+    };
+    
+    // FIXED: Mark as read
     window.markNotificationRead = function(notificationId) {
+        console.log("Marking notification as read:", notificationId);
         const notif = notifications.find(n => String(n.id) === String(notificationId));
         if (notif && !notif.read) { 
             notif.read = true; 
             saveNotificationsToStorage(); 
             updateNotificationUI(); 
+            showToast('Marked as read');
         }
     };
     
@@ -1788,16 +1822,34 @@
     };
     
     // EVENT LISTENERS & INIT
-    document.addEventListener('DOMContentLoaded', function() {
-        // Clear Notifications Button Event Listener
-        const clearBtn = document.getElementById('clearNotificationsBtn');
-        if (clearBtn) {
-            clearBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                e.preventDefault();
-                console.log("Clear button clicked via event listener");
-                window.clearAllNotifications();
-            });
+    // Notification Bell Click
+    const bellBtn = document.getElementById('notificationBellBtn');
+    if (bellBtn) {
+        bellBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            window.toggleNotificationDropdown();
+        });
+    }
+    
+    // Clear Notifications Button
+    const clearBtn = document.getElementById('clearNotificationsBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            console.log("Clear button clicked");
+            window.clearAllNotifications();
+        });
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('notificationDropdown');
+        const bell = document.getElementById('notificationBellBtn');
+        if (dropdown && dropdown.classList.contains('show')) {
+            if (!dropdown.contains(e.target) && !bell.contains(e.target)) {
+                window.closeNotificationDropdown();
+            }
         }
     });
     
