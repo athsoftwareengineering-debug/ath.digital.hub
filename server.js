@@ -917,7 +917,7 @@ app.post('/api/admin/user-reset/:phone', isAuthenticated, async (req, res) => {
     }
 });
 
-// ==================== CHAT API ====================
+// ==================== PUBLIC CHAT API (Global) ====================
 
 // Get recent messages
 app.get('/api/chat/messages', async (req, res) => {
@@ -936,7 +936,7 @@ app.get('/api/chat/messages', async (req, res) => {
     }
 });
 
-// Send message (User)
+// Send message (User) - Global
 app.post('/api/chat/send', async (req, res) => {
     try {
         const { user_id, username, message } = req.body;
@@ -965,7 +965,7 @@ app.post('/api/chat/send', async (req, res) => {
     }
 });
 
-// Send message (Admin only)
+// Send message (Admin only) - Global
 app.post('/api/chat/admin/send', isAuthenticated, async (req, res) => {
     try {
         const { user_id, username, message } = req.body;
@@ -1013,6 +1013,123 @@ app.delete('/api/chat/messages/:id', isAuthenticated, async (req, res) => {
     }
 });
 
+// ==================== PRIVATE CHAT API (1-on-1) ====================
+
+// Get chat list for admin (all users who have chatted)
+app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
+    try {
+        // Get unique users who have sent messages
+        const { data, error } = await supabase
+            .from('private_chat_messages')
+            .select('sender_id, sender_name, receiver_id, created_at')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        // Get unique users
+        const uniqueUsers = [];
+        const seen = new Set();
+        for (const msg of data || []) {
+            // Only show users that chatted with admin
+            if (msg.receiver_id === 'admin' && !seen.has(msg.sender_id)) {
+                seen.add(msg.sender_id);
+                uniqueUsers.push({
+                    user_id: msg.sender_id,
+                    username: msg.sender_name,
+                    last_message_time: msg.created_at
+                });
+            }
+        }
+        
+        res.json({ success: true, users: uniqueUsers });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get private messages between two users
+app.get('/api/chat/private/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const currentUserId = req.query.currentUserId || 'admin';
+        
+        const { data, error } = await supabase
+            .from('private_chat_messages')
+            .select('*')
+            .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUserId})`)
+            .order('created_at', { ascending: true })
+            .limit(200);
+        
+        if (error) throw error;
+        
+        // Mark messages as read (for admin)
+        if (currentUserId === 'admin') {
+            await supabase
+                .from('private_chat_messages')
+                .update({ is_read: true })
+                .eq('sender_id', userId)
+                .eq('receiver_id', 'admin');
+        }
+        
+        res.json({ success: true, messages: data || [] });
+    } catch (error) {
+        console.error('Error fetching private messages:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Send private message
+app.post('/api/chat/private/send', async (req, res) => {
+    try {
+        const { sender_id, receiver_id, sender_name, receiver_name, message } = req.body;
+        
+        if (!sender_id || !receiver_id || !message || message.trim() === '') {
+            return res.status(400).json({ success: false, error: 'Invalid message' });
+        }
+        
+        const { data, error } = await supabase
+            .from('private_chat_messages')
+            .insert([{
+                sender_id: sender_id,
+                receiver_id: receiver_id,
+                sender_name: sender_name || 'User',
+                receiver_name: receiver_name || 'User',
+                message: message.substring(0, 500),
+                is_read: false,
+                created_at: new Date().toISOString()
+            }])
+            .select();
+        
+        if (error) throw error;
+        
+        res.json({ success: true, message: data[0] });
+    } catch (error) {
+        console.error('Error sending private message:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get unread count for user
+app.get('/api/chat/private/unread/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        const { count, error } = await supabase
+            .from('private_chat_messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('receiver_id', userId)
+            .eq('is_read', false);
+        
+        if (error) throw error;
+        
+        res.json({ success: true, unreadCount: count || 0 });
+    } catch (error) {
+        console.error('Error getting unread count:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // ==================== START SERVER ====================
 app.listen(PORT, () => {
     console.log(`
@@ -1036,7 +1153,8 @@ app.listen(PORT, () => {
 ║        ✅ Database Notifications                                         ║
 ║        ✅ Request Logging (Morgan)                                       ║
 ║        ✅ Compression (Gzip)                                             ║
-║        ✅ Real-time Chat System (Polling)                                ║
+║        ✅ Global Chat System                                             ║
+║        ✅ Private 1-on-1 Chat System                                     ║
 ║                                                                          ║
 ║     💳 Payment Methods: KBZ Pay, WavePay, AYA Pay                        ║
 ║                                                                          ║
