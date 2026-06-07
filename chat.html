@@ -397,7 +397,7 @@
             }
             
             try {
-                // Load both Global and Private messages
+                // Load BOTH global and private messages
                 const [globalRes, privateRes] = await Promise.all([
                     fetch(`${API_BASE}/api/chat/messages`),
                     fetch(`${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`)
@@ -448,27 +448,24 @@
                 const myanmarTime = getMyanmarTime(msg.created_at);
                 const myanmarDate = getMyanmarDate(msg.created_at);
                 
-                // Check if message is from current user OR sent to current user (private)
+                // Determine if message is from user or admin
                 let isUser = false;
-                if (msg.is_admin === true) {
-                    isUser = false; // Admin message
-                } else if (msg.user_id === currentUserId) {
-                    isUser = true; // User's own message
-                } else if (msg.receiver_id === currentUserId && msg.sender_id === 'admin') {
-                    isUser = false; // Private message from admin to this user
-                } else if (msg.sender_id === currentUserId) {
-                    isUser = true; // User's private message
-                } else {
-                    isUser = false;
-                }
-                
                 let senderName = '';
                 let senderIcon = '';
                 
-                if (msg.is_admin === true || (msg.sender_id === 'admin' && msg.receiver_id === currentUserId)) {
+                if (msg.is_admin === true || (msg.sender_id === 'admin')) {
+                    // Admin message
+                    isUser = false;
                     senderName = '👑 Admin';
                     senderIcon = '<i class="fas fa-shield-alt"></i>';
+                } else if (msg.user_id === currentUserId || msg.sender_id === currentUserId) {
+                    // User's own message
+                    isUser = true;
+                    senderName = currentUsername || 'You';
+                    senderIcon = '<i class="fas fa-user"></i>';
                 } else {
+                    // Other user message (show as user but different name)
+                    isUser = false;
                     senderName = msg.username || 'User';
                     senderIcon = '<i class="fas fa-user"></i>';
                 }
