@@ -842,10 +842,6 @@
     let dbNotifications = [];
     let lastNotificationId = null;
     
-    // ========== CSRF TOKEN VARIABLE ==========
-    let csrfToken = null;
-    // ========================================
-    
     const costPriceMap = {
         "VIP LEVEL - 1": 14500,
         "VIP LEVEL - 2": 19500,
@@ -886,46 +882,14 @@
         showToast(`📋 ${text} copied!`);
     };
     
-    // ========== CSRF TOKEN FUNCTIONS ==========
-    async function fetchCsrfToken() {
-        try {
-            const res = await fetch(`${API_BASE}/api/csrf-token`, {
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await res.json();
-            if (data.csrfToken) {
-                csrfToken = data.csrfToken;
-                console.log('CSRF Token fetched successfully');
-                return true;
-            }
-        } catch(e) {
-            console.error('Error fetching CSRF token:', e);
-        }
-        return false;
-    }
-    // ==========================================
-    
-    // ========== UPDATED fetchWithRetry WITH CSRF TOKEN ==========
     async function fetchWithRetry(url, options = {}, retries = 3) {
-        // Add CSRF token to headers for non-GET requests
-        if (options.method && options.method !== 'GET' && csrfToken) {
-            options.headers = options.headers || {};
-            options.headers['X-CSRF-Token'] = csrfToken;
-        }
-        
         for (let i = 0; i < retries; i++) {
             try {
                 const res = await fetch(url, options);
-                // If CSRF token expired, try to refresh and retry once
-                if (res.status === 403 && options.method !== 'GET') {
-                    console.log('CSRF token may be expired, fetching new token...');
-                    await fetchCsrfToken();
-                    if (csrfToken) {
-                        options.headers['X-CSRF-Token'] = csrfToken;
-                        const retryRes = await fetch(url, options);
-                        return retryRes;
-                    }
+                if (res.status === 401 && url.includes('/api/admin/')) {
+                    console.log('Session expired, please login again');
+                    window.logout();
+                    return null;
                 }
                 return res;
             } catch (e) {
@@ -934,7 +898,6 @@
             }
         }
     }
-    // ============================================================
     
     // STATS UPDATE
     function updateAllStats() {
@@ -988,6 +951,7 @@
     async function loadNotificationsFromDatabase() {
         try {
             const res = await fetchWithRetry(`${API_BASE}/api/admin/notifications`);
+            if (!res) return;
             const data = await res.json();
             if (data.success && data.notifications) {
                 dbNotifications = data.notifications;
@@ -1005,6 +969,7 @@
     async function checkForNewNotifications() {
         try {
             const res = await fetchWithRetry(`${API_BASE}/api/admin/notifications`);
+            if (!res) return;
             const data = await res.json();
             if (data.success && data.notifications && data.notifications.length > 0) {
                 const latestNotification = data.notifications[0];
@@ -1075,6 +1040,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
+            if (!res) return;
             const data = await res.json();
             if (data.success) {
                 dbNotifications = [];
@@ -1099,6 +1065,7 @@
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' }
             });
+            if (!res) return;
             const data = await res.json();
             if (data.success) {
                 dbNotifications = dbNotifications.filter(n => n.id !== notificationId);
@@ -1121,6 +1088,7 @@
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' }
             });
+            if (!res) return;
             const data = await res.json();
             if (data.success) {
                 const notif = dbNotifications.find(n => n.id === notificationId);
@@ -1191,6 +1159,7 @@
         showToast('🔄 Cleaning up old orders...');
         try { 
             const res = await fetchWithRetry(`${API_BASE}/api/admin/cleanup-old`, { method: 'POST' }); 
+            if (!res) return;
             const data = await res.json(); 
             if (data.success) { 
                 showToast(`✅ ${data.message}`); 
@@ -1218,6 +1187,7 @@
                 headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ confirm: confirmText, keepProducts }) 
             }); 
+            if (!res) return;
             const data = await res.json(); 
             if (data.success) { 
                 showToast('✅ System reset completed!'); 
@@ -1328,7 +1298,7 @@
         if (countdownInterval) clearInterval(countdownInterval); 
     }
     
-    // ========== UPDATED LOGIN WITH CSRF TOKEN ==========
+    // ==================== LOGIN / LOGOUT ====================
     window.login = async function() {
         const password = document.getElementById('adminPassword')?.value || '';
         if (!password) {
@@ -1346,10 +1316,6 @@
             if (data.success) {
                 localStorage.setItem('adminToken', 'logged_in'); 
                 token = 'logged_in';
-                
-                // ✅ Fetch CSRF token after successful login
-                await fetchCsrfToken();
-                
                 const loginBox = document.getElementById('loginBox');
                 const adminContent = document.getElementById('adminContent');
                 const bottomNav = document.getElementById('bottomNav');
@@ -1367,7 +1333,6 @@
             showToast('Connection error: ' + e.message, true); 
         }
     };
-    // ===================================================
     
     window.logout = function() {
         stopAutoSync(); 
@@ -1375,7 +1340,6 @@
         clearAllCountdowns();
         localStorage.removeItem('adminToken'); 
         token = null;
-        csrfToken = null;  // Clear CSRF token on logout
         const loginBox = document.getElementById('loginBox');
         const adminContent = document.getElementById('adminContent');
         const bottomNav = document.getElementById('bottomNav');
@@ -1394,6 +1358,7 @@
     async function loadOrders() {
         try {
             const res = await fetchWithRetry(`${API_BASE}/api/admin/orders`);
+            if (!res) return;
             const data = await res.json();
             if (data.orders && Array.isArray(data.orders)) { 
                 allOrders = data.orders;
@@ -1418,6 +1383,7 @@
     async function loadUserStats() {
         try { 
             const res = await fetchWithRetry(`${API_BASE}/api/admin/user-stats`); 
+            if (!res) return;
             const data = await res.json(); 
             if (data.stats && Array.isArray(data.stats)) { 
                 userStats = data.stats; 
@@ -1439,6 +1405,7 @@
     async function loadProducts() {
         try { 
             const res = await fetchWithRetry(`${API_BASE}/api/market/products`); 
+            if (!res) return;
             const data = await res.json(); 
             products = data.products || []; 
             renderProducts(); 
@@ -1528,7 +1495,7 @@
                 headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ name, price, image, category, icon, discount }) 
             }); 
-            if (res.ok) { 
+            if (res && res.ok) { 
                 showToast(editingProductId ? 'Product updated' : 'Product added'); 
                 window.closeProductModal(); 
                 loadProducts(); 
@@ -1544,7 +1511,7 @@
         if (!confirm('Delete this product?')) return; 
         try { 
             const res = await fetchWithRetry(`${API_BASE}/api/market/products/${id}`, { method: 'DELETE' }); 
-            if (res.ok) { 
+            if (res && res.ok) { 
                 showToast('Product deleted'); 
                 loadProducts(); 
             } else { 
@@ -1562,7 +1529,7 @@
                 headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ phone, block }) 
             }); 
-            if (res.ok) { 
+            if (res && res.ok) { 
                 loadUserStats(); 
                 showToast(block ? '✅ User blocked' : '✅ User unblocked'); 
             } else { 
@@ -1580,7 +1547,7 @@
                 headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ phone }) 
             }); 
-            if (res.ok) { 
+            if (res && res.ok) { 
                 loadUserStats(); 
                 showToast('✅ Suspect flag cleared'); 
             } else { 
@@ -1599,7 +1566,7 @@
                     headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ phone }) 
                 }); 
-                if (res.ok) { 
+                if (res && res.ok) { 
                     loadUserStats(); 
                     showToast('✅ User deleted from stats'); 
                 } else { 
@@ -1619,7 +1586,7 @@
                     headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ phone }) 
                 }); 
-                if (res.ok) { 
+                if (res && res.ok) { 
                     loadAllData(); 
                     showToast('✅ All orders deleted'); 
                 } else { 
@@ -1804,7 +1771,7 @@
     window.approveOrder = async function(id) { 
         try { 
             const res = await fetchWithRetry(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' }); 
-            if (res.ok) { 
+            if (res && res.ok) { 
                 showToast('✅ Approved'); 
                 loadOrders(); 
             } else { 
@@ -1818,7 +1785,7 @@
     window.rejectOrder = async function(id) { 
         try { 
             const res = await fetchWithRetry(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' }); 
-            if (res.ok) { 
+            if (res && res.ok) { 
                 showToast('❌ Rejected'); 
                 loadOrders(); 
                 loadUserStats(); 
@@ -1834,7 +1801,7 @@
         if (confirm('Delete this order?')) { 
             try { 
                 const res = await fetchWithRetry(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' }); 
-                if (res.ok) { 
+                if (res && res.ok) { 
                     showToast('🗑 Deleted'); 
                     loadOrders(); 
                 } else { 
@@ -1890,6 +1857,7 @@
         });
     }
     
+    // Clear Notifications Button
     const clearBtn = document.getElementById('clearNotificationsBtn');
     if (clearBtn) {
         const newClearBtn = clearBtn.cloneNode(true);
@@ -1956,9 +1924,6 @@
         loadNotificationsFromDatabase();
         startAutoSync(); 
         startNotificationCheck();
-        
-        // Fetch CSRF token if already logged in
-        fetchCsrfToken();
     }
 })();
 </script>
