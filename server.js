@@ -17,25 +17,47 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ==================== SALES HOURS CONFIGURATION ====================
-// Default sales hours (9 AM to 7 PM Myanmar time)
+// ==================== SALES HOURS CONFIGURATION (AUTO/MANUAL MODE) ====================
 let salesHours = {
     enabled: true,
-    startHour: 9,      // 9 AM
-    endHour: 19,       // 7 PM (24-hour format)
+    mode: 'auto',           // 'auto' or 'manual'
+    startHour: 9,           // 9 AM
+    endHour: 19,            // 7 PM (24-hour format)
     timezone: 'Asia/Yangon',
+    manualStatus: true,     // Manual mode မှာ ဖွင့်/ပိတ်
     message: 'ကျေးဇူးပြု၍ နံနက် ၉ နာရီမှ ညနေ ၇ နာရီအတွင်းမှသာ ဝယ်ယူနိုင်ပါသည်။'
 };
 
-// Check if order can be placed based on time
+// Check if order can be placed based on mode
 function canPlaceOrder() {
     if (!salesHours.enabled) return true;
     
-    const now = new Date();
-    const myanmarTime = new Date(now.toLocaleString('en-US', { timeZone: salesHours.timezone }));
-    const currentHour = myanmarTime.getHours();
+    if (salesHours.mode === 'manual') {
+        // Manual mode - admin controls directly
+        return salesHours.manualStatus;
+    } else {
+        // Auto mode - based on time
+        const now = new Date();
+        const myanmarTime = new Date(now.toLocaleString('en-US', { timeZone: salesHours.timezone }));
+        const currentHour = myanmarTime.getHours();
+        return currentHour >= salesHours.startHour && currentHour < salesHours.endHour;
+    }
+}
+
+// Get current status message
+function getStatusMessage() {
+    const isOpen = canPlaceOrder();
+    const modeText = salesHours.mode === 'auto' ? 'အလိုအလျောက်' : 'လက်ဖြင့်';
     
-    return currentHour >= salesHours.startHour && currentHour < salesHours.endHour;
+    if (salesHours.mode === 'manual') {
+        return isOpen ? 
+            `🟢 ဆိုင်ဖွင့်ချိန် (Manual Mode - Admin ဖွင့်ထား)` : 
+            `🔴 ဆိုင်ပိတ်ချိန် (Manual Mode - Admin ပိတ်ထား)`;
+    } else {
+        return isOpen ? 
+            `🟢 ဆိုင်ဖွင့်ချိန် (${salesHours.startHour.toString().padStart(2,'0')}:00 - ${salesHours.endHour.toString().padStart(2,'0')}:00) - ${modeText}` : 
+            `🔴 ဆိုင်ပိတ်ချိန်။ ကျေးဇူးပြု၍ နံနက် ${salesHours.startHour}:00 မှ ညနေ ${salesHours.endHour}:00 အတွင်းမှသာ ဝယ်ယူနိုင်ပါသည်။ (${modeText})`;
+    }
 }
 
 // ==================== VALIDATION SCHEMAS ====================
@@ -104,7 +126,6 @@ app.use((req, res, next) => {
 });
 
 // ==================== RATE LIMITING ====================
-// General API limiter - 500 requests per 15 minutes
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 500,
@@ -113,7 +134,6 @@ const apiLimiter = rateLimit({
     skip: (req) => req.path === '/api/health'
 });
 
-// Chat API specific limiter - 60 requests per minute
 const chatLimiter = rateLimit({
     windowMs: 60 * 1000,
     max: 60,
@@ -121,7 +141,6 @@ const chatLimiter = rateLimit({
     keyGenerator: (req) => req.ip
 });
 
-// Admin API limiter - 300 requests per 15 minutes
 const adminLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 300,
@@ -130,14 +149,12 @@ const adminLimiter = rateLimit({
     skip: (req) => !req.session?.isAdmin
 });
 
-// Market API limiter - 200 requests per 15 minutes
 const marketLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 200,
     message: { error: 'Too many requests, please try again later.' }
 });
 
-// Login limiter - 5 attempts per 15 minutes
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
@@ -145,7 +162,6 @@ const loginLimiter = rateLimit({
     skipSuccessfulRequests: true
 });
 
-// Order limiter - 3 orders per minute
 const orderLimiter = rateLimit({
     windowMs: 60 * 1000,
     max: 3,
@@ -153,7 +169,6 @@ const orderLimiter = rateLimit({
     keyGenerator: (req) => req.body.phone || req.ip
 });
 
-// Apply general limiter to all /api/ routes
 app.use('/api/', apiLimiter);
 
 // ==================== SESSION CONFIGURATION ====================
@@ -369,35 +384,29 @@ app.get('/api/payment-methods', (req, res) => {
 
 // Get current sales status (public)
 app.get('/api/sales/status', (req, res) => {
-    const now = new Date();
-    const myanmarTime = new Date(now.toLocaleString('en-US', { timeZone: salesHours.timezone }));
-    const currentHour = myanmarTime.getHours();
     const isOpen = canPlaceOrder();
-    
-    let message = '';
-    if (isOpen) {
-        message = `🟢 ဆိုင်ဖွင့်ချိန် (${salesHours.startHour.toString().padStart(2,'0')}:00 - ${salesHours.endHour.toString().padStart(2,'0')}:00)`;
-    } else {
-        message = `🔴 ဆိုင်ပိတ်ချိန်။ ကျေးဇူးပြု၍ နံနက် ${salesHours.startHour}:00 မှ ညနေ ${salesHours.endHour}:00 အတွင်းမှသာ ဝယ်ယူနိုင်ပါသည်။`;
-    }
+    const message = getStatusMessage();
     
     res.json({
         success: true,
         isOpen: isOpen,
-        currentHour: currentHour,
+        mode: salesHours.mode,
         startHour: salesHours.startHour,
         endHour: salesHours.endHour,
+        manualStatus: salesHours.manualStatus,
         message: message
     });
 });
 
 // Admin endpoint to update sales hours
 app.post('/api/admin/sales-hours', isAuthenticated, (req, res) => {
-    const { enabled, startHour, endHour } = req.body;
+    const { enabled, mode, startHour, endHour, manualStatus } = req.body;
     
     if (enabled !== undefined) salesHours.enabled = enabled;
+    if (mode !== undefined && (mode === 'auto' || mode === 'manual')) salesHours.mode = mode;
     if (startHour !== undefined && startHour >= 0 && startHour <= 23) salesHours.startHour = startHour;
     if (endHour !== undefined && endHour >= 0 && endHour <= 23) salesHours.endHour = endHour;
+    if (manualStatus !== undefined) salesHours.manualStatus = manualStatus;
     
     res.json({ 
         success: true, 
@@ -409,6 +418,17 @@ app.post('/api/admin/sales-hours', isAuthenticated, (req, res) => {
 // Admin endpoint to get current sales hours
 app.get('/api/admin/sales-hours', isAuthenticated, (req, res) => {
     res.json({ success: true, salesHours: salesHours });
+});
+
+// Admin endpoint to toggle shop (manual mode only)
+app.post('/api/admin/toggle-shop', isAuthenticated, (req, res) => {
+    const { isOpen } = req.body;
+    if (salesHours.mode === 'manual') {
+        salesHours.manualStatus = isOpen;
+        res.json({ success: true, isOpen: isOpen, message: `ဆိုင် ${isOpen ? 'ဖွင့်လိုက်ပြီ' : 'ပိတ်လိုက်ပြီ'}` });
+    } else {
+        res.status(400).json({ success: false, error: 'Auto mode မှာ manual toggle မရပါ။ Auto mode ကို Manual mode ပြောင်းပါ။' });
+    }
 });
 
 // ==================== STATIC ROUTES ====================
@@ -592,15 +612,14 @@ app.get('/api/live/order/:phone', async (req, res) => {
 // ==================== CREATE ORDER ====================
 app.post('/api/orders', orderLimiter, upload.single('slip'), async (req, res) => {
     try {
-        // ============ CHECK SALES HOURS ============
+        // Check if shop is open based on mode
         if (!canPlaceOrder()) {
             if (req.file) fs.unlinkSync(req.file.path);
             return res.status(403).json({ 
                 success: false, 
-                error: salesHours.message,
+                error: getStatusMessage(),
                 isOpen: false,
-                startHour: salesHours.startHour,
-                endHour: salesHours.endHour
+                mode: salesHours.mode
             });
         }
         
@@ -1028,8 +1047,6 @@ app.post('/api/admin/user-reset/:phone', isAuthenticated, async (req, res) => {
 });
 
 // ==================== PUBLIC CHAT API (Global) ====================
-
-// Get recent messages
 app.get('/api/chat/messages', chatLimiter, async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -1046,7 +1063,6 @@ app.get('/api/chat/messages', chatLimiter, async (req, res) => {
     }
 });
 
-// Send message (User) - Global
 app.post('/api/chat/send', chatLimiter, async (req, res) => {
     try {
         const { user_id, username, message } = req.body;
@@ -1075,7 +1091,6 @@ app.post('/api/chat/send', chatLimiter, async (req, res) => {
     }
 });
 
-// Send message (Admin only) - Global
 app.post('/api/chat/admin/send', isAuthenticated, chatLimiter, async (req, res) => {
     try {
         const { user_id, username, message } = req.body;
@@ -1104,7 +1119,6 @@ app.post('/api/chat/admin/send', isAuthenticated, chatLimiter, async (req, res) 
     }
 });
 
-// Delete message (Admin only)
 app.delete('/api/chat/messages/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
@@ -1124,8 +1138,6 @@ app.delete('/api/chat/messages/:id', isAuthenticated, async (req, res) => {
 });
 
 // ==================== PRIVATE CHAT API (1-on-1) ====================
-
-// Get chat list for admin (all users who have chatted)
 app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -1155,7 +1167,6 @@ app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
     }
 });
 
-// Get private messages between two users
 app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
     try {
         const { userId } = req.params;
@@ -1170,7 +1181,6 @@ app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
         
         if (error) throw error;
         
-        // Mark messages as read (for admin)
         if (currentUserId === 'admin') {
             await supabase
                 .from('private_chat_messages')
@@ -1186,7 +1196,6 @@ app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
     }
 });
 
-// Send private message
 app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
     try {
         const { sender_id, receiver_id, sender_name, receiver_name, message } = req.body;
@@ -1217,7 +1226,6 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
     }
 });
 
-// Get unread count for user
 app.get('/api/chat/private/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -1253,7 +1261,7 @@ app.listen(PORT, () => {
 ║        ✅ Helmet.js (Security Headers)                                   ║
 ║        ✅ CSP with iframe support                                        ║
 ║        ✅ Rate Limiting (General: 500/15min, Chat: 60/min)              ║
-║        ✅ Sales Hours Control (9 AM - 7 PM Myanmar Time)                ║
+║        ✅ Sales Hours Control (Auto/Manual Mode)                        ║
 ║        ✅ SameSite=Strict Cookie (CSRF Protection)                       ║
 ║        ✅ Session-based Admin Auth (HttpOnly Cookie)                     ║
 ║        ✅ Input Validation (Joi)                                         ║
