@@ -1014,19 +1014,32 @@
         listContainer.innerHTML = html;
     }
     
+    // ========== FIXED: Clear All Notifications - Enhanced Version ==========
     window.clearAllNotifications = function() { 
         console.log("Clearing all notifications...");
         try {
+            // Clear the notifications array
             notifications = [];
+            
+            // Clear from localStorage
             localStorage.removeItem('adminNotifications');
+            
+            // Update the UI
             updateNotificationUI();
+            
+            // Show success message
             showToast('✅ All notifications cleared');
+            
+            // Close the dropdown
             window.closeNotificationDropdown();
+            
+            // Update badge to 0
             const badge = document.getElementById('notificationBadge');
             if (badge) {
                 badge.style.display = 'none';
                 badge.innerText = '0';
             }
+            
             console.log("Notifications cleared successfully!");
         } catch(e) {
             console.error("Error clearing notifications:", e);
@@ -1034,6 +1047,7 @@
         }
     };
     
+    // ========== FIXED: Delete single notification ==========
     window.deleteNotification = function(notificationId) {
         console.log("Deleting notification:", notificationId);
         const index = notifications.findIndex(n => String(n.id) === String(notificationId));
@@ -1045,6 +1059,7 @@
         }
     };
     
+    // ========== FIXED: Mark as read ==========
     window.markNotificationRead = function(notificationId) {
         console.log("Marking notification as read:", notificationId);
         const notif = notifications.find(n => String(n.id) === String(notificationId));
@@ -1818,7 +1833,7 @@
         else if (tab === 'market') loadProducts();
     };
     
-    // EVENT LISTENERS & INIT
+    // ========== FIXED: Clear Button Event Listener ==========
     const bellBtn = document.getElementById('notificationBellBtn');
     if (bellBtn) {
         bellBtn.addEventListener('click', function(e) {
@@ -1827,13 +1842,64 @@
         });
     }
     
+    // Fixed Clear Notifications Button - Enhanced Version
     const clearBtn = document.getElementById('clearNotificationsBtn');
     if (clearBtn) {
-        clearBtn.addEventListener('click', function(e) {
+        // Remove any existing event listeners by cloning
+        const newClearBtn = clearBtn.cloneNode(true);
+        clearBtn.parentNode.replaceChild(newClearBtn, clearBtn);
+        
+        newClearBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             e.preventDefault();
-            console.log("Clear button clicked");
-            window.clearAllNotifications();
+            console.log("Clear button clicked - manual clear");
+            
+            // Direct clear without calling external function
+            try {
+                // Clear notifications array
+                if(typeof notifications !== 'undefined') {
+                    notifications.length = 0;
+                }
+                
+                // Clear localStorage
+                localStorage.removeItem('adminNotifications');
+                
+                // Update UI
+                if(typeof updateNotificationUI === 'function') {
+                    updateNotificationUI();
+                }
+                
+                // Update badge
+                const badge = document.getElementById('notificationBadge');
+                if(badge) {
+                    badge.style.display = 'none';
+                    badge.innerText = '0';
+                }
+                
+                // Update list container
+                const listContainer = document.getElementById('notificationList');
+                if(listContainer) {
+                    listContainer.innerHTML = '<div class="notification-empty">📭 No notifications yet</div>';
+                }
+                
+                // Show toast
+                if(typeof showToast === 'function') {
+                    showToast('✅ All notifications cleared');
+                } else {
+                    alert('✅ All notifications cleared');
+                }
+                
+                // Close dropdown
+                const dropdown = document.getElementById('notificationDropdown');
+                if(dropdown) dropdown.classList.remove('show');
+                
+                console.log("Notifications cleared successfully!");
+            } catch(err) {
+                console.error("Error clearing notifications:", err);
+                if(typeof showToast === 'function') {
+                    showToast('Error clearing notifications', true);
+                }
+            }
         });
     }
     
