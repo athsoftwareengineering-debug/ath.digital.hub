@@ -5,29 +5,14 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
-// Validate environment variables
 if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
     console.error('❌ Missing Supabase environment variables!');
-    console.error('Please check your .env file has:');
-    console.error('  SUPABASE_URL');
-    console.error('  SUPABASE_ANON_KEY');
-    console.error('  SUPABASE_SERVICE_KEY');
     process.exit(1);
 }
 
-// Anon client (for public operations like creating orders)
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Admin client (with service role for admin operations like approving/rejecting)
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-// ==================== USER ID AUTO-GENERATE FUNCTIONS ====================
-
-/**
- * Get next available user ID
- * Format: ATH-10001, ATH-10002, etc.
- * @returns {Promise<string>} Next user ID
- */
 async function getNextUserId() {
     try {
         const { data, error } = await supabaseAdmin
@@ -38,14 +23,12 @@ async function getNextUserId() {
         
         if (error) {
             console.error('Error getting next user ID:', error);
-            // Fallback to timestamp-based ID
             return `ATH-${Date.now()}`;
         }
         
-        let nextId = 10001; // Starting from ATH-10001
+        let nextId = 10001;
         
         if (data && data.length > 0 && data[0].user_id) {
-            // Extract number from existing ID (ATH-10001 -> 10001)
             const match = data[0].user_id.match(/ATH-(\d+)/);
             if (match) {
                 const lastId = parseInt(match[1]);
@@ -60,15 +43,8 @@ async function getNextUserId() {
     }
 }
 
-/**
- * Create a new user with auto-generated user ID
- * @param {string} phone - User's phone number
- * @param {string} username - User's name
- * @returns {Promise<Object|null>} Created user object or null
- */
 async function createNewUser(phone, username) {
     try {
-        // Check if user already exists
         const { data: existing, error: checkError } = await supabaseAdmin
             .from('user_stats')
             .select('*')
@@ -84,10 +60,8 @@ async function createNewUser(phone, username) {
             return existing;
         }
         
-        // Get next available user ID
         const userId = await getNextUserId();
         
-        // Create new user
         const { data, error } = await supabaseAdmin
             .from('user_stats')
             .insert([{
@@ -118,11 +92,6 @@ async function createNewUser(phone, username) {
     }
 }
 
-/**
- * Get user by phone number
- * @param {string} phone - User's phone number
- * @returns {Promise<Object|null>} User object or null
- */
 async function getUserByPhone(phone) {
     try {
         const { data, error } = await supabaseAdmin
@@ -142,11 +111,6 @@ async function getUserByPhone(phone) {
     }
 }
 
-/**
- * Get user by user ID
- * @param {string} userId - User's ID (e.g., ATH-10001)
- * @returns {Promise<Object|null>} User object or null
- */
 async function getUserByUserId(userId) {
     try {
         const { data, error } = await supabaseAdmin
@@ -166,12 +130,6 @@ async function getUserByUserId(userId) {
     }
 }
 
-/**
- * Update user information
- * @param {string} phone - User's phone number
- * @param {Object} updates - Fields to update
- * @returns {Promise<Object|null>} Updated user object or null
- */
 async function updateUser(phone, updates) {
     try {
         const { data, error } = await supabaseAdmin
@@ -196,11 +154,6 @@ async function updateUser(phone, updates) {
     }
 }
 
-/**
- * Get user stats with order count and reject count
- * @param {string} phone - User's phone number
- * @returns {Promise<Object|null>} User stats object or null
- */
 async function getUserStats(phone) {
     try {
         const { data, error } = await supabaseAdmin
@@ -219,12 +172,6 @@ async function getUserStats(phone) {
     }
 }
 
-/**
- * Update user statistics (order count, reject count)
- * @param {string} phone - User's phone number
- * @param {boolean} isRejected - Whether this order was rejected
- * @returns {Promise<void>}
- */
 async function updateUserStats(phone, isRejected = false) {
     try {
         const existing = await getUserStats(phone);
@@ -266,20 +213,11 @@ async function updateUserStats(phone, isRejected = false) {
     }
 }
 
-/**
- * Check if phone is blocked
- * @param {string} phone - User's phone number
- * @returns {Promise<boolean>} True if blocked
- */
 async function isPhoneBlocked(phone) {
     const stats = await getUserStats(phone);
     return stats?.blocked === true;
 }
 
-/**
- * Get all users (for admin panel)
- * @returns {Promise<Array>} List of all users
- */
 async function getAllUsers() {
     try {
         const { data, error } = await supabaseAdmin
@@ -299,11 +237,6 @@ async function getAllUsers() {
     }
 }
 
-/**
- * Search users by phone or username
- * @param {string} searchTerm - Search term
- * @returns {Promise<Array>} List of matching users
- */
 async function searchUsers(searchTerm) {
     try {
         const { data, error } = await supabaseAdmin
@@ -324,10 +257,9 @@ async function searchUsers(searchTerm) {
     }
 }
 
-// Test connection function
 async function testConnection() {
     try {
-        const { data, error } = await supabase.from('orders').select('count', { count: 'exact', head: true });
+        const { error } = await supabase.from('orders').select('count', { count: 'exact', head: true });
         if (error) {
             console.error('❌ Supabase connection test failed:', error.message);
             return false;
@@ -340,7 +272,6 @@ async function testConnection() {
     }
 }
 
-// Run test if not in production
 if (process.env.NODE_ENV !== 'production') {
     testConnection();
 }
@@ -348,7 +279,6 @@ if (process.env.NODE_ENV !== 'production') {
 module.exports = { 
     supabase, 
     supabaseAdmin,
-    // User ID functions
     getNextUserId,
     createNewUser,
     getUserByPhone,
