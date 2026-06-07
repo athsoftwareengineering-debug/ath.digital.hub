@@ -36,7 +36,7 @@ function maskPhone(phone) {
 app.use(compression());
 app.use(morgan('combined'));
 
-// ==================== CSP CONFIGURATION (FIXED FOR IFRAMES) ====================
+// ==================== CSP CONFIGURATION ====================
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -317,6 +317,8 @@ app.get('/api/payment-methods', (req, res) => {
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 app.get('/admin.html', (req, res) => { res.sendFile(path.join(__dirname, 'admin.html')); });
 app.get('/dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'dashboard_live.html')); });
+app.get('/chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'chat.html')); });
+app.get('/admin-chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'admin-chat.html')); });
 app.get('/api/health', (req, res) => { res.json({ status: 'ok', timestamp: new Date().toISOString() }); });
 
 // ==================== USER REGISTRATION ====================
@@ -916,6 +918,7 @@ app.post('/api/admin/user-reset/:phone', isAuthenticated, async (req, res) => {
 });
 
 // ==================== CHAT API ====================
+
 // Get recent messages
 app.get('/api/chat/messages', async (req, res) => {
     try {
@@ -1033,7 +1036,7 @@ app.listen(PORT, () => {
 ║        ✅ Database Notifications                                         ║
 ║        ✅ Request Logging (Morgan)                                       ║
 ║        ✅ Compression (Gzip)                                             ║
-║        ✅ Real-time Chat System                                          ║
+║        ✅ Real-time Chat System (Polling)                                ║
 ║                                                                          ║
 ║     💳 Payment Methods: KBZ Pay, WavePay, AYA Pay                        ║
 ║                                                                          ║
