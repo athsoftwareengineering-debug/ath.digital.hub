@@ -287,15 +287,9 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const API_BASE = window.location.origin;
-        let chatSubscription = null;
-        
-        // Supabase configuration (use same as main app)
-        const SUPABASE_URL = 'https://your-project.supabase.co';  // ← Replace
-        const SUPABASE_ANON_KEY = 'your-anon-key';  // ← Replace
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let refreshInterval = null;
         
         async function loadAdminChatMessages() {
             const container = document.getElementById('adminChatMessages');
@@ -311,6 +305,7 @@
                     container.innerHTML = '<div class="admin-chat-loading">No messages yet</div>';
                 }
             } catch (error) {
+                console.error('Error loading messages:', error);
                 container.innerHTML = '<div class="admin-chat-loading">Connection error</div>';
             }
         }
@@ -373,10 +368,11 @@
                     input.style.height = 'auto';
                     await loadAdminChatMessages();
                 } else {
-                    alert('Failed to send');
+                    showChatNotification('Failed to send', true);
                 }
             } catch (error) {
-                alert('Connection error');
+                console.error('Send error:', error);
+                showChatNotification('Connection error', true);
             } finally {
                 input.disabled = false;
                 sendBtn.disabled = false;
@@ -384,11 +380,20 @@
             }
         }
         
+        function showChatNotification(message, isError) {
+            // Try to use parent toast
+            if (window.parent && window.parent.showToast) {
+                window.parent.showToast(message, isError);
+            } else {
+                alert(message);
+            }
+        }
+        
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, function(m) {
                 if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
+                if (m === '<') return '&lt;'
                 if (m === '>') return '&gt;';
                 return m;
             });
@@ -400,20 +405,6 @@
                 textarea.style.height = 'auto';
                 textarea.style.height = Math.min(textarea.scrollHeight, 80) + 'px';
             }
-        }
-        
-        function setupAdminRealtime() {
-            if (chatSubscription) return;
-            
-            chatSubscription = supabaseClient
-                .channel('admin_chat_realtime')
-                .on('postgres_changes', 
-                    { event: 'INSERT', schema: 'public', table: 'chat_messages' },
-                    (payload) => {
-                        loadAdminChatMessages();
-                    }
-                )
-                .subscribe();
         }
         
         function setupKeyboardShortcuts() {
@@ -437,12 +428,12 @@
         
         async function initAdminChat() {
             await loadAdminChatMessages();
-            setupAdminRealtime();
             setupKeyboardShortcuts();
             
-            setInterval(() => {
+            // Refresh every 5 seconds (no Supabase Realtime needed)
+            refreshInterval = setInterval(() => {
                 loadAdminChatMessages();
-            }, 10000);
+            }, 5000);
         }
         
         initAdminChat();
