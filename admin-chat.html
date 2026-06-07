@@ -148,7 +148,7 @@
             border-bottom: 1px solid rgba(0,212,255,0.1);
             font-size: 0.7rem;
             font-weight: 600;
-            color: var(--cyan);
+            color: #00d4ff;
             background: rgba(0,212,255,0.05);
         }
         
@@ -170,7 +170,7 @@
         
         .user-item.active {
             background: rgba(0,212,255,0.15);
-            border-left: 3px solid var(--cyan);
+            border-left: 3px solid #00d4ff;
         }
         
         .user-name {
@@ -183,15 +183,6 @@
             font-size: 0.55rem;
             color: #64748b;
             margin-top: 2px;
-        }
-        
-        .unread-badge {
-            background: #f43f5e;
-            color: white;
-            font-size: 0.5rem;
-            border-radius: 40px;
-            padding: 2px 6px;
-            margin-left: 8px;
         }
         
         /* Chat Main Area */
@@ -211,7 +202,7 @@
         .chat-with {
             font-size: 0.75rem;
             font-weight: 600;
-            color: var(--cyan);
+            color: #00d4ff;
         }
         
         .chat-messages-container {
@@ -439,27 +430,64 @@
     <script>
         const API_BASE = window.location.origin;
         let currentSelectedUser = null;
+        let currentSelectedUserName = null;
         let currentAdminId = 'admin';
         let currentAdminName = 'Admin';
         let messageRefreshInterval = null;
         let userListRefreshInterval = null;
         let isMinimized = false;
         
-        // Load user list for admin
+        // Load user list from both Global Chat and Private Chat
         async function loadUserList() {
             const container = document.getElementById('userList');
             if (!container) return;
             
             try {
-                const response = await fetch(`${API_BASE}/api/chat/admin/users`, {
+                // 1. Get users from Global Chat
+                const globalResponse = await fetch(`${API_BASE}/api/chat/messages`);
+                const globalData = await globalResponse.json();
+                
+                // 2. Get users from Private Chat
+                const privateResponse = await fetch(`${API_BASE}/api/chat/admin/users`, {
                     credentials: 'include'
                 });
-                const data = await response.json();
+                const privateData = await privateResponse.json();
                 
-                if (data.success && data.users && data.users.length > 0) {
-                    renderUserList(data.users);
+                // Combine users from both sources
+                const uniqueUsers = new Map();
+                
+                // Add users from global chat
+                if (globalData.success && globalData.messages) {
+                    for (const msg of globalData.messages) {
+                        if (!msg.is_admin && !uniqueUsers.has(msg.user_id)) {
+                            uniqueUsers.set(msg.user_id, {
+                                user_id: msg.user_id,
+                                username: msg.username,
+                                from_global: true
+                            });
+                        }
+                    }
+                }
+                
+                // Add users from private chat
+                if (privateData.success && privateData.users) {
+                    for (const user of privateData.users) {
+                        if (!uniqueUsers.has(user.user_id)) {
+                            uniqueUsers.set(user.user_id, {
+                                user_id: user.user_id,
+                                username: user.username,
+                                from_private: true
+                            });
+                        }
+                    }
+                }
+                
+                const users = Array.from(uniqueUsers.values());
+                
+                if (users.length > 0) {
+                    renderUserList(users);
                 } else {
-                    container.innerHTML = '<div class="loading">No users yet</div>';
+                    container.innerHTML = '<div class="loading">📭 No users yet. Wait for someone to send a message.</div>';
                 }
             } catch (error) {
                 console.error('Error loading users:', error);
@@ -489,6 +517,7 @@
         // Select user to chat with
         async function selectUser(userId, username) {
             currentSelectedUser = userId;
+            currentSelectedUserName = username;
             
             // Update header
             const header = document.getElementById('chatMainHeader');
@@ -505,7 +534,7 @@
             const inputContainer = document.getElementById('chatInputContainer');
             if (inputContainer) inputContainer.style.display = 'block';
             
-            // Load messages
+            // Load messages (try private chat first, fallback to global)
             await loadPrivateMessages(userId);
             
             // Highlight selected user in list
@@ -516,21 +545,40 @@
             if (activeItem) activeItem.classList.add('active');
         }
         
-        // Load private messages
+        // Load messages (private + global combined)
         async function loadPrivateMessages(userId) {
             const container = document.getElementById('chatMessages');
             if (!container) return;
             
-            const currentUserId = localStorage.getItem('userId') || 'admin';
-            
             try {
-                const response = await fetch(`${API_BASE}/api/chat/private/${userId}?currentUserId=${currentAdminId}`);
-                const data = await response.json();
+                // Try to load private messages first
+                const privateResponse = await fetch(`${API_BASE}/api/chat/private/${userId}?currentUserId=${currentAdminId}`);
+                const privateData = await privateResponse.json();
                 
-                if (data.success && data.messages) {
-                    renderPrivateMessages(data.messages);
+                // Also load global messages from this user
+                const globalResponse = await fetch(`${API_BASE}/api/chat/messages`);
+                const globalData = await globalResponse.json();
+                
+                let allMessages = [];
+                
+                // Add private messages
+                if (privateData.success && privateData.messages) {
+                    allMessages = [...privateData.messages];
+                }
+                
+                // Add global messages from this user
+                if (globalData.success && globalData.messages) {
+                    const userGlobalMessages = globalData.messages.filter(msg => msg.user_id === userId);
+                    allMessages = [...allMessages, ...userGlobalMessages];
+                }
+                
+                // Sort by time
+                allMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                
+                if (allMessages.length > 0) {
+                    renderCombinedMessages(allMessages);
                 } else {
-                    container.innerHTML = '<div class="no-selection">No messages yet. Start the conversation!</div>';
+                    container.innerHTML = '<div class="no-selection">💬 No messages yet. Start the conversation!</div>';
                 }
             } catch (error) {
                 console.error('Error loading messages:', error);
@@ -538,7 +586,7 @@
             }
         }
         
-        function renderPrivateMessages(messages) {
+        function renderCombinedMessages(messages) {
             const container = document.getElementById('chatMessages');
             if (!container) return;
             
@@ -550,8 +598,8 @@
             let html = '';
             for (const msg of messages) {
                 const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const isAdmin = msg.sender_id === 'admin';
-                const senderName = isAdmin ? '👑 Admin' : (msg.sender_name || 'User');
+                const isAdmin = msg.sender_id === 'admin' || msg.is_admin === true;
+                const senderName = isAdmin ? '👑 Admin' : (msg.sender_name || msg.username || 'User');
                 
                 html += `
                     <div class="chat-message ${isAdmin ? 'admin' : 'user'}">
@@ -586,7 +634,7 @@
                         sender_id: currentAdminId,
                         receiver_id: currentSelectedUser,
                         sender_name: currentAdminName,
-                        receiver_name: 'User',
+                        receiver_name: currentSelectedUserName || 'User',
                         message: message
                     })
                 });
