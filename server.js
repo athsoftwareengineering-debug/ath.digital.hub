@@ -29,19 +29,16 @@ const orderSchema = Joi.object({
 });
 
 // ==================== SECURITY MIDDLEWARE ====================
-
-// Compression
 app.use(compression());
-
-// Logging (for monitoring attacks)
 app.use(morgan('combined'));
 
-// Helmet with strict CSP
+// ==================== UPDATED CSP CONFIGURATION ====================
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
+            scriptSrcAttr: ["'unsafe-inline'"],  // ✅ FIXED: Allows inline event handlers
             styleSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
             imgSrc: ["'self'", "data:", "https:", "i.ibb.co"],
             connectSrc: ["'self'", process.env.SUPABASE_URL],
@@ -113,8 +110,6 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 app.use(session(sessionConfig));
-
-// CSRF Protection
 const csrfProtection = csrf({ cookie: true });
 
 // CORS
@@ -126,16 +121,13 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(__dirname));
-
-// Apply rate limiting
 app.use('/api/', apiLimiter);
 
-// ==================== FILE UPLOAD SECURITY ====================
+// ==================== FILE UPLOAD ====================
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
-
 app.use('/uploads', express.static('uploads'));
 
 const storage = multer.diskStorage({
@@ -163,7 +155,6 @@ const upload = multer({
     }
 });
 
-// Image processing function
 async function processImage(inputPath) {
     try {
         const outputPath = inputPath.replace(/\.\w+$/, '_processed.jpg');
@@ -296,11 +287,7 @@ app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); }
 app.get('/admin.html', (req, res) => { res.sendFile(path.join(__dirname, 'admin.html')); });
 app.get('/dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'dashboard_live.html')); });
 app.get('/api/health', (req, res) => { res.json({ status: 'ok', timestamp: new Date().toISOString() }); });
-
-// ==================== CSRF TOKEN ENDPOINT ====================
-app.get('/api/csrf-token', csrfProtection, (req, res) => {
-    res.json({ csrfToken: req.csrfToken() });
-});
+app.get('/api/csrf-token', csrfProtection, (req, res) => { res.json({ csrfToken: req.csrfToken() }); });
 
 // ==================== USER REGISTRATION ====================
 app.post('/api/user/register', async (req, res) => {
@@ -485,7 +472,6 @@ app.post('/api/orders', orderLimiter, upload.single('slip'), async (req, res) =>
         const { phone, plan, price, sender_name, last5_digits, payment_method } = req.body;
         const slipFile = req.file;
         
-        // Validate input
         const { error } = orderSchema.validate({ phone, plan, price, payment_method });
         if (error) {
             if (slipFile) fs.unlinkSync(slipFile.path);
@@ -729,6 +715,7 @@ app.delete('/api/admin/orders/:id', isAuthenticated, csrfProtection, async (req,
     }
 });
 
+// ==================== ADMIN LOGIN ====================
 app.post('/api/admin/login', loginLimiter, async (req, res) => {
     const { password } = req.body;
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
@@ -817,6 +804,7 @@ app.listen(PORT, () => {
 ║                                                                          ║
 ║     🔒 SECURITY FEATURES ENABLED:                                        ║
 ║        ✅ Helmet.js (Security Headers)                                   ║
+║        ✅ CSP with unsafe-inline (for admin panel)                       ║
 ║        ✅ Rate Limiting (100 requests/15min)                            ║
 ║        ✅ Login Rate Limiting (5 attempts/15min)                        ║
 ║        ✅ Order Rate Limiting (3 orders/min)                            ║
@@ -824,10 +812,6 @@ app.listen(PORT, () => {
 ║        ✅ CSRF Protection                                                ║
 ║        ✅ Input Validation (Joi)                                        ║
 ║        ✅ Image Processing (Sharp)                                      ║
-║        ✅ Request Logging (Morgan)                                      ║
-║        ✅ Compression (Gzip)                                            ║
-║        ✅ Duplicate Detection                                           ║
-║        ✅ File Upload Security                                          ║
 ║                                                                          ║
 ║     💳 Payment Methods: KBZ Pay, WavePay, AYA Pay                        ║
 ║                                                                          ║
