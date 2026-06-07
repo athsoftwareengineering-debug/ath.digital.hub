@@ -141,42 +141,19 @@
             transform: translateY(-3px);
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
         }
-        
-        /* New Order Animation */
         .live-card.new-order {
             animation: slideInNew 0.5s ease-out;
             border-left: 3px solid var(--cyan);
-            position: relative;
         }
         @keyframes slideInNew {
             from {
                 opacity: 0;
-                transform: translateX(-30px);
+                transform: translateX(-20px);
             }
             to {
                 opacity: 1;
                 transform: translateX(0);
             }
-        }
-        
-        /* NEW Badge on Card */
-        .new-order-badge {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-            font-size: 0.65rem;
-            font-weight: bold;
-            padding: 3px 10px;
-            border-radius: 40px;
-            z-index: 10;
-            animation: badgeBlink 1s ease-in-out 3;
-            box-shadow: 0 0 10px rgba(245,158,11,0.5);
-        }
-        @keyframes badgeBlink {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.05); background: #fbbf24; }
         }
         
         /* Rotate Animation - အစိမ်းရောင် */
@@ -356,7 +333,7 @@
             font-family: monospace;
         }
         
-        /* Remaining Time Row - Centered */
+        /* Remaining Time Row - Centered (Live Countdown) */
         .live-remaining-row {
             background: rgba(0,212,255,0.06);
             border-radius: 40px;
@@ -430,6 +407,16 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.4; }
         }
+        
+        /* Countdown timer blink effect */
+        .countdown-updating {
+            animation: countdownBlink 0.3s ease-in-out;
+        }
+        
+        @keyframes countdownBlink {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.02); color: #00ffaa; }
+        }
     </style>
 
     <div class="live-container">
@@ -483,6 +470,7 @@
         let liveRefreshInterval = null;
         let liveTimerInterval = null;
         let rotateInterval = null;
+        let countdownInterval = null;  // ← စက္ကန့်တိုင်း update အတွက်
         let liveRefreshSec = 30;
         let lastOrderIds = [];
 
@@ -500,24 +488,25 @@
             return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
         }
 
-        // Get remaining time
+        // Get remaining time (live calculation - စက္ကန့်တိုင်း တွက်မယ်)
         function getRemainingTime(activatedAt) {
             if (!activatedAt) return null;
             const endDate = new Date(activatedAt).getTime() + 30 * 24 * 60 * 60 * 1000;
             const remain = endDate - Date.now();
             if (remain <= 0) return { expired: true };
-            const d = Math.floor(remain / (24 * 60 * 60 * 1000));
-            const h = Math.floor((remain % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-            const m = Math.floor((remain % (60 * 60 * 1000)) / (60 * 1000));
-            return { days: d, hours: h, minutes: m, expired: false };
+            const days = Math.floor(remain / (24 * 60 * 60 * 1000));
+            const hours = Math.floor((remain % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+            const minutes = Math.floor((remain % (60 * 60 * 1000)) / (60 * 1000));
+            const seconds = Math.floor((remain % (60 * 1000)) / 1000);
+            return { days: days, hours: hours, minutes: minutes, seconds: seconds, expired: false };
         }
 
-        // Format remaining time string
+        // Format remaining time string (စက္ကန့်ပါ)
         function formatRemainingTime(activatedAt) {
             const time = getRemainingTime(activatedAt);
             if (!time) return null;
-            if (time.expired) return "Expired";
-            return `${time.days}ရက် ${time.hours}နာရီ ${time.minutes}မိနစ်`;
+            if (time.expired) return "သက်တမ်းကုန်ဆုံးပြီ";
+            return `${time.days}ရက် ${time.hours}နာရီ ${time.minutes}မိနစ် ${time.seconds}စက္ကန့်`;
         }
 
         // Get end date
@@ -563,10 +552,45 @@
             return '<i class="fas fa-mobile-alt"></i>';
         }
 
-        // Remove highlight from all cards
-        function removeAllHighlights() {
-            document.querySelectorAll('.live-card').forEach(card => {
-                card.classList.remove('search-highlight');
+        // ========== COUNTDOWN TIMER FUNCTION (စက္ကန့်တိုင်း Update) ==========
+        function startAllCountdowns() {
+            // Stop existing countdown interval
+            if (countdownInterval) clearInterval(countdownInterval);
+            
+            // Start new countdown interval (every 1 second)
+            countdownInterval = setInterval(() => {
+                updateAllCountdowns();
+            }, 1000);
+        }
+        
+        function stopAllCountdowns() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }
+        
+        function updateAllCountdowns() {
+            // Update all countdown displays on the page
+            const countdownElements = document.querySelectorAll('.live-countdown-timer');
+            countdownElements.forEach(elem => {
+                const activatedAt = elem.getAttribute('data-activated-at');
+                if (activatedAt) {
+                    const remainStr = formatRemainingTime(activatedAt);
+                    const isExpired = getRemainingTime(activatedAt)?.expired;
+                    
+                    if (isExpired) {
+                        elem.innerHTML = '<i class="fas fa-calendar-times"></i> <span style="color:#fb7185;">သက်တမ်းကုန်ဆုံးပြီ</span>';
+                        elem.classList.add('expired');
+                    } else {
+                        elem.innerHTML = `<i class="fas fa-hourglass-half"></i> <span>ကျန်ရှိ: ${remainStr}</span>`;
+                        // Add blink effect every update
+                        elem.classList.add('countdown-updating');
+                        setTimeout(() => {
+                            elem.classList.remove('countdown-updating');
+                        }, 300);
+                    }
+                }
             });
         }
 
@@ -632,7 +656,7 @@
             }, 10000);
         }
 
-        // Render live orders with NEW badge for new orders
+        // Render live orders
         function renderLiveOrders(hasNew = false) {
             const container = document.getElementById('liveOrdersList');
             if (!container) return;
@@ -645,7 +669,7 @@
             let html = '';
             for (let i = 0; i < liveOrdersData.length; i++) {
                 const o = liveOrdersData[i];
-                const isNewOrder = (hasNew && i === 0);
+                const isNew = (hasNew && i === 0);
                 const statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
                 const statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
                 const planIcon = getPlanIcon(o.plan);
@@ -656,9 +680,20 @@
                 const remaining = (o.status === 'Approved' && o.activated_at) ? getRemainingTime(o.activated_at) : null;
                 const isExpired = remaining && remaining.expired;
                 
-                // NEW badge for new orders
-                const newBadge = isNewOrder ? '<div class="new-order-badge"><i class="fas fa-bolt"></i> NEW</div>' : '';
+                // Initial remaining time string
+                let remainingTimeStr = '';
+                let remainingTimeAttr = '';
+                if (o.status === 'Approved' && o.activated_at) {
+                    remainingTimeAttr = `data-activated-at="${o.activated_at}"`;
+                    if (isExpired) {
+                        remainingTimeStr = '<i class="fas fa-calendar-times"></i> <span style="color:#fb7185;">သက်တမ်းကုန်ဆုံးပြီ</span>';
+                    } else {
+                        const remain = formatRemainingTime(o.activated_at);
+                        remainingTimeStr = `<i class="fas fa-hourglass-half"></i> <span>ကျန်ရှိ: ${remain}</span>`;
+                    }
+                }
                 
+                // Date Range HTML
                 let dateRangeHtml = '';
                 if (startDate && endDate && o.status === 'Approved') {
                     dateRangeHtml = `
@@ -675,32 +710,20 @@
                     `;
                 }
                 
+                // Remaining time HTML (with countdown class)
                 let remainingHtml = '';
                 if (o.status === 'Approved' && o.activated_at) {
-                    if (isExpired) {
-                        remainingHtml = `
-                            <div class="live-remaining-row">
-                                <div class="expired-badge">
-                                    <i class="fas fa-calendar-times"></i> သက်တမ်းကုန်ဆုံးပြီ
-                                </div>
+                    remainingHtml = `
+                        <div class="live-remaining-row">
+                            <div class="live-remaining live-countdown-timer" ${remainingTimeAttr}>
+                                ${remainingTimeStr}
                             </div>
-                        `;
-                    } else {
-                        const remainStr = formatRemainingTime(o.activated_at);
-                        remainingHtml = `
-                            <div class="live-remaining-row">
-                                <div class="live-remaining">
-                                    <i class="fas fa-hourglass-half"></i>
-                                    <span>ကျန်ရှိ: ${remainStr}</span>
-                                </div>
-                            </div>
-                        `;
-                    }
+                        </div>
+                    `;
                 }
                 
                 html += `
-                    <div class="live-card ${isNewOrder ? 'new-order' : ''}" data-order-id="${o.id}" data-phone="${escapeHtml(o.phone)}">
-                        ${newBadge}
+                    <div class="live-card ${isNew ? 'new-order' : ''}" data-order-id="${o.id}" data-phone="${escapeHtml(o.phone)}">
                         <div class="live-card-header">
                             <div class="live-payment-badge ${payment.class}">
                                 <i class="fas ${payment.icon}"></i> ${payment.text}
@@ -737,16 +760,17 @@
             }
             container.innerHTML = html;
             
-            // Auto-remove new-order class and badge after 5 seconds
+            // Restart countdown timers after rendering
+            stopAllCountdowns();
+            startAllCountdowns();
+            
             if (hasNew && liveOrdersData.length > 0) {
                 const firstCard = container.querySelector('.live-card');
                 if (firstCard) {
                     firstCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     setTimeout(() => {
                         firstCard.classList.remove('new-order');
-                        const badge = firstCard.querySelector('.new-order-badge');
-                        if (badge) badge.remove();
-                    }, 5000);
+                    }, 2000);
                 }
             }
         }
@@ -819,6 +843,13 @@
             }
         }
 
+        // Remove all highlights
+        function removeAllHighlights() {
+            document.querySelectorAll('.live-card').forEach(card => {
+                card.classList.remove('search-highlight');
+            });
+        }
+
         // Clear live search
         function clearLiveSearch() {
             liveCurrentSearchPhone = '';
@@ -883,6 +914,10 @@
             if (rotateInterval) {
                 clearInterval(rotateInterval);
                 rotateInterval = null;
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
             }
         }
 
