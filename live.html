@@ -156,6 +156,22 @@
             }
         }
         
+        /* Rotate Animation */
+        @keyframes blinkRotate {
+            0%, 100% { 
+                background: linear-gradient(145deg, #0f111a, #0a0c15); 
+                border-color: rgba(0,212,255,0.12);
+            }
+            50% { 
+                background: rgba(0,212,255,0.15); 
+                border-color: #00d4ff; 
+                box-shadow: 0 0 15px #00d4ff;
+            }
+        }
+        .blink-rotate {
+            animation: blinkRotate 0.5s ease-in-out 2;
+        }
+        
         /* Card Header - First Row */
         .live-card-header {
             display: flex;
@@ -425,6 +441,7 @@
         let liveCurrentSearchPhone = "";
         let liveRefreshInterval = null;
         let liveTimerInterval = null;
+        let rotateInterval = null;  // ← ထည့်ပါ
         let liveRefreshSec = 30;
         let lastOrderIds = [];
 
@@ -540,7 +557,38 @@
             }
         }
 
-        // Render live orders with exact requested layout
+        // Rotate live orders (move last to front)
+        function rotateLiveOrders() {
+            if (liveOrdersData.length <= 1) return;
+            
+            // Remove last item and move to front
+            const lastItem = liveOrdersData.pop();
+            liveOrdersData.unshift(lastItem);
+            
+            // Re-render
+            renderLiveOrders(false);
+            
+            // Add blink effect
+            const firstCard = document.querySelector('.live-card');
+            if (firstCard) {
+                firstCard.classList.add('blink-rotate');
+                setTimeout(() => {
+                    firstCard.classList.remove('blink-rotate');
+                }, 800);
+            }
+        }
+
+        // Start rotate interval
+        function startLiveRotate() {
+            if (rotateInterval) clearInterval(rotateInterval);
+            rotateInterval = setInterval(() => {
+                if (liveOrdersData.length > 1) {
+                    rotateLiveOrders();
+                }
+            }, 10000); // 10 seconds
+        }
+
+        // Render live orders
         function renderLiveOrders(hasNew = false) {
             const container = document.getElementById('liveOrdersList');
             if (!container) return;
@@ -564,7 +612,6 @@
                 const remaining = (o.status === 'Approved' && o.activated_at) ? getRemainingTime(o.activated_at) : null;
                 const isExpired = remaining && remaining.expired;
                 
-                // Date Range HTML
                 let dateRangeHtml = '';
                 if (startDate && endDate && o.status === 'Approved') {
                     dateRangeHtml = `
@@ -581,7 +628,6 @@
                     `;
                 }
                 
-                // Remaining time HTML
                 let remainingHtml = '';
                 if (o.status === 'Approved' && o.activated_at) {
                     if (isExpired) {
@@ -607,7 +653,6 @@
                 
                 html += `
                     <div class="live-card ${isNew ? 'new-order' : ''}" data-order-id="${o.id}">
-                        <!-- Row 1: Payment on left, Status on right -->
                         <div class="live-card-header">
                             <div class="live-payment-badge ${payment.class}">
                                 <i class="fas ${payment.icon}"></i> ${payment.text}
@@ -615,7 +660,6 @@
                             <span class="live-status ${statusClass}">${statusText}</span>
                         </div>
                         
-                        <!-- Row 2: Plan on left, Price on right -->
                         <div class="live-card-plan-row">
                             <div class="live-plan">
                                 ${planIcon} ${escapeHtml(o.plan)}
@@ -625,9 +669,7 @@
                             </div>
                         </div>
                         
-                        <!-- Card Body -->
                         <div class="live-card-body">
-                            <!-- Phone and Time - Same line (left and right) -->
                             <div class="live-info-row">
                                 <div class="live-phone">
                                     <i class="fas fa-phone-alt"></i>
@@ -732,6 +774,7 @@
         function startLiveAutoRefresh() {
             if (liveRefreshInterval) clearInterval(liveRefreshInterval);
             if (liveTimerInterval) clearInterval(liveTimerInterval);
+            if (rotateInterval) clearInterval(rotateInterval);
             
             liveRefreshSec = 30;
             const timerSpan = document.getElementById('liveTimerDisplay');
@@ -755,6 +798,9 @@
                 liveRefreshSec = 30;
                 if (timerSpan) timerSpan.innerText = 'auto 30s';
             }, 30000);
+            
+            // Start rotate
+            startLiveRotate();
         }
 
         // Stop auto refresh
@@ -766,6 +812,10 @@
             if (liveTimerInterval) {
                 clearInterval(liveTimerInterval);
                 liveTimerInterval = null;
+            }
+            if (rotateInterval) {
+                clearInterval(rotateInterval);
+                rotateInterval = null;
             }
         }
 
