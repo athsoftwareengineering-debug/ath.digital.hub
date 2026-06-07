@@ -825,13 +825,6 @@
     let currentTab = "menu";
     let editingProductId = null;
     
-    // ========== ADDED VARIABLES FOR FILTERS ==========
-    let showSuspectOnly = false;
-    let showBlockedOnly = false;
-    let suspectUsersList = [];
-    let blockedUsersList = [];
-    // =================================================
-    
     let notifications = [];
     let lastOrderId = null;
     
@@ -1619,7 +1612,6 @@
         showToast('📁 Orders exported to CSV'); 
     };
     
-    // ========== UPDATED renderUsersTab WITH FILTERS ==========
     function renderUsersTab() {
         const container = document.getElementById('usersList');
         if (!container) return;
@@ -1627,36 +1619,14 @@
             container.innerHTML = '<div class="loading">No user data available</div>'; 
             return; 
         }
-        
         let filteredUsers = [...userStats];
-        
-        // Apply search filter
         if (currentUserSearchPhone) { 
-            filteredUsers = filteredUsers.filter(u => 
-                u.phone === currentUserSearchPhone || 
-                u.user_id === currentUserSearchPhone || 
-                (u.username && u.username.toLowerCase().includes(currentUserSearchPhone.toLowerCase()))
-            ); 
+            filteredUsers = filteredUsers.filter(u => u.phone === currentUserSearchPhone || u.user_id === currentUserSearchPhone || (u.username && u.username.toLowerCase().includes(currentUserSearchPhone.toLowerCase()))); 
         }
-        
-        // ========== ADDED SUSPECT/BLOCKED FILTERS ==========
-        if (showSuspectOnly) {
-            filteredUsers = filteredUsers.filter(u => u.suspect_flag === true);
-        }
-        
-        if (showBlockedOnly) {
-            filteredUsers = filteredUsers.filter(u => u.blocked === true);
-        }
-        // ====================================================
-        
-        if (filteredUsers.length === 0 && (currentUserSearchPhone || showSuspectOnly || showBlockedOnly)) { 
-            let message = 'No user found';
-            if (showSuspectOnly) message = 'No suspect users found';
-            if (showBlockedOnly) message = 'No blocked users found';
-            container.innerHTML = `<div class="loading">${message}</div>`; 
+        if (filteredUsers.length === 0 && currentUserSearchPhone) { 
+            container.innerHTML = `<div class="loading">No user found for "${escapeHtml(currentUserSearchPhone)}"</div>`; 
             return; 
         }
-        
         let html = '';
         for (const user of filteredUsers) {
             const rejectRate = user.order_count > 0 ? ((user.reject_count / user.order_count) * 100).toFixed(0) : 0;
@@ -1857,12 +1827,9 @@
         });
     }
     
-    // Fixed Clear Notifications Button
     const clearBtn = document.getElementById('clearNotificationsBtn');
     if (clearBtn) {
-        const newClearBtn = clearBtn.cloneNode(true);
-        clearBtn.parentNode.replaceChild(newClearBtn, clearBtn);
-        newClearBtn.addEventListener('click', function(e) {
+        clearBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             e.preventDefault();
             console.log("Clear button clicked");
@@ -1911,7 +1878,6 @@
         });
     }
     
-    // Auto login if token exists
     if (token === 'logged_in') { 
         const loginBox = document.getElementById('loginBox');
         const adminContent = document.getElementById('adminContent');
