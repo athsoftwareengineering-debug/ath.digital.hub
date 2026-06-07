@@ -36,7 +36,7 @@ function maskPhone(phone) {
 app.use(compression());
 app.use(morgan('combined'));
 
-// ==================== CSP CONFIGURATION ====================
+// ==================== CSP CONFIGURATION (FIXED FOR IFRAMES) ====================
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -48,8 +48,9 @@ app.use(helmet({
             styleSrcElem: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
             imgSrc: ["'self'", "data:", "https:", "http:", "i.ibb.co", "blob:"],
             connectSrc: ["'self'", process.env.SUPABASE_URL, "https://*.supabase.co", "wss://*.supabase.co"],
-            frameSrc: ["'none'"],
-            frameAncestors: ["'none'"],
+            // ✅ FIXED: Allow iframes from self and render domain
+            frameSrc: ["'self'", "https://ath-digital-hub.onrender.com"],
+            frameAncestors: ["'self'", "https://ath-digital-hub.onrender.com"],
             formAction: ["'self'"],
             baseUri: ["'self'"],
             objectSrc: ["'none'"],
@@ -63,7 +64,7 @@ app.use(helmet({
         includeSubDomains: true,
         preload: true
     },
-    frameguard: { action: 'deny' },
+    frameguard: { action: 'sameorigin' },  // ✅ Changed from 'deny' to 'sameorigin'
     noSniff: true,
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     crossOriginEmbedderPolicy: false,
@@ -74,7 +75,7 @@ app.use(helmet({
 // ==================== EXTRA SECURITY HEADERS ====================
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');  // ✅ Changed from 'DENY' to 'SAMEORIGIN'
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
@@ -113,7 +114,7 @@ const sessionConfig = {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 2,
-        sameSite: 'strict',  // ✅ CSRF protection
+        sameSite: 'strict',
         domain: process.env.COOKIE_DOMAIN || undefined
     },
     rolling: true
@@ -321,7 +322,6 @@ app.get('/api/health', (req, res) => { res.json({ status: 'ok', timestamp: new D
 
 // ==================== USER REGISTRATION ====================
 app.post('/api/user/register', async (req, res) => {
-    // ... (keep existing code)
     try {
         const { phone, username } = req.body;
         const { error: phoneError } = phoneSchema.validate(phone);
@@ -929,7 +929,7 @@ app.listen(PORT, () => {
 ║                                                                          ║
 ║     🔒 SECURITY FEATURES ENABLED:                                        ║
 ║        ✅ Helmet.js (Security Headers)                                   ║
-║        ✅ CSP with unsafe-inline                                         ║
+║        ✅ CSP with iframe support                                        ║
 ║        ✅ Rate Limiting (Multiple levels)                                ║
 ║        ✅ SameSite=Strict Cookie (CSRF Protection)                       ║
 ║        ✅ Session-based Admin Auth (HttpOnly Cookie)                     ║
@@ -938,14 +938,6 @@ app.listen(PORT, () => {
 ║        ✅ Database Notifications                                         ║
 ║        ✅ Request Logging (Morgan)                                       ║
 ║        ✅ Compression (Gzip)                                             ║
-║                                                                          ║
-║     📢 DATABASE NOTIFICATIONS ENDPOINTS:                                 ║
-║        GET    /api/admin/notifications - Get all notifications          ║
-║        POST   /api/admin/notifications/clear - Clear all                ║
-║        DELETE /api/admin/notifications/:id - Delete single              ║
-║        PUT    /api/admin/notifications/:id/read - Mark as read          ║
-║        PUT    /api/admin/notifications/read-all - Mark all as read      ║
-║        GET    /api/admin/notifications/unread-count - Get unread count  ║
 ║                                                                          ║
 ║     💳 Payment Methods: KBZ Pay, WavePay, AYA Pay                        ║
 ║                                                                          ║
