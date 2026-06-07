@@ -6,6 +6,7 @@
     <title>Admin Chat - ATH DIGITAL HUB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Your existing CSS - keep as is */
         * {
             margin: 0;
             padding: 0;
@@ -17,7 +18,6 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
         
-        /* Chat Container */
         .admin-chat-container {
             position: fixed;
             bottom: 70px;
@@ -45,7 +45,6 @@
             display: none;
         }
         
-        /* Header */
         .admin-chat-header {
             display: flex;
             justify-content: space-between;
@@ -126,14 +125,12 @@
             color: #00d4ff;
         }
         
-        /* Main Layout */
         .admin-chat-layout {
             display: flex;
             flex: 1;
             overflow: hidden;
         }
         
-        /* Sidebar - User List */
         .chat-sidebar {
             width: 140px;
             background: rgba(0,0,0,0.3);
@@ -185,7 +182,6 @@
             margin-top: 2px;
         }
         
-        /* Chat Main Area */
         .chat-main {
             flex: 1;
             display: flex;
@@ -214,7 +210,6 @@
             gap: 10px;
         }
         
-        /* Message Bubbles */
         .chat-message {
             display: flex;
             flex-direction: column;
@@ -271,7 +266,6 @@
             padding: 0 6px;
         }
         
-        /* Input Area */
         .chat-input-container {
             padding: 10px;
             background: rgba(0,0,0,0.3);
@@ -336,7 +330,6 @@
             color: #94a3b8;
         }
         
-        /* Scrollbar */
         .chat-messages-container::-webkit-scrollbar,
         .user-list::-webkit-scrollbar {
             width: 3px;
@@ -392,7 +385,6 @@
         </div>
         
         <div class="admin-chat-layout">
-            <!-- User List Sidebar -->
             <div class="chat-sidebar">
                 <div class="sidebar-header">
                     <i class="fas fa-users"></i> Users
@@ -402,7 +394,6 @@
                 </div>
             </div>
             
-            <!-- Chat Main Area -->
             <div class="chat-main">
                 <div class="chat-main-header" id="chatMainHeader">
                     <div class="chat-with">
@@ -437,26 +428,54 @@
         let userListRefreshInterval = null;
         let isMinimized = false;
         
+        // ============ CORRECT MYANMAR TIME (UTC+6:30) ============
+        function getMyanmarTime(timestamp) {
+            const date = new Date(timestamp);
+            const utcTime = date.getTime();
+            const myanmarOffset = 6.5 * 60 * 60 * 1000; // 6 hours 30 minutes
+            const myanmarDate = new Date(utcTime + myanmarOffset);
+            
+            let hours = myanmarDate.getUTCHours();
+            const minutes = myanmarDate.getUTCMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+            
+            return `${hours}:${minutesStr} ${ampm}`;
+        }
+        
+        function getMyanmarDate(timestamp) {
+            const date = new Date(timestamp);
+            const utcTime = date.getTime();
+            const myanmarOffset = 6.5 * 60 * 60 * 1000;
+            const myanmarDate = new Date(utcTime + myanmarOffset);
+            
+            const month = myanmarDate.getUTCMonth();
+            const day = myanmarDate.getUTCDate();
+            
+            const months = ['ဇန်နဝါရီ', 'ဖေဖော်ဝါရီ', 'မတ်', 'ဧပြီ', 'မေ', 'ဇွန်', 'ဇူလိုင်', 'သြဂုတ်', 'စက်တင်ဘာ', 'အောက်တိုဘာ', 'နိုဝင်ဘာ', 'ဒီဇင်ဘာ'];
+            
+            return `${months[month]} ${day}`;
+        }
+        
         // Load user list from both Global Chat and Private Chat
         async function loadUserList() {
             const container = document.getElementById('userList');
             if (!container) return;
             
             try {
-                // 1. Get users from Global Chat
                 const globalResponse = await fetch(`${API_BASE}/api/chat/messages`);
                 const globalData = await globalResponse.json();
                 
-                // 2. Get users from Private Chat
                 const privateResponse = await fetch(`${API_BASE}/api/chat/admin/users`, {
                     credentials: 'include'
                 });
                 const privateData = await privateResponse.json();
                 
-                // Combine users from both sources
                 const uniqueUsers = new Map();
                 
-                // Add users from global chat
                 if (globalData.success && globalData.messages) {
                     for (const msg of globalData.messages) {
                         if (!msg.is_admin && !uniqueUsers.has(msg.user_id)) {
@@ -469,7 +488,6 @@
                     }
                 }
                 
-                // Add users from private chat
                 if (privateData.success && privateData.users) {
                     for (const user of privateData.users) {
                         if (!uniqueUsers.has(user.user_id)) {
@@ -514,12 +532,10 @@
             container.innerHTML = html;
         }
         
-        // Select user to chat with
         async function selectUser(userId, username) {
             currentSelectedUser = userId;
             currentSelectedUserName = username;
             
-            // Update header
             const header = document.getElementById('chatMainHeader');
             if (header) {
                 header.innerHTML = `
@@ -530,14 +546,11 @@
                 `;
             }
             
-            // Show input area
             const inputContainer = document.getElementById('chatInputContainer');
             if (inputContainer) inputContainer.style.display = 'block';
             
-            // Load messages (try private chat first, fallback to global)
             await loadPrivateMessages(userId);
             
-            // Highlight selected user in list
             document.querySelectorAll('.user-item').forEach(item => {
                 item.classList.remove('active');
             });
@@ -545,34 +558,28 @@
             if (activeItem) activeItem.classList.add('active');
         }
         
-        // Load messages (private + global combined)
         async function loadPrivateMessages(userId) {
             const container = document.getElementById('chatMessages');
             if (!container) return;
             
             try {
-                // Try to load private messages first
                 const privateResponse = await fetch(`${API_BASE}/api/chat/private/${userId}?currentUserId=${currentAdminId}`);
                 const privateData = await privateResponse.json();
                 
-                // Also load global messages from this user
                 const globalResponse = await fetch(`${API_BASE}/api/chat/messages`);
                 const globalData = await globalResponse.json();
                 
                 let allMessages = [];
                 
-                // Add private messages
                 if (privateData.success && privateData.messages) {
                     allMessages = [...privateData.messages];
                 }
                 
-                // Add global messages from this user
                 if (globalData.success && globalData.messages) {
                     const userGlobalMessages = globalData.messages.filter(msg => msg.user_id === userId);
                     allMessages = [...allMessages, ...userGlobalMessages];
                 }
                 
-                // Sort by time
                 allMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
                 
                 if (allMessages.length > 0) {
@@ -596,16 +603,24 @@
             }
             
             let html = '';
+            let lastDate = null;
+            
             for (const msg of messages) {
-                const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const myanmarTime = getMyanmarTime(msg.created_at);
+                const myanmarDate = getMyanmarDate(msg.created_at);
                 const isAdmin = msg.sender_id === 'admin' || msg.is_admin === true;
                 const senderName = isAdmin ? '👑 Admin' : (msg.sender_name || msg.username || 'User');
+                
+                if (lastDate !== myanmarDate) {
+                    html += `<div style="text-align:center; margin:8px 0;"><span style="background:rgba(0,212,255,0.1); padding:2px 10px; border-radius:40px; font-size:0.55rem; color:#64748b;">📅 ${myanmarDate}</span></div>`;
+                    lastDate = myanmarDate;
+                }
                 
                 html += `
                     <div class="chat-message ${isAdmin ? 'admin' : 'user'}">
                         <div class="message-sender">${senderName}</div>
                         <div class="message-bubble">${escapeHtml(msg.message)}</div>
-                        <div class="message-time">${time}</div>
+                        <div class="message-time">🕐 ${myanmarTime}</div>
                     </div>
                 `;
             }
@@ -613,7 +628,6 @@
             container.scrollTop = container.scrollHeight;
         }
         
-        // Send private message
         async function sendPrivateMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
@@ -657,7 +671,6 @@
             }
         }
         
-        // Toggle minimize
         function toggleMinimize() {
             const container = document.getElementById('adminChatContainer');
             if (container) {
@@ -669,14 +682,12 @@
             }
         }
         
-        // Close chat
         function closeAdminChat() {
             if (window.parent && window.parent.closeAdminChatWidget) {
                 window.parent.closeAdminChatWidget();
             }
         }
         
-        // Helper functions
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, function(m) {
@@ -714,19 +725,16 @@
             }
         }
         
-        // Initialize
         async function init() {
             await loadUserList();
             setupKeyboardShortcuts();
             
-            // Refresh messages every 3 seconds
             messageRefreshInterval = setInterval(() => {
                 if (currentSelectedUser && !isMinimized) {
                     loadPrivateMessages(currentSelectedUser);
                 }
             }, 3000);
             
-            // Refresh user list every 10 seconds
             userListRefreshInterval = setInterval(() => {
                 if (!isMinimized) {
                     loadUserList();
@@ -736,7 +744,6 @@
         
         init();
         
-        // Cleanup on unload
         window.addEventListener('beforeunload', () => {
             if (messageRefreshInterval) clearInterval(messageRefreshInterval);
             if (userListRefreshInterval) clearInterval(userListRefreshInterval);
