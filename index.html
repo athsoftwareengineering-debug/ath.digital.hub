@@ -570,6 +570,28 @@
             display: inline-block;
             margin-top: 6px;
         }
+        
+        /* Market Close Button */
+        .market-close-btn {
+            background: rgba(244,63,94,0.15);
+            border: 1px solid rgba(244,63,94,0.3);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            color: #fb7185;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .market-close-btn:hover {
+            background: #f43f5e;
+            color: white;
+            border-color: #f43f5e;
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
@@ -713,8 +735,13 @@
             </div>
         </div>
 
-        <!-- Market Tab -->
+        <!-- Market Tab with Close Button -->
         <div id="marketTab" class="tab-content">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+                <button class="market-close-btn" onclick="closeMarketTab()">
+                    <i class="fas fa-times-circle"></i> Close Market
+                </button>
+            </div>
             <div id="marketContainer">
                 <div style="text-align:center; padding:40px;">
                     <i class="fas fa-spinner fa-pulse"></i> Loading market...
@@ -728,7 +755,7 @@
         </div>
     </div>
 
-    <!-- Bottom Navigation - Home, Plans, Orders, LIVE, Chat (No Market, No Profile) -->
+    <!-- Bottom Navigation -->
     <div class="bottom-nav">
         <button class="nav-item" data-tab="home"><i class="fas fa-home"></i><span>Home</span></button>
         <button class="nav-item" data-tab="plans"><i class="fas fa-sim-card"></i><span>Plan</span></button>
@@ -893,6 +920,12 @@
             if (m === '>') return '&gt;';
             return m;
         });
+    }
+    
+    // ============ CLOSE MARKET TAB ============
+    function closeMarketTab() {
+        switchTab('home');
+        showToast('🛒 Market closed');
     }
     
     // ============ USER CHAT WIDGET ============
@@ -1507,6 +1540,7 @@
     window.fetchUserData = fetchUserData;
     window.openUserChatWidget = openUserChatWidget;
     window.closeUserChatWidget = closeUserChatWidget;
+    window.closeMarketTab = closeMarketTab;
 </script>
 </body>
 </html>
