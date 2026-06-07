@@ -141,19 +141,42 @@
             transform: translateY(-3px);
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
         }
+        
+        /* New Order Animation */
         .live-card.new-order {
             animation: slideInNew 0.5s ease-out;
             border-left: 3px solid var(--cyan);
+            position: relative;
         }
         @keyframes slideInNew {
             from {
                 opacity: 0;
-                transform: translateX(-20px);
+                transform: translateX(-30px);
             }
             to {
                 opacity: 1;
                 transform: translateX(0);
             }
+        }
+        
+        /* NEW Badge on Card */
+        .new-order-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 40px;
+            z-index: 10;
+            animation: badgeBlink 1s ease-in-out 3;
+            box-shadow: 0 0 10px rgba(245,158,11,0.5);
+        }
+        @keyframes badgeBlink {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); background: #fbbf24; }
         }
         
         /* Rotate Animation - အစိမ်းရောင် */
@@ -582,7 +605,7 @@
             }
         }
 
-        // Rotate live orders (move last to front) - အစိမ်းရောင်နဲ့ မှိတ်တုတ်
+        // Rotate live orders (move last to front)
         function rotateLiveOrders() {
             if (liveOrdersData.length <= 1) return;
             
@@ -609,7 +632,7 @@
             }, 10000);
         }
 
-        // Render live orders
+        // Render live orders with NEW badge for new orders
         function renderLiveOrders(hasNew = false) {
             const container = document.getElementById('liveOrdersList');
             if (!container) return;
@@ -622,7 +645,7 @@
             let html = '';
             for (let i = 0; i < liveOrdersData.length; i++) {
                 const o = liveOrdersData[i];
-                const isNew = (hasNew && i === 0);
+                const isNewOrder = (hasNew && i === 0);
                 const statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
                 const statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
                 const planIcon = getPlanIcon(o.plan);
@@ -632,6 +655,9 @@
                 const endDate = startDate ? getEndDate(o.activated_at) : null;
                 const remaining = (o.status === 'Approved' && o.activated_at) ? getRemainingTime(o.activated_at) : null;
                 const isExpired = remaining && remaining.expired;
+                
+                // NEW badge for new orders
+                const newBadge = isNewOrder ? '<div class="new-order-badge"><i class="fas fa-bolt"></i> NEW</div>' : '';
                 
                 let dateRangeHtml = '';
                 if (startDate && endDate && o.status === 'Approved') {
@@ -673,7 +699,8 @@
                 }
                 
                 html += `
-                    <div class="live-card ${isNew ? 'new-order' : ''}" data-order-id="${o.id}" data-phone="${escapeHtml(o.phone)}">
+                    <div class="live-card ${isNewOrder ? 'new-order' : ''}" data-order-id="${o.id}" data-phone="${escapeHtml(o.phone)}">
+                        ${newBadge}
                         <div class="live-card-header">
                             <div class="live-payment-badge ${payment.class}">
                                 <i class="fas ${payment.icon}"></i> ${payment.text}
@@ -710,18 +737,21 @@
             }
             container.innerHTML = html;
             
+            // Auto-remove new-order class and badge after 5 seconds
             if (hasNew && liveOrdersData.length > 0) {
                 const firstCard = container.querySelector('.live-card');
                 if (firstCard) {
                     firstCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     setTimeout(() => {
                         firstCard.classList.remove('new-order');
-                    }, 2000);
+                        const badge = firstCard.querySelector('.new-order-badge');
+                        if (badge) badge.remove();
+                    }, 5000);
                 }
             }
         }
 
-        // Search live order by phone - အဝါရောင်နဲ့ 3 စက္ကန့် မှိတ်တုတ်
+        // Search live order by phone
         async function searchLiveOrder() {
             const phone = document.getElementById('liveSearchPhoneInput').value.trim();
             const msgDiv = document.getElementById('liveSearchMsg');
@@ -761,31 +791,20 @@
                         setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
                     }
                     
-                    // Remove previous highlights
                     removeAllHighlights();
-                    
-                    // Update data and highlight matching cards
                     liveCurrentSearchPhone = phone;
                     liveOrdersData = orders.slice(0, 50);
                     renderLiveOrders(false);
                     
-                    // Highlight cards with matching phone number
                     setTimeout(() => {
                         const cards = document.querySelectorAll('.live-card');
-                        let found = false;
                         cards.forEach(card => {
                             const cardPhone = card.getAttribute('data-phone');
                             if (cardPhone === phone) {
                                 card.classList.add('search-highlight');
-                                found = true;
-                                // Scroll to first found card
-                                if (!found) {
-                                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                }
+                                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             }
                         });
-                        
-                        // Remove highlight after 3 seconds
                         setTimeout(() => {
                             removeAllHighlights();
                         }, 3000);
