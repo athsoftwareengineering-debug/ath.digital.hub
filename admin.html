@@ -1785,8 +1785,229 @@
 })();
 </script>
 
-<!-- ==================== NOTIFICATION COMPONENT ==================== -->
-<script src="/js/notifications.js"></script>
+<!-- ==================== INLINE NOTIFICATION MANAGER ==================== -->
+<script>
+// ==================== NOTIFICATION MANAGER (FULLY WORKING) ====================
+(function() {
+    class NotificationManager {
+        constructor(apiBase) {
+            this.API_BASE = apiBase;
+            this.notifications = [];
+            this.unreadCount = 0;
+            this.autoRefreshInterval = null;
+        }
+
+        async loadNotifications() {
+            try {
+                const res = await fetch(`${this.API_BASE}/api/admin/notifications`, {
+                    credentials: 'include'
+                });
+                if (res.status === 401) return;
+                if (!res.ok) throw new Error('Failed to load');
+                const data = await res.json();
+                if (data.success && data.notifications) {
+                    this.notifications = data.notifications;
+                    this.updateUnreadCount();
+                    this.render();
+                }
+            } catch(e) {
+                console.error('Error loading notifications:', e);
+            }
+        }
+
+        updateUnreadCount() {
+            this.unreadCount = this.notifications.filter(n => !n.is_read).length;
+            const badge = document.getElementById('notificationBadge');
+            if (badge) {
+                if (this.unreadCount > 0) {
+                    badge.style.display = 'flex';
+                    badge.innerText = this.unreadCount > 99 ? '99+' : this.unreadCount;
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
+        render() {
+            const container = document.getElementById('notificationList');
+            if (!container) return;
+            
+            if (this.notifications.length === 0) {
+                container.innerHTML = '<div class="notification-empty">📭 No notifications yet</div>';
+                return;
+            }
+            
+            let html = '';
+            for (const n of this.notifications) {
+                const date = new Date(n.created_at);
+                html += `
+                    <div class="notification-item ${!n.is_read ? 'unread' : ''}">
+                        <div class="notification-icon"><i class="fas fa-shopping-cart"></i></div>
+                        <div class="notification-content">
+                            <div class="notification-title">${this.escapeHtml(n.title)}</div>
+                            <div class="notification-message">${this.escapeHtml(n.message)}</div>
+                            <div class="notification-time"><i class="fas fa-clock"></i> ${date.toLocaleString()}</div>
+                        </div>
+                        <button class="notification-delete" data-id="${n.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+            
+            // Attach delete button events
+            document.querySelectorAll('.notification-delete').forEach(btn => {
+                btn.removeEventListener('click', this.handleDelete);
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = btn.getAttribute('data-id');
+                    if (id) this.deleteNotification(parseInt(id));
+                }.bind(this));
+            });
+        }
+
+        async clearAll() {
+            console.log("Clearing all notifications...");
+            try {
+                const res = await fetch(`${this.API_BASE}/api/admin/notifications/clear`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if (data.success) {
+                    this.notifications = [];
+                    this.updateUnreadCount();
+                    this.render();
+                    this.showToast('✅ All notifications cleared');
+                    const dropdown = document.getElementById('notificationDropdown');
+                    if (dropdown) dropdown.classList.remove('show');
+                    const overlay = document.getElementById('notificationOverlay');
+                    if (overlay) overlay.classList.remove('show');
+                } else {
+                    this.showToast('❌ Failed to clear notifications', true);
+                }
+            } catch(e) {
+                console.error('Error clearing:', e);
+                this.showToast('Error clearing notifications', true);
+            }
+        }
+
+        async deleteNotification(id) {
+            try {
+                const res = await fetch(`${this.API_BASE}/api/admin/notifications/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if (data.success) {
+                    this.notifications = this.notifications.filter(n => n.id !== id);
+                    this.updateUnreadCount();
+                    this.render();
+                    this.showToast('Notification deleted');
+                }
+            } catch(e) {
+                console.error('Error deleting:', e);
+            }
+        }
+
+        showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.textContent = msg;
+                toast.style.background = isError ? '#f43f5e' : '#10b981';
+                toast.style.display = 'block';
+                setTimeout(() => { toast.style.display = 'none'; }, 2500);
+            }
+        }
+
+        escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        async init() {
+            if (localStorage.getItem('adminToken') === 'logged_in') {
+                await this.loadNotifications();
+                this.autoRefreshInterval = setInterval(() => {
+                    if (localStorage.getItem('adminToken') === 'logged_in') {
+                        this.loadNotifications();
+                    }
+                }, 15000);
+            }
+        }
+    }
+
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.getElementById('notificationBellBtn')) {
+            window.notificationManager = new NotificationManager(window.location.origin);
+            window.notificationManager.init();
+            
+            // Setup bell button
+            const bellBtn = document.getElementById('notificationBellBtn');
+            if (bellBtn) {
+                bellBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const dropdown = document.getElementById('notificationDropdown');
+                    const overlay = document.getElementById('notificationOverlay');
+                    if (dropdown) {
+                        if (dropdown.classList.contains('show')) {
+                            dropdown.classList.remove('show');
+                            if (overlay) overlay.classList.remove('show');
+                        } else {
+                            dropdown.classList.add('show');
+                            if (overlay) overlay.classList.add('show');
+                            window.notificationManager.loadNotifications();
+                        }
+                    }
+                };
+            }
+            
+            // Setup clear button - DIRECT WORKING EVENT
+            const clearBtn = document.getElementById('clearNotificationsBtn');
+            if (clearBtn) {
+                // Remove any existing listeners by cloning
+                const newClearBtn = clearBtn.cloneNode(true);
+                clearBtn.parentNode.replaceChild(newClearBtn, clearBtn);
+                
+                newClearBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    console.log("Clear button clicked");
+                    if (window.notificationManager) {
+                        window.notificationManager.clearAll();
+                    } else {
+                        // Fallback direct API call
+                        fetch('/api/admin/notifications/clear', { 
+                            method: 'POST', 
+                            credentials: 'include' 
+                        }).then(() => location.reload());
+                    }
+                };
+            }
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('notificationDropdown');
+                const bell = document.getElementById('notificationBellBtn');
+                if (dropdown && dropdown.classList.contains('show')) {
+                    if (!dropdown.contains(e.target) && !bell?.contains(e.target)) {
+                        dropdown.classList.remove('show');
+                        const overlay = document.getElementById('notificationOverlay');
+                        if (overlay) overlay.classList.remove('show');
+                    }
+                }
+            });
+        }
+    });
+})();
+</script>
 
 </body>
 </html>
