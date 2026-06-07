@@ -83,16 +83,24 @@ app.use((req, res, next) => {
 });
 
 // ==================== RATE LIMITING ====================
-// General API limiter - 100 requests per 15 minutes
+// General API limiter - 500 requests per 15 minutes (increased for chat)
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 500,
     message: { error: 'Too many requests, please try again later.' },
     keyGenerator: (req) => req.ip,
     skip: (req) => req.path === '/api/health'
 });
 
-// Admin API limiter - 300 requests per 15 minutes (for admin panel)
+// Chat API specific limiter - 60 requests per minute
+const chatLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 60,
+    message: { error: 'Too many chat requests. Please wait a moment.' },
+    keyGenerator: (req) => req.ip
+});
+
+// Admin API limiter - 300 requests per 15 minutes
 const adminLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 300,
@@ -943,7 +951,7 @@ app.post('/api/admin/user-reset/:phone', isAuthenticated, async (req, res) => {
 // ==================== PUBLIC CHAT API (Global) ====================
 
 // Get recent messages
-app.get('/api/chat/messages', async (req, res) => {
+app.get('/api/chat/messages', chatLimiter, async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('chat_messages')
@@ -960,7 +968,7 @@ app.get('/api/chat/messages', async (req, res) => {
 });
 
 // Send message (User) - Global
-app.post('/api/chat/send', async (req, res) => {
+app.post('/api/chat/send', chatLimiter, async (req, res) => {
     try {
         const { user_id, username, message } = req.body;
         
@@ -989,7 +997,7 @@ app.post('/api/chat/send', async (req, res) => {
 });
 
 // Send message (Admin only) - Global
-app.post('/api/chat/admin/send', isAuthenticated, async (req, res) => {
+app.post('/api/chat/admin/send', isAuthenticated, chatLimiter, async (req, res) => {
     try {
         const { user_id, username, message } = req.body;
         
@@ -1041,7 +1049,6 @@ app.delete('/api/chat/messages/:id', isAuthenticated, async (req, res) => {
 // Get chat list for admin (all users who have chatted)
 app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
     try {
-        // Get unique users who have sent messages
         const { data, error } = await supabase
             .from('private_chat_messages')
             .select('sender_id, sender_name, receiver_id, created_at')
@@ -1049,11 +1056,9 @@ app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
         
         if (error) throw error;
         
-        // Get unique users
         const uniqueUsers = [];
         const seen = new Set();
         for (const msg of data || []) {
-            // Only show users that chatted with admin
             if (msg.receiver_id === 'admin' && !seen.has(msg.sender_id)) {
                 seen.add(msg.sender_id);
                 uniqueUsers.push({
@@ -1072,7 +1077,7 @@ app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
 });
 
 // Get private messages between two users
-app.get('/api/chat/private/:userId', async (req, res) => {
+app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
     try {
         const { userId } = req.params;
         const currentUserId = req.query.currentUserId || 'admin';
@@ -1103,7 +1108,7 @@ app.get('/api/chat/private/:userId', async (req, res) => {
 });
 
 // Send private message
-app.post('/api/chat/private/send', async (req, res) => {
+app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
     try {
         const { sender_id, receiver_id, sender_name, receiver_name, message } = req.body;
         
@@ -1168,7 +1173,7 @@ app.listen(PORT, () => {
 ║     🔒 SECURITY FEATURES ENABLED:                                        ║
 ║        ✅ Helmet.js (Security Headers)                                   ║
 ║        ✅ CSP with iframe support                                        ║
-║        ✅ Rate Limiting (15min/100 for general, 15min/300 for admin)    ║
+║        ✅ Rate Limiting (General: 500/15min, Chat: 60/min)              ║
 ║        ✅ SameSite=Strict Cookie (CSRF Protection)                       ║
 ║        ✅ Session-based Admin Auth (HttpOnly Cookie)                     ║
 ║        ✅ Input Validation (Joi)                                         ║
