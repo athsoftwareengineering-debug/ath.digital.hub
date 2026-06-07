@@ -623,7 +623,7 @@
                     <div id="notificationDropdown" class="notification-dropdown">
                         <div class="notification-header">
                             <h4><i class="fas fa-bell"></i> Notifications</h4>
-                            <button class="notification-clear" onclick="window.clearAllNotifications()" id="clearNotificationsBtn">Clear all</button>
+                            <button class="notification-clear" id="clearNotificationsBtn">Clear all</button>
                         </div>
                         <div id="notificationList" class="notification-list">
                             <div class="notification-empty">📭 No notifications yet</div>
@@ -846,10 +846,10 @@
         setTimeout(() => { if (toast) toast.style.display = 'none'; }, 2500);
     }
     
-    function copyToClipboard(text) {
+    window.copyToClipboard = function(text) {
         navigator.clipboard.writeText(text);
         showToast(`📋 ${text} copied!`);
-    }
+    };
     
     async function fetchWithRetry(url, options = {}, retries = 3) {
         for (let i = 0; i < retries; i++) {
@@ -910,7 +910,7 @@
         if (drawerTotalProfitEl) drawerTotalProfitEl.innerText = profit.toLocaleString() + 'K';
     }
     
-    // ==================== NOTIFICATION SYSTEM ====================
+    // ==================== NOTIFICATION SYSTEM (COMPLETELY FIXED) ====================
     function loadNotificationsFromStorage() {
         const saved = localStorage.getItem('adminNotifications');
         if (saved) {
@@ -921,6 +921,8 @@
                 console.error('Failed to parse notifications:', e);
                 notifications = []; 
             }
+        } else {
+            notifications = [];
         }
     }
     
@@ -991,6 +993,29 @@
         listContainer.innerHTML = html;
     }
     
+    // FIXED: Clear All Notifications - Working properly
+    window.clearAllNotifications = function() { 
+        console.log("Clearing all notifications...");
+        try {
+            notifications = [];
+            localStorage.removeItem('adminNotifications');
+            updateNotificationUI();
+            showToast('✅ All notifications cleared');
+            if (typeof window.closeNotificationDropdown === 'function') {
+                window.closeNotificationDropdown();
+            }
+            const badge = document.getElementById('notificationBadge');
+            if (badge) {
+                badge.style.display = 'none';
+                badge.innerText = '0';
+            }
+            console.log("Notifications cleared successfully!");
+        } catch(e) {
+            console.error("Error clearing notifications:", e);
+            showToast('Error clearing notifications', true);
+        }
+    };
+    
     window.markNotificationRead = function(notificationId) {
         const notif = notifications.find(n => String(n.id) === String(notificationId));
         if (notif && !notif.read) { 
@@ -998,14 +1023,6 @@
             saveNotificationsToStorage(); 
             updateNotificationUI(); 
         }
-    };
-    
-    window.clearAllNotifications = function() { 
-        notifications = []; 
-        saveNotificationsToStorage(); 
-        updateNotificationUI(); 
-        showToast('All notifications cleared'); 
-        window.closeNotificationDropdown(); 
     };
     
     window.toggleNotificationDropdown = function() { 
@@ -1770,9 +1787,20 @@
         else if (tab === 'market') loadProducts();
     };
     
-    window.copyToClipboard = copyToClipboard;
-    
     // EVENT LISTENERS & INIT
+    document.addEventListener('DOMContentLoaded', function() {
+        // Clear Notifications Button Event Listener
+        const clearBtn = document.getElementById('clearNotificationsBtn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                console.log("Clear button clicked via event listener");
+                window.clearAllNotifications();
+            });
+        }
+    });
+    
     document.querySelectorAll('.nav-item').forEach(btn => { 
         btn.addEventListener('click', () => { 
             window.switchTab(btn.dataset.tab); 
