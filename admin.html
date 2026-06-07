@@ -492,7 +492,99 @@
         }
         .hidden { display: none; }
         
-        /* Notification Bell Styles */
+        /* Sales Hours Control Styles */
+        .sales-hours-card {
+            background: linear-gradient(145deg, rgba(18,22,35,0.9), rgba(10,12,21,0.95));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,212,255,0.15);
+            border-radius: 1.2rem;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        .sales-hours-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--cyan);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sales-hours-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            transition: .3s;
+            border-radius: 34px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background: linear-gradient(135deg, var(--cyan), #0891b2);
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        .hour-select {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 40px;
+            padding: 6px 12px;
+            color: white;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        .hour-select:focus {
+            outline: none;
+            border-color: var(--cyan);
+        }
+        .sales-status {
+            font-size: 0.65rem;
+            padding: 8px;
+            border-radius: 40px;
+            text-align: center;
+            margin-top: 12px;
+        }
+        .sales-status.open {
+            background: rgba(16,185,129,0.15);
+            color: #34d399;
+        }
+        .sales-status.closed {
+            background: rgba(244,63,94,0.15);
+            color: #fb7185;
+        }
+        
         .notification-bell {
             position: relative;
             display: inline-block;
@@ -638,6 +730,13 @@
                 right: 10px;
                 width: auto;
             }
+            .sales-hours-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .hour-select {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -721,6 +820,49 @@
         </div>
         
         <div id="menuTab" class="tab-content active">
+            <!-- Sales Hours Control Card -->
+            <div class="sales-hours-card">
+                <div class="sales-hours-title">
+                    <i class="fas fa-clock"></i> ရောင်းချချိန် သတ်မှတ်ချက်
+                </div>
+                <div class="sales-hours-controls">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 0.7rem;">ဖွင့်/ပိတ်:</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="salesEnabled" onchange="updateSalesHours()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 0.7rem;">စတင်ချိန်:</span>
+                        <select id="startHour" class="hour-select" onchange="updateSalesHours()">
+                            <option value="0">12 AM</option><option value="1">1 AM</option><option value="2">2 AM</option>
+                            <option value="3">3 AM</option><option value="4">4 AM</option><option value="5">5 AM</option>
+                            <option value="6">6 AM</option><option value="7">7 AM</option><option value="8">8 AM</option>
+                            <option value="9">9 AM</option><option value="10">10 AM</option><option value="11">11 AM</option>
+                            <option value="12">12 PM</option><option value="13">1 PM</option><option value="14">2 PM</option>
+                            <option value="15">3 PM</option><option value="16">4 PM</option><option value="17">5 PM</option>
+                            <option value="18">6 PM</option><option value="19">7 PM</option><option value="20">8 PM</option>
+                            <option value="21">9 PM</option><option value="22">10 PM</option><option value="23">11 PM</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 0.7rem;">ပိတ်ချိန်:</span>
+                        <select id="endHour" class="hour-select" onchange="updateSalesHours()">
+                            <option value="0">12 AM</option><option value="1">1 AM</option><option value="2">2 AM</option>
+                            <option value="3">3 AM</option><option value="4">4 AM</option><option value="5">5 AM</option>
+                            <option value="6">6 AM</option><option value="7">7 AM</option><option value="8">8 AM</option>
+                            <option value="9">9 AM</option><option value="10">10 AM</option><option value="11">11 AM</option>
+                            <option value="12">12 PM</option><option value="13">1 PM</option><option value="14">2 PM</option>
+                            <option value="15">3 PM</option><option value="16">4 PM</option><option value="17">5 PM</option>
+                            <option value="18">6 PM</option><option value="19">7 PM</option><option value="20">8 PM</option>
+                            <option value="21">9 PM</option><option value="22">10 PM</option><option value="23">11 PM</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="salesStatus" class="sales-status">Loading...</div>
+            </div>
+            
             <div class="stats-grid" id="statsGrid">
                 <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label"><i class="fas fa-shopping-cart"></i> Total Orders</div></div>
                 <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label"><i class="fas fa-clock"></i> Pending</div></div>
@@ -1677,6 +1819,56 @@
         }); 
     });
     
+    // ============ SALES HOURS CONTROL ============
+    async function loadSalesHours() {
+        try {
+            const response = await fetch(`${API_BASE}/api/admin/sales-hours`, { credentials: 'include' });
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('salesEnabled').checked = data.salesHours.enabled;
+                document.getElementById('startHour').value = data.salesHours.startHour;
+                document.getElementById('endHour').value = data.salesHours.endHour;
+                updateSalesStatusDisplay();
+            }
+        } catch(e) { console.error('Error loading sales hours:', e); }
+    }
+    
+    async function updateSalesHours() {
+        const enabled = document.getElementById('salesEnabled').checked;
+        const startHour = parseInt(document.getElementById('startHour').value);
+        const endHour = parseInt(document.getElementById('endHour').value);
+        
+        try {
+            const response = await fetch(`${API_BASE}/api/admin/sales-hours`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled, startHour, endHour }),
+                credentials: 'include'
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast('✅ ရောင်းချချိန် သတ်မှတ်ချက်ကို ပြင်ဆင်ပြီးပါပြီ။');
+                updateSalesStatusDisplay();
+            } else {
+                showToast('❌ သတ်မှတ်ချက် မအောင်မြင်ပါ။', true);
+            }
+        } catch(e) {
+            showToast('Connection error', true);
+        }
+    }
+    
+    async function updateSalesStatusDisplay() {
+        try {
+            const response = await fetch(`${API_BASE}/api/sales/status`);
+            const data = await response.json();
+            const statusDiv = document.getElementById('salesStatus');
+            if (statusDiv) {
+                statusDiv.innerHTML = data.message;
+                statusDiv.className = `sales-status ${data.isOpen ? 'open' : 'closed'}`;
+            }
+        } catch(e) { console.error('Error fetching sales status:', e); }
+    }
+    
     // ============ ADMIN CHAT WIDGET ============
     let adminChatWidgetOpen = false;
     
@@ -1740,7 +1932,9 @@
         if (adminContent) adminContent.style.display = 'block';
         if (bottomNav) bottomNav.style.display = 'flex';
         loadAllData(); 
+        loadSalesHours();
         startAutoSync(); 
+        setInterval(updateSalesStatusDisplay, 60000); // Update every minute
     }
 })();
 </script>
