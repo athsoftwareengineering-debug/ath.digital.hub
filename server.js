@@ -7,7 +7,6 @@ const crypto = require('crypto');
 const helmet = require('helmet');
 const session = require('express-session');
 const rateLimit = require('express-rate-limit');
-const csrf = require('csurf');
 const morgan = require('morgan');
 const compression = require('compression');
 const sharp = require('sharp');
@@ -38,7 +37,7 @@ function maskPhone(phone) {
 app.use(compression());
 app.use(morgan('combined'));
 
-// ==================== UPDATED CSP CONFIGURATION ====================
+// ==================== CSP CONFIGURATION ====================
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -73,7 +72,7 @@ app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// Additional security headers
+// ==================== EXTRA SECURITY HEADERS ====================
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
@@ -84,7 +83,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Rate limiting
+// ==================== RATE LIMITING ====================
 const apiLimiter = rateLimit({
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
     max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
@@ -107,7 +106,15 @@ const orderLimiter = rateLimit({
     keyGenerator: (req) => req.body.phone || req.ip
 });
 
-// Session configuration
+// Admin action limiter (အရေးကြီး admin actions များအတွက်)
+const adminActionLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 10,
+    message: { error: 'Too many admin actions. Please slow down.' },
+    keyGenerator: (req) => req.sessionID || req.ip
+});
+
+// ==================== SESSION CONFIGURATION (SameSite=Strict for CSRF protection) ====================
 const sessionConfig = {
     secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
     resave: false,
@@ -116,8 +123,8 @@ const sessionConfig = {
     cookie: {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 2,
-        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 2, // 2 hours
+        sameSite: 'strict', // ✅ CSRF protection
         domain: process.env.COOKIE_DOMAIN || undefined
     },
     rolling: true
@@ -128,9 +135,96 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 app.use(session(sessionConfig));
-const csrfProtection = csrf({ cookie: true });
 
-// CORS
+// ==================== REFERER CHECK MIDDLEWARE (ထပ်ဆောင်း CSRF ကာကွယ်ရေး) ====================
+const refererCheck = (req, res, next) => {
+    // Skip for GET requests (safe methods)
+    if (req.method === 'GET') {
+        return next();
+    }
+    
+    // Skip for login endpoint
+    if (req.path === '/api/admin/login') {
+        return next();
+    }
+    
+    const referer = req.headers.referer;
+    const host = req.headers.host;
+    
+    // Check if referer exists and matches our domain
+    if (!referer || !referer.includes(host)) {
+        console.log(`⚠️ CSRF attempt detected: ${req.method} ${req.path} from ${referer || 'no referer'}`);
+        return res.status(403).json({ 
+            success: false, 
+            error: 'Access denied. Invalid request source.' 
+        });
+    }
+    
+    next();
+};
+
+// Apply referer check to admin API only
+app.use('/api/admin', refererCheck);
+
+// ==================== CSRF TOKEN ENDPOINT (အရေးကြီး actions များအတွက်) ====================
+// Store CSRF tokens in memory (in production, use Redis)
+const csrfTokens = new Map();
+
+// Generate CSRF token for admin
+app.get('/api/admin/csrf-token', (req, res) => {
+    if (!req.session.isAdmin) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+    
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = Date.now() + 3600000; // 1 hour
+    
+    csrfTokens.set(token, { expiresAt, userId: req.sessionID });
+    
+    // Clean up expired tokens
+    for (const [key, value] of csrfTokens.entries()) {
+        if (value.expiresAt < Date.now()) {
+            csrfTokens.delete(key);
+        }
+    }
+    
+    res.json({ success: true, csrfToken: token });
+});
+
+// Middleware to verify CSRF token for critical actions
+const verifyCsrfToken = (req, res, next) => {
+    // Skip for GET requests
+    if (req.method === 'GET') {
+        return next();
+    }
+    
+    // Skip for login
+    if (req.path === '/api/admin/login') {
+        return next();
+    }
+    
+    const token = req.headers['x-csrf-token'] || req.body._csrf;
+    
+    if (!token) {
+        return res.status(403).json({ success: false, error: 'CSRF token missing' });
+    }
+    
+    const tokenData = csrfTokens.get(token);
+    if (!tokenData || tokenData.expiresAt < Date.now()) {
+        csrfTokens.delete(token);
+        return res.status(403).json({ success: false, error: 'Invalid or expired CSRF token' });
+    }
+    
+    // Token is valid, remove it (one-time use)
+    csrfTokens.delete(token);
+    next();
+};
+
+// Apply CSRF token verification to critical admin actions only
+const criticalAdminActions = ['/api/admin/system-reset', '/api/admin/user-delete', '/api/admin/user-reset'];
+app.use(criticalAdminActions, verifyCsrfToken);
+
+// ==================== CORS ====================
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' ? process.env.ALLOWED_ORIGINS?.split(',') : '*',
     credentials: true
@@ -140,6 +234,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(__dirname));
 app.use('/api/', apiLimiter);
+app.use('/api/admin', adminActionLimiter);
 
 // ==================== FILE UPLOAD ====================
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -251,7 +346,6 @@ function isAuthenticated(req, res, next) {
 
 // ==================== DATABASE NOTIFICATION FUNCTIONS ====================
 
-// Add notification to database
 async function addNotificationToDatabase(order) {
     try {
         const { error } = await supabaseAdmin
@@ -325,7 +419,6 @@ app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); }
 app.get('/admin.html', (req, res) => { res.sendFile(path.join(__dirname, 'admin.html')); });
 app.get('/dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'dashboard_live.html')); });
 app.get('/api/health', (req, res) => { res.json({ status: 'ok', timestamp: new Date().toISOString() }); });
-app.get('/api/csrf-token', csrfProtection, (req, res) => { res.json({ csrfToken: req.csrfToken() }); });
 
 // ==================== USER REGISTRATION ====================
 app.post('/api/user/register', async (req, res) => {
@@ -410,7 +503,7 @@ app.get('/api/market/products', async (req, res) => {
     }
 });
 
-app.post('/api/market/products', isAuthenticated, csrfProtection, async (req, res) => {
+app.post('/api/market/products', isAuthenticated, async (req, res) => {
     try {
         const { name, price, image, category, icon, discount } = req.body;
         if (!name || !price) {
@@ -429,7 +522,7 @@ app.post('/api/market/products', isAuthenticated, csrfProtection, async (req, re
     }
 });
 
-app.put('/api/market/products/:id', isAuthenticated, csrfProtection, async (req, res) => {
+app.put('/api/market/products/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
         const { name, price, image, category, icon, discount } = req.body;
@@ -449,7 +542,7 @@ app.put('/api/market/products/:id', isAuthenticated, csrfProtection, async (req,
     }
 });
 
-app.delete('/api/market/products/:id', isAuthenticated, csrfProtection, async (req, res) => {
+app.delete('/api/market/products/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
         const { error } = await supabase.from('market_products').delete().eq('id', parseInt(id));
@@ -564,7 +657,7 @@ app.post('/api/orders', orderLimiter, upload.single('slip'), async (req, res) =>
         const { data: newOrder } = await supabase.from('orders').select('*').eq('id', orderId).single();
         if (newOrder) {
             await broadcastNewOrder(newOrder);
-            await addNotificationToDatabase(newOrder);  // Save to database
+            await addNotificationToDatabase(newOrder);
         }
         
         res.json({ success: true, orderId: orderId, message: 'Order created successfully' });
@@ -632,8 +725,6 @@ app.get('/api/admin/search-users', isAuthenticated, async (req, res) => {
 });
 
 // ==================== DATABASE NOTIFICATIONS ENDPOINTS ====================
-
-// Get all notifications from database
 app.get('/api/admin/notifications', isAuthenticated, async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
@@ -650,8 +741,7 @@ app.get('/api/admin/notifications', isAuthenticated, async (req, res) => {
     }
 });
 
-// Clear all notifications from database
-app.post('/api/admin/notifications/clear', isAuthenticated, csrfProtection, async (req, res) => {
+app.post('/api/admin/notifications/clear', isAuthenticated, async (req, res) => {
     try {
         const { error } = await supabaseAdmin
             .from('admin_notifications')
@@ -666,8 +756,7 @@ app.post('/api/admin/notifications/clear', isAuthenticated, csrfProtection, asyn
     }
 });
 
-// Delete single notification from database
-app.delete('/api/admin/notifications/:id', isAuthenticated, csrfProtection, async (req, res) => {
+app.delete('/api/admin/notifications/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
         const { error } = await supabaseAdmin
@@ -683,8 +772,7 @@ app.delete('/api/admin/notifications/:id', isAuthenticated, csrfProtection, asyn
     }
 });
 
-// Mark notification as read
-app.put('/api/admin/notifications/:id/read', isAuthenticated, csrfProtection, async (req, res) => {
+app.put('/api/admin/notifications/:id/read', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
         const { error } = await supabaseAdmin
@@ -700,8 +788,7 @@ app.put('/api/admin/notifications/:id/read', isAuthenticated, csrfProtection, as
     }
 });
 
-// Mark all notifications as read
-app.put('/api/admin/notifications/read-all', isAuthenticated, csrfProtection, async (req, res) => {
+app.put('/api/admin/notifications/read-all', isAuthenticated, async (req, res) => {
     try {
         const { error } = await supabaseAdmin
             .from('admin_notifications')
@@ -716,7 +803,6 @@ app.put('/api/admin/notifications/read-all', isAuthenticated, csrfProtection, as
     }
 });
 
-// Get unread count
 app.get('/api/admin/notifications/unread-count', isAuthenticated, async (req, res) => {
     try {
         const { count, error } = await supabaseAdmin
@@ -733,7 +819,7 @@ app.get('/api/admin/notifications/unread-count', isAuthenticated, async (req, re
 });
 
 // ==================== ADMIN USER MANAGEMENT ====================
-app.post('/api/admin/user-block', isAuthenticated, csrfProtection, async (req, res) => {
+app.post('/api/admin/user-block', isAuthenticated, async (req, res) => {
     try {
         const { phone, block } = req.body;
         if (!phone) {
@@ -747,7 +833,7 @@ app.post('/api/admin/user-block', isAuthenticated, csrfProtection, async (req, r
     }
 });
 
-app.post('/api/admin/clear-suspect', isAuthenticated, csrfProtection, async (req, res) => {
+app.post('/api/admin/clear-suspect', isAuthenticated, async (req, res) => {
     try {
         const { phone } = req.body;
         if (!phone) {
@@ -761,7 +847,7 @@ app.post('/api/admin/clear-suspect', isAuthenticated, csrfProtection, async (req
     }
 });
 
-app.post('/api/admin/user-delete', isAuthenticated, csrfProtection, async (req, res) => {
+app.post('/api/admin/user-delete', isAuthenticated, async (req, res) => {
     try {
         const { phone } = req.body;
         if (!phone) {
@@ -775,7 +861,7 @@ app.post('/api/admin/user-delete', isAuthenticated, csrfProtection, async (req, 
     }
 });
 
-app.post('/api/admin/user-delete-orders', isAuthenticated, csrfProtection, async (req, res) => {
+app.post('/api/admin/user-delete-orders', isAuthenticated, async (req, res) => {
     try {
         const { phone } = req.body;
         if (!phone) {
@@ -798,7 +884,7 @@ app.post('/api/admin/user-delete-orders', isAuthenticated, csrfProtection, async
     }
 });
 
-app.post('/api/admin/cleanup-old', isAuthenticated, csrfProtection, async (req, res) => {
+app.post('/api/admin/cleanup-old', isAuthenticated, async (req, res) => {
     try {
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
         const { data: ordersToDelete } = await supabaseAdmin.from('orders').select('slip_url').in('status', ['Pending', 'Rejected']).lt('created_at', thirtyDaysAgo);
@@ -818,7 +904,7 @@ app.post('/api/admin/cleanup-old', isAuthenticated, csrfProtection, async (req, 
     }
 });
 
-app.put('/api/admin/orders/:id/approve', isAuthenticated, csrfProtection, async (req, res) => {
+app.put('/api/admin/orders/:id/approve', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
         await supabaseAdmin.from('orders').update({ status: 'Approved', activated_at: new Date().toISOString() }).eq('id', id);
@@ -829,7 +915,7 @@ app.put('/api/admin/orders/:id/approve', isAuthenticated, csrfProtection, async 
     }
 });
 
-app.put('/api/admin/orders/:id/reject', isAuthenticated, csrfProtection, async (req, res) => {
+app.put('/api/admin/orders/:id/reject', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
         const { data: order } = await supabaseAdmin.from('orders').select('phone').eq('id', id).single();
@@ -842,7 +928,7 @@ app.put('/api/admin/orders/:id/reject', isAuthenticated, csrfProtection, async (
     }
 });
 
-app.delete('/api/admin/orders/:id', isAuthenticated, csrfProtection, async (req, res) => {
+app.delete('/api/admin/orders/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
         const { data: order } = await supabaseAdmin.from('orders').select('slip_url').eq('id', id).single();
@@ -876,8 +962,8 @@ app.post('/api/admin/logout', (req, res) => {
     res.json({ success: true, message: 'Logged out successfully' });
 });
 
-// ==================== SYSTEM RESET API ====================
-app.post('/api/admin/system-reset', isAuthenticated, csrfProtection, async (req, res) => {
+// ==================== SYSTEM RESET API (Critical - requires CSRF token) ====================
+app.post('/api/admin/system-reset', isAuthenticated, async (req, res) => {
     try {
         const { confirm, keepProducts } = req.body;
         if (confirm !== 'RESET_ALL_DATA') {
@@ -909,7 +995,7 @@ app.post('/api/admin/system-reset', isAuthenticated, csrfProtection, async (req,
     }
 });
 
-app.post('/api/admin/user-reset/:phone', isAuthenticated, csrfProtection, async (req, res) => {
+app.post('/api/admin/user-reset/:phone', isAuthenticated, async (req, res) => {
     try {
         const { phone } = req.params;
         if (!phone) {
@@ -950,14 +1036,17 @@ app.listen(PORT, () => {
 ║                                                                          ║
 ║     🔒 SECURITY FEATURES ENABLED:                                        ║
 ║        ✅ Helmet.js (Security Headers)                                   ║
-║        ✅ CSP with unsafe-inline (for admin panel)                       ║
-║        ✅ Rate Limiting (100 requests/15min)                            ║
-║        ✅ Login Rate Limiting (5 attempts/15min)                        ║
-║        ✅ Order Rate Limiting (3 orders/min)                            ║
-║        ✅ Session-based Admin Auth (HttpOnly Cookie)                    ║
-║        ✅ CSRF Protection                                                ║
-║        ✅ Input Validation (Joi)                                        ║
-║        ✅ Image Processing (Sharp)                                      ║
+║        ✅ CSP with unsafe-inline                                         ║
+║        ✅ Rate Limiting (Multiple levels)                                ║
+║        ✅ SameSite=Strict Cookie (CSRF Protection)                       ║
+║        ✅ Referer Header Check                                           ║
+║        ✅ CSRF Token for Critical Actions                                ║
+║        ✅ Session-based Admin Auth (HttpOnly Cookie)                     ║
+║        ✅ Input Validation (Joi)                                         ║
+║        ✅ Image Processing (Sharp)                                       ║
+║        ✅ Database Notifications                                         ║
+║        ✅ Request Logging (Morgan)                                       ║
+║        ✅ Compression (Gzip)                                             ║
 ║                                                                          ║
 ║     📢 DATABASE NOTIFICATIONS ENDPOINTS:                                 ║
 ║        GET    /api/admin/notifications - Get all notifications          ║
