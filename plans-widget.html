@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plans Widget - ATH DIGITAL HUB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            padding: 0;
+            margin: 0;
+        }
+        
+        #plansContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .plan-card {
+            background: linear-gradient(145deg, #0f111a, #0a0c15);
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            border: 1px solid rgba(0,212,255,0.15);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0,212,255,0.5);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        }
+        
+        .plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .plan-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .plan-icon {
+            font-size: 1.8rem;
+        }
+        
+        .plan-name {
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #00d4ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge-group {
+            display: flex;
+            gap: 8px;
+            margin-left: 5px;
+        }
+        
+        .badge {
+            padding: 3px 10px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .badge-best-seller {
+            background: linear-gradient(135deg, #f59e0b, #ea580c);
+            animation: pulse 2s infinite;
+        }
+        
+        .badge-popular {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .badge-hot {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+        
+        .plan-price-box {
+            text-align: right;
+        }
+        
+        .plan-price {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #10b981;
+            display: flex;
+            align-items: baseline;
+            gap: 3px;
+        }
+        
+        .plan-price small {
+            font-size: 0.65rem;
+            color: #94a3b8;
+            font-weight: normal;
+        }
+        
+        .price-note {
+            font-size: 0.55rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            margin: 16px 0;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            font-size: 0.75rem;
+            color: #e2e8f0;
+            border-bottom: 1px dashed rgba(255,255,255,0.05);
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list li i {
+            width: 22px;
+            font-size: 0.85rem;
+        }
+        
+        .feature-data i { color: #00d4ff !important; }
+        .feature-data span { color: #00d4ff; font-weight: 600; }
+        .feature-voice i { color: #f59e0b !important; }
+        .feature-voice span { color: #f59e0b; font-weight: 600; }
+        .feature-sms i { color: #10b981 !important; }
+        .feature-sms span { color: #10b981; font-weight: 600; }
+        
+        .product-buy-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #00d4ff, #0891b2);
+            border: none;
+            padding: 12px;
+            border-radius: 60px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+        
+        .product-buy-btn:hover {
+            transform: scale(0.98);
+            background: linear-gradient(135deg, #00e5ff, #0a7e9e);
+            gap: 15px;
+            box-shadow: 0 5px 15px rgba(0,212,255,0.3);
+        }
+        
+        .ranking-bar {
+            margin-top: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 60px;
+            height: 4px;
+            overflow: hidden;
+        }
+        
+        .ranking-fill {
+            height: 100%;
+            border-radius: 60px;
+            transition: width 0.5s ease;
+        }
+        
+        .fill-1 { background: linear-gradient(90deg, #f59e0b, #ea580c); width: 100%; }
+        .fill-2 { background: linear-gradient(90deg, #00d4ff, #0891b2); width: 70%; }
+        .fill-3 { background: linear-gradient(90deg, #10b981, #059669); width: 50%; }
+        .fill-4 { background: linear-gradient(90deg, #8b5cf6, #6d28d9); width: 30%; }
+        
+        .ranking-text {
+            margin-top: 8px;
+            font-size: 0.6rem;
+            color: #94a3b8;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        @media (max-width: 480px) {
+            .plan-card { padding: 1rem; }
+            .plan-icon { font-size: 1.5rem; }
+            .plan-name { font-size: 0.85rem; }
+            .plan-price { font-size: 1.1rem; }
+            .feature-list li { font-size: 0.7rem; padding: 6px 0; }
+            .product-buy-btn { padding: 10px; font-size: 0.75rem; }
+            .badge { padding: 2px 8px; font-size: 0.55rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="plansContainer"></div>
+    
+    <script>
+        const plansData = [
+            { 
+                id: 1, name: "VIP LEVEL - 1", price: 15000, icon: "🔥", 
+                features: [
+                    { text: "22 GB အမြန်နှုန်းမြင့်", type: "data" },
+                    { text: "8,000 မိနစ် (ကွန်ရက်တွင်း)", type: "voice" },
+                    { text: "5,000 SMS", type: "sms" }
+                ]
+            },
+            { 
+                id: 2, name: "VIP LEVEL - 2", price: 20000, icon: "⭐", 
+                features: [
+                    { text: "40 GB အာထရာဒေတာ", type: "data" },
+                    { text: "250 မိနစ် (ကွန်ရက်တွင်း)", type: "voice" },
+                    { text: "25 မိနစ် (အခြားကွန်ရက်)", type: "voice" }
+                ]
+            },
+            { 
+                id: 3, name: "VIP LEVEL - 3", price: 25000, icon: "💎", 
+                features: [
+                    { text: "40 GB အမြန်နှုန်း + အပို", type: "data" },
+                    { text: "1,400 မိနစ် (ကွန်ရက်တွင်း)", type: "voice" },
+                    { text: "8,000 SMS", type: "sms" }
+                ]
+            },
+            { 
+                id: 4, name: "VIP LEVEL - 4 (ULTRA)", price: 30000, icon: "👑", 
+                features: [
+                    { text: "120 GB ဂိမ်းဒေတာ", type: "data" },
+                    { text: "အကန့်အသတ်မရှိ Streaming", type: "streaming" },
+                    { text: "ဦးစားပေး ပံ့ပိုးမှု", type: "support" }
+                ]
+            }
+        ];
+        
+        let planSales = { 1: 45, 2: 28, 3: 120, 4: 67 };
+        
+        const featureConfig = {
+            data: { icon: "fa-database", class: "feature-data" },
+            voice: { icon: "fa-phone-volume", class: "feature-voice" },
+            sms: { icon: "fa-envelope", class: "feature-sms" },
+            streaming: { icon: "fa-film", class: "feature-data" },
+            support: { icon: "fa-headset", class: "feature-data" }
+        };
+        
+        function highlightNumbers(text) {
+            text = text.replace(/(\d+\.?\d*\s*GB)/gi, '<span>$1</span>');
+            text = text.replace(/(\d+[\d,]*\s*မိနစ်)/g, '<span>$1</span>');
+            text = text.replace(/(\d+[\d,]*\s*SMS)/g, '<span>$1</span>');
+            return text;
+        }
+        
+        function getShortName(name) {
+            if (name.includes("VIP LEVEL - 1")) return "VIP 1";
+            if (name.includes("VIP LEVEL - 2")) return "VIP 2";
+            if (name.includes("VIP LEVEL - 3")) return "VIP 3";
+            if (name.includes("ULTRA")) return "VIP 4 ULTRA";
+            return name;
+        }
+        
+        function getBestSellerId() {
+            let bestId = 1, maxSales = 0;
+            for (const [id, sales] of Object.entries(planSales)) {
+                if (sales > maxSales) { maxSales = sales; bestId = parseInt(id); }
+            }
+            return { bestId, maxSales };
+        }
+        
+        function getRanking(sales, allSales) {
+            const sorted = Object.values(allSales).sort((a,b) => b - a);
+            return sorted.indexOf(sales) + 1;
+        }
+        
+        function getBadgeHtml(planId, sales, rank) {
+            const { bestId } = getBestSellerId();
+            if (planId === bestId) return '<span class="badge badge-best-seller"><i class="fas fa-crown"></i> Best Seller</span>';
+            if (rank === 2) return '<span class="badge badge-popular"><i class="fas fa-chart-line"></i> Popular</span>';
+            if (rank === 3) return '<span class="badge badge-hot"><i class="fas fa-fire"></i> Hot</span>';
+            return '';
+        }
+        
+        function getRankingFillClass(rank) {
+            switch(rank) {
+                case 1: return 'fill-1';
+                case 2: return 'fill-2';
+                case 3: return 'fill-3';
+                default: return 'fill-4';
+            }
+        }
+        
+        function getRankingText(rank) {
+            switch(rank) {
+                case 1: return '🏆 အရောင်းရဆုံး';
+                case 2: return '⭐ ဒုတိယအရောင်းရဆုံး';
+                case 3: return '🔥 တတိယအရောင်းရဆုံး';
+                default: return '📦 ဝယ်ယူမှုရှိ';
+            }
+        }
+        
+        function renderPlans() {
+            const container = document.getElementById('plansContainer');
+            let html = '';
+            
+            const plansWithRank = plansData.map(plan => {
+                const sales = planSales[plan.id] || 0;
+                const rank = getRanking(sales, planSales);
+                return { ...plan, sales, rank };
+            });
+            
+            for (const p of plansWithRank) {
+                const priceFormatted = p.price.toLocaleString();
+                const shortName = getShortName(p.name);
+                const rank = p.rank;
+                const badgeHtml = getBadgeHtml(p.id, p.sales, rank);
+                const rankingText = getRankingText(rank);
+                const fillClass = getRankingFillClass(rank);
+                const barWidth = rank === 1 ? 100 : rank === 2 ? 70 : rank === 3 ? 50 : 30;
+                
+                let featuresHtml = '';
+                for (const f of p.features) {
+                    const config = featureConfig[f.type] || featureConfig.data;
+                    const highlightedText = highlightNumbers(f.text);
+                    featuresHtml += `<li class="${config.class}"><i class="fas ${config.icon}"></i> ${highlightedText}</li>`;
+                }
+                
+                html += `
+                    <div class="plan-card">
+                        <div class="plan-header">
+                            <div class="plan-title">
+                                <span class="plan-icon">${p.icon}</span>
+                                <span class="plan-name">${shortName}</span>
+                                ${badgeHtml}
+                            </div>
+                            <div class="plan-price-box">
+                                <div class="plan-price">${priceFormatted} <small>MMK</small></div>
+                                <div class="price-note">/ 30 days</div>
+                            </div>
+                        </div>
+                        <ul class="feature-list">${featuresHtml}</ul>
+                        <div class="ranking-bar"><div class="ranking-fill ${fillClass}" style="width: ${barWidth}%"></div></div>
+                        <div class="ranking-text"><i class="fas fa-chart-simple"></i> ${rankingText}</div>
+                        <button class="product-buy-btn" onclick="handleBuy('${p.name}', ${p.price})">
+                            <i class="fas fa-shopping-cart"></i> ဝယ်ယူမည် <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+        
+        function handleBuy(planName, planPrice) {
+            const plan = plansData.find(p => p.name === planName);
+            if (plan) {
+                planSales[plan.id] = (planSales[plan.id] || 0) + 1;
+                renderPlans();
+                localStorage.setItem('planSales', JSON.stringify(planSales));
+            }
+            
+            if (window.parent && window.parent.openPaymentModalFromPlan) {
+                window.parent.openPaymentModalFromPlan(planName, planPrice);
+            } else {
+                alert(`🛒 ${planName} - ${planPrice.toLocaleString()} MMK ဝယ်ယူရန်`);
+            }
+        }
+        
+        function loadSalesData() {
+            try {
+                const saved = localStorage.getItem('planSales');
+                if (saved) planSales = JSON.parse(saved);
+                renderPlans();
+            } catch(e) { renderPlans(); }
+        }
+        
+        loadSalesData();
+        window.handleBuy = handleBuy;
+    </script>
+</body>
+</html>
