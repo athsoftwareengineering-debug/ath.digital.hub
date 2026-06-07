@@ -6,25 +6,19 @@
     <title>Plans Widget - ATH DIGITAL HUB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        /* Your existing styles here */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: transparent;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans Myanmar', sans-serif;
             padding: 0;
             margin: 0;
         }
-        
         #plansContainer {
             display: flex;
             flex-direction: column;
             gap: 16px;
         }
-        
         .plan-card {
             background: linear-gradient(145deg, #0f111a, #0a0c15);
             border-radius: 1.5rem;
@@ -34,13 +28,11 @@
             position: relative;
             overflow: hidden;
         }
-        
         .plan-card:hover {
             transform: translateY(-4px);
             border-color: rgba(0,212,255,0.5);
             box-shadow: 0 15px 30px rgba(0,0,0,0.4);
         }
-        
         .plan-header {
             display: flex;
             justify-content: space-between;
@@ -49,18 +41,13 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-        
         .plan-title {
             display: flex;
             align-items: center;
             gap: 10px;
             flex-wrap: wrap;
         }
-        
-        .plan-icon {
-            font-size: 1.8rem;
-        }
-        
+        .plan-icon { font-size: 1.8rem; }
         .plan-name {
             font-size: 1rem;
             font-weight: 700;
@@ -68,15 +55,7 @@
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
-            letter-spacing: 0.5px;
         }
-        
-        .badge-group {
-            display: flex;
-            gap: 8px;
-            margin-left: 5px;
-        }
-        
         .badge {
             padding: 3px 10px;
             border-radius: 40px;
@@ -87,57 +66,19 @@
             align-items: center;
             gap: 5px;
         }
-        
-        .badge-best-seller {
-            background: linear-gradient(135deg, #f59e0b, #ea580c);
-            animation: pulse 2s infinite;
-        }
-        
-        .badge-popular {
-            background: linear-gradient(135deg, #10b981, #059669);
-        }
-        
-        .badge-hot {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-        }
-        
+        .badge-best-seller { background: linear-gradient(135deg, #f59e0b, #ea580c); animation: pulse 2s infinite; }
+        .badge-popular { background: linear-gradient(135deg, #10b981, #059669); }
+        .badge-hot { background: linear-gradient(135deg, #ef4444, #dc2626); }
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.03); }
             100% { transform: scale(1); }
         }
-        
-        .plan-price-box {
-            text-align: right;
-        }
-        
-        .plan-price {
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: #10b981;
-            display: flex;
-            align-items: baseline;
-            gap: 3px;
-        }
-        
-        .plan-price small {
-            font-size: 0.65rem;
-            color: #94a3b8;
-            font-weight: normal;
-        }
-        
-        .price-note {
-            font-size: 0.55rem;
-            color: #94a3b8;
-            margin-top: 2px;
-        }
-        
-        .feature-list {
-            list-style: none;
-            margin: 16px 0;
-            padding: 0;
-        }
-        
+        .plan-price-box { text-align: right; }
+        .plan-price { font-size: 1.3rem; font-weight: 800; color: #10b981; display: flex; align-items: baseline; gap: 3px; }
+        .plan-price small { font-size: 0.65rem; color: #94a3b8; font-weight: normal; }
+        .price-note { font-size: 0.55rem; color: #94a3b8; margin-top: 2px; }
+        .feature-list { list-style: none; margin: 16px 0; padding: 0; }
         .feature-list li {
             display: flex;
             align-items: center;
@@ -147,23 +88,14 @@
             color: #e2e8f0;
             border-bottom: 1px dashed rgba(255,255,255,0.05);
         }
-        
-        .feature-list li:last-child {
-            border-bottom: none;
-        }
-        
-        .feature-list li i {
-            width: 22px;
-            font-size: 0.85rem;
-        }
-        
+        .feature-list li:last-child { border-bottom: none; }
+        .feature-list li i { width: 22px; font-size: 0.85rem; }
         .feature-data i { color: #00d4ff !important; }
         .feature-data span { color: #00d4ff; font-weight: 600; }
         .feature-voice i { color: #f59e0b !important; }
         .feature-voice span { color: #f59e0b; font-weight: 600; }
         .feature-sms i { color: #10b981 !important; }
         .feature-sms span { color: #10b981; font-weight: 600; }
-        
         .product-buy-btn {
             width: 100%;
             background: linear-gradient(135deg, #00d4ff, #0891b2);
@@ -181,41 +113,38 @@
             font-size: 0.85rem;
             margin-top: 8px;
         }
-        
-        .product-buy-btn:hover {
+        .product-buy-btn.disabled, .product-buy-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .product-buy-btn:hover:not(:disabled) {
             transform: scale(0.98);
             background: linear-gradient(135deg, #00e5ff, #0a7e9e);
             gap: 15px;
             box-shadow: 0 5px 15px rgba(0,212,255,0.3);
         }
-        
         .ranking-bar {
             margin-top: 12px;
             background: rgba(0,0,0,0.3);
             border-radius: 60px;
-            height: 4px;
+            height: 6px;
             overflow: hidden;
         }
-        
-        .ranking-fill {
-            height: 100%;
-            border-radius: 60px;
-            transition: width 0.5s ease;
-        }
-        
-        .fill-1 { background: linear-gradient(90deg, #f59e0b, #ea580c); width: 100%; }
-        .fill-2 { background: linear-gradient(90deg, #00d4ff, #0891b2); width: 70%; }
-        .fill-3 { background: linear-gradient(90deg, #10b981, #059669); width: 50%; }
-        .fill-4 { background: linear-gradient(90deg, #8b5cf6, #6d28d9); width: 30%; }
-        
+        .ranking-fill { height: 100%; border-radius: 60px; transition: width 0.5s ease; }
+        .ranking-fill.rank-1 { background: linear-gradient(90deg, #f59e0b, #ea580c); }
+        .ranking-fill.rank-2 { background: linear-gradient(90deg, #00d4ff, #0891b2); }
+        .ranking-fill.rank-3 { background: linear-gradient(90deg, #10b981, #059669); }
+        .ranking-fill.rank-4 { background: linear-gradient(90deg, #8b5cf6, #6d28d9); }
         .ranking-text {
             margin-top: 8px;
             font-size: 0.6rem;
             color: #94a3b8;
             display: flex;
             justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
         }
-        
         @media (max-width: 480px) {
             .plan-card { padding: 1rem; }
             .plan-icon { font-size: 1.5rem; }
@@ -229,44 +158,17 @@
 </head>
 <body>
     <div id="plansContainer"></div>
-    
+
     <script>
         const plansData = [
-            { 
-                id: 1, name: "VIP LEVEL - 1", price: 15000, icon: "🔥", 
-                features: [
-                    { text: "22 GB အမြန်နှုန်းမြင့်", type: "data" },
-                    { text: "8,000 မိနစ် (ကွန်ရက်တွင်း)", type: "voice" },
-                    { text: "5,000 SMS", type: "sms" }
-                ]
-            },
-            { 
-                id: 2, name: "VIP LEVEL - 2", price: 20000, icon: "⭐", 
-                features: [
-                    { text: "40 GB အာထရာဒေတာ", type: "data" },
-                    { text: "250 မိနစ် (ကွန်ရက်တွင်း)", type: "voice" },
-                    { text: "25 မိနစ် (အခြားကွန်ရက်)", type: "voice" }
-                ]
-            },
-            { 
-                id: 3, name: "VIP LEVEL - 3", price: 25000, icon: "💎", 
-                features: [
-                    { text: "40 GB အမြန်နှုန်း + အပို", type: "data" },
-                    { text: "1,400 မိနစ် (ကွန်ရက်တွင်း)", type: "voice" },
-                    { text: "8,000 SMS", type: "sms" }
-                ]
-            },
-            { 
-                id: 4, name: "VIP LEVEL - 4 (ULTRA)", price: 30000, icon: "👑", 
-                features: [
-                    { text: "120 GB ဂိမ်းဒေတာ", type: "data" },
-                    { text: "အကန့်အသတ်မရှိ Streaming", type: "streaming" },
-                    { text: "ဦးစားပေး ပံ့ပိုးမှု", type: "support" }
-                ]
-            }
+            { id: 1, name: "VIP LEVEL - 1", price: 15000, icon: "🔥", features: [{ text: "22 GB အမြန်နှုန်းမြင့်", type: "data" }, { text: "8,000 မိနစ် (ကွန်ရက်တွင်း)", type: "voice" }, { text: "5,000 SMS", type: "sms" }] },
+            { id: 2, name: "VIP LEVEL - 2", price: 20000, icon: "⭐", features: [{ text: "40 GB အာထရာဒေတာ", type: "data" }, { text: "250 မိနစ် (ကွန်ရက်တွင်း)", type: "voice" }, { text: "25 မိနစ် (အခြားကွန်ရက်)", type: "voice" }] },
+            { id: 3, name: "VIP LEVEL - 3", price: 25000, icon: "💎", features: [{ text: "40 GB အမြန်နှုန်း + အပို", type: "data" }, { text: "1,400 မိနစ် (ကွန်ရက်တွင်း)", type: "voice" }, { text: "8,000 SMS", type: "sms" }] },
+            { id: 4, name: "VIP LEVEL - 4 (ULTRA)", price: 30000, icon: "👑", features: [{ text: "120 GB ဂိမ်းဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ Streaming", type: "streaming" }, { text: "ဦးစားပေး ပံ့ပိုးမှု", type: "support" }] }
         ];
         
         let planSales = { 1: 45, 2: 28, 3: 120, 4: 67 };
+        let isShopOpen = true;
         
         const featureConfig = {
             data: { icon: "fa-database", class: "feature-data" },
@@ -312,42 +214,62 @@
             return '';
         }
         
-        function getRankingFillClass(rank) {
+        function getDynamicWidth(sales, maxSales) {
+            if (maxSales === 0) return 0;
+            const percentage = (sales / maxSales) * 100;
+            return Math.max(8, Math.min(100, percentage));
+        }
+        
+        function getRankingText(rank, sales, maxSales) {
+            const percentage = ((sales / maxSales) * 100).toFixed(0);
             switch(rank) {
-                case 1: return 'fill-1';
-                case 2: return 'fill-2';
-                case 3: return 'fill-3';
-                default: return 'fill-4';
+                case 1: return `🏆 အရောင်းရဆုံး (${percentage}%)`;
+                case 2: return `⭐ ဒုတိယအရောင်းရဆုံး (${percentage}%)`;
+                case 3: return `🔥 တတိယအရောင်းရဆုံး (${percentage}%)`;
+                default: return `📦 ဝယ်ယူမှုရှိ (${percentage}%)`;
             }
         }
         
-        function getRankingText(rank) {
-            switch(rank) {
-                case 1: return '🏆 အရောင်းရဆုံး';
-                case 2: return '⭐ ဒုတိယအရောင်းရဆုံး';
-                case 3: return '🔥 တတိယအရောင်းရဆုံး';
-                default: return '📦 ဝယ်ယူမှုရှိ';
-            }
+        function getRankFillClass(rank) { return `rank-${rank}`; }
+        
+        // ============ UPDATE BUTTONS BASED ON SHOP STATUS ============
+        function updateButtonsStatus() {
+            const buyButtons = document.querySelectorAll('.product-buy-btn');
+            buyButtons.forEach(btn => {
+                if (isShopOpen) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                    btn.style.pointerEvents = 'auto';
+                } else {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                    btn.style.pointerEvents = 'none';
+                }
+            });
         }
         
         function renderPlans() {
             const container = document.getElementById('plansContainer');
             let html = '';
-            
+            const maxSales = Math.max(...Object.values(planSales));
             const plansWithRank = plansData.map(plan => {
                 const sales = planSales[plan.id] || 0;
                 const rank = getRanking(sales, planSales);
                 return { ...plan, sales, rank };
             });
+            plansWithRank.sort((a, b) => b.sales - a.sales);
             
             for (const p of plansWithRank) {
                 const priceFormatted = p.price.toLocaleString();
                 const shortName = getShortName(p.name);
                 const rank = p.rank;
-                const badgeHtml = getBadgeHtml(p.id, p.sales, rank);
-                const rankingText = getRankingText(rank);
-                const fillClass = getRankingFillClass(rank);
-                const barWidth = rank === 1 ? 100 : rank === 2 ? 70 : rank === 3 ? 50 : 30;
+                const sales = p.sales;
+                const badgeHtml = getBadgeHtml(p.id, sales, rank);
+                const dynamicWidth = getDynamicWidth(sales, maxSales);
+                const rankingText = getRankingText(rank, sales, maxSales);
+                const fillClass = getRankFillClass(rank);
                 
                 let featuresHtml = '';
                 for (const f of p.features) {
@@ -370,18 +292,24 @@
                             </div>
                         </div>
                         <ul class="feature-list">${featuresHtml}</ul>
-                        <div class="ranking-bar"><div class="ranking-fill ${fillClass}" style="width: ${barWidth}%"></div></div>
-                        <div class="ranking-text"><i class="fas fa-chart-simple"></i> ${rankingText}</div>
-                        <button class="product-buy-btn" onclick="handleBuy('${p.name}', ${p.price})">
+                        <div class="ranking-bar"><div class="ranking-fill ${fillClass}" style="width: ${dynamicWidth}%;"></div></div>
+                        <div class="ranking-text"><span><i class="fas fa-chart-simple"></i> ${rankingText}</span></div>
+                        <button class="product-buy-btn" onclick="handleBuy('${p.name}', ${p.price})" ${!isShopOpen ? 'disabled' : ''}>
                             <i class="fas fa-shopping-cart"></i> ဝယ်ယူမည် <i class="fas fa-arrow-right"></i>
                         </button>
                     </div>
                 `;
             }
             container.innerHTML = html;
+            updateButtonsStatus();
         }
         
         function handleBuy(planName, planPrice) {
+            if (!isShopOpen) {
+                showNotification("ဆိုင်ပိတ်ချိန်ဖြစ်ပါသည်။ ကျေးဇူးပြု၍ နံနက် ၉ နာရီမှ ညနေ ၇ နာရီအတွင်းမှသာ ဝယ်ယူနိုင်ပါသည်။", true);
+                return;
+            }
+            
             const plan = plansData.find(p => p.name === planName);
             if (plan) {
                 planSales[plan.id] = (planSales[plan.id] || 0) + 1;
@@ -396,16 +324,48 @@
             }
         }
         
+        function showNotification(message, isError = false) {
+            if (window.parent && window.parent.showToast) {
+                window.parent.showToast(message, isError);
+            } else {
+                alert(message);
+            }
+        }
+        
+        // ============ CHECK SHOP STATUS ============
+        async function checkShopStatus() {
+            try {
+                const response = await fetch('/api/sales/status');
+                const data = await response.json();
+                isShopOpen = data.isOpen;
+                updateButtonsStatus();
+            } catch(e) {
+                console.error('Error checking shop status:', e);
+            }
+        }
+        
+        // Listen for messages from parent window
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'shopStatus') {
+                isShopOpen = event.data.isOpen;
+                updateButtonsStatus();
+            }
+        });
+        
         function loadSalesData() {
             try {
                 const saved = localStorage.getItem('planSales');
                 if (saved) planSales = JSON.parse(saved);
                 renderPlans();
+                checkShopStatus();
             } catch(e) { renderPlans(); }
         }
         
         loadSalesData();
+        setInterval(checkShopStatus, 60000);
+        
         window.handleBuy = handleBuy;
+        window.updateButtonsStatus = updateButtonsStatus;
     </script>
 </body>
 </html>
