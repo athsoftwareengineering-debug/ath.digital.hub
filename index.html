@@ -675,6 +675,7 @@
             <li><a onclick="closeDrawer(); switchTab('live')"><i class="fas fa-broadcast-tower"></i> LIVE</a></li>
             <li><a onclick="closeDrawer(); switchTab('market')"><i class="fas fa-store"></i> Market</a></li>
             <li><a onclick="closeDrawer(); switchTab('profile')"><i class="fas fa-user-circle"></i> My Profile</a></li>
+            <li><a onclick="closeDrawer(); openChatWidget()"><i class="fas fa-comments"></i> Chat Support</a></li>
             <li><div class="drawer-divider"></div></li>
             <li><a onclick="closeDrawer(); exportMyOrders()"><i class="fas fa-file-excel"></i> Export Orders (CSV)</a></li>
             <li><a onclick="closeDrawer(); showSupport()"><i class="fas fa-headset"></i> Customer Support</a></li>
@@ -750,6 +751,7 @@
         <button class="nav-item" data-tab="orders"><i class="fas fa-list-ul"></i><span>Orders</span></button>
         <button class="nav-item" data-tab="live"><i class="fas fa-broadcast-tower"></i><span>LIVE</span></button>
         <button class="nav-item" data-tab="market"><i class="fas fa-store"></i><span>Market</span></button>
+        <button class="nav-item" data-tab="chat" onclick="openChatWidget()"><i class="fas fa-comments"></i><span>Chat</span></button>
     </div>
 </div>
 
@@ -857,6 +859,7 @@
     let marketLoaded = false;
     let liveLoaded = false;
     let currentTab = "home";
+    let chatWidgetOpen = false;
 
     function maskPhone(phone) {
         if (!phone || phone.length < 8) return phone || '';
@@ -909,7 +912,40 @@
         });
     }
     
+    // ============ CHAT WIDGET FUNCTIONS ============
+    function openChatWidget() {
+        if (chatWidgetOpen) return;
+        
+        const chatIframe = document.createElement('iframe');
+        chatIframe.src = '/chat.html';
+        chatIframe.style.position = 'fixed';
+        chatIframe.style.bottom = '70px';
+        chatIframe.style.right = '16px';
+        chatIframe.style.width = '380px';
+        chatIframe.style.height = '520px';
+        chatIframe.style.border = 'none';
+        chatIframe.style.borderRadius = '1.2rem';
+        chatIframe.style.zIndex = '999';
+        chatIframe.style.background = 'transparent';
+        chatIframe.id = 'chatIframe';
+        document.body.appendChild(chatIframe);
+        chatWidgetOpen = true;
+        
+        // Close drawer if open
+        closeDrawer();
+    }
+    
+    function closeChatWidget() {
+        const iframe = document.getElementById('chatIframe');
+        if (iframe) {
+            iframe.remove();
+            chatWidgetOpen = false;
+        }
+    }
+    
     window.getCurrentUserPhone = function() { return currentUser; };
+    window.getCurrentUsername = function() { return currentUsername; };
+    window.getCurrentUserId = function() { return currentUserId; };
     
     async function fetchUserData(phone) {
         try {
@@ -1380,6 +1416,7 @@
         currentUserId = null;
         marketLoaded = false;
         liveLoaded = false;
+        closeChatWidget();
         
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('mainApp').style.display = 'none';
@@ -1423,7 +1460,13 @@
     }
     
     document.querySelectorAll('.nav-item').forEach(btn => {
-        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+        btn.addEventListener('click', () => {
+            if (btn.dataset.tab === 'chat') {
+                openChatWidget();
+            } else {
+                switchTab(btn.dataset.tab);
+            }
+        });
     });
     
     const accountPhone = document.getElementById('accountPhone');
@@ -1487,9 +1530,13 @@
     window.copyToClipboard = copyToClipboard;
     window.showToast = showToast;
     window.getCurrentUserPhone = function() { return currentUser; };
+    window.getCurrentUsername = function() { return currentUsername; };
+    window.getCurrentUserId = function() { return currentUserId; };
     window.refreshAllData = refreshAllData;
     window.exportMyOrders = exportMyOrders;
     window.fetchUserData = fetchUserData;
+    window.openChatWidget = openChatWidget;
+    window.closeChatWidget = closeChatWidget;
 </script>
 </body>
 </html>
