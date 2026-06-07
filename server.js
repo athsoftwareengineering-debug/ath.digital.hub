@@ -48,7 +48,6 @@ app.use(helmet({
             styleSrcElem: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
             imgSrc: ["'self'", "data:", "https:", "http:", "i.ibb.co", "blob:"],
             connectSrc: ["'self'", process.env.SUPABASE_URL, "https://*.supabase.co", "wss://*.supabase.co"],
-            // ✅ FIXED: Allow iframes from self and render domain
             frameSrc: ["'self'", "https://ath-digital-hub.onrender.com"],
             frameAncestors: ["'self'", "https://ath-digital-hub.onrender.com"],
             formAction: ["'self'"],
@@ -64,7 +63,7 @@ app.use(helmet({
         includeSubDomains: true,
         preload: true
     },
-    frameguard: { action: 'sameorigin' },  // ✅ Changed from 'deny' to 'sameorigin'
+    frameguard: { action: 'sameorigin' },
     noSniff: true,
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     crossOriginEmbedderPolicy: false,
@@ -75,7 +74,7 @@ app.use(helmet({
 // ==================== EXTRA SECURITY HEADERS ====================
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'SAMEORIGIN');  // ✅ Changed from 'DENY' to 'SAMEORIGIN'
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
@@ -916,6 +915,101 @@ app.post('/api/admin/user-reset/:phone', isAuthenticated, async (req, res) => {
     }
 });
 
+// ==================== CHAT API ====================
+// Get recent messages
+app.get('/api/chat/messages', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('chat_messages')
+            .select('*')
+            .order('created_at', { ascending: true })
+            .limit(200);
+        
+        if (error) throw error;
+        res.json({ success: true, messages: data || [] });
+    } catch (error) {
+        console.error('Error fetching chat messages:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Send message (User)
+app.post('/api/chat/send', async (req, res) => {
+    try {
+        const { user_id, username, message } = req.body;
+        
+        if (!user_id || !message || message.trim() === '') {
+            return res.status(400).json({ success: false, error: 'Invalid message' });
+        }
+        
+        const { data, error } = await supabase
+            .from('chat_messages')
+            .insert([{
+                user_id: user_id,
+                username: username || 'User',
+                message: message.substring(0, 500),
+                is_admin: false,
+                created_at: new Date().toISOString()
+            }])
+            .select();
+        
+        if (error) throw error;
+        
+        res.json({ success: true, message: data[0] });
+    } catch (error) {
+        console.error('Error sending message:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Send message (Admin only)
+app.post('/api/chat/admin/send', isAuthenticated, async (req, res) => {
+    try {
+        const { user_id, username, message } = req.body;
+        
+        if (!message || message.trim() === '') {
+            return res.status(400).json({ success: false, error: 'Invalid message' });
+        }
+        
+        const { data, error } = await supabase
+            .from('chat_messages')
+            .insert([{
+                user_id: user_id || 'admin',
+                username: username || 'Admin',
+                message: message.substring(0, 500),
+                is_admin: true,
+                created_at: new Date().toISOString()
+            }])
+            .select();
+        
+        if (error) throw error;
+        
+        res.json({ success: true, message: data[0] });
+    } catch (error) {
+        console.error('Error sending admin message:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete message (Admin only)
+app.delete('/api/chat/messages/:id', isAuthenticated, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const { error } = await supabase
+            .from('chat_messages')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+        
+        res.json({ success: true, message: 'Message deleted' });
+    } catch (error) {
+        console.error('Error deleting message:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // ==================== START SERVER ====================
 app.listen(PORT, () => {
     console.log(`
@@ -926,6 +1020,7 @@ app.listen(PORT, () => {
 ║     📱 User Store:      http://localhost:${PORT}/                         ║
 ║     👨‍💼 Admin Panel:     http://localhost:${PORT}/admin.html               ║
 ║     📊 Live Dashboard:  http://localhost:${PORT}/dashboard.html           ║
+║     💬 Chat System:     http://localhost:${PORT}/chat.html                ║
 ║                                                                          ║
 ║     🔒 SECURITY FEATURES ENABLED:                                        ║
 ║        ✅ Helmet.js (Security Headers)                                   ║
@@ -938,6 +1033,7 @@ app.listen(PORT, () => {
 ║        ✅ Database Notifications                                         ║
 ║        ✅ Request Logging (Morgan)                                       ║
 ║        ✅ Compression (Gzip)                                             ║
+║        ✅ Real-time Chat System                                          ║
 ║                                                                          ║
 ║     💳 Payment Methods: KBZ Pay, WavePay, AYA Pay                        ║
 ║                                                                          ║
