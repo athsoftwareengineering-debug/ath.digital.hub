@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Admin Panel | ATH DIGITAL HUB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/notifications.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { touch-action: pan-x pan-y; -webkit-text-size-adjust: 100%; }
@@ -88,141 +89,7 @@
             position: relative;
         }
         .top-icon-btn:hover { background: rgba(0,212,255,0.1); transform: rotate(15deg); }
-        .notification-bell { position: relative; }
-        .notification-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #f43f5e;
-            color: white;
-            font-size: 0.65rem;
-            font-weight: bold;
-            min-width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 5px;
-            box-shadow: 0 0 5px rgba(244,63,94,0.5);
-            animation: pulse 1s infinite;
-            z-index: 10;
-        }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); background: #e11d48; } }
-        .notification-dropdown {
-            position: fixed;
-            top: 70px;
-            right: 12px;
-            left: 12px;
-            width: auto;
-            max-width: 400px;
-            margin: 0 auto;
-            background: linear-gradient(145deg, #1a1d2e, #0f111a);
-            border: 1px solid rgba(0,212,255,0.4);
-            border-radius: 1rem;
-            z-index: 10000;
-            overflow: hidden;
-            display: none;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
-            max-height: 80vh;
-        }
-        .notification-dropdown.show { display: block; animation: slideDown 0.2s ease; }
-        @media (min-width: 768px) { .notification-dropdown { position: absolute; top: 50px; right: -10px; left: auto; width: 360px; max-width: 360px; } }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .notification-header {
-            padding: 14px 16px;
-            border-bottom: 1px solid rgba(0,212,255,0.15);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0,212,255,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .notification-header h4 { font-size: 0.9rem; color: var(--cyan); display: flex; align-items: center; gap: 8px; }
         
-        .notification-clear {
-            font-size: 0.7rem;
-            background: rgba(0,212,255,0.15);
-            border: 1px solid rgba(0,212,255,0.3);
-            padding: 5px 12px;
-            border-radius: 40px;
-            color: var(--cyan);
-            cursor: pointer;
-            transition: all 0.2s;
-            opacity: 1 !important;
-            pointer-events: auto !important;
-            display: inline-block;
-            z-index: 100;
-        }
-        .notification-clear:hover {
-            background: var(--cyan);
-            color: #030712;
-            transform: scale(0.98);
-        }
-        .notification-clear:active {
-            transform: scale(0.95);
-        }
-        
-        .notification-list { max-height: 60vh; overflow-y: auto; }
-        .notification-item {
-            padding: 14px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            gap: 14px;
-            align-items: flex-start;
-            position: relative;
-        }
-        .notification-item:hover { background: rgba(0,212,255,0.08); }
-        .notification-item.unread { background: rgba(0,212,255,0.12); border-left: 3px solid var(--cyan); }
-        .notification-icon {
-            width: 40px;
-            height: 40px;
-            background: rgba(0,212,255,0.15);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            color: var(--cyan);
-            flex-shrink: 0;
-        }
-        .notification-content { flex: 1; cursor: pointer; }
-        .notification-title { font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; color: var(--text-primary); }
-        .notification-message { font-size: 0.7rem; color: var(--text-secondary); line-height: 1.4; }
-        .notification-time { font-size: 0.6rem; color: #475569; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
-        .notification-delete {
-            opacity: 0;
-            transition: opacity 0.2s;
-            background: rgba(244,63,94,0.2);
-            border: none;
-            color: #fb7185;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .notification-item:hover .notification-delete { opacity: 1; }
-        .notification-delete:hover { background: #f43f5e; color: white; }
-        .notification-empty { text-align: center; padding: 50px 20px; color: var(--text-secondary); font-size: 0.75rem; }
-        .notification-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 9999;
-            display: none;
-        }
-        .notification-overlay.show { display: block; }
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
         .stat-card {
             background: linear-gradient(145deg, rgba(18,22,35,0.9), rgba(10,12,21,0.95));
@@ -645,6 +512,8 @@
                 <button class="top-icon-btn" onclick="window.manualRefresh()" title="Sync Data">
                     <i class="fas fa-sync-alt"></i>
                 </button>
+                
+                <!-- Notification Bell Component -->
                 <div class="notification-bell">
                     <button class="top-icon-btn" id="notificationBellBtn">
                         <i class="fas fa-bell"></i>
@@ -656,10 +525,11 @@
                             <button class="notification-clear" id="clearNotificationsBtn">Clear all</button>
                         </div>
                         <div id="notificationList" class="notification-list">
-                            <div class="notification-empty">📭 No notifications yet</div>
+                            <div class="notification-loading"><i class="fas fa-spinner fa-pulse"></i> Loading notifications...</div>
                         </div>
                     </div>
                 </div>
+                
                 <button class="top-icon-btn" onclick="window.location.href='/'" title="Go to Store">
                     <i class="fas fa-store"></i>
                 </button>
@@ -830,17 +700,13 @@
     const API_BASE = window.location.origin;
     let token = localStorage.getItem('adminToken');
     let allOrders = [], userStats = [], products = [];
-    let autoSyncInterval = null, countdownInterval = null, notificationCheckInterval = null;
+    let autoSyncInterval = null, countdownInterval = null;
     let secondsLeft = 30;
     let activeCountdowns = {};
     let currentSearchPhone = "";
     let currentUserSearchPhone = "";
     let currentTab = "menu";
     let editingProductId = null;
-    
-    // Database notifications array
-    let dbNotifications = [];
-    let lastNotificationId = null;
     
     const costPriceMap = {
         "VIP LEVEL - 1": 14500,
@@ -946,191 +812,7 @@
         if (drawerTotalProfitEl) drawerTotalProfitEl.innerText = profit.toLocaleString() + 'K';
     }
     
-    // ==================== DATABASE NOTIFICATION FUNCTIONS ====================
-    
-    async function loadNotificationsFromDatabase() {
-        try {
-            const res = await fetchWithRetry(`${API_BASE}/api/admin/notifications`);
-            if (!res) return;
-            const data = await res.json();
-            if (data.success && data.notifications) {
-                dbNotifications = data.notifications;
-                updateNotificationUI();
-                updateNotificationBadge();
-                if (dbNotifications.length > 0 && lastNotificationId === null) {
-                    lastNotificationId = dbNotifications[0].id;
-                }
-            }
-        } catch(e) {
-            console.error('Error loading notifications from database:', e);
-        }
-    }
-    
-    async function checkForNewNotifications() {
-        try {
-            const res = await fetchWithRetry(`${API_BASE}/api/admin/notifications`);
-            if (!res) return;
-            const data = await res.json();
-            if (data.success && data.notifications && data.notifications.length > 0) {
-                const latestNotification = data.notifications[0];
-                if (lastNotificationId !== null && lastNotificationId !== latestNotification.id) {
-                    showToast(`🔔 ${latestNotification.title}`);
-                    dbNotifications = data.notifications;
-                    updateNotificationUI();
-                    updateNotificationBadge();
-                }
-                lastNotificationId = latestNotification.id;
-                dbNotifications = data.notifications;
-                updateNotificationUI();
-                updateNotificationBadge();
-            }
-        } catch(e) {
-            console.error('Error checking for new notifications:', e);
-        }
-    }
-    
-    function updateNotificationBadge() {
-        const badge = document.getElementById('notificationBadge');
-        const unreadCount = dbNotifications.filter(n => !n.is_read).length;
-        
-        if (badge) {
-            if (unreadCount > 0) { 
-                badge.style.display = 'flex'; 
-                badge.innerText = unreadCount > 99 ? '99+' : unreadCount; 
-            } else { 
-                badge.style.display = 'none'; 
-            }
-        }
-    }
-    
-    function updateNotificationUI() {
-        const listContainer = document.getElementById('notificationList');
-        if (!listContainer) return;
-        
-        if (dbNotifications.length === 0) { 
-            listContainer.innerHTML = '<div class="notification-empty">📭 No notifications yet</div>'; 
-            return; 
-        }
-        
-        let html = '';
-        for (let i = 0; i < dbNotifications.length; i++) {
-            const notif = dbNotifications[i];
-            const date = new Date(notif.created_at);
-            html += `
-                <div class="notification-item ${!notif.is_read ? 'unread' : ''}" data-notif-id="${notif.id}">
-                    <div class="notification-icon"><i class="fas fa-shopping-cart"></i></div>
-                    <div class="notification-content" onclick="window.markNotificationRead(${notif.id})">
-                        <div class="notification-title">${escapeHtml(notif.title)}</div>
-                        <div class="notification-message">${escapeHtml(notif.message)}</div>
-                        <div class="notification-time"><i class="fas fa-clock"></i> ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</div>
-                    </div>
-                    <button class="notification-delete" onclick="window.deleteNotification(${notif.id})" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
-        }
-        listContainer.innerHTML = html;
-    }
-    
-    window.clearAllNotifications = async function() { 
-        console.log("Clearing all notifications from database...");
-        try {
-            const res = await fetchWithRetry(`${API_BASE}/api/admin/notifications/clear`, { 
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            if (!res) return;
-            const data = await res.json();
-            if (data.success) {
-                dbNotifications = [];
-                updateNotificationUI();
-                updateNotificationBadge();
-                showToast('✅ All notifications cleared from database');
-                window.closeNotificationDropdown();
-                console.log("Notifications cleared successfully!");
-            } else {
-                showToast('❌ Failed to clear notifications', true);
-            }
-        } catch(e) {
-            console.error("Error clearing notifications:", e);
-            showToast('Error clearing notifications', true);
-        }
-    };
-    
-    window.deleteNotification = async function(notificationId) {
-        console.log("Deleting notification:", notificationId);
-        try {
-            const res = await fetchWithRetry(`${API_BASE}/api/admin/notifications/${notificationId}`, { 
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            if (!res) return;
-            const data = await res.json();
-            if (data.success) {
-                dbNotifications = dbNotifications.filter(n => n.id !== notificationId);
-                updateNotificationUI();
-                updateNotificationBadge();
-                showToast('Notification deleted');
-            } else {
-                showToast('❌ Failed to delete notification', true);
-            }
-        } catch(e) {
-            console.error("Error deleting notification:", e);
-            showToast('Error deleting notification', true);
-        }
-    };
-    
-    window.markNotificationRead = async function(notificationId) {
-        console.log("Marking notification as read:", notificationId);
-        try {
-            const res = await fetchWithRetry(`${API_BASE}/api/admin/notifications/${notificationId}/read`, { 
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            if (!res) return;
-            const data = await res.json();
-            if (data.success) {
-                const notif = dbNotifications.find(n => n.id === notificationId);
-                if (notif && !notif.is_read) {
-                    notif.is_read = true;
-                    updateNotificationUI();
-                    updateNotificationBadge();
-                    showToast('Marked as read');
-                }
-            }
-        } catch(e) {
-            console.error("Error marking notification as read:", e);
-        }
-    };
-    
-    window.toggleNotificationDropdown = function() { 
-        const dropdown = document.getElementById('notificationDropdown');
-        const overlay = document.getElementById('notificationOverlay');
-        if (dropdown) dropdown.classList.toggle('show');
-        if (overlay) overlay.classList.toggle('show');
-    };
-    
-    window.closeNotificationDropdown = function() { 
-        const dropdown = document.getElementById('notificationDropdown');
-        const overlay = document.getElementById('notificationOverlay');
-        if (dropdown) dropdown.classList.remove('show');
-        if (overlay) overlay.classList.remove('show');
-    };
-    
-    function startNotificationCheck() { 
-        if (notificationCheckInterval) clearInterval(notificationCheckInterval); 
-        notificationCheckInterval = setInterval(() => { 
-            if (token === 'logged_in') checkForNewNotifications(); 
-        }, 15000); 
-    }
-    
-    function stopNotificationCheck() { 
-        if (notificationCheckInterval) { 
-            clearInterval(notificationCheckInterval); 
-            notificationCheckInterval = null; 
-        } 
-    }
+    // REMOVED: Old notification functions - Now handled by notifications.js
     
     // ALERTS
     window.showCleanupAlert = function() { 
@@ -1191,9 +873,6 @@
             const data = await res.json(); 
             if (data.success) { 
                 showToast('✅ System reset completed!'); 
-                dbNotifications = [];
-                updateNotificationUI();
-                updateNotificationBadge();
                 setTimeout(() => { loadAllData(); }, 1000); 
             } else { 
                 showToast('❌ Reset failed: ' + data.error, true); 
@@ -1287,7 +966,6 @@
         autoSyncInterval = setInterval(() => { 
             if (token === 'logged_in') { 
                 loadAllData();
-                checkForNewNotifications();
                 secondsLeft = 30; 
             } 
         }, 30000);
@@ -1298,7 +976,7 @@
         if (countdownInterval) clearInterval(countdownInterval); 
     }
     
-    // ==================== LOGIN / LOGOUT ====================
+    // LOGIN / LOGOUT
     window.login = async function() {
         const password = document.getElementById('adminPassword')?.value || '';
         if (!password) {
@@ -1323,9 +1001,7 @@
                 if (adminContent) adminContent.style.display = 'block';
                 if (bottomNav) bottomNav.style.display = 'flex';
                 loadAllData(); 
-                loadNotificationsFromDatabase();
                 startAutoSync(); 
-                startNotificationCheck(); 
             } else { 
                 showToast('Invalid Password', true); 
             }
@@ -1336,7 +1012,6 @@
     
     window.logout = function() {
         stopAutoSync(); 
-        stopNotificationCheck(); 
         clearAllCountdowns();
         localStorage.removeItem('adminToken'); 
         token = null;
@@ -1815,7 +1490,6 @@
     
     window.manualRefresh = function() { 
         loadAllData(); 
-        loadNotificationsFromDatabase();
         showToast('🔄 Synced'); 
         secondsLeft = 30; 
     };
@@ -1848,38 +1522,8 @@
         else if (tab === 'market') loadProducts();
     };
     
-    // ========== EVENT LISTENERS ==========
-    const bellBtn = document.getElementById('notificationBellBtn');
-    if (bellBtn) {
-        bellBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            window.toggleNotificationDropdown();
-        });
-    }
-    
-    // Clear Notifications Button
-    const clearBtn = document.getElementById('clearNotificationsBtn');
-    if (clearBtn) {
-        const newClearBtn = clearBtn.cloneNode(true);
-        clearBtn.parentNode.replaceChild(newClearBtn, clearBtn);
-        
-        newClearBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            e.preventDefault();
-            console.log("Clear button clicked - clearing database notifications");
-            window.clearAllNotifications();
-        });
-    }
-    
-    document.addEventListener('click', function(e) {
-        const dropdown = document.getElementById('notificationDropdown');
-        const bell = document.getElementById('notificationBellBtn');
-        if (dropdown && dropdown.classList.contains('show')) {
-            if (!dropdown.contains(e.target) && !bell.contains(e.target)) {
-                window.closeNotificationDropdown();
-            }
-        }
-    });
+    // NOTE: Notification event listeners are now handled by notifications.js
+    // The notification bell HTML is present, but the JS is in the separate file
     
     document.querySelectorAll('.nav-item').forEach(btn => { 
         btn.addEventListener('click', () => { 
@@ -1921,11 +1565,13 @@
         if (adminContent) adminContent.style.display = 'block';
         if (bottomNav) bottomNav.style.display = 'flex';
         loadAllData(); 
-        loadNotificationsFromDatabase();
         startAutoSync(); 
-        startNotificationCheck();
     }
 })();
 </script>
+
+<!-- Notification Component - Separate file -->
+<script src="/js/notifications.js"></script>
+
 </body>
 </html>
