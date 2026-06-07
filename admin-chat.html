@@ -405,12 +405,12 @@
                 <div class="chat-input-container" id="chatInputContainer" style="display: none;">
                     <div class="chat-input-wrapper">
                         <textarea id="chatInput" class="chat-input" placeholder="Type your reply..." rows="1" maxlength="500"></textarea>
-                        <button class="chat-send-btn" onclick="sendAdminMessage()">
+                        <button class="chat-send-btn" onclick="sendPrivateMessage()">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
                     <div class="chat-note">
-                        <i class="fas fa-shield-alt"></i> Replying as Admin (Global Chat)
+                        <i class="fas fa-shield-alt"></i> Replying as Admin (Private)
                     </div>
                 </div>
             </div>
@@ -558,7 +558,7 @@
                 
                 // Add global messages from this user
                 if (globalData.success && globalData.messages) {
-                    const userGlobalMessages = globalData.messages.filter(msg => msg.user_id === userId || msg.is_admin === true);
+                    const userGlobalMessages = globalData.messages.filter(msg => msg.user_id === userId);
                     allMessages = [...userGlobalMessages];
                 }
                 
@@ -598,7 +598,6 @@
                 const myanmarDate = getMyanmarDate(msg.created_at);
                 const isAdmin = msg.sender_id === 'admin' || msg.is_admin === true;
                 const senderName = isAdmin ? '👑 Admin' : (msg.sender_name || msg.username || 'User');
-                const isCurrentUserMessage = !isAdmin && msg.user_id === currentSelectedUser;
                 
                 if (lastDate !== myanmarDate) {
                     html += `<div style="text-align:center; margin:8px 0;"><span style="background:rgba(0,212,255,0.1); padding:2px 10px; border-radius:40px; font-size:0.55rem; color:#64748b;">📅 ${myanmarDate}</span></div>`;
@@ -617,8 +616,8 @@
             container.scrollTop = container.scrollHeight;
         }
         
-        // ============ SEND MESSAGE TO GLOBAL CHAT (Users can see) ============
-        async function sendAdminMessage() {
+        // ============ SEND PRIVATE MESSAGE TO SELECTED USER ============
+        async function sendPrivateMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
             
@@ -631,13 +630,15 @@
             input.disabled = true;
             
             try {
-                // Send to GLOBAL chat so ALL users can see
-                const response = await fetch(`${API_BASE}/api/chat/admin/send`, {
+                // Send PRIVATE message to selected user only
+                const response = await fetch(`${API_BASE}/api/chat/private/send`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        user_id: currentAdminId,
-                        username: currentAdminName,
+                        sender_id: currentAdminId,
+                        receiver_id: currentSelectedUser,
+                        sender_name: currentAdminName,
+                        receiver_name: currentSelectedUserName || 'User',
                         message: message
                     })
                 });
@@ -648,6 +649,7 @@
                     input.value = '';
                     input.style.height = 'auto';
                     await loadUserMessages(currentSelectedUser);
+                    showNotification(`✅ Private message sent to ${currentSelectedUserName}`);
                 } else {
                     showNotification(data.error || "Failed to send", true);
                 }
@@ -707,7 +709,7 @@
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
-                        sendAdminMessage();
+                        sendPrivateMessage();
                     }
                 });
                 input.addEventListener('input', autoResizeTextarea);
@@ -740,7 +742,7 @@
             if (userListRefreshInterval) clearInterval(userListRefreshInterval);
         });
         
-        window.sendAdminMessage = sendAdminMessage;
+        window.sendPrivateMessage = sendPrivateMessage;
         window.selectUser = selectUser;
         window.toggleMinimize = toggleMinimize;
         window.closeAdminChat = closeAdminChat;
