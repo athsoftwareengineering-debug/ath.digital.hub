@@ -842,6 +842,10 @@
     let dbNotifications = [];
     let lastNotificationId = null;
     
+    // ========== CSRF TOKEN VARIABLE ==========
+    let csrfToken = null;
+    // ========================================
+    
     const costPriceMap = {
         "VIP LEVEL - 1": 14500,
         "VIP LEVEL - 2": 19500,
@@ -882,10 +886,47 @@
         showToast(`📋 ${text} copied!`);
     };
     
+    // ========== CSRF TOKEN FUNCTIONS ==========
+    async function fetchCsrfToken() {
+        try {
+            const res = await fetch(`${API_BASE}/api/csrf-token`, {
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
+            if (data.csrfToken) {
+                csrfToken = data.csrfToken;
+                console.log('CSRF Token fetched successfully');
+                return true;
+            }
+        } catch(e) {
+            console.error('Error fetching CSRF token:', e);
+        }
+        return false;
+    }
+    // ==========================================
+    
+    // ========== UPDATED fetchWithRetry WITH CSRF TOKEN ==========
     async function fetchWithRetry(url, options = {}, retries = 3) {
+        // Add CSRF token to headers for non-GET requests
+        if (options.method && options.method !== 'GET' && csrfToken) {
+            options.headers = options.headers || {};
+            options.headers['X-CSRF-Token'] = csrfToken;
+        }
+        
         for (let i = 0; i < retries; i++) {
             try {
                 const res = await fetch(url, options);
+                // If CSRF token expired, try to refresh and retry once
+                if (res.status === 403 && options.method !== 'GET') {
+                    console.log('CSRF token may be expired, fetching new token...');
+                    await fetchCsrfToken();
+                    if (csrfToken) {
+                        options.headers['X-CSRF-Token'] = csrfToken;
+                        const retryRes = await fetch(url, options);
+                        return retryRes;
+                    }
+                }
                 return res;
             } catch (e) {
                 if (i === retries - 1) throw e;
@@ -893,6 +934,7 @@
             }
         }
     }
+    // ============================================================
     
     // STATS UPDATE
     function updateAllStats() {
@@ -967,7 +1009,6 @@
             if (data.success && data.notifications && data.notifications.length > 0) {
                 const latestNotification = data.notifications[0];
                 if (lastNotificationId !== null && lastNotificationId !== latestNotification.id) {
-                    // New notification detected
                     showToast(`🔔 ${latestNotification.title}`);
                     dbNotifications = data.notifications;
                     updateNotificationUI();
@@ -1027,7 +1068,6 @@
         listContainer.innerHTML = html;
     }
     
-    // Clear all notifications from database
     window.clearAllNotifications = async function() { 
         console.log("Clearing all notifications from database...");
         try {
@@ -1052,7 +1092,6 @@
         }
     };
     
-    // Delete single notification from database
     window.deleteNotification = async function(notificationId) {
         console.log("Deleting notification:", notificationId);
         try {
@@ -1075,7 +1114,6 @@
         }
     };
     
-    // Mark notification as read
     window.markNotificationRead = async function(notificationId) {
         console.log("Marking notification as read:", notificationId);
         try {
@@ -1112,7 +1150,6 @@
         if (overlay) overlay.classList.remove('show');
     };
     
-    // Start notification check interval
     function startNotificationCheck() { 
         if (notificationCheckInterval) clearInterval(notificationCheckInterval); 
         notificationCheckInterval = setInterval(() => { 
@@ -1291,7 +1328,7 @@
         if (countdownInterval) clearInterval(countdownInterval); 
     }
     
-    // LOGIN / LOGOUT
+    // ========== UPDATED LOGIN WITH CSRF TOKEN ==========
     window.login = async function() {
         const password = document.getElementById('adminPassword')?.value || '';
         if (!password) {
@@ -1299,15 +1336,20 @@
             return;
         }
         try {
-            const res = await fetchWithRetry(`${API_BASE}/api/admin/login`, { 
+            const res = await fetch(`${API_BASE}/api/admin/login`, { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ password }) 
+                body: JSON.stringify({ password }),
+                credentials: 'include'
             });
             const data = await res.json();
             if (data.success) {
                 localStorage.setItem('adminToken', 'logged_in'); 
                 token = 'logged_in';
+                
+                // ✅ Fetch CSRF token after successful login
+                await fetchCsrfToken();
+                
                 const loginBox = document.getElementById('loginBox');
                 const adminContent = document.getElementById('adminContent');
                 const bottomNav = document.getElementById('bottomNav');
@@ -1325,6 +1367,7 @@
             showToast('Connection error: ' + e.message, true); 
         }
     };
+    // ===================================================
     
     window.logout = function() {
         stopAutoSync(); 
@@ -1332,6 +1375,7 @@
         clearAllCountdowns();
         localStorage.removeItem('adminToken'); 
         token = null;
+        csrfToken = null;  // Clear CSRF token on logout
         const loginBox = document.getElementById('loginBox');
         const adminContent = document.getElementById('adminContent');
         const bottomNav = document.getElementById('bottomNav');
@@ -1846,7 +1890,6 @@
         });
     }
     
-    // Clear Notifications Button - Database version
     const clearBtn = document.getElementById('clearNotificationsBtn');
     if (clearBtn) {
         const newClearBtn = clearBtn.cloneNode(true);
@@ -1913,6 +1956,9 @@
         loadNotificationsFromDatabase();
         startAutoSync(); 
         startNotificationCheck();
+        
+        // Fetch CSRF token if already logged in
+        fetchCsrfToken();
     }
 })();
 </script>
