@@ -234,7 +234,11 @@
         }
         .orders-renew-btn.self { background: linear-gradient(135deg, var(--cyan), #0891b2); }
         .orders-renew-btn.other { background: linear-gradient(135deg, var(--amber), #d97706); }
-        .orders-renew-btn:hover { transform: scale(0.98); filter: brightness(1.05); }
+        .orders-renew-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
         
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -308,6 +312,11 @@
             font-weight: bold;
             margin-top: 16px;
             cursor: pointer;
+        }
+        .submit-payment:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
         }
         .proof-tab-btn {
             flex: 1;
@@ -951,6 +960,47 @@
         });
     }
     
+    // ============ UPDATE ALL BUY BUTTONS BASED ON SHOP STATUS ============
+    function updateBuyButtonsBasedOnShopStatus(isOpen) {
+        // Update Orders Renew buttons
+        const renewBtns = document.querySelectorAll('.orders-renew-btn');
+        renewBtns.forEach(btn => {
+            if (isOpen) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.style.pointerEvents = 'auto';
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.style.pointerEvents = 'none';
+            }
+        });
+        
+        // Update payment modal submit button
+        const submitBtn = document.querySelector('.submit-payment');
+        if (submitBtn) {
+            if (isOpen) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+                submitBtn.style.pointerEvents = 'auto';
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+                submitBtn.style.cursor = 'not-allowed';
+                submitBtn.style.pointerEvents = 'none';
+            }
+        }
+        
+        // Send status to iframe (plans-widget.html)
+        const iframe = document.querySelector('#plansTab iframe');
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage({ type: 'shopStatus', isOpen: isOpen }, '*');
+        }
+    }
+    
     // ============ SALES STATUS FOR USERS ============
     async function loadSalesStatus() {
         try {
@@ -965,6 +1015,9 @@
                 banner.innerHTML = `${icon} ${data.message}`;
                 banner.className = `sales-status-banner ${data.isOpen ? 'open' : 'closed'}`;
             }
+            
+            // Update buy buttons based on shop status
+            updateBuyButtonsBasedOnShopStatus(data.isOpen);
             
             return data.isOpen;
         } catch(e) {
