@@ -328,29 +328,67 @@
         let refreshInterval = null;
         let isMinimized = false;
         
-        // ============ FORMAT TIME WITH LOCAL TIMEZONE ============
-        function formatLocalTime(timestamp) {
+        // ============ CORRECT MYANMAR TIME (UTC+6:30) ============
+        function formatMyanmarTime(timestamp) {
             const date = new Date(timestamp);
-            // Get Myanmar time (UTC+6:30)
-            const options = {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false,
-                timeZone: 'Asia/Yangon'
-            };
-            return date.toLocaleTimeString('my-MM', options);
+            
+            // Get UTC components
+            let utcHours = date.getUTCHours();
+            let utcMinutes = date.getUTCMinutes();
+            
+            // Add 6 hours and 30 minutes for Myanmar time (UTC+6:30)
+            let myanmarHours = utcHours + 6;
+            let myanmarMinutes = utcMinutes + 30;
+            
+            // Adjust minutes
+            if (myanmarMinutes >= 60) {
+                myanmarMinutes -= 60;
+                myanmarHours += 1;
+            }
+            
+            // Adjust hours (if >= 24, subtract 24)
+            if (myanmarHours >= 24) {
+                myanmarHours -= 24;
+            }
+            
+            // Format 12-hour with AM/PM
+            let hours12 = myanmarHours % 12;
+            hours12 = hours12 ? hours12 : 12;
+            const ampm = myanmarHours >= 12 ? 'PM' : 'AM';
+            const minutesStr = myanmarMinutes < 10 ? '0' + myanmarMinutes : myanmarMinutes;
+            
+            return `${hours12}:${minutesStr} ${ampm}`;
         }
         
-        function formatLocalDate(timestamp) {
+        function formatMyanmarDate(timestamp) {
             const date = new Date(timestamp);
-            const options = {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                timeZone: 'Asia/Yangon'
-            };
-            return date.toLocaleString('my-MM', options);
+            
+            let utcYear = date.getUTCFullYear();
+            let utcMonth = date.getUTCMonth();
+            let utcDay = date.getUTCDate();
+            let utcHours = date.getUTCHours();
+            let utcMinutes = date.getUTCMinutes();
+            
+            // Add 6 hours 30 minutes
+            let myanmarHours = utcHours + 6;
+            let myanmarMinutes = utcMinutes + 30;
+            
+            if (myanmarMinutes >= 60) {
+                myanmarMinutes -= 60;
+                myanmarHours += 1;
+            }
+            
+            let dayAdjustment = 0;
+            if (myanmarHours >= 24) {
+                myanmarHours -= 24;
+                dayAdjustment = 1;
+            }
+            
+            const myanmarDay = utcDay + dayAdjustment;
+            const months = ['ဇန်နဝါရီ', 'ဖေဖော်ဝါရီ', 'မတ်', 'ဧပြီ', 'မေ', 'ဇွန်', 'ဇူလိုင်', 'သြဂုတ်', 'စက်တင်ဘာ', 'အောက်တိုဘာ', 'နိုဝင်ဘာ', 'ဒီဇင်ဘာ'];
+            
+            // Simple date string
+            return `${months[utcMonth]} ${myanmarDay}`;
         }
         
         function getCurrentUserInfo() {
@@ -411,25 +449,23 @@
             let lastDate = null;
             
             for (const msg of messages) {
-                // Format time with local timezone
-                const time = formatLocalTime(msg.created_at);
-                const fullDate = formatLocalDate(msg.created_at);
+                const myanmarTime = formatMyanmarTime(msg.created_at);
+                const myanmarDate = formatMyanmarDate(msg.created_at);
                 const isUser = !msg.is_admin && msg.user_id === currentUserId;
                 const senderName = msg.is_admin ? '👑 Admin' : (msg.username || 'User');
                 const senderIcon = msg.is_admin ? '<i class="fas fa-shield-alt"></i>' : '<i class="fas fa-user"></i>';
                 
                 // Show date separator if date changed
-                const msgDate = new Date(msg.created_at).toLocaleDateString('my-MM', { timeZone: 'Asia/Yangon' });
-                if (lastDate !== msgDate) {
-                    html += `<div style="text-align:center; margin:8px 0;"><span style="background:rgba(0,212,255,0.1); padding:2px 10px; border-radius:40px; font-size:0.55rem; color:#64748b;">${msgDate}</span></div>`;
-                    lastDate = msgDate;
+                if (lastDate !== myanmarDate) {
+                    html += `<div style="text-align:center; margin:8px 0;"><span style="background:rgba(0,212,255,0.1); padding:2px 10px; border-radius:40px; font-size:0.55rem; color:#64748b;">📅 ${myanmarDate}</span></div>`;
+                    lastDate = myanmarDate;
                 }
                 
                 html += `
                     <div class="chat-message ${isUser ? 'user' : 'admin'}">
                         <div class="message-sender">${senderIcon} ${escapeHtml(senderName)}</div>
                         <div class="message-bubble">${escapeHtml(msg.message)}</div>
-                        <div class="message-time">${time}</div>
+                        <div class="message-time">🕐 ${myanmarTime}</div>
                     </div>
                 `;
             }
