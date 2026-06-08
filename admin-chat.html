@@ -127,7 +127,7 @@
                         <textarea id="chatInput" class="chat-input" placeholder="Type your reply..." rows="1" maxlength="500"></textarea>
                         <button class="chat-send-btn" onclick="sendPrivateMessage()"><i class="fas fa-paper-plane"></i></button>
                     </div>
-                    <div class="chat-note"><i class="fas fa-shield-alt"></i> Replying as Admin</div>
+                    <div class="chat-note"><i class="fas fa-shield-alt"></i> Private reply - only this user can see</div>
                 </div>
             </div>
         </div>
@@ -166,52 +166,19 @@
             return `${months[myanmarDate.getUTCMonth()]} ${myanmarDate.getUTCDate()}`;
         }
         
-        // Load user list from BOTH Global Chat AND Private Chat
+        // Load user list from PRIVATE chat messages only
         async function loadUserList() {
             const container = document.getElementById('userList');
             if (!container) return;
             
             try {
-                // Get global chat users
-                const globalRes = await fetch(`${API_BASE}/api/chat/messages`);
-                const globalData = await globalRes.json();
+                const response = await fetch(`${API_BASE}/api/chat/admin/users`, { credentials: 'include' });
+                const data = await response.json();
                 
-                // Get private chat users
-                const privateRes = await fetch(`${API_BASE}/api/chat/admin/users`, { credentials: 'include' });
-                const privateData = await privateRes.json();
-                
-                const uniqueUsers = new Map();
-                
-                // Add global chat users
-                if (globalData.success && globalData.messages) {
-                    for (const msg of globalData.messages) {
-                        if (!msg.is_admin && !uniqueUsers.has(msg.user_id)) {
-                            uniqueUsers.set(msg.user_id, {
-                                user_id: msg.user_id,
-                                username: msg.username
-                            });
-                        }
-                    }
-                }
-                
-                // Add private chat users
-                if (privateData.success && privateData.users) {
-                    for (const user of privateData.users) {
-                        if (!uniqueUsers.has(user.user_id)) {
-                            uniqueUsers.set(user.user_id, {
-                                user_id: user.user_id,
-                                username: user.username
-                            });
-                        }
-                    }
-                }
-                
-                const users = Array.from(uniqueUsers.values());
-                
-                if (users.length > 0) {
-                    renderUserList(users);
+                if (data.success && data.users && data.users.length > 0) {
+                    renderUserList(data.users);
                 } else {
-                    container.innerHTML = '<div class="loading">📭 No users yet. Wait for someone to send a message.</div>';
+                    container.innerHTML = '<div class="loading">📭 No users yet. Wait for someone to send a private message.</div>';
                 }
             } catch (error) {
                 console.error('Error loading users:', error);
@@ -243,7 +210,7 @@
             
             const header = document.getElementById('chatMainHeader');
             if (header) {
-                header.innerHTML = `<div class="chat-with"><i class="fas fa-comment-dots"></i> Chat with: <strong style="color:#00d4ff;">${escapeHtml(username)}</strong><span style="font-size:0.6rem; margin-left:8px;">🆔 ${escapeHtml(userId)}</span></div>`;
+                header.innerHTML = `<div class="chat-with"><i class="fas fa-comment-dots"></i> Private chat with: <strong style="color:#00d4ff;">${escapeHtml(username)}</strong><span style="font-size:0.6rem; margin-left:8px;">🆔 ${escapeHtml(userId)}</span></div>`;
             }
             
             const inputContainer = document.getElementById('chatInputContainer');
@@ -256,7 +223,7 @@
             if (activeItem) activeItem.classList.add('active');
         }
         
-        // Load messages for selected user - BOTH Global and Private
+        // Load PRIVATE messages only (between admin and selected user)
         async function loadUserMessages(userId) {
             const container = document.getElementById('chatMessages');
             if (!container) return;
@@ -264,42 +231,13 @@
             container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading messages...</div>';
             
             try {
-                // Get GLOBAL messages from this user
-                const globalRes = await fetch(`${API_BASE}/api/chat/messages`);
-                const globalData = await globalRes.json();
+                const response = await fetch(`${API_BASE}/api/chat/private/${userId}?currentUserId=admin`, { credentials: 'include' });
+                const data = await response.json();
                 
-                // Get PRIVATE messages between admin and this user
-                const privateRes = await fetch(`${API_BASE}/api/chat/private/${userId}?currentUserId=admin`, { credentials: 'include' });
-                const privateData = await privateRes.json();
-                
-                let allMessages = [];
-                
-                // Add global messages from this user
-                if (globalData.success && globalData.messages) {
-                    const userGlobalMessages = globalData.messages.filter(msg => msg.user_id === userId && !msg.is_admin);
-                    allMessages = [...userGlobalMessages.map(msg => ({
-                        ...msg,
-                        sender_id: msg.user_id,
-                        sender_name: msg.username,
-                        is_global: true
-                    }))];
-                }
-                
-                // Add private messages
-                if (privateData.success && privateData.messages) {
-                    allMessages = [...allMessages, ...privateData.messages.map(msg => ({
-                        ...msg,
-                        is_private: true
-                    }))];
-                }
-                
-                // Sort by time
-                allMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-                
-                if (allMessages.length > 0) {
-                    renderMessages(allMessages);
+                if (data.success && data.messages && data.messages.length > 0) {
+                    renderMessages(data.messages);
                 } else {
-                    container.innerHTML = '<div class="no-selection">💬 No messages yet. Start the conversation!</div>';
+                    container.innerHTML = '<div class="no-selection">💬 No private messages yet. Start the conversation!</div>';
                 }
             } catch (error) {
                 console.error('Error loading messages:', error);
@@ -312,7 +250,7 @@
             if (!container) return;
             
             if (!messages || messages.length === 0) {
-                container.innerHTML = '<div class="no-selection">✨ No messages yet. Say hello!</div>';
+                container.innerHTML = '<div class="no-selection">✨ No private messages yet. Say hello!</div>';
                 return;
             }
             
@@ -322,9 +260,8 @@
             for (const msg of messages) {
                 const myanmarTime = getMyanmarTime(msg.created_at);
                 const myanmarDate = getMyanmarDate(msg.created_at);
-                // Check if message is from admin
-                const isAdmin = msg.sender_id === 'admin' || msg.is_admin === true;
-                const senderName = isAdmin ? '👑 Admin' : (msg.sender_name || msg.username || 'User');
+                const isAdmin = msg.sender_id === 'admin';
+                const senderName = isAdmin ? '👑 Admin (You)' : (msg.sender_name || 'User');
                 
                 if (lastDate !== myanmarDate) {
                     html += `<div style="text-align:center; margin:8px 0;"><span style="background:rgba(0,212,255,0.1); padding:2px 10px; border-radius:40px; font-size:0.55rem; color:#64748b;">📅 ${myanmarDate}</span></div>`;
@@ -343,14 +280,10 @@
             container.scrollTop = container.scrollHeight;
         }
         
-        // Send message to GLOBAL chat (so user can see it in their chat.html)
+        // Send PRIVATE message to selected user
         async function sendPrivateMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
-            
-            console.log('=== SENDING MESSAGE ===');
-            console.log('Message:', message);
-            console.log('Selected User:', currentSelectedUser);
             
             if (!message) {
                 showNotification("Please type a message", true);
@@ -364,17 +297,16 @@
             
             input.disabled = true;
             
-            // Send to GLOBAL chat (so user sees it in their chat.html)
             const payload = {
-                user_id: currentSelectedUser,
-                username: currentSelectedUserName,
+                sender_id: currentAdminId,
+                receiver_id: currentSelectedUser,
+                sender_name: currentAdminName,
+                receiver_name: currentSelectedUserName || 'User',
                 message: message
             };
             
-            console.log('Sending to global chat:', payload);
-            
             try {
-                const response = await fetch(`${API_BASE}/api/chat/admin/send`, {
+                const response = await fetch(`${API_BASE}/api/chat/private/send`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -382,13 +314,12 @@
                 });
                 
                 const data = await response.json();
-                console.log('Response:', data);
                 
                 if (data.success) {
                     input.value = '';
                     input.style.height = 'auto';
                     await loadUserMessages(currentSelectedUser);
-                    showNotification(`✅ Message sent to ${currentSelectedUserName}`);
+                    showNotification(`✅ Private message sent to ${currentSelectedUserName}`);
                 } else {
                     showNotification(data.error || "Failed to send", true);
                 }
@@ -425,7 +356,6 @@
         }
         
         function showNotification(message, isError = false) {
-            console.log('Notification:', message, isError);
             if (window.parent && window.parent.showToast) window.parent.showToast(message, isError);
         }
         
@@ -451,7 +381,7 @@
         }
         
         async function init() {
-            console.log('Admin Chat Initialized');
+            console.log('Admin Chat Initialized (PRIVATE MODE)');
             await loadUserList();
             setupKeyboardShortcuts();
             
