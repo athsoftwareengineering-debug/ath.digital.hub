@@ -90,9 +90,6 @@
         .chat-note { font-size: 0.5rem; color: #64748b; text-align: center; margin-top: 6px; }
         .no-selection { text-align: center; padding: 40px; color: #64748b; font-size: 0.75rem; }
         .loading { text-align: center; padding: 20px; color: #94a3b8; }
-        .chat-messages-container::-webkit-scrollbar, .user-list::-webkit-scrollbar { width: 3px; }
-        .chat-messages-container::-webkit-scrollbar-track, .user-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
-        .chat-messages-container::-webkit-scrollbar-thumb, .user-list::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
         @media (max-width: 480px) {
             .admin-chat-container { width: calc(100vw - 20px); right: 10px; left: 10px; height: 65vh; }
             .chat-sidebar { width: 110px; }
@@ -116,18 +113,18 @@
         </div>
         <div class="admin-chat-layout">
             <div class="chat-sidebar">
-                <div class="sidebar-header"><i class="fas fa-users"></i> Users</div>
+                <div class="sidebar-header"><i class="fas fa-users"></i> Users (Private)</div>
                 <div class="user-list" id="userList"><div class="loading">Loading users...</div></div>
             </div>
             <div class="chat-main">
-                <div class="chat-main-header" id="chatMainHeader"><div class="chat-with"><i class="fas fa-comment-dots"></i> Select a user to start chatting</div></div>
+                <div class="chat-main-header" id="chatMainHeader"><div class="chat-with"><i class="fas fa-comment-dots"></i> Select a user to start private chat</div></div>
                 <div class="chat-messages-container" id="chatMessages"><div class="no-selection">👈 Select a user from the left</div></div>
                 <div class="chat-input-container" id="chatInputContainer" style="display: none;">
                     <div class="chat-input-wrapper">
-                        <textarea id="chatInput" class="chat-input" placeholder="Type your reply..." rows="1" maxlength="500"></textarea>
+                        <textarea id="chatInput" class="chat-input" placeholder="Type your private reply..." rows="1" maxlength="500"></textarea>
                         <button class="chat-send-btn" onclick="sendPrivateMessage()"><i class="fas fa-paper-plane"></i></button>
                     </div>
-                    <div class="chat-note"><i class="fas fa-shield-alt"></i> Private reply - only this user can see</div>
+                    <div class="chat-note"><i class="fas fa-lock"></i> Private reply - Only this user can see</div>
                 </div>
             </div>
         </div>
@@ -166,7 +163,6 @@
             return `${months[myanmarDate.getUTCMonth()]} ${myanmarDate.getUTCDate()}`;
         }
         
-        // Load user list from PRIVATE chat messages only
         async function loadUserList() {
             const container = document.getElementById('userList');
             if (!container) return;
@@ -178,7 +174,7 @@
                 if (data.success && data.users && data.users.length > 0) {
                     renderUserList(data.users);
                 } else {
-                    container.innerHTML = '<div class="loading">📭 No users yet. Wait for someone to send a private message.</div>';
+                    container.innerHTML = '<div class="loading">📭 No private messages yet. Wait for users to send private messages.</div>';
                 }
             } catch (error) {
                 console.error('Error loading users:', error);
@@ -204,13 +200,12 @@
         }
         
         async function selectUser(userId, username) {
-            console.log('Selecting user:', userId, username);
             currentSelectedUser = userId;
             currentSelectedUserName = username;
             
             const header = document.getElementById('chatMainHeader');
             if (header) {
-                header.innerHTML = `<div class="chat-with"><i class="fas fa-comment-dots"></i> Private chat with: <strong style="color:#00d4ff;">${escapeHtml(username)}</strong><span style="font-size:0.6rem; margin-left:8px;">🆔 ${escapeHtml(userId)}</span></div>`;
+                header.innerHTML = `<div class="chat-with"><i class="fas fa-lock"></i> Private chat with: <strong style="color:#00d4ff;">${escapeHtml(username)}</strong><span style="font-size:0.6rem; margin-left:8px;">🆔 ${escapeHtml(userId)}</span></div>`;
             }
             
             const inputContainer = document.getElementById('chatInputContainer');
@@ -223,12 +218,11 @@
             if (activeItem) activeItem.classList.add('active');
         }
         
-        // Load PRIVATE messages only (between admin and selected user)
         async function loadUserMessages(userId) {
             const container = document.getElementById('chatMessages');
             if (!container) return;
             
-            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading messages...</div>';
+            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading private messages...</div>';
             
             try {
                 const response = await fetch(`${API_BASE}/api/chat/private/${userId}?currentUserId=admin`, { credentials: 'include' });
@@ -237,7 +231,7 @@
                 if (data.success && data.messages && data.messages.length > 0) {
                     renderMessages(data.messages);
                 } else {
-                    container.innerHTML = '<div class="no-selection">💬 No private messages yet. Start the conversation!</div>';
+                    container.innerHTML = '<div class="no-selection">💬 No private messages yet. Reply to start conversation!</div>';
                 }
             } catch (error) {
                 console.error('Error loading messages:', error);
@@ -250,7 +244,7 @@
             if (!container) return;
             
             if (!messages || messages.length === 0) {
-                container.innerHTML = '<div class="no-selection">✨ No private messages yet. Say hello!</div>';
+                container.innerHTML = '<div class="no-selection">✨ No private messages yet.</div>';
                 return;
             }
             
@@ -280,7 +274,6 @@
             container.scrollTop = container.scrollHeight;
         }
         
-        // Send PRIVATE message to selected user
         async function sendPrivateMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
@@ -381,7 +374,7 @@
         }
         
         async function init() {
-            console.log('Admin Chat Initialized (PRIVATE MODE)');
+            console.log('Admin Chat Initialized (PRIVATE MODE ONLY)');
             await loadUserList();
             setupKeyboardShortcuts();
             
