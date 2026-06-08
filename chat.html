@@ -54,7 +54,6 @@
         .chat-actions button:hover { background: rgba(0,212,255,0.15); color: #00d4ff; }
         .chat-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Mode Toggle Buttons */
         .mode-toggle {
             display: flex;
             gap: 0;
@@ -196,7 +195,6 @@
             </div>
         </div>
         <div class="chat-body">
-            <!-- Mode Toggle Buttons -->
             <div class="mode-toggle">
                 <button id="privateModeBtn" class="mode-btn private active" onclick="setChatMode('private')">
                     <i class="fas fa-lock"></i> Private Chat (Admin)
@@ -229,7 +227,7 @@
         let currentUserId = null;
         let refreshInterval = null;
         let isMinimized = false;
-        let currentMode = 'private'; // 'private' or 'global'
+        let currentMode = 'private';
         
         function getMyanmarTime(timestamp) {
             const date = new Date(timestamp);
@@ -270,7 +268,12 @@
                 currentUsername = 'Guest User';
                 currentUserId = 'guest_' + Date.now();
             }
-            console.log('User Info:', { currentUser, currentUsername, currentUserId, mode: currentMode });
+            console.log('======= USER INFO =======');
+            console.log('Phone:', currentUser);
+            console.log('Username:', currentUsername);
+            console.log('User ID:', currentUserId);
+            console.log('Mode:', currentMode);
+            console.log('========================');
         }
         
         function setChatMode(mode) {
@@ -304,14 +307,20 @@
                 let messages = [];
                 
                 if (currentMode === 'private') {
-                    // PRIVATE: Only messages between this user and admin
-                    const response = await fetch(`${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`);
+                    // PRIVATE: Get messages between this user and admin
+                    // Use both possible query patterns
+                    const url = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`;
+                    console.log('Fetching private messages from:', url);
+                    
+                    const response = await fetch(url);
                     const data = await response.json();
+                    console.log('Private messages response:', data);
+                    
                     if (data.success && data.messages) {
                         messages = data.messages;
                     }
                 } else {
-                    // GLOBAL: All messages (everyone can see)
+                    // GLOBAL: All messages
                     const response = await fetch(`${API_BASE}/api/chat/messages`);
                     const data = await response.json();
                     if (data.success && data.messages) {
@@ -323,8 +332,8 @@
                     renderMessages(messages);
                 } else {
                     const emptyText = currentMode === 'private' 
-                        ? 'No private messages yet. Start a conversation with Admin! 🔒'
-                        : 'No global messages yet. Be the first to say hello! 🌍';
+                        ? '📭 No private messages yet. Send a message to Admin! 🔒'
+                        : '🌍 No global messages yet. Be the first to say hello!';
                     container.innerHTML = `<div class="chat-loading">${emptyText}</div>`;
                 }
             } catch (error) {
@@ -349,12 +358,11 @@
                 let modeBadge = '';
                 
                 if (currentMode === 'private') {
-                    // Private mode: show messages between user and admin
-                    isUser = msg.sender_id === currentUserId;
+                    // Check both sender_id and user_id patterns
+                    isUser = (msg.sender_id === currentUserId) || (msg.user_id === currentUserId);
                     senderName = isUser ? (currentUsername || 'You') : '👑 Admin';
                     modeBadge = '<span class="badge private"><i class="fas fa-lock"></i> Private</span>';
                 } else {
-                    // Global mode: show all messages
                     isUser = !msg.is_admin && msg.user_id === currentUserId;
                     senderName = msg.is_admin ? '👑 Admin' : (msg.username || 'User');
                     modeBadge = '<span class="badge global"><i class="fas fa-globe"></i> Global</span>';
@@ -397,9 +405,11 @@
             
             try {
                 let response;
+                let data;
                 
                 if (currentMode === 'private') {
-                    // Send PRIVATE message to admin (only admin and this user can see)
+                    console.log('Sending PRIVATE message from:', currentUserId, 'to: admin');
+                    
                     response = await fetch(`${API_BASE}/api/chat/private/send`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -411,8 +421,24 @@
                             message: message
                         })
                     });
+                    
+                    data = await response.json();
+                    console.log('Private send response:', data);
+                    
+                    if (data.success) {
+                        input.value = '';
+                        input.style.height = 'auto';
+                        // Add message to UI immediately
+                        addMessageToUI(message, true);
+                        // Then reload from server
+                        setTimeout(() => loadMessages(), 500);
+                        showNotification('✅ Message sent to Admin (Private)');
+                    } else {
+                        showNotification(data.error || "Failed to send", true);
+                    }
                 } else {
-                    // Send GLOBAL message (everyone can see)
+                    console.log('Sending GLOBAL message from:', currentUserId);
+                    
                     response = await fetch(`${API_BASE}/api/chat/send`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -422,25 +448,63 @@
                             message: message
                         })
                     });
-                }
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    input.value = '';
-                    input.style.height = 'auto';
-                    await loadMessages();
-                } else {
-                    showNotification(data.error || "Failed to send", true);
+                    
+                    data = await response.json();
+                    console.log('Global send response:', data);
+                    
+                    if (data.success) {
+                        input.value = '';
+                        input.style.height = 'auto';
+                        addMessageToUI(message, true);
+                        setTimeout(() => loadMessages(), 500);
+                        showNotification('✅ Message sent to Global Chat');
+                    } else {
+                        showNotification(data.error || "Failed to send", true);
+                    }
                 }
             } catch (error) {
                 console.error('Send error:', error);
-                showNotification("Connection error", true);
+                showNotification("Connection error: " + error.message, true);
             } finally {
                 input.disabled = false;
                 sendBtn.disabled = false;
                 input.focus();
             }
+        }
+        
+        // Add message to UI immediately without waiting for server
+        function addMessageToUI(message, isUser) {
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+            
+            const now = new Date();
+            const myanmarTime = getMyanmarTime(now.toISOString());
+            const modeBadge = currentMode === 'private' 
+                ? '<span class="badge private"><i class="fas fa-lock"></i> Private</span>'
+                : '<span class="badge global"><i class="fas fa-globe"></i> Global</span>';
+            
+            const messageHtml = `
+                <div class="chat-message user">
+                    <div class="message-sender">
+                        <i class="fas fa-user"></i> 
+                        ${escapeHtml(currentUsername || 'You')} ${modeBadge}
+                    </div>
+                    <div class="message-bubble">${escapeHtml(message)}</div>
+                    <div class="message-time">🕐 ${myanmarTime}</div>
+                </div>
+            `;
+            
+            // Check if we need to add date divider
+            const lastDivider = container.querySelector('div[style*="text-align:center"]:last-child');
+            const today = getMyanmarDate(now.toISOString());
+            
+            if (!lastDivider || !lastDivider.innerText.includes(today)) {
+                const divider = `<div style="text-align:center; margin:8px 0;"><span style="background:rgba(0,212,255,0.1); padding:2px 10px; border-radius:40px; font-size:0.55rem; color:#64748b;">📅 ${today}</span></div>`;
+                container.insertAdjacentHTML('beforeend', divider);
+            }
+            
+            container.insertAdjacentHTML('beforeend', messageHtml);
+            container.scrollTop = container.scrollHeight;
         }
         
         function showNotification(message, isError = false) {
@@ -510,7 +574,9 @@
             setupKeyboardShortcuts();
             refreshInterval = setInterval(() => {
                 const container = document.getElementById('chatContainer');
-                if (container && !container.classList.contains('minimized')) loadMessages();
+                if (container && !container.classList.contains('minimized')) {
+                    loadMessages();
+                }
             }, 5000);
         }
         
