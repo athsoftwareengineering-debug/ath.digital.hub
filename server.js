@@ -29,7 +29,6 @@ let salesHours = {
     message: 'ကျေးဇူးပြု၍ နံနက် ၉ နာရီမှ ညနေ ၇ နာရီအတွင်းမှသာ ဝယ်ယူနိုင်ပါသည်။'
 };
 
-// Helper function to convert 24-hour to 12-hour format with Myanmar labels
 function convertTo12HourFormat(hour24) {
     if (hour24 === 0 || hour24 === 24) return { hour: 12, label: "ည" };
     if (hour24 === 12) return { hour: 12, label: "မွန်းတည့်" };
@@ -37,7 +36,6 @@ function convertTo12HourFormat(hour24) {
     return { hour: hour24 - 12, label: "ညနေ" };
 }
 
-// Check if order can be placed based on mode
 function canPlaceOrder() {
     if (!salesHours.enabled) return true;
     if (salesHours.mode === 'manual') return salesHours.manualStatus;
@@ -47,7 +45,6 @@ function canPlaceOrder() {
     return currentHour >= salesHours.startHour && currentHour < salesHours.endHour;
 }
 
-// Get current status message
 function getStatusMessage() {
     const isOpen = canPlaceOrder();
     if (!isOpen) return "🔴 ဆိုင်ပိတ်ထားပါသည်။ ကျေးဇူးပြု၍ နောက်မှထပ်မံဝယ်ယူပါ။";
@@ -82,8 +79,6 @@ async function sendAutoReply(sender_id, sender_name, replyMessage) {
 }
 
 // ==================== GLOBAL CHAT CLEANUP & FILTER ====================
-
-// ညစ်ညမ်း/ဆဲဆို/ခြိမ်းခြောက်စကား စာရင်း
 const badWords = [
     'ငါလိုးမသား', 'လီးလား', 'မင်းမေလိုး', 'မင်းမေစပက်', 'မင်းနှမငါလိုး',
     'ကိုမေကိုလိုး', 'kmkl', 'ခွေးမသား', 'သူတောင်းစား', 'မင်းအမေငါလိုး',
@@ -97,10 +92,8 @@ const badWords = [
     'fight', 'challenge'
 ];
 
-// Global chat အတွက် user warning count
 const globalChatWarnings = new Map();
 
-// Check if message contains bad words
 function containsBadWords(message) {
     const lowerMessage = message.toLowerCase();
     for (const word of badWords) {
@@ -111,7 +104,6 @@ function containsBadWords(message) {
     return false;
 }
 
-// Auto cleanup old global messages (3 minutes = 180000 ms)
 async function cleanupOldGlobalMessages() {
     try {
         const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
@@ -126,7 +118,6 @@ async function cleanupOldGlobalMessages() {
     }
 }
 
-// Check and block user from global chat
 async function checkAndBlockGlobalChatUser(user_id, username) {
     const warningCount = globalChatWarnings.get(user_id) || 0;
     const newCount = warningCount + 1;
@@ -143,7 +134,6 @@ async function checkAndBlockGlobalChatUser(user_id, username) {
     return false;
 }
 
-// Send warning message to user
 async function sendGlobalChatWarning(user_id, username, isBlocked = false) {
     const warningMessage = isBlocked
         ? `⚠️ သင်သည် မလျော်ကန်သော စကားလုံးများ ပြောဆိုခြင်းကြောင့် **Global Chat မှ အလိုအလျောက် ပိတ်ဆို့ခြင်း** ခံထားရပါသည်။\n\nကျေးဇူးပြု၍ လေးစားစွာ ပြောဆိုပါ။`
@@ -163,7 +153,6 @@ async function sendGlobalChatWarning(user_id, username, isBlocked = false) {
     }
 }
 
-// Check if user is blocked from global chat
 async function isGlobalChatBlocked(user_id) {
     try {
         const { data, error } = await supabase
@@ -805,14 +794,10 @@ app.post('/api/chat/send', chatLimiter, async (req, res) => {
     try {
         const { user_id, username, message } = req.body;
         
-        console.log(`📨 Global chat message from: ${user_id} (${username})`);
-        console.log(`Message: ${message}`);
-        
         if (!user_id || !message || message.trim() === '') {
             return res.status(400).json({ success: false, error: 'Invalid message' });
         }
         
-        // Check if user is blocked from global chat
         const isBlocked = await isGlobalChatBlocked(user_id);
         if (isBlocked) {
             return res.status(403).json({ 
@@ -821,11 +806,9 @@ app.post('/api/chat/send', chatLimiter, async (req, res) => {
             });
         }
         
-        // Check for bad words
         if (containsBadWords(message)) {
             const isBlockedNow = await checkAndBlockGlobalChatUser(user_id, username);
             await sendGlobalChatWarning(user_id, username, isBlockedNow);
-            
             if (isBlockedNow) {
                 return res.status(403).json({ 
                     success: false, 
@@ -948,7 +931,6 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
         }
         console.log(`✅ Private message saved successfully, ID: ${data[0]?.id}`);
         
-        // Auto Reply Logic
         if (sender_id !== 'admin') {
             const isShopOpen = canPlaceOrder();
             const autoReply = getAutoReply(message, isShopOpen, sender_id);
@@ -1015,8 +997,6 @@ app.get('/api/chat/get-language/:userId', async (req, res) => {
 });
 
 // ==================== START SERVER ====================
-
-// Start auto cleanup for global messages (every 3 minutes)
 setInterval(() => {
     cleanupOldGlobalMessages();
 }, 3 * 60 * 1000);
@@ -1034,7 +1014,7 @@ app.listen(PORT, () => {
 ║     💬 Global Chat:     http://localhost:${PORT}/chat.html                ║
 ║     💬 Admin Chat:      http://localhost:${PORT}/admin-chat.html          ║
 ║     💬 Private 1-on-1 Chat: WORKING ✅                                   ║
-║     🌍 Multi-Language Auto Reply (my/en/zh): WORKING ✅                  ║
+║     🌍 Multi-Language Auto Reply: WORKING ✅                             ║
 ║     🧹 Global Chat Auto Cleanup (3 min): WORKING ✅                      ║
 ║     🚫 Bad Words Filter & Auto Block: WORKING ✅                         ║
 ║                                                                          ║
