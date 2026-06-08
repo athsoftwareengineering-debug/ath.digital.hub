@@ -12,6 +12,7 @@ const compression = require('compression');
 const sharp = require('sharp');
 const Joi = require('joi');
 const { supabase, supabaseAdmin, createNewUser, getUserByPhone, getUserStats, updateUserStats, isPhoneBlocked } = require('./database');
+const { getAutoReply, setUserLanguage, getUserLanguage } = require('./config/autoReply');
 require('dotenv').config();
 
 const app = express();
@@ -68,6 +69,31 @@ function getStatusMessage() {
     } else {
         // Manual mode - simple message without "Admin" text
         return "🟢 ဆိုင်ဖွင့်ထားပါသည်။ ယခုပဲဝယ်ယူနိုင်ပါသည်။";
+    }
+}
+
+// Helper function to send auto reply
+async function sendAutoReply(sender_id, sender_name, replyMessage) {
+    try {
+        const { error } = await supabase
+            .from('private_chat_messages')
+            .insert([{
+                sender_id: 'admin',
+                receiver_id: sender_id,
+                sender_name: '🤖 Auto Reply',
+                receiver_name: sender_name || 'User',
+                message: replyMessage,
+                is_read: false,
+                created_at: new Date().toISOString()
+            }]);
+        
+        if (error) {
+            console.error('Error sending auto reply:', error);
+        } else {
+            console.log(`✅ Auto reply sent to ${sender_id}`);
+        }
+    } catch (error) {
+        console.error('Error in sendAutoReply:', error);
     }
 }
 
@@ -442,11 +468,17 @@ app.post('/api/admin/toggle-shop', isAuthenticated, (req, res) => {
 });
 
 // ==================== STATIC ROUTES ====================
-app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
-app.get('/admin.html', (req, res) => { res.sendFile(path.join(__dirname, 'admin.html')); });
-app.get('/dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'dashboard_live.html')); });
-app.get('/chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'chat.html')); });
-app.get('/admin-chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'admin-chat.html')); });
+app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
+app.get('/admin.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin.html')); });
+app.get('/dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'dashboard_live.html')); });
+app.get('/chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'chat.html')); });
+app.get('/admin-chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin-chat.html')); });
+app.get('/market.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'market.html')); });
+app.get('/plans-widget.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'plans-widget.html')); });
+app.get('/sw.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'sw.js')); });
+app.get('/notifications.css', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'notifications.css')); });
+app.get('/notifications.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'notifications.js')); });
+app.get('/sales-hours.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'sales-hours.js')); });
 app.get('/api/health', (req, res) => { res.json({ status: 'ok', timestamp: new Date().toISOString() }); });
 
 // ==================== USER REGISTRATION ====================
@@ -1248,6 +1280,17 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
         }
         
         console.log(`✅ Private message saved successfully, ID: ${data[0]?.id}`);
+        
+        // ============ AUTO REPLY LOGIC (for user messages only) ============
+        if (sender_id !== 'admin') {
+            const isShopOpen = canPlaceOrder();
+            const autoReply = getAutoReply(message, isShopOpen, sender_id);
+            
+            if (autoReply) {
+                await sendAutoReply(sender_id, sender_name, autoReply);
+            }
+        }
+        
         res.json({ success: true, message: data[0] });
     } catch (error) {
         console.error('Error sending private message:', error);
@@ -1298,6 +1341,31 @@ app.get('/api/chat/private/unread/:userId', async (req, res) => {
     }
 });
 
+// ==================== LANGUAGE SETTINGS API ====================
+app.post('/api/chat/set-language', async (req, res) => {
+    try {
+        const { user_id, language } = req.body;
+        if (user_id && ['my', 'en', 'zh'].includes(language)) {
+            setUserLanguage(user_id, language);
+            res.json({ success: true, message: `Language changed to ${language}` });
+        } else {
+            res.status(400).json({ success: false, error: 'Invalid language' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.get('/api/chat/get-language/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const language = getUserLanguage(userId);
+        res.json({ success: true, language: language });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // ==================== START SERVER ====================
 app.listen(PORT, () => {
     console.log(`
@@ -1311,6 +1379,7 @@ app.listen(PORT, () => {
 ║     💬 Global Chat:     http://localhost:${PORT}/chat.html                ║
 ║     💬 Admin Chat:      http://localhost:${PORT}/admin-chat.html          ║
 ║     💬 Private 1-on-1 Chat: WORKING ✅                                   ║
+║     🌍 Multi-Language Auto Reply: WORKING ✅                             ║
 ║                                                                          ║
 ║     🔒 SECURITY FEATURES ENABLED:                                        ║
 ║        ✅ Helmet.js (Security Headers)                                   ║
@@ -1321,6 +1390,7 @@ app.listen(PORT, () => {
 ║        ✅ Image Processing (Sharp)                                       ║
 ║        ✅ Database Notifications                                         ║
 ║        ✅ Private 1-on-1 Chat with Unread Counts                        ║
+║        ✅ Multi-Language Auto Reply (my/en/zh)                          ║
 ║        ✅ Mark as Read functionality                                     ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
