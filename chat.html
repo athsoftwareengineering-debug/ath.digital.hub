@@ -34,6 +34,7 @@
             background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.05));
             border-bottom: 1px solid rgba(0,212,255,0.15);
             cursor: pointer;
+            position: relative;
         }
         .chat-header-info { display: flex; align-items: center; gap: 10px; }
         .chat-avatar {
@@ -53,6 +54,25 @@
         .chat-actions button { background: none; border: none; color: #94a3b8; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; transition: all 0.2s; }
         .chat-actions button:hover { background: rgba(0,212,255,0.15); color: #00d4ff; }
         .chat-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* Unread Badge on Header */
+        .unread-badge {
+            position: absolute;
+            top: 5px;
+            right: 60px;
+            background: #f43f5e;
+            color: white;
+            font-size: 0.55rem;
+            font-weight: bold;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+            z-index: 10;
+        }
         
         .mode-toggle {
             display: flex;
@@ -193,6 +213,7 @@
                 <button onclick="event.stopPropagation(); toggleMinimize()" title="Minimize"><i class="fas fa-minus"></i></button>
                 <button onclick="event.stopPropagation(); closeUserChat()" title="Close"><i class="fas fa-times"></i></button>
             </div>
+            <div id="headerUnreadBadge" class="unread-badge" style="display: none;">0</div>
         </div>
         <div class="chat-body">
             <div class="mode-toggle">
@@ -228,6 +249,7 @@
         let refreshInterval = null;
         let isMinimized = false;
         let currentMode = 'private';
+        let lastMessageCount = 0;
         
         function getMyanmarTime(timestamp) {
             const date = new Date(timestamp);
@@ -276,6 +298,25 @@
             console.log('================================');
         }
         
+        // Get unread count for user (messages from admin that user hasn't read)
+        async function updateUnreadCount() {
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/private/unread/${currentUserId}`);
+                const data = await response.json();
+                const badge = document.getElementById('headerUnreadBadge');
+                if (badge) {
+                    if (data.unreadCount > 0) {
+                        badge.style.display = 'flex';
+                        badge.innerText = data.unreadCount > 99 ? '99+' : data.unreadCount;
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            } catch(e) {
+                console.error('Error getting unread count:', e);
+            }
+        }
+        
         function setChatMode(mode) {
             currentMode = mode;
             const privateBtn = document.getElementById('privateModeBtn');
@@ -311,28 +352,22 @@
                 if (currentMode === 'private') {
                     console.log('🔍 Loading PRIVATE messages for user:', currentUserId);
                     
-                    // Method 1: Get messages where user is sender
                     const url1 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`;
                     const response1 = await fetch(url1);
                     const data1 = await response1.json();
                     
-                    // Method 2: Get messages where user is receiver (using admin as current user)
                     const url2 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=admin`;
                     const response2 = await fetch(url2);
                     const data2 = await response2.json();
                     
-                    // Merge both results
                     let allMessages = [];
                     if (data1.success && data1.messages) {
-                        console.log(`📨 Found ${data1.messages.length} messages as sender`);
                         allMessages.push(...data1.messages);
                     }
                     if (data2.success && data2.messages) {
-                        console.log(`📨 Found ${data2.messages.length} messages as receiver`);
                         allMessages.push(...data2.messages);
                     }
                     
-                    // Remove duplicates by id
                     const uniqueMessages = [];
                     const seenIds = new Set();
                     for (const msg of allMessages) {
@@ -342,10 +377,19 @@
                         }
                     }
                     
-                    // Sort by time
                     uniqueMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-                    
                     messages = uniqueMessages;
+                    
+                    // Check for new messages
+                    if (messages.length > lastMessageCount && lastMessageCount > 0) {
+                        const newCount = messages.length - lastMessageCount;
+                        console.log(`🔔 ${newCount} new message(s)!`);
+                        if (currentMode === 'private') {
+                            updateUnreadCount();
+                        }
+                    }
+                    lastMessageCount = messages.length;
+                    
                     console.log(`✅ Loaded ${messages.length} total private messages`);
                 } else {
                     console.log('🌍 Loading GLOBAL messages');
@@ -387,7 +431,6 @@
                 let modeBadge = '';
                 
                 if (currentMode === 'private') {
-                    // Check if message is from current user
                     isUser = (msg.sender_id === currentUserId);
                     senderName = isUser ? (currentUsername || 'You') : '👑 Admin';
                     modeBadge = '<span class="badge private"><i class="fas fa-lock"></i> Private</span>';
@@ -433,16 +476,12 @@
             sendBtn.disabled = true;
             
             console.log(`📤 Sending ${currentMode} message...`);
-            console.log('Message:', message);
-            console.log('From User ID:', currentUserId);
-            console.log('Username:', currentUsername);
             
             try {
                 let response;
                 let data;
                 
                 if (currentMode === 'private') {
-                    console.log('🔒 Sending PRIVATE message to admin');
                     response = await fetch(`${API_BASE}/api/chat/private/send`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -456,23 +495,17 @@
                     });
                     
                     data = await response.json();
-                    console.log('📨 Private send response:', data);
                     
                     if (data.success) {
-                        console.log('✅ Private message sent successfully!');
                         input.value = '';
                         input.style.height = 'auto';
-                        // Add to UI immediately
                         addMessageToUI(message, true);
-                        // Reload after short delay to sync
                         setTimeout(() => loadMessages(), 500);
                         showNotification('✅ Private message sent to Admin');
                     } else {
-                        console.error('❌ Private send failed:', data.error);
                         showNotification(data.error || "Failed to send", true);
                     }
                 } else {
-                    console.log('🌍 Sending GLOBAL message');
                     response = await fetch(`${API_BASE}/api/chat/send`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -484,17 +517,14 @@
                     });
                     
                     data = await response.json();
-                    console.log('📨 Global send response:', data);
                     
                     if (data.success) {
-                        console.log('✅ Global message sent successfully!');
                         input.value = '';
                         input.style.height = 'auto';
                         addMessageToUI(message, true);
                         setTimeout(() => loadMessages(), 500);
                         showNotification('✅ Global message sent');
                     } else {
-                        console.error('❌ Global send failed:', data.error);
                         showNotification(data.error || "Failed to send", true);
                     }
                 }
@@ -529,7 +559,6 @@
                 </div>
             `;
             
-            // Check if we need to add date divider
             const today = getMyanmarDate(now.toISOString());
             const existingDivider = Array.from(container.querySelectorAll('div[style*="text-align:center"]')).some(
                 div => div.innerText.includes(today)
@@ -542,12 +571,9 @@
             
             container.insertAdjacentHTML('beforeend', messageHtml);
             container.scrollTop = container.scrollHeight;
-            
-            console.log('🎨 Added message to UI immediately');
         }
         
         function showNotification(message, isError = false) {
-            console.log(`🔔 Notification: ${message} (${isError ? 'error' : 'success'})`);
             try {
                 if (window.parent && window.parent.showToast) window.parent.showToast(message, isError);
                 else {
@@ -612,12 +638,13 @@
             console.log('🚀 Chat widget initializing...');
             getCurrentUserInfo();
             await loadMessages();
+            await updateUnreadCount();
             setupKeyboardShortcuts();
             refreshInterval = setInterval(() => {
                 const container = document.getElementById('chatContainer');
                 if (container && !container.classList.contains('minimized')) {
-                    console.log('🔄 Auto-refreshing messages...');
                     loadMessages();
+                    updateUnreadCount();
                 }
             }, 5000);
             console.log('✅ Chat widget initialized');
