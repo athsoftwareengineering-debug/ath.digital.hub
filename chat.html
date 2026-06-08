@@ -6,17 +6,8 @@
     <title>Chat Support - ATH DIGITAL HUB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: transparent;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         .chat-widget-container {
             position: fixed;
             bottom: 70px;
@@ -33,15 +24,8 @@
             z-index: 1000;
             transition: all 0.3s ease;
         }
-        
-        .chat-widget-container.minimized {
-            height: 55px;
-        }
-        
-        .chat-widget-container.minimized .chat-body {
-            display: none;
-        }
-        
+        .chat-widget-container.minimized { height: 55px; }
+        .chat-widget-container.minimized .chat-body { display: none; }
         .chat-header {
             display: flex;
             justify-content: space-between;
@@ -52,78 +36,25 @@
             cursor: pointer;
             position: relative;
         }
-        
-        .chat-header-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
+        .chat-header-info { display: flex; align-items: center; gap: 10px; }
         .chat-avatar {
-            width: 35px;
-            height: 35px;
+            width: 35px; height: 35px;
             background: linear-gradient(135deg, #00d4ff, #0891b2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
         }
+        .chat-avatar i { font-size: 1.1rem; color: white; }
+        .chat-header-title { font-size: 0.85rem; font-weight: 700; color: #f1f5f9; }
+        .chat-header-status { font-size: 0.6rem; color: #94a3b8; display: flex; align-items: center; gap: 6px; }
+        .online-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } }
+        .chat-actions { display: flex; gap: 5px; }
+        .chat-actions button { background: none; border: none; color: #94a3b8; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; transition: all 0.2s; }
+        .chat-actions button:hover { background: rgba(0,212,255,0.15); color: #00d4ff; }
         
-        .chat-avatar i {
-            font-size: 1.1rem;
-            color: white;
-        }
-        
-        .chat-header-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #f1f5f9;
-        }
-        
-        .chat-header-status {
-            font-size: 0.6rem;
-            color: #94a3b8;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .online-dot {
-            width: 8px;
-            height: 8px;
-            background: #10b981;
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-        }
-        
-        .chat-actions {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .chat-actions button {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            transition: all 0.2s;
-        }
-        
-        .chat-actions button:hover {
-            background: rgba(0,212,255,0.15);
-            color: #00d4ff;
-        }
-        
-        /* Unread Badge on Header */
+        /* Unread Badge */
         .unread-badge {
             position: absolute;
             top: 5px;
@@ -142,21 +73,12 @@
             z-index: 10;
             animation: badgePulse 0.5s ease-in-out;
         }
-        
         @keyframes badgePulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.2); }
             100% { transform: scale(1); }
         }
         
-        .chat-body {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        /* Mode Toggle Buttons */
         .mode-toggle {
             display: flex;
             gap: 0;
@@ -164,7 +86,6 @@
             background: rgba(0,0,0,0.3);
             border-bottom: 1px solid rgba(0,212,255,0.1);
         }
-        
         .mode-btn {
             flex: 1;
             padding: 8px;
@@ -176,25 +97,21 @@
             border-radius: 40px;
             margin: 0 4px;
         }
-        
         .mode-btn.private {
             background: rgba(0,212,255,0.15);
             color: #00d4ff;
             border: 1px solid rgba(0,212,255,0.3);
         }
-        
         .mode-btn.private.active {
             background: linear-gradient(135deg, #00d4ff, #0891b2);
             color: white;
             border: none;
         }
-        
         .mode-btn.global {
             background: rgba(16,185,129,0.15);
             color: #10b981;
             border: 1px solid rgba(16,185,129,0.3);
         }
-        
         .mode-btn.global.active {
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
@@ -209,19 +126,9 @@
             flex-direction: column;
             gap: 10px;
         }
-        
-        .chat-messages-container::-webkit-scrollbar {
-            width: 3px;
-        }
-        
-        .chat-messages-container::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.03);
-        }
-        
-        .chat-messages-container::-webkit-scrollbar-thumb {
-            background: rgba(0,212,255,0.3);
-            border-radius: 3px;
-        }
+        .chat-messages-container::-webkit-scrollbar { width: 3px; }
+        .chat-messages-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+        .chat-messages-container::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
         
         .chat-message {
             display: flex;
@@ -229,22 +136,9 @@
             max-width: 85%;
             animation: fadeIn 0.3s ease;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .chat-message.user {
-            align-items: flex-end;
-            margin-left: auto;
-        }
-        
-        .chat-message.admin {
-            align-items: flex-start;
-            margin-right: auto;
-        }
-        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-message.user { align-items: flex-end; margin-left: auto; }
+        .chat-message.admin { align-items: flex-start; margin-right: auto; }
         .message-bubble {
             padding: 8px 12px;
             border-radius: 16px;
@@ -252,62 +146,33 @@
             font-size: 0.75rem;
             line-height: 1.4;
         }
-        
         .chat-message.user .message-bubble {
             background: linear-gradient(135deg, #00d4ff, #0891b2);
             color: white;
             border-bottom-right-radius: 3px;
         }
-        
         .chat-message.admin .message-bubble {
             background: rgba(255,255,255,0.08);
             color: #e2e8f0;
             border-bottom-left-radius: 3px;
         }
-        
-        .message-sender {
-            font-size: 0.5rem;
-            color: #94a3b8;
-            margin-bottom: 3px;
-            padding: 0 6px;
-        }
-        
-        .message-time {
-            font-size: 0.45rem;
-            color: #64748b;
-            margin-top: 3px;
-            padding: 0 6px;
-        }
-        
+        .message-sender { font-size: 0.5rem; color: #94a3b8; margin-bottom: 3px; padding: 0 6px; }
+        .message-time { font-size: 0.45rem; color: #64748b; margin-top: 3px; padding: 0 6px; }
         .badge {
             font-size: 0.45rem;
             border-radius: 20px;
             padding: 2px 8px;
             margin-left: 6px;
         }
-        
-        .badge.private {
-            background: rgba(0,212,255,0.2);
-            color: #00d4ff;
-        }
-        
-        .badge.global {
-            background: rgba(16,185,129,0.2);
-            color: #10b981;
-        }
+        .badge.private { background: rgba(0,212,255,0.2); color: #00d4ff; }
+        .badge.global { background: rgba(16,185,129,0.2); color: #10b981; }
         
         .chat-input-container {
             padding: 10px;
             background: rgba(0,0,0,0.3);
             border-top: 1px solid rgba(0,212,255,0.1);
         }
-        
-        .chat-input-wrapper {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        
+        .chat-input-wrapper { display: flex; gap: 8px; align-items: center; }
         .chat-input {
             flex: 1;
             padding: 8px 12px;
@@ -319,12 +184,7 @@
             resize: none;
             font-family: inherit;
         }
-        
-        .chat-input:focus {
-            outline: none;
-            border-color: #00d4ff;
-        }
-        
+        .chat-input:focus { outline: none; border-color: #00d4ff; }
         .chat-send-btn {
             background: linear-gradient(135deg, #00d4ff, #0891b2);
             border: none;
@@ -335,31 +195,12 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-        
-        .chat-send-btn:hover {
-            transform: scale(1.05);
-        }
-        
-        .chat-note {
-            font-size: 0.5rem;
-            color: #64748b;
-            text-align: center;
-            margin-top: 6px;
-        }
-        
-        .chat-loading {
-            text-align: center;
-            padding: 40px;
-            color: #94a3b8;
-        }
+        .chat-send-btn:hover { transform: scale(1.05); }
+        .chat-note { font-size: 0.5rem; color: #64748b; text-align: center; margin-top: 6px; }
+        .chat-loading { text-align: center; padding: 40px; color: #94a3b8; }
         
         @media (max-width: 480px) {
-            .chat-widget-container {
-                width: calc(100vw - 20px);
-                right: 10px;
-                left: 10px;
-                height: 65vh;
-            }
+            .chat-widget-container { width: calc(100vw - 20px); right: 10px; left: 10px; height: 65vh; }
         }
     </style>
 </head>
@@ -367,24 +208,15 @@
     <div class="chat-widget-container" id="chatContainer">
         <div class="chat-header" onclick="toggleMinimize()">
             <div class="chat-header-info">
-                <div class="chat-avatar">
-                    <i class="fas fa-headset"></i>
-                </div>
+                <div class="chat-avatar"><i class="fas fa-headset"></i></div>
                 <div>
                     <div class="chat-header-title">Customer Support</div>
-                    <div class="chat-header-status">
-                        <span class="online-dot"></span>
-                        <span>Online</span>
-                    </div>
+                    <div class="chat-header-status"><span class="online-dot"></span><span>Online</span></div>
                 </div>
             </div>
             <div class="chat-actions">
-                <button onclick="event.stopPropagation(); toggleMinimize()" title="Minimize">
-                    <i class="fas fa-minus"></i>
-                </button>
-                <button onclick="event.stopPropagation(); closeUserChat()" title="Close">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button onclick="event.stopPropagation(); toggleMinimize()" title="Minimize"><i class="fas fa-minus"></i></button>
+                <button onclick="event.stopPropagation(); closeUserChat()" title="Close"><i class="fas fa-times"></i></button>
             </div>
             <div id="headerUnreadBadge" class="unread-badge" style="display: none;">0</div>
         </div>
@@ -405,9 +237,7 @@
             <div class="chat-input-container">
                 <div class="chat-input-wrapper">
                     <textarea id="chatInput" class="chat-input" placeholder="Type your message here..." rows="1" maxlength="500"></textarea>
-                    <button class="chat-send-btn" onclick="sendMessage()">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
+                    <button class="chat-send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
                 </div>
                 <div class="chat-note" id="chatModeNote">
                     <i class="fas fa-lock"></i> Private message - Only you and Admin can see
@@ -424,7 +254,6 @@
         let refreshInterval = null;
         let isMinimized = false;
         let currentMode = 'private';
-        let lastMessageCount = 0;
         
         function getMyanmarTime(timestamp) {
             const date = new Date(timestamp);
@@ -458,24 +287,17 @@
                 if (window.parent && window.parent.getCurrentUserPhone) currentUser = window.parent.getCurrentUserPhone();
                 if (window.parent && window.parent.getCurrentUsername) currentUsername = window.parent.getCurrentUsername();
                 if (window.parent && window.parent.getCurrentUserId) currentUserId = window.parent.getCurrentUserId();
-            } catch(e) {
-                console.log('Cannot access parent window');
-            }
+            } catch(e) { console.log('Cannot access parent window'); }
             
             if (!currentUser) {
                 currentUser = 'guest';
                 currentUsername = 'Guest User';
                 currentUserId = 'guest_' + Date.now();
             }
-            console.log('========== USER INFO ==========');
-            console.log('📱 Phone:', currentUser);
-            console.log('👤 Username:', currentUsername);
-            console.log('🆔 User ID:', currentUserId);
-            console.log('🔘 Mode:', currentMode);
-            console.log('================================');
+            console.log('User Info:', { currentUser, currentUsername, currentUserId, mode: currentMode });
         }
         
-        // Get unread count for user (messages from admin that user hasn't read)
+        // Get unread count (only messages from admin that are not read)
         async function updateUnreadCount() {
             try {
                 const response = await fetch(`${API_BASE}/api/chat/private/unread/${currentUserId}`);
@@ -527,27 +349,19 @@
                 let messages = [];
                 
                 if (currentMode === 'private') {
-                    console.log('🔍 Loading PRIVATE messages for user:', currentUserId);
-                    
-                    // Method 1: Get messages where user is sender
+                    // Get messages where user is involved
                     const url1 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`;
                     const response1 = await fetch(url1);
                     const data1 = await response1.json();
                     
-                    // Method 2: Get messages where user is receiver (using admin as current user)
                     const url2 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=admin`;
                     const response2 = await fetch(url2);
                     const data2 = await response2.json();
                     
                     let allMessages = [];
-                    if (data1.success && data1.messages) {
-                        allMessages.push(...data1.messages);
-                    }
-                    if (data2.success && data2.messages) {
-                        allMessages.push(...data2.messages);
-                    }
+                    if (data1.success && data1.messages) allMessages.push(...data1.messages);
+                    if (data2.success && data2.messages) allMessages.push(...data2.messages);
                     
-                    // Remove duplicates by id
                     const uniqueMessages = [];
                     const seenIds = new Set();
                     for (const msg of allMessages) {
@@ -556,28 +370,12 @@
                             uniqueMessages.push(msg);
                         }
                     }
-                    
-                    // Sort by time
                     uniqueMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
                     messages = uniqueMessages;
-                    
-                    // Check for new messages (from admin)
-                    if (messages.length > lastMessageCount && lastMessageCount > 0) {
-                        const newCount = messages.length - lastMessageCount;
-                        console.log(`🔔 ${newCount} new message(s) from Admin!`);
-                        updateUnreadCount();
-                    }
-                    lastMessageCount = messages.length;
-                    
-                    console.log(`✅ Loaded ${messages.length} total private messages`);
                 } else {
-                    console.log('🌍 Loading GLOBAL messages');
                     const response = await fetch(`${API_BASE}/api/chat/messages`);
                     const data = await response.json();
-                    if (data.success && data.messages) {
-                        messages = data.messages;
-                        console.log(`✅ Loaded ${messages.length} global messages`);
-                    }
+                    if (data.success && data.messages) messages = data.messages;
                 }
                 
                 if (messages.length > 0) {
@@ -589,7 +387,7 @@
                     container.innerHTML = `<div class="chat-loading">${emptyText}</div>`;
                 }
             } catch (error) {
-                console.error('❌ Error loading messages:', error);
+                console.error('Error loading messages:', error);
                 container.innerHTML = '<div class="chat-loading">Cannot connect to server</div>';
             }
         }
@@ -608,12 +406,14 @@
                 let isUser = false;
                 let senderName = '';
                 let modeBadge = '';
+                let isUnread = false;
                 
                 if (currentMode === 'private') {
-                    // Check if message is from current user
                     isUser = (msg.sender_id === currentUserId);
                     senderName = isUser ? (currentUsername || 'You') : '👑 Admin';
                     modeBadge = '<span class="badge private"><i class="fas fa-lock"></i> Private</span>';
+                    // Mark as unread only if message is from admin and not read
+                    isUnread = (!isUser && !msg.is_read);
                 } else {
                     isUser = !msg.is_admin && msg.user_id === currentUserId;
                     senderName = msg.is_admin ? '👑 Admin' : (msg.username || 'User');
@@ -625,11 +425,14 @@
                     lastDate = myanmarDate;
                 }
                 
+                const unreadClass = isUnread ? ' style="border-left: 2px solid #f43f5e; padding-left: 8px;"' : '';
+                
                 html += `
-                    <div class="chat-message ${isUser ? 'user' : 'admin'}">
+                    <div class="chat-message ${isUser ? 'user' : 'admin'}"${unreadClass}>
                         <div class="message-sender">
                             ${isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-shield-alt"></i>'} 
                             ${escapeHtml(senderName)} ${modeBadge}
+                            ${isUnread ? '<span style="color:#f43f5e; margin-left:6px;">🔴 New</span>' : ''}
                         </div>
                         <div class="message-bubble">${escapeHtml(msg.message)}</div>
                         <div class="message-time">🕐 ${myanmarTime}</div>
@@ -638,6 +441,9 @@
             }
             container.innerHTML = html;
             container.scrollTop = container.scrollHeight;
+            
+            // Update unread count from server after viewing
+            updateUnreadCount();
         }
         
         async function sendMessage() {
@@ -646,7 +452,6 @@
             const sendBtn = document.querySelector('.chat-send-btn');
             
             if (!message) return;
-            
             if (currentUser === 'guest' || !currentUserId || currentUserId.startsWith('guest_')) {
                 showNotification("Please login to send messages", true);
                 return;
@@ -655,16 +460,11 @@
             input.disabled = true;
             sendBtn.disabled = true;
             
-            console.log(`📤 Sending ${currentMode} message...`);
-            console.log('Message:', message);
-            console.log('From User ID:', currentUserId);
-            
             try {
                 let response;
                 let data;
                 
                 if (currentMode === 'private') {
-                    console.log('🔒 Sending PRIVATE message to admin');
                     response = await fetch(`${API_BASE}/api/chat/private/send`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -676,23 +476,17 @@
                             message: message
                         })
                     });
-                    
                     data = await response.json();
-                    console.log('📨 Private send response:', data);
-                    
                     if (data.success) {
-                        console.log('✅ Private message sent successfully!');
                         input.value = '';
                         input.style.height = 'auto';
                         addMessageToUI(message, true);
                         setTimeout(() => loadMessages(), 500);
                         showNotification('✅ Private message sent to Admin');
                     } else {
-                        console.error('❌ Private send failed:', data.error);
                         showNotification(data.error || "Failed to send", true);
                     }
                 } else {
-                    console.log('🌍 Sending GLOBAL message');
                     response = await fetch(`${API_BASE}/api/chat/send`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -702,25 +496,20 @@
                             message: message
                         })
                     });
-                    
                     data = await response.json();
-                    console.log('📨 Global send response:', data);
-                    
                     if (data.success) {
-                        console.log('✅ Global message sent successfully!');
                         input.value = '';
                         input.style.height = 'auto';
                         addMessageToUI(message, true);
                         setTimeout(() => loadMessages(), 500);
                         showNotification('✅ Global message sent');
                     } else {
-                        console.error('❌ Global send failed:', data.error);
                         showNotification(data.error || "Failed to send", true);
                     }
                 }
             } catch (error) {
-                console.error('❌ Send error:', error);
-                showNotification("Connection error: " + error.message, true);
+                console.error('Send error:', error);
+                showNotification("Connection error", true);
             } finally {
                 input.disabled = false;
                 sendBtn.disabled = false;
@@ -764,11 +553,9 @@
         }
         
         function showNotification(message, isError = false) {
-            console.log(`🔔 Notification: ${message} (${isError ? 'error' : 'success'})`);
             try {
-                if (window.parent && window.parent.showToast) {
-                    window.parent.showToast(message, isError);
-                } else {
+                if (window.parent && window.parent.showToast) window.parent.showToast(message, isError);
+                else {
                     const toast = document.createElement('div');
                     toast.textContent = message;
                     toast.style.cssText = `
@@ -780,9 +567,7 @@
                     document.body.appendChild(toast);
                     setTimeout(() => toast.remove(), 2500);
                 }
-            } catch(e) {
-                console.log('Toast error:', e);
-            }
+            } catch(e) { console.log('Toast error:', e); }
         }
         
         function escapeHtml(str) {
@@ -825,13 +610,11 @@
         }
         
         function closeUserChat() {
-            if (window.parent && window.parent.closeUserChatWidget) {
-                window.parent.closeUserChatWidget();
-            }
+            if (window.parent && window.parent.closeUserChatWidget) window.parent.closeUserChatWidget();
         }
         
         async function init() {
-            console.log('🚀 Chat widget initializing...');
+            console.log('Chat widget initializing...');
             getCurrentUserInfo();
             await loadMessages();
             await updateUnreadCount();
@@ -839,20 +622,13 @@
             refreshInterval = setInterval(() => {
                 const container = document.getElementById('chatContainer');
                 if (container && !container.classList.contains('minimized')) {
-                    console.log('🔄 Auto-refreshing messages...');
                     loadMessages();
-                    if (currentMode === 'private') {
-                        updateUnreadCount();
-                    }
+                    updateUnreadCount();
                 }
             }, 5000);
-            console.log('✅ Chat widget initialized');
         }
         
-        function cleanup() { 
-            if (refreshInterval) clearInterval(refreshInterval);
-            console.log('🧹 Chat widget cleaned up');
-        }
+        function cleanup() { if (refreshInterval) clearInterval(refreshInterval); }
         
         init();
         window.addEventListener('beforeunload', cleanup);
