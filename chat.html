@@ -310,26 +310,47 @@
                 
                 if (currentMode === 'private') {
                     console.log('🔍 Loading PRIVATE messages for user:', currentUserId);
-                    const url = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`;
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    console.log('📨 Private messages response:', data);
                     
-                    if (data.success && data.messages) {
-                        messages = data.messages;
-                        console.log(`✅ Loaded ${messages.length} private messages`);
-                        if (messages.length > 0) {
-                            console.log('First message:', messages[0]);
-                        }
-                    } else {
-                        console.log('⚠️ No private messages or error:', data);
+                    // Method 1: Get messages where user is sender
+                    const url1 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`;
+                    const response1 = await fetch(url1);
+                    const data1 = await response1.json();
+                    
+                    // Method 2: Get messages where user is receiver (using admin as current user)
+                    const url2 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=admin`;
+                    const response2 = await fetch(url2);
+                    const data2 = await response2.json();
+                    
+                    // Merge both results
+                    let allMessages = [];
+                    if (data1.success && data1.messages) {
+                        console.log(`📨 Found ${data1.messages.length} messages as sender`);
+                        allMessages.push(...data1.messages);
                     }
+                    if (data2.success && data2.messages) {
+                        console.log(`📨 Found ${data2.messages.length} messages as receiver`);
+                        allMessages.push(...data2.messages);
+                    }
+                    
+                    // Remove duplicates by id
+                    const uniqueMessages = [];
+                    const seenIds = new Set();
+                    for (const msg of allMessages) {
+                        if (!seenIds.has(msg.id)) {
+                            seenIds.add(msg.id);
+                            uniqueMessages.push(msg);
+                        }
+                    }
+                    
+                    // Sort by time
+                    uniqueMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                    
+                    messages = uniqueMessages;
+                    console.log(`✅ Loaded ${messages.length} total private messages`);
                 } else {
                     console.log('🌍 Loading GLOBAL messages');
                     const response = await fetch(`${API_BASE}/api/chat/messages`);
                     const data = await response.json();
-                    console.log('📨 Global messages response:', data);
-                    
                     if (data.success && data.messages) {
                         messages = data.messages;
                         console.log(`✅ Loaded ${messages.length} global messages`);
@@ -340,7 +361,7 @@
                     renderMessages(messages);
                 } else {
                     const emptyText = currentMode === 'private' 
-                        ? '📭 No private messages yet. Send a message to Admin! 🔒\n(Only you and Admin can see this)'
+                        ? '📭 No private messages yet. Send a message to Admin! 🔒'
                         : '🌍 No global messages yet. Be the first to say hello!';
                     container.innerHTML = `<div class="chat-loading">${emptyText}</div>`;
                 }
@@ -356,8 +377,6 @@
             
             let html = '';
             let lastDate = null;
-            
-            console.log(`🎨 Rendering ${messages.length} messages for ${currentMode} mode`);
             
             for (const msg of messages) {
                 const myanmarTime = getMyanmarTime(msg.created_at);
