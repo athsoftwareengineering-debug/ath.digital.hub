@@ -12,7 +12,7 @@
             position: fixed;
             bottom: 70px;
             right: 16px;
-            width: 500px;
+            width: 480px;
             height: 600px;
             background: linear-gradient(145deg, #0f111a, #0a0c15);
             border-radius: 1.2rem;
@@ -25,7 +25,7 @@
             transition: all 0.3s ease;
         }
         .admin-chat-container.minimized { height: 55px; width: 280px; }
-        .admin-chat-container.minimized .chat-main, 
+        .admin-chat-container.minimized .chat-main,
         .admin-chat-container.minimized .chat-sidebar,
         .admin-chat-container.minimized .mode-toggle { display: none; }
         .admin-chat-header {
@@ -55,7 +55,6 @@
         .admin-chat-actions button { background: none; border: none; color: #94a3b8; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; transition: all 0.2s; }
         .admin-chat-actions button:hover { background: rgba(0,212,255,0.15); color: #00d4ff; }
         
-        /* Mode Toggle Buttons */
         .mode-toggle {
             display: flex;
             gap: 0;
@@ -96,8 +95,6 @@
         }
         
         .admin-chat-layout { display: flex; flex: 1; overflow: hidden; }
-        
-        /* Private Mode Sidebar */
         .chat-sidebar {
             width: 160px;
             background: rgba(0,0,0,0.3);
@@ -144,6 +141,12 @@
             padding: 2px 6px;
             min-width: 18px;
             text-align: center;
+            animation: pulse 0.5s ease-in-out;
+        }
+        @keyframes badgePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
         
         .chat-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -161,12 +164,7 @@
         .chat-messages-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
         .chat-messages-container::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
         
-        .chat-message {
-            display: flex;
-            flex-direction: column;
-            max-width: 85%;
-            animation: fadeIn 0.3s ease;
-        }
+        .chat-message { display: flex; flex-direction: column; max-width: 85%; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .chat-message.admin { align-items: flex-end; margin-left: auto; }
         .chat-message.user { align-items: flex-start; margin-right: auto; }
@@ -223,21 +221,8 @@
         .no-selection { text-align: center; padding: 40px; color: #64748b; font-size: 0.75rem; }
         .loading { text-align: center; padding: 20px; color: #94a3b8; }
         
-        /* Global Chat View */
-        .global-chat-view {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .global-messages-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+        .global-chat-view { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .global-messages-container { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
         
         @media (max-width: 480px) {
             .admin-chat-container { width: calc(100vw - 20px); right: 10px; left: 10px; height: 65vh; }
@@ -261,7 +246,6 @@
             </div>
         </div>
         
-        <!-- Mode Toggle Buttons -->
         <div class="mode-toggle">
             <button id="privateTabBtn" class="mode-btn private-mode active" onclick="setAdminMode('private')">
                 <i class="fas fa-lock"></i> Private Chats
@@ -271,7 +255,6 @@
             </button>
         </div>
         
-        <!-- Private Mode Layout (with sidebar) -->
         <div id="privateModeLayout" class="admin-chat-layout">
             <div class="chat-sidebar">
                 <div class="sidebar-header"><i class="fas fa-users"></i> Users (Private)</div>
@@ -294,7 +277,6 @@
             </div>
         </div>
         
-        <!-- Global Mode Layout (full width, no sidebar) -->
         <div id="globalModeLayout" style="display: none; flex: 1; flex-direction: column; overflow: hidden;">
             <div class="chat-main-header">
                 <div class="chat-with"><i class="fas fa-globe"></i> Global Chat - Everyone can see</div>
@@ -318,10 +300,10 @@
         let currentSelectedUserName = null;
         let currentAdminId = 'admin';
         let currentAdminName = 'Admin';
-        let currentAdminMode = 'private';
         let privateRefreshInterval = null;
         let globalRefreshInterval = null;
         let isMinimized = false;
+        let currentAdminMode = 'private';
         
         function getMyanmarTime(timestamp) {
             const date = new Date(timestamp);
@@ -346,7 +328,6 @@
             return `${months[myanmarDate.getUTCMonth()]} ${myanmarDate.getUTCDate()}`;
         }
         
-        // ============ MODE SWITCHING ============
         function setAdminMode(mode) {
             currentAdminMode = mode;
             const privateBtn = document.getElementById('privateTabBtn');
@@ -375,7 +356,33 @@
             }
         }
         
-        // ============ PRIVATE CHAT FUNCTIONS ============
+        async function getUnreadCount(userId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/private/unread/${userId}`);
+                const data = await response.json();
+                return data.unreadCount || 0;
+            } catch(e) {
+                console.error('Error getting unread count:', e);
+                return 0;
+            }
+        }
+        
+        async function markMessagesAsRead(userId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/private/mark-read/${userId}`, {
+                    method: 'PUT',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    console.log(`✅ Messages from ${userId} marked as read`);
+                    loadUserList();
+                }
+            } catch(e) {
+                console.error('Error marking messages as read:', e);
+            }
+        }
+        
         async function loadUserList() {
             const container = document.getElementById('userList');
             if (!container) return;
@@ -386,13 +393,8 @@
                 
                 if (data.success && data.users && data.users.length > 0) {
                     const usersWithUnread = await Promise.all(data.users.map(async (user) => {
-                        try {
-                            const unreadRes = await fetch(`${API_BASE}/api/chat/private/unread/${user.user_id}`);
-                            const unreadData = await unreadRes.json();
-                            return { ...user, unreadCount: unreadData.unreadCount || 0 };
-                        } catch(e) {
-                            return { ...user, unreadCount: 0 };
-                        }
+                        const unreadCount = await getUnreadCount(user.user_id);
+                        return { ...user, unreadCount: unreadCount };
                     }));
                     renderUserList(usersWithUnread);
                 } else {
@@ -427,27 +429,21 @@
             container.innerHTML = html;
         }
         
-        async function markMessagesAsRead(userId) {
-            try {
-                await fetch(`${API_BASE}/api/chat/private/mark-read/${userId}`, {
-                    method: 'PUT',
-                    credentials: 'include'
-                });
-                loadUserList();
-            } catch(e) {
-                console.error('Error marking messages as read:', e);
-            }
-        }
-        
         async function selectUser(userId, username) {
+            console.log('Selecting user:', userId, username);
+            await markMessagesAsRead(userId);
+            
             currentSelectedUser = userId;
             currentSelectedUserName = username;
             
-            await markMessagesAsRead(userId);
-            
             const header = document.getElementById('chatMainHeader');
             if (header) {
-                header.innerHTML = `<div class="chat-with"><i class="fas fa-lock"></i> Private chat with: <strong style="color:#00d4ff;">${escapeHtml(username)}</strong><span style="font-size:0.6rem; margin-left:8px;">🆔 ${escapeHtml(userId)}</span></div>`;
+                header.innerHTML = `
+                    <div class="chat-with">
+                        <i class="fas fa-lock"></i> Private chat with: <strong style="color:#00d4ff;">${escapeHtml(username)}</strong>
+                        <span style="font-size:0.6rem; margin-left:8px;">🆔 ${escapeHtml(userId)}</span>
+                    </div>
+                `;
             }
             
             const inputContainer = document.getElementById('chatInputContainer');
@@ -564,7 +560,6 @@
             }
         }
         
-        // ============ GLOBAL CHAT FUNCTIONS ============
         async function loadGlobalMessages() {
             const container = document.getElementById('globalMessagesContainer');
             if (!container) return;
@@ -656,7 +651,6 @@
             }
         }
         
-        // ============ REFRESH INTERVALS ============
         function startPrivateRefresh() {
             if (privateRefreshInterval) clearInterval(privateRefreshInterval);
             privateRefreshInterval = setInterval(() => {
@@ -676,7 +670,6 @@
             }, 5000);
         }
         
-        // ============ UTILITIES ============
         function toggleMinimize() {
             const container = document.getElementById('adminChatContainer');
             if (container) {
@@ -743,7 +736,7 @@
         }
         
         async function init() {
-            console.log('Admin Chat Initialized - Dual Mode (Private + Global)');
+            console.log('Admin Chat Initialized - Unread counts for new messages only');
             setupKeyboardShortcuts();
             await loadUserList();
             startPrivateRefresh();
