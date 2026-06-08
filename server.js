@@ -57,7 +57,7 @@ function getStatusMessage() {
     }
 }
 
-// Helper function to send auto reply
+// ==================== SEND AUTO REPLY FUNCTION ====================
 async function sendAutoReply(sender_id, sender_name, replyMessage) {
     try {
         const { error } = await supabase
@@ -78,21 +78,19 @@ async function sendAutoReply(sender_id, sender_name, replyMessage) {
     }
 }
 
-// ==================== GLOBAL CHAT CLEANUP & FILTER ====================
+// ==================== BAD WORDS FILTER ====================
 const badWords = [
     'ငါလိုးမသား', 'လီးလား', 'မင်းမေလိုး', 'မင်းမေစပက်', 'မင်းနှမငါလိုး',
     'ကိုမေကိုလိုး', 'kmkl', 'ခွေးမသား', 'သူတောင်းစား', 'မင်းအမေငါလိုး',
     'အမောက်စာ', 'မိုက်မဲ', 'အတုံအခဲ', 'မသာ', 'မသာကောင်', 'သေချင်းစိုး', 'အမဲခြောက်',
     'သေလိုက်', 'သေနေတာလား', 'သေချင်လိုက်တာ', 'အသက်သေ', 'သတ်မယ်',
-    'shit', 'fuck', 'damn', 'stupid', 'idiot', 'asshole', 'bastard', 'motherfucker', 'dickhead',
+    'shit', 'fuck', 'damn', 'stupid', 'idiot', 'asshole', 'bastard', 'motherfucker',
     'bitch', 'whore', 'slut', 'cunt', 'pussy', 'dick', 'cock',
     'kill', 'murder', 'death', 'die', 'attack', 'bomb', 'threat',
     'သတ်မယ်', 'သေအောင်လုပ်မယ်', 'လာမယ်', 'ဖျက်ဆီးမယ်', 'မီးရှို့မယ်',
     'အပြင်ထွက်ချင်လား', 'တွေ့ချင်လား', 'လာတွေ့စမ်း', 'ရှေ့ထွက်ချင်လား', 'ရဲရဲထွက်လား', 'ကြောက်လို့လား',
     'fight', 'challenge'
 ];
-
-const globalChatWarnings = new Map();
 
 function containsBadWords(message) {
     const lowerMessage = message.toLowerCase();
@@ -104,6 +102,7 @@ function containsBadWords(message) {
     return false;
 }
 
+// ==================== GLOBAL CHAT CLEANUP ====================
 async function cleanupOldGlobalMessages() {
     try {
         const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
@@ -115,55 +114,6 @@ async function cleanupOldGlobalMessages() {
         else console.log(`🧹 Cleaned up global messages older than 3 minutes`);
     } catch (error) {
         console.error('Error in cleanupOldGlobalMessages:', error);
-    }
-}
-
-async function checkAndBlockGlobalChatUser(user_id, username) {
-    const warningCount = globalChatWarnings.get(user_id) || 0;
-    const newCount = warningCount + 1;
-    globalChatWarnings.set(user_id, newCount);
-    console.log(`⚠️ User ${username} (${user_id}) - Warning ${newCount} for bad words in global chat`);
-    if (newCount >= 2) {
-        await supabase
-            .from('user_stats')
-            .update({ global_chat_blocked: true, updated_at: new Date().toISOString() })
-            .eq('user_id', user_id);
-        console.log(`🔴 User ${username} (${user_id}) has been blocked from global chat`);
-        return true;
-    }
-    return false;
-}
-
-async function sendGlobalChatWarning(user_id, username, isBlocked = false) {
-    const warningMessage = isBlocked
-        ? `⚠️ သင်သည် မလျော်ကန်သော စကားလုံးများ ပြောဆိုခြင်းကြောင့် **Global Chat မှ အလိုအလျောက် ပိတ်ဆို့ခြင်း** ခံထားရပါသည်။\n\nကျေးဇူးပြု၍ လေးစားစွာ ပြောဆိုပါ။`
-        : `⚠️ **သတိပေးချက်** - သင့်စာတွင် မလျော်ကန်သော စကားလုံးများ ပါရှိပါသည်။\n\nကျေးဇူးပြု၍ လေးစားစွာ ပြောဆိုပါ။\nထပ်မံပြောဆိုပါက Global Chat မှ ပိတ်ဆို့ခြင်း ခံရနိုင်ပါသည်။`;
-    try {
-        await supabase
-            .from('chat_messages')
-            .insert([{
-                user_id: 'system',
-                username: '🤖 System',
-                message: warningMessage,
-                is_admin: true,
-                created_at: new Date().toISOString()
-            }]);
-    } catch (error) {
-        console.error('Error sending warning message:', error);
-    }
-}
-
-async function isGlobalChatBlocked(user_id) {
-    try {
-        const { data, error } = await supabase
-            .from('user_stats')
-            .select('global_chat_blocked')
-            .eq('user_id', user_id)
-            .single();
-        if (error) return false;
-        return data?.global_chat_blocked === true;
-    } catch (error) {
-        return false;
     }
 }
 
@@ -798,28 +748,12 @@ app.post('/api/chat/send', chatLimiter, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Invalid message' });
         }
         
-        const isBlocked = await isGlobalChatBlocked(user_id);
-        if (isBlocked) {
-            return res.status(403).json({ 
-                success: false, 
-                error: 'You have been blocked from Global Chat due to inappropriate messages.' 
-            });
-        }
-        
+        // ============ BAD WORDS FILTER ============
         if (containsBadWords(message)) {
-            const isBlockedNow = await checkAndBlockGlobalChatUser(user_id, username);
-            await sendGlobalChatWarning(user_id, username, isBlockedNow);
-            if (isBlockedNow) {
-                return res.status(403).json({ 
-                    success: false, 
-                    error: 'You have been blocked from Global Chat due to inappropriate messages.' 
-                });
-            } else {
-                return res.status(400).json({ 
-                    success: false, 
-                    error: 'Your message contains inappropriate words. Please be respectful.' 
-                });
-            }
+            return res.status(400).json({ 
+                success: false, 
+                error: 'သင့်စာတွင် မလျော်ကန်သော စကားလုံးများ ပါရှိပါသည်။ ကျေးဇူးပြု၍ လေးစားစွာ ပြောဆိုပါ။' 
+            });
         }
         
         const { data, error } = await supabase.from('chat_messages').insert([{
@@ -931,6 +865,7 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
         }
         console.log(`✅ Private message saved successfully, ID: ${data[0]?.id}`);
         
+        // ============ AUTO REPLY LOGIC ============
         if (sender_id !== 'admin') {
             const isShopOpen = canPlaceOrder();
             const autoReply = getAutoReply(message, isShopOpen, sender_id);
@@ -997,6 +932,8 @@ app.get('/api/chat/get-language/:userId', async (req, res) => {
 });
 
 // ==================== START SERVER ====================
+
+// Start auto cleanup for global messages (every 3 minutes)
 setInterval(() => {
     cleanupOldGlobalMessages();
 }, 3 * 60 * 1000);
@@ -1016,7 +953,7 @@ app.listen(PORT, () => {
 ║     💬 Private 1-on-1 Chat: WORKING ✅                                   ║
 ║     🌍 Multi-Language Auto Reply: WORKING ✅                             ║
 ║     🧹 Global Chat Auto Cleanup (3 min): WORKING ✅                      ║
-║     🚫 Bad Words Filter & Auto Block: WORKING ✅                         ║
+║     🚫 Bad Words Filter: WORKING ✅                                     ║
 ║                                                                          ║
 ║     🔒 SECURITY FEATURES ENABLED:                                        ║
 ║        ✅ Helmet.js (Security Headers)                                   ║
@@ -1029,7 +966,7 @@ app.listen(PORT, () => {
 ║        ✅ Private 1-on-1 Chat with Unread Counts                        ║
 ║        ✅ Multi-Language Auto Reply (my/en/zh)                          ║
 ║        ✅ Global Chat Auto Cleanup (every 3 minutes)                    ║
-║        ✅ Bad Words Filter & Auto Block                                  ║
+║        ✅ Bad Words Filter                                              ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
