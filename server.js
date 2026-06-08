@@ -832,9 +832,16 @@ app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
         const { data, error } = await supabase.from('private_chat_messages').select('*').or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUserId})`).order('created_at', { ascending: true }).limit(200);
         if (error) throw error;
         console.log(`✅ Found ${data?.length || 0} private messages`);
+        
+        // ============ MARK AS READ WHEN VIEWED ============
         if (currentUserId === 'admin') {
+            // Admin views messages from user -> mark as read
             await supabase.from('private_chat_messages').update({ is_read: true }).eq('sender_id', userId).eq('receiver_id', 'admin').eq('is_read', false);
+        } else {
+            // User views messages from admin -> mark as read
+            await supabase.from('private_chat_messages').update({ is_read: true }).eq('sender_id', 'admin').eq('receiver_id', currentUserId).eq('is_read', false);
         }
+        
         res.json({ success: true, messages: data || [] });
     } catch (error) {
         console.error('Error fetching private messages:', error);
@@ -850,6 +857,7 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
         if (!sender_id || !receiver_id || !message || message.trim() === '') {
             return res.status(400).json({ success: false, error: 'Invalid message' });
         }
+        
         const { data, error } = await supabase.from('private_chat_messages').insert([{
             sender_id: sender_id,
             receiver_id: receiver_id,
@@ -859,10 +867,12 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
             is_read: false,
             created_at: new Date().toISOString()
         }]).select();
+        
         if (error) {
             console.error('Database error:', error);
             throw error;
         }
+        
         console.log(`✅ Private message saved successfully, ID: ${data[0]?.id}`);
         
         // ============ AUTO REPLY LOGIC ============
@@ -881,24 +891,20 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
     }
 });
 
-app.put('/api/chat/private/mark-read/:senderId', isAuthenticated, async (req, res) => {
-    try {
-        const { senderId } = req.params;
-        console.log(`📖 Marking messages from ${senderId} as read by admin`);
-        const { error } = await supabase.from('private_chat_messages').update({ is_read: true }).eq('sender_id', senderId).eq('receiver_id', 'admin').eq('is_read', false);
-        if (error) throw error;
-        res.json({ success: true, message: 'Messages marked as read' });
-    } catch (error) {
-        console.error('Error marking messages as read:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
+// ==================== UNREAD COUNT (Only for receiver) ====================
 app.get('/api/chat/private/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        const { count, error } = await supabase.from('private_chat_messages').select('*', { count: 'exact', head: true }).eq('receiver_id', userId).eq('is_read', false);
+        
+        // Count unread messages where receiver = userId AND is_read = false
+        const { count, error } = await supabase
+            .from('private_chat_messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('receiver_id', userId)
+            .eq('is_read', false);
+        
         if (error) throw error;
+        
         res.json({ success: true, unreadCount: count || 0 });
     } catch (error) {
         console.error('Error getting unread count:', error);
@@ -954,6 +960,7 @@ app.listen(PORT, () => {
 ║     🌍 Multi-Language Auto Reply: WORKING ✅                             ║
 ║     🧹 Global Chat Auto Cleanup (3 min): WORKING ✅                      ║
 ║     🚫 Bad Words Filter: WORKING ✅                                     ║
+║     🔔 Unread Count (receiver only): WORKING ✅                          ║
 ║                                                                          ║
 ║     🔒 SECURITY FEATURES ENABLED:                                        ║
 ║        ✅ Helmet.js (Security Headers)                                   ║
@@ -964,6 +971,7 @@ app.listen(PORT, () => {
 ║        ✅ Image Processing (Sharp)                                       ║
 ║        ✅ Database Notifications                                         ║
 ║        ✅ Private 1-on-1 Chat with Unread Counts                        ║
+║        ✅ Mark as Read on view                                           ║
 ║        ✅ Multi-Language Auto Reply (my/en/zh)                          ║
 ║        ✅ Global Chat Auto Cleanup (every 3 minutes)                    ║
 ║        ✅ Bad Words Filter                                              ║
