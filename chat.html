@@ -54,7 +54,6 @@
         .chat-actions button { background: none; border: none; color: #94a3b8; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; transition: all 0.2s; }
         .chat-actions button:hover { background: rgba(0,212,255,0.15); color: #00d4ff; }
         
-        /* Unread Badge on Header */
         .unread-badge {
             position: absolute;
             top: 5px;
@@ -254,6 +253,7 @@
         let refreshInterval = null;
         let isMinimized = false;
         let currentMode = 'private';
+        let lastMessageCount = 0;
         
         function getMyanmarTime(timestamp) {
             const date = new Date(timestamp);
@@ -294,7 +294,12 @@
                 currentUsername = 'Guest User';
                 currentUserId = 'guest_' + Date.now();
             }
-            console.log('User Info:', { currentUser, currentUsername, currentUserId, mode: currentMode });
+            console.log('========== USER INFO ==========');
+            console.log('📱 Phone:', currentUser);
+            console.log('👤 Username:', currentUsername);
+            console.log('🆔 User ID:', currentUserId);
+            console.log('🔘 Mode:', currentMode);
+            console.log('================================');
         }
         
         async function updateUnreadCount() {
@@ -348,7 +353,8 @@
                 let messages = [];
                 
                 if (currentMode === 'private') {
-                    // Get messages where user is involved (both as sender and receiver)
+                    console.log('🔍 Loading PRIVATE messages for user:', currentUserId);
+                    
                     const url1 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`;
                     const response1 = await fetch(url1);
                     const data1 = await response1.json();
@@ -371,7 +377,17 @@
                     }
                     uniqueMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
                     messages = uniqueMessages;
+                    
+                    if (messages.length > lastMessageCount && lastMessageCount > 0) {
+                        const newCount = messages.length - lastMessageCount;
+                        console.log(`🔔 ${newCount} new message(s) from Admin!`);
+                        updateUnreadCount();
+                    }
+                    lastMessageCount = messages.length;
+                    
+                    console.log(`✅ Loaded ${messages.length} total private messages`);
                 } else {
+                    console.log('🌍 Loading GLOBAL messages');
                     const response = await fetch(`${API_BASE}/api/chat/messages`);
                     const data = await response.json();
                     if (data.success && data.messages) messages = data.messages;
@@ -386,7 +402,7 @@
                     container.innerHTML = `<div class="chat-loading">${emptyText}</div>`;
                 }
             } catch (error) {
-                console.error('Error loading messages:', error);
+                console.error('❌ Error loading messages:', error);
                 container.innerHTML = '<div class="chat-loading">Cannot connect to server</div>';
             }
         }
@@ -405,13 +421,11 @@
                 let isUser = false;
                 let senderName = '';
                 let modeBadge = '';
-                let isUnread = false;
                 
                 if (currentMode === 'private') {
                     isUser = (msg.sender_id === currentUserId);
                     senderName = isUser ? (currentUsername || 'You') : '👑 Admin';
                     modeBadge = '<span class="badge private"><i class="fas fa-lock"></i> Private</span>';
-                    isUnread = (!isUser && !msg.is_read);
                 } else {
                     isUser = !msg.is_admin && msg.user_id === currentUserId;
                     senderName = msg.is_admin ? '👑 Admin' : (msg.username || 'User');
@@ -428,7 +442,6 @@
                         <div class="message-sender">
                             ${isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-shield-alt"></i>'} 
                             ${escapeHtml(senderName)} ${modeBadge}
-                            ${isUnread ? '<span style="color:#f43f5e; margin-left:6px;">🔴 New</span>' : ''}
                         </div>
                         <div class="message-bubble">${escapeHtml(msg.message)}</div>
                         <div class="message-time">🕐 ${myanmarTime}</div>
@@ -437,7 +450,6 @@
             }
             container.innerHTML = html;
             container.scrollTop = container.scrollHeight;
-            updateUnreadCount();
         }
         
         async function sendMessage() {
@@ -454,11 +466,16 @@
             input.disabled = true;
             sendBtn.disabled = true;
             
+            console.log(`📤 Sending ${currentMode} message...`);
+            console.log('Message:', message);
+            console.log('From User ID:', currentUserId);
+            
             try {
                 let response;
                 let data;
                 
                 if (currentMode === 'private') {
+                    console.log('🔒 Sending PRIVATE message to admin');
                     response = await fetch(`${API_BASE}/api/chat/private/send`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -481,6 +498,7 @@
                         showNotification(data.error || "Failed to send", true);
                     }
                 } else {
+                    console.log('🌍 Sending GLOBAL message');
                     response = await fetch(`${API_BASE}/api/chat/send`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -502,8 +520,8 @@
                     }
                 }
             } catch (error) {
-                console.error('Send error:', error);
-                showNotification("Connection error", true);
+                console.error('❌ Send error:', error);
+                showNotification("Connection error: " + error.message, true);
             } finally {
                 input.disabled = false;
                 sendBtn.disabled = false;
@@ -547,6 +565,7 @@
         }
         
         function showNotification(message, isError = false) {
+            console.log(`🔔 Notification: ${message} (${isError ? 'error' : 'success'})`);
             try {
                 if (window.parent && window.parent.showToast) window.parent.showToast(message, isError);
                 else {
@@ -608,7 +627,7 @@
         }
         
         async function init() {
-            console.log('Chat widget initializing...');
+            console.log('🚀 Chat widget initializing...');
             getCurrentUserInfo();
             await loadMessages();
             await updateUnreadCount();
@@ -616,13 +635,20 @@
             refreshInterval = setInterval(() => {
                 const container = document.getElementById('chatContainer');
                 if (container && !container.classList.contains('minimized')) {
+                    console.log('🔄 Auto-refreshing messages...');
                     loadMessages();
-                    updateUnreadCount();
+                    if (currentMode === 'private') {
+                        updateUnreadCount();
+                    }
                 }
             }, 5000);
+            console.log('✅ Chat widget initialized');
         }
         
-        function cleanup() { if (refreshInterval) clearInterval(refreshInterval); }
+        function cleanup() { 
+            if (refreshInterval) clearInterval(refreshInterval);
+            console.log('🧹 Chat widget cleaned up');
+        }
         
         init();
         window.addEventListener('beforeunload', cleanup);
