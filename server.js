@@ -1195,12 +1195,20 @@ app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
         
         console.log(`✅ Found ${data?.length || 0} private messages`);
         
+        // Mark messages as read when admin views them
         if (currentUserId === 'admin') {
-            await supabase
+            const { error: updateError } = await supabase
                 .from('private_chat_messages')
                 .update({ is_read: true })
                 .eq('sender_id', userId)
-                .eq('receiver_id', 'admin');
+                .eq('receiver_id', 'admin')
+                .eq('is_read', false);
+            
+            if (updateError) {
+                console.error('Error marking messages as read:', updateError);
+            } else {
+                console.log(`✅ Marked messages from ${userId} as read`);
+            }
         }
         
         res.json({ success: true, messages: data || [] });
@@ -1247,6 +1255,30 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
     }
 });
 
+// Mark private messages as read for a specific user (for admin)
+app.put('/api/chat/private/mark-read/:senderId', isAuthenticated, async (req, res) => {
+    try {
+        const { senderId } = req.params;
+        const adminId = 'admin';
+        
+        console.log(`📖 Marking messages from ${senderId} as read by admin`);
+        
+        const { error } = await supabase
+            .from('private_chat_messages')
+            .update({ is_read: true })
+            .eq('sender_id', senderId)
+            .eq('receiver_id', adminId)
+            .eq('is_read', false);
+        
+        if (error) throw error;
+        
+        res.json({ success: true, message: 'Messages marked as read' });
+    } catch (error) {
+        console.error('Error marking messages as read:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 app.get('/api/chat/private/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -1288,7 +1320,8 @@ app.listen(PORT, () => {
 ║        ✅ Session-based Admin Auth                                       ║
 ║        ✅ Image Processing (Sharp)                                       ║
 ║        ✅ Database Notifications                                         ║
-║        ✅ Private 1-on-1 Chat System with Debug Logs                    ║
+║        ✅ Private 1-on-1 Chat with Unread Counts                        ║
+║        ✅ Mark as Read functionality                                     ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
