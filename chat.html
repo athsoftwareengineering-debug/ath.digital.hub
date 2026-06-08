@@ -54,7 +54,6 @@
         .chat-actions button { background: none; border: none; color: #94a3b8; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; transition: all 0.2s; }
         .chat-actions button:hover { background: rgba(0,212,255,0.15); color: #00d4ff; }
         
-        /* Unread Badge */
         .unread-badge {
             position: absolute;
             top: 5px;
@@ -71,12 +70,6 @@
             justify-content: center;
             padding: 0 5px;
             z-index: 10;
-            animation: badgePulse 0.5s ease-in-out;
-        }
-        @keyframes badgePulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
         }
         
         .mode-toggle {
@@ -297,7 +290,6 @@
             console.log('User Info:', { currentUser, currentUsername, currentUserId, mode: currentMode });
         }
         
-        // Get unread count (only messages from admin that are not read)
         async function updateUnreadCount() {
             try {
                 const response = await fetch(`${API_BASE}/api/chat/private/unread/${currentUserId}`);
@@ -349,7 +341,6 @@
                 let messages = [];
                 
                 if (currentMode === 'private') {
-                    // Get messages where user is involved
                     const url1 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`;
                     const response1 = await fetch(url1);
                     const data1 = await response1.json();
@@ -412,7 +403,6 @@
                     isUser = (msg.sender_id === currentUserId);
                     senderName = isUser ? (currentUsername || 'You') : '👑 Admin';
                     modeBadge = '<span class="badge private"><i class="fas fa-lock"></i> Private</span>';
-                    // Mark as unread only if message is from admin and not read
                     isUnread = (!isUser && !msg.is_read);
                 } else {
                     isUser = !msg.is_admin && msg.user_id === currentUserId;
@@ -425,10 +415,8 @@
                     lastDate = myanmarDate;
                 }
                 
-                const unreadClass = isUnread ? ' style="border-left: 2px solid #f43f5e; padding-left: 8px;"' : '';
-                
                 html += `
-                    <div class="chat-message ${isUser ? 'user' : 'admin'}"${unreadClass}>
+                    <div class="chat-message ${isUser ? 'user' : 'admin'}">
                         <div class="message-sender">
                             ${isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-shield-alt"></i>'} 
                             ${escapeHtml(senderName)} ${modeBadge}
@@ -441,8 +429,6 @@
             }
             container.innerHTML = html;
             container.scrollTop = container.scrollHeight;
-            
-            // Update unread count from server after viewing
             updateUnreadCount();
         }
         
