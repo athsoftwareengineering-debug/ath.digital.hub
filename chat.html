@@ -182,18 +182,6 @@
         .chat-send-btn:hover { transform: scale(1.05); }
         .chat-note { font-size: 0.5rem; color: #64748b; text-align: center; margin-top: 6px; }
         .chat-loading { text-align: center; padding: 40px; color: #94a3b8; }
-        .section-divider {
-            text-align: center;
-            margin: 8px 0;
-            position: relative;
-            font-size: 0.55rem;
-            color: #475569;
-        }
-        .section-divider span {
-            background: rgba(0,0,0,0.5);
-            padding: 4px 12px;
-            border-radius: 40px;
-        }
         
         @media (max-width: 480px) {
             .chat-widget-container { width: calc(100vw - 20px); right: 10px; left: 10px; height: 65vh; }
@@ -250,6 +238,7 @@
         let refreshInterval = null;
         let isMinimized = false;
         let currentMode = 'private'; // 'private' or 'global'
+        let messageHistory = []; // Store message history locally
         
         function getMyanmarTime(timestamp) {
             const date = new Date(timestamp);
@@ -328,16 +317,29 @@
                     const response = await fetch(`${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`);
                     const data = await response.json();
                     if (data.success && data.messages) {
-                        messages = data.messages.map(msg => ({ ...msg, type: 'private' }));
+                        messages = data.messages.map(msg => ({ 
+                            ...msg, 
+                            type: 'private',
+                            isUser: msg.sender_id === currentUserId,
+                            senderName: msg.sender_id === currentUserId ? (currentUsername || 'You') : '👑 Admin'
+                        }));
                     }
                 } else {
                     // Load GLOBAL messages
                     const response = await fetch(`${API_BASE}/api/chat/messages`);
                     const data = await response.json();
                     if (data.success && data.messages) {
-                        messages = data.messages.map(msg => ({ ...msg, type: 'global' }));
+                        messages = data.messages.map(msg => ({ 
+                            ...msg, 
+                            type: 'global',
+                            isUser: !msg.is_admin && msg.user_id === currentUserId,
+                            senderName: msg.is_admin ? '👑 Admin' : (msg.username || 'User')
+                        }));
                     }
                 }
+                
+                // Store in history
+                messageHistory = messages;
                 
                 if (messages.length > 0) {
                     renderMessages(messages);
@@ -364,22 +366,12 @@
                 const myanmarTime = getMyanmarTime(msg.created_at);
                 const myanmarDate = getMyanmarDate(msg.created_at);
                 
-                let isUser = false;
-                let senderName = '';
-                let senderIcon = '';
-                let modeBadge = '';
-                
-                if (currentMode === 'private') {
-                    isUser = msg.sender_id === currentUserId;
-                    senderName = isUser ? (currentUsername || 'You') : '👑 Admin';
-                    senderIcon = isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-shield-alt"></i>';
-                    modeBadge = '<span class="private-badge"><i class="fas fa-lock"></i> Private</span>';
-                } else {
-                    isUser = !msg.is_admin && msg.user_id === currentUserId;
-                    senderName = msg.is_admin ? '👑 Admin' : (msg.username || 'User');
-                    senderIcon = msg.is_admin ? '<i class="fas fa-shield-alt"></i>' : '<i class="fas fa-user"></i>';
-                    modeBadge = '<span class="global-badge"><i class="fas fa-globe"></i> Global</span>';
-                }
+                const isUser = msg.isUser;
+                const senderName = msg.senderName;
+                const senderIcon = isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-shield-alt"></i>';
+                const modeBadge = currentMode === 'private' 
+                    ? '<span class="private-badge"><i class="fas fa-lock"></i> Private</span>'
+                    : '<span class="global-badge"><i class="fas fa-globe"></i> Global</span>';
                 
                 if (lastDate !== myanmarDate) {
                     html += `<div style="text-align:center; margin:8px 0;"><span style="background:rgba(0,212,255,0.1); padding:2px 10px; border-radius:40px; font-size:0.55rem; color:#64748b;">📅 ${myanmarDate}</span></div>`;
@@ -449,7 +441,30 @@
                 if (data.success) {
                     input.value = '';
                     input.style.height = 'auto';
-                    await loadMessages();
+                    
+                    // Add to local history immediately for instant display
+                    const newMessage = {
+                        message: message,
+                        created_at: new Date().toISOString(),
+                        type: currentMode,
+                        isUser: true,
+                        senderName: currentUsername || 'You'
+                    };
+                    
+                    if (currentMode === 'private') {
+                        newMessage.sender_id = currentUserId;
+                        newMessage.receiver_id = 'admin';
+                    } else {
+                        newMessage.user_id = currentUserId;
+                        newMessage.username = currentUsername;
+                        newMessage.is_admin = false;
+                    }
+                    
+                    messageHistory.push(newMessage);
+                    renderMessages(messageHistory);
+                    
+                    // Then reload from server to sync
+                    setTimeout(() => loadMessages(), 500);
                 } else {
                     showNotification(data.error || "Failed to send", true);
                 }
