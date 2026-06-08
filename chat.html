@@ -253,7 +253,6 @@
         let refreshInterval = null;
         let isMinimized = false;
         let currentMode = 'private';
-        let lastMessageCount = 0;
         
         function getMyanmarTime(timestamp) {
             const date = new Date(timestamp);
@@ -355,42 +354,35 @@
                 if (currentMode === 'private') {
                     console.log('🔍 Loading PRIVATE messages for user:', currentUserId);
                     
-                    const url1 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`;
-                    const response1 = await fetch(url1);
-                    const data1 = await response1.json();
+                    // Get ALL messages where user is either sender OR receiver
+                    const url = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`;
+                    const response = await fetch(url);
+                    const data = await response.json();
                     
-                    const url2 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=admin`;
-                    const response2 = await fetch(url2);
-                    const data2 = await response2.json();
-                    
-                    let allMessages = [];
-                    if (data1.success && data1.messages) allMessages.push(...data1.messages);
-                    if (data2.success && data2.messages) allMessages.push(...data2.messages);
-                    
-                    const uniqueMessages = [];
-                    const seenIds = new Set();
-                    for (const msg of allMessages) {
-                        if (!seenIds.has(msg.id)) {
-                            seenIds.add(msg.id);
-                            uniqueMessages.push(msg);
+                    if (data.success && data.messages && data.messages.length > 0) {
+                        messages = data.messages;
+                        console.log(`✅ Loaded ${messages.length} private messages`);
+                    } else {
+                        console.log('📭 No private messages from API, checking alternative...');
+                        // Try alternative: get messages with admin as current user
+                        const altUrl = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=admin`;
+                        const altResponse = await fetch(altUrl);
+                        const altData = await altResponse.json();
+                        if (altData.success && altData.messages && altData.messages.length > 0) {
+                            messages = altData.messages;
+                            console.log(`✅ Loaded ${messages.length} private messages (from admin view)`);
                         }
                     }
-                    uniqueMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-                    messages = uniqueMessages;
                     
-                    if (messages.length > lastMessageCount && lastMessageCount > 0) {
-                        const newCount = messages.length - lastMessageCount;
-                        console.log(`🔔 ${newCount} new message(s) from Admin!`);
-                        updateUnreadCount();
-                    }
-                    lastMessageCount = messages.length;
-                    
-                    console.log(`✅ Loaded ${messages.length} total private messages`);
+                    console.log(`📊 Total private messages: ${messages.length}`);
                 } else {
                     console.log('🌍 Loading GLOBAL messages');
                     const response = await fetch(`${API_BASE}/api/chat/messages`);
                     const data = await response.json();
-                    if (data.success && data.messages) messages = data.messages;
+                    if (data.success && data.messages) {
+                        messages = data.messages;
+                        console.log(`✅ Loaded ${messages.length} global messages`);
+                    }
                 }
                 
                 if (messages.length > 0) {
@@ -421,11 +413,15 @@
                 let isUser = false;
                 let senderName = '';
                 let modeBadge = '';
+                let isUnread = false;
                 
                 if (currentMode === 'private') {
+                    // Check if message is from current user OR to current user
                     isUser = (msg.sender_id === currentUserId);
                     senderName = isUser ? (currentUsername || 'You') : '👑 Admin';
                     modeBadge = '<span class="badge private"><i class="fas fa-lock"></i> Private</span>';
+                    // Mark as unread only if message is from admin and not read
+                    isUnread = (!isUser && !msg.is_read);
                 } else {
                     isUser = !msg.is_admin && msg.user_id === currentUserId;
                     senderName = msg.is_admin ? '👑 Admin' : (msg.username || 'User');
@@ -442,6 +438,7 @@
                         <div class="message-sender">
                             ${isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-shield-alt"></i>'} 
                             ${escapeHtml(senderName)} ${modeBadge}
+                            ${isUnread ? '<span style="color:#f43f5e; margin-left:6px;">🔴 New</span>' : ''}
                         </div>
                         <div class="message-bubble">${escapeHtml(msg.message)}</div>
                         <div class="message-time">🕐 ${myanmarTime}</div>
@@ -450,6 +447,7 @@
             }
             container.innerHTML = html;
             container.scrollTop = container.scrollHeight;
+            updateUnreadCount();
         }
         
         async function sendMessage() {
@@ -487,14 +485,21 @@
                             message: message
                         })
                     });
+                    
                     data = await response.json();
+                    console.log('📨 Private send response:', data);
+                    
                     if (data.success) {
+                        console.log('✅ Private message sent successfully!');
                         input.value = '';
                         input.style.height = 'auto';
+                        // Add to UI immediately
                         addMessageToUI(message, true);
+                        // Reload after short delay to sync
                         setTimeout(() => loadMessages(), 500);
                         showNotification('✅ Private message sent to Admin');
                     } else {
+                        console.error('❌ Private send failed:', data.error);
                         showNotification(data.error || "Failed to send", true);
                     }
                 } else {
@@ -508,14 +513,19 @@
                             message: message
                         })
                     });
+                    
                     data = await response.json();
+                    console.log('📨 Global send response:', data);
+                    
                     if (data.success) {
+                        console.log('✅ Global message sent successfully!');
                         input.value = '';
                         input.style.height = 'auto';
                         addMessageToUI(message, true);
                         setTimeout(() => loadMessages(), 500);
                         showNotification('✅ Global message sent');
                     } else {
+                        console.error('❌ Global send failed:', data.error);
                         showNotification(data.error || "Failed to send", true);
                     }
                 }
@@ -567,8 +577,9 @@
         function showNotification(message, isError = false) {
             console.log(`🔔 Notification: ${message} (${isError ? 'error' : 'success'})`);
             try {
-                if (window.parent && window.parent.showToast) window.parent.showToast(message, isError);
-                else {
+                if (window.parent && window.parent.showToast) {
+                    window.parent.showToast(message, isError);
+                } else {
                     const toast = document.createElement('div');
                     toast.textContent = message;
                     toast.style.cssText = `
@@ -580,7 +591,9 @@
                     document.body.appendChild(toast);
                     setTimeout(() => toast.remove(), 2500);
                 }
-            } catch(e) { console.log('Toast error:', e); }
+            } catch(e) {
+                console.log('Toast error:', e);
+            }
         }
         
         function escapeHtml(str) {
