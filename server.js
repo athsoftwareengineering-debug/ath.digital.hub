@@ -18,7 +18,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ==================== SALES HOURS CONFIGURATION ====================
-// ဆိုင်ဖွင့်ချိန် သတ်မှတ်ချက် - ပုံမှန်အားဖြင့် ဆိုင်ပိတ်ထားရန် manualStatus: false ထားပါ
 let salesHours = {
     enabled: true,
     mode: 'manual',           // 'auto' or 'manual' - manual mode ထားမှ admin က toggle လုပ်လို့ရ
@@ -1183,6 +1182,8 @@ app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
         const { userId } = req.params;
         const currentUserId = req.query.currentUserId || 'admin';
         
+        console.log(`🔍 Fetching private messages - userId: ${userId}, currentUserId: ${currentUserId}`);
+        
         const { data, error } = await supabase
             .from('private_chat_messages')
             .select('*')
@@ -1191,6 +1192,8 @@ app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
             .limit(200);
         
         if (error) throw error;
+        
+        console.log(`✅ Found ${data?.length || 0} private messages`);
         
         if (currentUserId === 'admin') {
             await supabase
@@ -1211,6 +1214,9 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
     try {
         const { sender_id, receiver_id, sender_name, receiver_name, message } = req.body;
         
+        console.log(`📨 Sending private message - from: ${sender_id} (${sender_name}), to: ${receiver_id} (${receiver_name})`);
+        console.log(`Message: ${message}`);
+        
         if (!sender_id || !receiver_id || !message || message.trim() === '') {
             return res.status(400).json({ success: false, error: 'Invalid message' });
         }
@@ -1228,8 +1234,12 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
             }])
             .select();
         
-        if (error) throw error;
+        if (error) {
+            console.error('Database error:', error);
+            throw error;
+        }
         
+        console.log(`✅ Private message saved successfully, ID: ${data[0]?.id}`);
         res.json({ success: true, message: data[0] });
     } catch (error) {
         console.error('Error sending private message:', error);
@@ -1270,7 +1280,15 @@ app.listen(PORT, () => {
 ║     💬 Admin Chat:      http://localhost:${PORT}/admin-chat.html          ║
 ║     💬 Private 1-on-1 Chat: WORKING ✅                                   ║
 ║                                                                          ║
-║     ⏰ SALES HOURS: Manual Mode - Currently CLOSED                       ║
+║     🔒 SECURITY FEATURES ENABLED:                                        ║
+║        ✅ Helmet.js (Security Headers)                                   ║
+║        ✅ CSP with iframe support                                        ║
+║        ✅ Rate Limiting                                                  ║
+║        ✅ Sales Hours Control (Auto/Manual Mode)                        ║
+║        ✅ Session-based Admin Auth                                       ║
+║        ✅ Image Processing (Sharp)                                       ║
+║        ✅ Database Notifications                                         ║
+║        ✅ Private 1-on-1 Chat System with Debug Logs                    ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
