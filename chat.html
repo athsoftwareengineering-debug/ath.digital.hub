@@ -6,8 +6,17 @@
     <title>Chat Support - ATH DIGITAL HUB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        
         .chat-widget-container {
             position: fixed;
             bottom: 70px;
@@ -24,8 +33,15 @@
             z-index: 1000;
             transition: all 0.3s ease;
         }
-        .chat-widget-container.minimized { height: 55px; }
-        .chat-widget-container.minimized .chat-body { display: none; }
+        
+        .chat-widget-container.minimized {
+            height: 55px;
+        }
+        
+        .chat-widget-container.minimized .chat-body {
+            display: none;
+        }
+        
         .chat-header {
             display: flex;
             justify-content: space-between;
@@ -36,24 +52,78 @@
             cursor: pointer;
             position: relative;
         }
-        .chat-header-info { display: flex; align-items: center; gap: 10px; }
+        
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
         .chat-avatar {
-            width: 35px; height: 35px;
+            width: 35px;
+            height: 35px;
             background: linear-gradient(135deg, #00d4ff, #0891b2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .chat-avatar i { font-size: 1.1rem; color: white; }
-        .chat-header-title { font-size: 0.85rem; font-weight: 700; color: #f1f5f9; }
-        .chat-header-status { font-size: 0.6rem; color: #94a3b8; display: flex; align-items: center; gap: 6px; }
-        .online-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } }
-        .chat-actions { display: flex; gap: 5px; }
-        .chat-actions button { background: none; border: none; color: #94a3b8; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; transition: all 0.2s; }
-        .chat-actions button:hover { background: rgba(0,212,255,0.15); color: #00d4ff; }
         
+        .chat-avatar i {
+            font-size: 1.1rem;
+            color: white;
+        }
+        
+        .chat-header-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+        
+        .chat-header-status {
+            font-size: 0.6rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        
+        .chat-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .chat-actions button {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .chat-actions button:hover {
+            background: rgba(0,212,255,0.15);
+            color: #00d4ff;
+        }
+        
+        /* Unread Badge on Header */
         .unread-badge {
             position: absolute;
             top: 5px;
@@ -72,12 +142,21 @@
             z-index: 10;
             animation: badgePulse 0.5s ease-in-out;
         }
+        
         @keyframes badgePulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.2); }
             100% { transform: scale(1); }
         }
         
+        .chat-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Mode Toggle Buttons */
         .mode-toggle {
             display: flex;
             gap: 0;
@@ -85,6 +164,7 @@
             background: rgba(0,0,0,0.3);
             border-bottom: 1px solid rgba(0,212,255,0.1);
         }
+        
         .mode-btn {
             flex: 1;
             padding: 8px;
@@ -96,21 +176,25 @@
             border-radius: 40px;
             margin: 0 4px;
         }
+        
         .mode-btn.private {
             background: rgba(0,212,255,0.15);
             color: #00d4ff;
             border: 1px solid rgba(0,212,255,0.3);
         }
+        
         .mode-btn.private.active {
             background: linear-gradient(135deg, #00d4ff, #0891b2);
             color: white;
             border: none;
         }
+        
         .mode-btn.global {
             background: rgba(16,185,129,0.15);
             color: #10b981;
             border: 1px solid rgba(16,185,129,0.3);
         }
+        
         .mode-btn.global.active {
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
@@ -125,9 +209,19 @@
             flex-direction: column;
             gap: 10px;
         }
-        .chat-messages-container::-webkit-scrollbar { width: 3px; }
-        .chat-messages-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
-        .chat-messages-container::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
+        
+        .chat-messages-container::-webkit-scrollbar {
+            width: 3px;
+        }
+        
+        .chat-messages-container::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.03);
+        }
+        
+        .chat-messages-container::-webkit-scrollbar-thumb {
+            background: rgba(0,212,255,0.3);
+            border-radius: 3px;
+        }
         
         .chat-message {
             display: flex;
@@ -135,9 +229,22 @@
             max-width: 85%;
             animation: fadeIn 0.3s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .chat-message.user { align-items: flex-end; margin-left: auto; }
-        .chat-message.admin { align-items: flex-start; margin-right: auto; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .chat-message.user {
+            align-items: flex-end;
+            margin-left: auto;
+        }
+        
+        .chat-message.admin {
+            align-items: flex-start;
+            margin-right: auto;
+        }
+        
         .message-bubble {
             padding: 8px 12px;
             border-radius: 16px;
@@ -145,33 +252,62 @@
             font-size: 0.75rem;
             line-height: 1.4;
         }
+        
         .chat-message.user .message-bubble {
             background: linear-gradient(135deg, #00d4ff, #0891b2);
             color: white;
             border-bottom-right-radius: 3px;
         }
+        
         .chat-message.admin .message-bubble {
             background: rgba(255,255,255,0.08);
             color: #e2e8f0;
             border-bottom-left-radius: 3px;
         }
-        .message-sender { font-size: 0.5rem; color: #94a3b8; margin-bottom: 3px; padding: 0 6px; }
-        .message-time { font-size: 0.45rem; color: #64748b; margin-top: 3px; padding: 0 6px; }
+        
+        .message-sender {
+            font-size: 0.5rem;
+            color: #94a3b8;
+            margin-bottom: 3px;
+            padding: 0 6px;
+        }
+        
+        .message-time {
+            font-size: 0.45rem;
+            color: #64748b;
+            margin-top: 3px;
+            padding: 0 6px;
+        }
+        
         .badge {
             font-size: 0.45rem;
             border-radius: 20px;
             padding: 2px 8px;
             margin-left: 6px;
         }
-        .badge.private { background: rgba(0,212,255,0.2); color: #00d4ff; }
-        .badge.global { background: rgba(16,185,129,0.2); color: #10b981; }
+        
+        .badge.private {
+            background: rgba(0,212,255,0.2);
+            color: #00d4ff;
+        }
+        
+        .badge.global {
+            background: rgba(16,185,129,0.2);
+            color: #10b981;
+        }
         
         .chat-input-container {
             padding: 10px;
             background: rgba(0,0,0,0.3);
             border-top: 1px solid rgba(0,212,255,0.1);
         }
-        .chat-input-wrapper { display: flex; gap: 8px; align-items: center; }
+        
+        .chat-input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
         .chat-input {
             flex: 1;
             padding: 8px 12px;
@@ -183,7 +319,12 @@
             resize: none;
             font-family: inherit;
         }
-        .chat-input:focus { outline: none; border-color: #00d4ff; }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+        
         .chat-send-btn {
             background: linear-gradient(135deg, #00d4ff, #0891b2);
             border: none;
@@ -194,12 +335,31 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-        .chat-send-btn:hover { transform: scale(1.05); }
-        .chat-note { font-size: 0.5rem; color: #64748b; text-align: center; margin-top: 6px; }
-        .chat-loading { text-align: center; padding: 40px; color: #94a3b8; }
+        
+        .chat-send-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .chat-note {
+            font-size: 0.5rem;
+            color: #64748b;
+            text-align: center;
+            margin-top: 6px;
+        }
+        
+        .chat-loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
         
         @media (max-width: 480px) {
-            .chat-widget-container { width: calc(100vw - 20px); right: 10px; left: 10px; height: 65vh; }
+            .chat-widget-container {
+                width: calc(100vw - 20px);
+                right: 10px;
+                left: 10px;
+                height: 65vh;
+            }
         }
     </style>
 </head>
@@ -207,15 +367,24 @@
     <div class="chat-widget-container" id="chatContainer">
         <div class="chat-header" onclick="toggleMinimize()">
             <div class="chat-header-info">
-                <div class="chat-avatar"><i class="fas fa-headset"></i></div>
+                <div class="chat-avatar">
+                    <i class="fas fa-headset"></i>
+                </div>
                 <div>
                     <div class="chat-header-title">Customer Support</div>
-                    <div class="chat-header-status"><span class="online-dot"></span><span>Online</span></div>
+                    <div class="chat-header-status">
+                        <span class="online-dot"></span>
+                        <span>Online</span>
+                    </div>
                 </div>
             </div>
             <div class="chat-actions">
-                <button onclick="event.stopPropagation(); toggleMinimize()" title="Minimize"><i class="fas fa-minus"></i></button>
-                <button onclick="event.stopPropagation(); closeUserChat()" title="Close"><i class="fas fa-times"></i></button>
+                <button onclick="event.stopPropagation(); toggleMinimize()" title="Minimize">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button onclick="event.stopPropagation(); closeUserChat()" title="Close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div id="headerUnreadBadge" class="unread-badge" style="display: none;">0</div>
         </div>
@@ -236,7 +405,9 @@
             <div class="chat-input-container">
                 <div class="chat-input-wrapper">
                     <textarea id="chatInput" class="chat-input" placeholder="Type your message here..." rows="1" maxlength="500"></textarea>
-                    <button class="chat-send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                    <button class="chat-send-btn" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
                 </div>
                 <div class="chat-note" id="chatModeNote">
                     <i class="fas fa-lock"></i> Private message - Only you and Admin can see
@@ -253,6 +424,7 @@
         let refreshInterval = null;
         let isMinimized = false;
         let currentMode = 'private';
+        let lastMessageCount = 0;
         
         function getMyanmarTime(timestamp) {
             const date = new Date(timestamp);
@@ -286,7 +458,9 @@
                 if (window.parent && window.parent.getCurrentUserPhone) currentUser = window.parent.getCurrentUserPhone();
                 if (window.parent && window.parent.getCurrentUsername) currentUsername = window.parent.getCurrentUsername();
                 if (window.parent && window.parent.getCurrentUserId) currentUserId = window.parent.getCurrentUserId();
-            } catch(e) { console.log('Cannot access parent window'); }
+            } catch(e) {
+                console.log('Cannot access parent window');
+            }
             
             if (!currentUser) {
                 currentUser = 'guest';
@@ -301,6 +475,7 @@
             console.log('================================');
         }
         
+        // Get unread count for user (messages from admin that user hasn't read)
         async function updateUnreadCount() {
             try {
                 const response = await fetch(`${API_BASE}/api/chat/private/unread/${currentUserId}`);
@@ -354,27 +529,47 @@
                 if (currentMode === 'private') {
                     console.log('🔍 Loading PRIVATE messages for user:', currentUserId);
                     
-                    // Get ALL messages where user is either sender OR receiver
-                    const url = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`;
-                    const response = await fetch(url);
-                    const data = await response.json();
+                    // Method 1: Get messages where user is sender
+                    const url1 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`;
+                    const response1 = await fetch(url1);
+                    const data1 = await response1.json();
                     
-                    if (data.success && data.messages && data.messages.length > 0) {
-                        messages = data.messages;
-                        console.log(`✅ Loaded ${messages.length} private messages`);
-                    } else {
-                        console.log('📭 No private messages from API, checking alternative...');
-                        // Try alternative: get messages with admin as current user
-                        const altUrl = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=admin`;
-                        const altResponse = await fetch(altUrl);
-                        const altData = await altResponse.json();
-                        if (altData.success && altData.messages && altData.messages.length > 0) {
-                            messages = altData.messages;
-                            console.log(`✅ Loaded ${messages.length} private messages (from admin view)`);
+                    // Method 2: Get messages where user is receiver (using admin as current user)
+                    const url2 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=admin`;
+                    const response2 = await fetch(url2);
+                    const data2 = await response2.json();
+                    
+                    let allMessages = [];
+                    if (data1.success && data1.messages) {
+                        allMessages.push(...data1.messages);
+                    }
+                    if (data2.success && data2.messages) {
+                        allMessages.push(...data2.messages);
+                    }
+                    
+                    // Remove duplicates by id
+                    const uniqueMessages = [];
+                    const seenIds = new Set();
+                    for (const msg of allMessages) {
+                        if (!seenIds.has(msg.id)) {
+                            seenIds.add(msg.id);
+                            uniqueMessages.push(msg);
                         }
                     }
                     
-                    console.log(`📊 Total private messages: ${messages.length}`);
+                    // Sort by time
+                    uniqueMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                    messages = uniqueMessages;
+                    
+                    // Check for new messages (from admin)
+                    if (messages.length > lastMessageCount && lastMessageCount > 0) {
+                        const newCount = messages.length - lastMessageCount;
+                        console.log(`🔔 ${newCount} new message(s) from Admin!`);
+                        updateUnreadCount();
+                    }
+                    lastMessageCount = messages.length;
+                    
+                    console.log(`✅ Loaded ${messages.length} total private messages`);
                 } else {
                     console.log('🌍 Loading GLOBAL messages');
                     const response = await fetch(`${API_BASE}/api/chat/messages`);
@@ -413,15 +608,12 @@
                 let isUser = false;
                 let senderName = '';
                 let modeBadge = '';
-                let isUnread = false;
                 
                 if (currentMode === 'private') {
-                    // Check if message is from current user OR to current user
+                    // Check if message is from current user
                     isUser = (msg.sender_id === currentUserId);
                     senderName = isUser ? (currentUsername || 'You') : '👑 Admin';
                     modeBadge = '<span class="badge private"><i class="fas fa-lock"></i> Private</span>';
-                    // Mark as unread only if message is from admin and not read
-                    isUnread = (!isUser && !msg.is_read);
                 } else {
                     isUser = !msg.is_admin && msg.user_id === currentUserId;
                     senderName = msg.is_admin ? '👑 Admin' : (msg.username || 'User');
@@ -438,7 +630,6 @@
                         <div class="message-sender">
                             ${isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-shield-alt"></i>'} 
                             ${escapeHtml(senderName)} ${modeBadge}
-                            ${isUnread ? '<span style="color:#f43f5e; margin-left:6px;">🔴 New</span>' : ''}
                         </div>
                         <div class="message-bubble">${escapeHtml(msg.message)}</div>
                         <div class="message-time">🕐 ${myanmarTime}</div>
@@ -447,7 +638,6 @@
             }
             container.innerHTML = html;
             container.scrollTop = container.scrollHeight;
-            updateUnreadCount();
         }
         
         async function sendMessage() {
@@ -456,6 +646,7 @@
             const sendBtn = document.querySelector('.chat-send-btn');
             
             if (!message) return;
+            
             if (currentUser === 'guest' || !currentUserId || currentUserId.startsWith('guest_')) {
                 showNotification("Please login to send messages", true);
                 return;
@@ -493,9 +684,7 @@
                         console.log('✅ Private message sent successfully!');
                         input.value = '';
                         input.style.height = 'auto';
-                        // Add to UI immediately
                         addMessageToUI(message, true);
-                        // Reload after short delay to sync
                         setTimeout(() => loadMessages(), 500);
                         showNotification('✅ Private message sent to Admin');
                     } else {
@@ -636,7 +825,9 @@
         }
         
         function closeUserChat() {
-            if (window.parent && window.parent.closeUserChatWidget) window.parent.closeUserChatWidget();
+            if (window.parent && window.parent.closeUserChatWidget) {
+                window.parent.closeUserChatWidget();
+            }
         }
         
         async function init() {
