@@ -697,12 +697,12 @@
             <div class="drawer-userid" id="drawerUserId"></div>
         </div>
         <ul class="drawer-menu">
-            <li><a onclick="closeDrawer(); switchTab('home')"><i class="fas fa-home"></i> Home</a></li>
-            <li><a onclick="closeDrawer(); switchTab('plans')"><i class="fas fa-sim-card"></i> Plan များ</a></li>
-            <li><a onclick="closeDrawer(); switchTab('orders')"><i class="fas fa-list-ul"></i> My Orders</a></li>
-            <li><a onclick="closeDrawer(); switchTab('live')"><i class="fas fa-broadcast-tower"></i> LIVE</a></li>
-            <li><a onclick="closeDrawer(); switchTab('market')"><i class="fas fa-store"></i> Market</a></li>
-            <li><a onclick="closeDrawer(); switchTab('profile')"><i class="fas fa-user-circle"></i> My Profile</a></li>
+            <li><a onclick="closeDrawer(); switchTab('home')"><i class="fas fa-home"></i> <span>Home</span></a></li>
+            <li><a onclick="closeDrawer(); switchTab('plans')"><i class="fas fa-sim-card"></i> <span>Plan များ</span></a></li>
+            <li><a onclick="closeDrawer(); switchTab('orders')"><i class="fas fa-list-ul"></i> <span>My Orders</span></a></li>
+            <li><a onclick="closeDrawer(); switchTab('live')"><i class="fas fa-broadcast-tower"></i> <span>LIVE</span></a></li>
+            <li><a onclick="closeDrawer(); switchTab('market')"><i class="fas fa-store"></i> <span>Market</span></a></li>
+            <li><a onclick="closeDrawer(); switchTab('profile')"><i class="fas fa-user-circle"></i> <span>My Profile</span></a></li>
             <li><div class="drawer-divider"></div></li>
             
             <!-- Language Switcher in Drawer -->
@@ -719,9 +719,9 @@
             </li>
             
             <li><div class="drawer-divider"></div></li>
-            <li><a onclick="closeDrawer(); exportMyOrders()"><i class="fas fa-file-excel"></i> Export Orders (CSV)</a></li>
-            <li><a onclick="closeDrawer(); showSupport()"><i class="fas fa-headset"></i> Customer Support</a></li>
-            <li><a onclick="closeDrawer(); logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a onclick="closeDrawer(); exportMyOrders()"><i class="fas fa-file-excel"></i> <span>Export Orders (CSV)</span></a></li>
+            <li><a onclick="closeDrawer(); showSupport()"><i class="fas fa-headset"></i> <span>Customer Support</span></a></li>
+            <li><a onclick="closeDrawer(); logout()"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
         </ul>
     </div>
 
@@ -733,12 +733,11 @@
                 <i class="fas fa-spinner fa-pulse"></i> Loading...
             </div>
             
-            <!-- ========== AD CONTAINER (NEW - ကြော်ငြာပြရန်) ========== -->
+            <!-- AD CONTAINER -->
             <div id="adContainer" style="margin: 16px 0;"></div>
-            <!-- ========== END AD CONTAINER ========== -->
             
             <div style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(139,92,246,0.05)); border-radius: 1.5rem; padding: 20px; margin: 16px 0; text-align: center;">
-                <div style="font-size: 1.2rem;">🌤️ မင်္ဂလာပါ, <span id="userName">User</span></div>
+                <div style="font-size: 1.2rem;">🌤️ <span id="welcomeText">မင်္ဂလာပါ</span>, <span id="userName">User</span></div>
                 <div id="userPhoneDisplay" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;"></div>
                 <div id="userIdDisplay" class="user-id-badge" style="margin-top: 8px;"></div>
             </div>
@@ -969,7 +968,6 @@
         });
     }
     
-    // ============ UPDATE ALL BUY BUTTONS BASED ON SHOP STATUS ============
     function updateBuyButtonsBasedOnShopStatus(isOpen) {
         const renewBtns = document.querySelectorAll('.orders-renew-btn');
         renewBtns.forEach(btn => {
@@ -1007,7 +1005,6 @@
         }
     }
     
-    // ============ SALES STATUS FOR USERS ============
     async function loadSalesStatus() {
         try {
             const response = await fetch('/api/sales/status');
@@ -1031,13 +1028,11 @@
         }
     }
     
-    // ============ CLOSE MARKET TAB ============
     function closeMarketTab() {
         switchTab('home');
         showToast('🛒 Market closed');
     }
     
-    // ============ USER CHAT WIDGET ============
     function openUserChatWidget() {
         if (userChatWidgetOpen) return;
         
@@ -1582,10 +1577,131 @@
     function showSupport() { closeDrawer(); showToast("Contact: Telegram @ATHsupport, Viber 09799480995"); }
     function showNotifications() { showToast("No new notifications"); }
     
+    // ==================== LANGUAGE SWITCHER (WORKING) ====================
     function changeLanguage(lang) {
         localStorage.setItem('app_language', lang);
-        const flags = { my: '🇲🇲', en: '🇬🇧', zh: '🇨🇳' };
-        showToast(`Language changed to ${flags[lang]}`);
+        
+        const translations = {
+            my: {
+                home: "မူလစာမျက်နှာ",
+                plans: "Plan များ",
+                orders: "My Orders",
+                live: "LIVE",
+                chat: "စကားဝိုင်း",
+                market: "စျေးကွက်",
+                profile: "My Profile",
+                logout: "ထွက်ရန်",
+                support: "Customer Support",
+                exportOrders: "Export Orders (CSV)",
+                buyForSelf: "ကိုယ်တိုင်ထပ်ဝယ်ရန်",
+                buyForOther: "အခြားသူအတွက် ထပ်ဝယ်ပေးရန်",
+                welcome: "မင်္ဂလာပါ",
+                loading: "Loading...",
+                closeMarket: "Close Market",
+                payment: "ငွေပေးချေမှု",
+                submitOrder: "အော်ဒါတင်မည်",
+                screenshot: "Screenshot",
+                textConfirm: "စာသားဖြည့်",
+                planSelect: "Plan ရွေးရန်"
+            },
+            en: {
+                home: "Home",
+                plans: "Plans",
+                orders: "My Orders",
+                live: "LIVE",
+                chat: "Chat",
+                market: "Market",
+                profile: "My Profile",
+                logout: "Logout",
+                support: "Customer Support",
+                exportOrders: "Export Orders (CSV)",
+                buyForSelf: "Buy for Myself",
+                buyForOther: "Buy for Others",
+                welcome: "Welcome",
+                loading: "Loading...",
+                closeMarket: "Close Market",
+                payment: "Payment",
+                submitOrder: "Submit Order",
+                screenshot: "Screenshot",
+                textConfirm: "Text Confirmation",
+                planSelect: "Select Plan"
+            },
+            zh: {
+                home: "主页",
+                plans: "套餐",
+                orders: "我的订单",
+                live: "直播",
+                chat: "聊天",
+                market: "市场",
+                profile: "我的资料",
+                logout: "退出",
+                support: "客户支持",
+                exportOrders: "导出订单 (CSV)",
+                buyForSelf: "为自己购买",
+                buyForOther: "为他人购买",
+                welcome: "欢迎",
+                loading: "加载中...",
+                closeMarket: "关闭市场",
+                payment: "付款",
+                submitOrder: "提交订单",
+                screenshot: "截图",
+                textConfirm: "文字确认",
+                planSelect: "选择套餐"
+            }
+        };
+        
+        const t = translations[lang] || translations['my'];
+        
+        // Update Drawer Menu
+        const drawerLinks = document.querySelectorAll('.drawer-menu li a');
+        const drawerTextKeys = ['home', 'plans', 'orders', 'live', 'market', 'profile', 'support', 'exportOrders', 'logout'];
+        drawerLinks.forEach((link, index) => {
+            if (index < drawerTextKeys.length) {
+                const span = link.querySelector('span');
+                if (span) span.textContent = t[drawerTextKeys[index]];
+            }
+        });
+        
+        // Update Bottom Navigation
+        const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+        const navTextKeys = ['home', 'plans', 'orders', 'live', 'chat'];
+        navItems.forEach((item, index) => {
+            if (index < navTextKeys.length) {
+                const span = item.querySelector('span');
+                if (span) span.textContent = t[navTextKeys[index]];
+            }
+        });
+        
+        // Update Orders Tab buttons
+        const selfBtn = document.querySelector('.orders-renew-btn.self');
+        const otherBtn = document.querySelector('.orders-renew-btn.other');
+        if (selfBtn) selfBtn.innerHTML = `<i class="fas fa-user"></i> ${t.buyForSelf}`;
+        if (otherBtn) otherBtn.innerHTML = `<i class="fas fa-users"></i> ${t.buyForOther}`;
+        
+        // Update Welcome Text
+        const welcomeSpan = document.getElementById('welcomeText');
+        if (welcomeSpan) welcomeSpan.textContent = t.welcome;
+        
+        // Update Market Close Button
+        const marketCloseBtn = document.querySelector('.market-close-btn');
+        if (marketCloseBtn) marketCloseBtn.innerHTML = `<i class="fas fa-times-circle"></i> ${t.closeMarket}`;
+        
+        // Update Payment Modal
+        const paymentTitle = document.getElementById('paymentTitle');
+        if (paymentTitle) paymentTitle.textContent = t.payment;
+        
+        const submitPaymentBtn = document.querySelector('.submit-payment');
+        if (submitPaymentBtn) submitPaymentBtn.innerHTML = `✅ ${t.submitOrder}`;
+        
+        const screenshotTab = document.getElementById('screenshotTabBtn');
+        const textTab = document.getElementById('textTabBtn');
+        if (screenshotTab) screenshotTab.innerHTML = `📸 ${t.screenshot}`;
+        if (textTab) textTab.innerHTML = `✏️ ${t.textConfirm}`;
+        
+        const planSelectLabel = document.querySelector('#paymentModal .modal-card > div:last-child label');
+        if (planSelectLabel) planSelectLabel.innerHTML = `🎯 ${t.planSelect} *`;
+        
+        showToast(`Language changed to ${lang === 'my' ? 'မြန်မာ' : (lang === 'en' ? 'English' : '中文')}`);
         closeDrawer();
     }
     
@@ -1667,9 +1783,8 @@
     window.loadSalesStatus = loadSalesStatus;
 </script>
 
-<!-- ========== AD WIDGET SCRIPT (NEW - ကြော်ငြာပြရန်) ========== -->
+<!-- ========== AD WIDGET SCRIPT ========== -->
 <script src="/js/ad-widget.js"></script>
-<!-- ========== END AD WIDGET SCRIPT ========== -->
 
 </body>
 </html>
