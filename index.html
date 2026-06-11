@@ -624,6 +624,11 @@
             border-color: #f43f5e;
             transform: scale(0.98);
         }
+        
+        /* Ad Container - empty ဖြစ်ရင် hide */
+        #adContainer:empty {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -727,6 +732,10 @@
             <div id="salesStatusBanner" class="sales-status-banner">
                 <i class="fas fa-spinner fa-pulse"></i> Loading...
             </div>
+            
+            <!-- ========== AD CONTAINER (NEW - ကြော်ငြာပြရန်) ========== -->
+            <div id="adContainer" style="margin: 16px 0;"></div>
+            <!-- ========== END AD CONTAINER ========== -->
             
             <div style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(139,92,246,0.05)); border-radius: 1.5rem; padding: 20px; margin: 16px 0; text-align: center;">
                 <div style="font-size: 1.2rem;">🌤️ မင်္ဂလာပါ, <span id="userName">User</span></div>
@@ -962,7 +971,6 @@
     
     // ============ UPDATE ALL BUY BUTTONS BASED ON SHOP STATUS ============
     function updateBuyButtonsBasedOnShopStatus(isOpen) {
-        // Update Orders Renew buttons
         const renewBtns = document.querySelectorAll('.orders-renew-btn');
         renewBtns.forEach(btn => {
             if (isOpen) {
@@ -978,7 +986,6 @@
             }
         });
         
-        // Update payment modal submit button
         const submitBtn = document.querySelector('.submit-payment');
         if (submitBtn) {
             if (isOpen) {
@@ -994,7 +1001,6 @@
             }
         }
         
-        // Send status to iframe (plans-widget.html)
         const iframe = document.querySelector('#plansTab iframe');
         if (iframe && iframe.contentWindow) {
             iframe.contentWindow.postMessage({ type: 'shopStatus', isOpen: isOpen }, '*');
@@ -1016,7 +1022,6 @@
                 banner.className = `sales-status-banner ${data.isOpen ? 'open' : 'closed'}`;
             }
             
-            // Update buy buttons based on shop status
             updateBuyButtonsBasedOnShopStatus(data.isOpen);
             
             return data.isOpen;
@@ -1473,7 +1478,6 @@
     });
     
     async function submitOrder() {
-        // Check if shop is open
         if (!isShopOpen) {
             const statusResponse = await fetch('/api/sales/status');
             const statusData = await statusResponse.json();
@@ -1630,7 +1634,6 @@
         }
     }
     
-    // Auto refresh sales status every minute
     setInterval(loadSalesStatus, 60000);
     
     window.login = login;
@@ -1663,5 +1666,10 @@
     window.closeMarketTab = closeMarketTab;
     window.loadSalesStatus = loadSalesStatus;
 </script>
+
+<!-- ========== AD WIDGET SCRIPT (NEW - ကြော်ငြာပြရန်) ========== -->
+<script src="/js/ad-widget.js"></script>
+<!-- ========== END AD WIDGET SCRIPT ========== -->
+
 </body>
 </html>
