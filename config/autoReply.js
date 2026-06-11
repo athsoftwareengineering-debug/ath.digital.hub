@@ -11,7 +11,7 @@ const languages = {
 let defaultLanguage = 'my';
 const userLanguages = new Map();
 
-// ==================== KEYWORDS (Total: 28 Categories) ====================
+// ==================== KEYWORDS (34 Categories) ====================
 const keywords = {
     // 1. Data/MB
     dataMB: [
@@ -120,14 +120,12 @@ const keywords = {
         'ကိုကြီးကလစာဘယ်လောက်ရတာလဲ', 'ကိုရီးကလစာကောင်းလား',
         'လစာဘယ်လောက်ရလဲ', 'ဘယ်လောက်တန်လဲ',
         'ဒီမှာ လုပ်ရတာမပျော်တော့ဘူး', 'ဒီမှာမလုပ်ချင်တော့ဘူး',
-        'ဒီစက်ရုံမှာ မလုပ်ချင်တော့ဘူး', 'အလုပ်ထွက်မယ်',
-        'ဒီအလုပ်မကြိုက်ဘူး', 'လစာနည်းတယ်'
+        'ဒီစက်ရုံမှာ မလုပ်ချင်တော့ဘူး', 'အလုပ်ထွက်မယ်'
     ],
     
     // 19. Respectful Terms
     respectful: [
-        'ကိုကြီး', 'ကိုကို', 'အကို', 'မောင်လေး', 'ဆရာ', 'ခင်ဗျား',
-        'ကိုယ်တော်', 'အရှင်'
+        'ကိုကြီး', 'ကိုကို', 'အကို', 'မောင်လေး', 'ဆရာ', 'ခင်ဗျား'
     ],
     
     // 20. Rude Words
@@ -186,6 +184,42 @@ const keywords = {
         'အေတီအိတ်ချ်', 'ATH', 'ATH DIGITAL HUB', 'ath',
         'ဘာကိုပြောတာလဲ', 'ဘာအဓိပ္ပါယ်လဲ', 'ဘာနံမည်လဲ',
         'ath ဆိုတာဘာလဲ', 'ဘယ်လိုကြောင့်ဒီနံမည်ပေးတာလဲ'
+    ],
+    
+    // 29. How To Renew
+    howToRenew: [
+        'ဘယ်လိုသက်တမ်းတိုးရမလဲ', 'သက်တမ်းတိုးနည်း', 'renew', 'ထပ်ဝယ်ရမလဲ',
+        'ဘယ်လိုထပ်ဝယ်ရမလဲ', 'plan ထပ်ဝယ်ရမလဲ'
+    ],
+    
+    // 30. How Many Days
+    howManyDays: [
+        'ဘယ်နှစ်ရက်သုံးလို့ရလဲ', 'ဘယ်လောက်ကြာကြာခံလဲ', 'ဘယ်နှစ်ရက်ခံလဲ',
+        'ဘယ်လောက်ကြာမလဲ', 'ရက်ဘယ်လောက်လဲ', 'သက်တမ်းဘယ်လောက်လဲ'
+    ],
+    
+    // 31. What Can Use
+    whatCanUse: [
+        'ဘာတွေသုံးလို့ရလဲ', 'ဘာအတွက်သုံးလို့ရလဲ', 'ဘာတွေပါလဲ',
+        'ဘာအကျိုးခံစားရမလဲ', 'ဘာတွေရနိုင်လဲ'
+    ],
+    
+    // 32. What Time To Buy
+    whatTimeToBuy: [
+        'ဘယ်ချိန်ဝယ်လို့ရလဲ', 'ဘယ်အချိန်ဝယ်လို့ရလဲ', 'ဘယ်အချိန်ထိဝယ်လို့ရလဲ',
+        'ဘယ်အချိန်မှာဝယ်လို့ရလဲ', 'ဘယ်အချိန်ရောင်းလဲ'
+    ],
+    
+    // 33. What Available
+    whatAvailable: [
+        'ဘာတွေရှိလဲ', 'ဘာတွေရောင်းလဲ', 'ဘယ်လိုဝန်ဆောင်မှုတွေရှိလဲ',
+        'ဘာတွေရနေလဲ', 'ဘာတွေလုပ်ပေးလဲ'
+    ],
+    
+    // 34. How To Reply
+    howToReply: [
+        'မင်းဘယ်လိုဖြေမလဲ', 'ဘယ်လိုဖြေမလဲ', 'ဘယ်လိုအလုပ်လုပ်လဲ',
+        'how do you reply', 'how it works', 'စနစ်အလုပ်လုပ်ပုံ'
     ]
 };
 
@@ -207,7 +241,6 @@ function getAutoReply(message, isShopOpen, userId = null) {
     const lang = userId ? getUserLanguage(userId) : defaultLanguage;
     const langData = languages[lang] || languages.my;
     
-    // Check each category for keyword matches
     for (const [category, keywordList] of Object.entries(keywords)) {
         for (const keyword of keywordList) {
             if (lowerMessage.includes(keyword.toLowerCase()) || lowerMessage === keyword.toLowerCase()) {
@@ -219,7 +252,6 @@ function getAutoReply(message, isShopOpen, userId = null) {
         }
     }
     
-    // Default response
     return isShopOpen ? langData.default.open : langData.default.closed;
 }
 
