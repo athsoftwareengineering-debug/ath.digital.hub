@@ -274,14 +274,21 @@
             font-weight: 500;
         }
         .filter-btn:hover { background: var(--cyan); color: #030712; }
-        .orders-list, .users-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
-        .order-card, .user-card {
+        .orders-list, .users-list, .ads-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+        .order-card, .user-card, .ad-card {
             background: linear-gradient(145deg, rgba(18,22,35,0.85), rgba(10,12,21,0.9));
             backdrop-filter: blur(10px);
             border: 1px solid rgba(0,212,255,0.1);
             border-radius: 1.2rem;
             padding: 14px;
             transition: all 0.2s;
+        }
+        .ad-card img {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            max-height: 100px;
+            object-fit: cover;
         }
         .add-product-btn {
             background: var(--emerald);
@@ -416,6 +423,10 @@
             border: 1px solid #2d3a5e;
             border-radius: 60px;
             color: white;
+        }
+        .modal-card textarea {
+            border-radius: 1rem;
+            resize: vertical;
         }
         .modal-btn { padding: 10px 20px; border-radius: 60px; font-weight: 600; cursor: pointer; border: none; }
         .modal-btn.save { background: var(--emerald); color: white; }
@@ -722,6 +733,16 @@
         }
         .notification-overlay.show { display: block; }
         
+        /* Ad card specific styles */
+        .ad-status-active { background: #10b981; color: white; display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; margin-bottom: 10px; }
+        .ad-status-inactive { background: #64748b; color: white; display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; margin-bottom: 10px; }
+        .ad-status-expired { background: #f43f5e; color: white; display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; margin-bottom: 10px; }
+        .ad-card-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .ad-card-actions button { flex: 1; padding: 8px; border-radius: 40px; font-size: 0.7rem; font-weight: 600; cursor: pointer; border: none; }
+        .ad-edit-btn { background: rgba(0,212,255,0.2); color: var(--cyan); }
+        .ad-toggle-btn { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .ad-delete-btn { background: rgba(244,63,94,0.2); color: #fb7185; }
+        
         @media (max-width: 480px) {
             .notification-dropdown {
                 position: fixed;
@@ -807,6 +828,7 @@
                 <li><a onclick="window.closeDrawer(); window.switchTab('orders')"><i class="fas fa-list-ul"></i> အမိန့်စာများ</a></li>
                 <li><a onclick="window.closeDrawer(); window.switchTab('users')"><i class="fas fa-users"></i> အသုံးပြုသူများ</a></li>
                 <li><a onclick="window.closeDrawer(); window.switchTab('market')"><i class="fas fa-store"></i> စတိုးဆိုင်</a></li>
+                <li><a onclick="window.closeDrawer(); window.switchTab('ads')"><i class="fas fa-ad"></i> ကြော်ငြာများ</a></li>
                 <li><a onclick="window.closeDrawer(); openAdminChatWidget()"><i class="fas fa-comments"></i> စကားဝိုင်း</a></li>
                 <li><div class="drawer-divider"></div></li>
                 <li><a onclick="window.closeDrawer(); window.exportUsersToCSV()"><i class="fas fa-file-excel"></i> အသုံးပြုသူများ တင်ပို့ခြင်း (CSV)</a></li>
@@ -820,7 +842,6 @@
         </div>
         
         <div id="menuTab" class="tab-content active">
-            <!-- Sales Hours Control Card -->
             <div class="sales-hours-card">
                 <div class="sales-hours-title">
                     <i class="fas fa-clock"></i> ရောင်းချချိန် သတ်မှတ်ချက်
@@ -885,6 +906,35 @@
                 <div id="salesStatus" class="sales-status">Loading...</div>
             </div>
             
+            <!-- Ad Settings Card -->
+            <div class="sales-hours-card" style="margin-top: 16px;">
+                <div class="sales-hours-title">
+                    <i class="fas fa-ad"></i> ကြော်ငြာ ပြပုံအပြင်အဆင်
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 0.7rem;">ပြမယ့်ပုံစံ:</span>
+                        <select id="adRotationMode" class="hour-select" style="width: auto;">
+                            <option value="random">ကျပန်း (Random)</option>
+                            <option value="weighted">အလေးချိန် (Weighted)</option>
+                            <option value="roundrobin">အလှည့်ကျ (Round Robin)</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 0.7rem;">Auto လှည့် (စက္ကန့်):</span>
+                        <input type="number" id="adAutoCycle" class="hour-select" style="width: 80px;" value="0" step="1" min="0">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem;">
+                            <input type="checkbox" id="adShowNavigation" checked> နောက်တစ်ခုခလုတ်ပြမယ်
+                        </label>
+                    </div>
+                    <button onclick="saveAdSettings()" style="background: rgba(0,212,255,0.15); border: 1px solid rgba(0,212,255,0.3); padding: 6px 16px; border-radius: 40px; cursor: pointer; font-size: 0.7rem;">
+                        <i class="fas fa-save"></i> သိမ်းမယ်
+                    </button>
+                </div>
+            </div>
+            
             <div class="stats-grid" id="statsGrid">
                 <div class="stat-card"><div class="stat-number" id="totalOrders">0</div><div class="stat-label"><i class="fas fa-shopping-cart"></i> စုစုပေါင်း အမိန့်စာ</div></div>
                 <div class="stat-card"><div class="stat-number" id="pendingOrders">0</div><div class="stat-label"><i class="fas fa-clock"></i> ဆိုင်းငံ့ထားသော</div></div>
@@ -939,14 +989,24 @@
             <div class="product-list" id="productList"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> ထုတ်ကုန်များ ဖွင့်နေသည်...</div></div>
         </div>
         
+        <!-- Ads Tab (New) -->
+        <div id="adsTab" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3><i class="fas fa-ad"></i> ကြော်ငြာများ</h3>
+                <button class="add-product-btn" onclick="openAddAdModal()"><i class="fas fa-plus"></i> ကြော်ငြာအသစ်</button>
+            </div>
+            <div class="ads-list" id="adsList"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> ကြော်ငြာများ ဖွင့်နေသည်...</div></div>
+        </div>
+        
         <div class="last-update" id="lastUpdate"></div>
     </div>
     
     <div class="bottom-nav" id="bottomNav" style="display: none;">
-        <button class="nav-item active" data-tab="menu"><i class="fas fa-chart-line"></i><span>မီနူး</span></button>
+        <button class="nav-item" data-tab="menu"><i class="fas fa-chart-line"></i><span>မီနူး</span></button>
         <button class="nav-item" data-tab="orders"><i class="fas fa-list-ul"></i><span>အမိန့်စာများ</span></button>
         <button class="nav-item" data-tab="users"><i class="fas fa-users"></i><span>အသုံးပြုသူများ</span></button>
         <button class="nav-item" data-tab="market"><i class="fas fa-store"></i><span>စတိုးဆိုင်</span></button>
+        <button class="nav-item" data-tab="ads"><i class="fas fa-ad"></i><span>ကြော်ငြာများ</span></button>
         <button class="nav-item" data-tab="chat" onclick="openAdminChatWidget()"><i class="fas fa-comments"></i><span>စကားဝိုင်း</span></button>
     </div>
     
@@ -996,6 +1056,23 @@
     </div>
 </div>
 
+<!-- Ad Modal (New) -->
+<div id="adModal" class="modal">
+    <div class="modal-card">
+        <h3 id="adModalTitle">ကြော်ငြာအသစ်ထည့်ရန်</h3>
+        <input type="text" id="adName" placeholder="ကြော်ငြာအမည် *">
+        <input type="text" id="adImageUrl" placeholder="ပုံ URL *">
+        <input type="text" id="adDestinationUrl" placeholder="Website Link *">
+        <textarea id="adAltText" placeholder="စာသား (ရွေးချယ်နိုင်သည်)" rows="2"></textarea>
+        <input type="number" id="adDisplayWeight" placeholder="အလေးချိန် (1-20)" value="5">
+        <input type="date" id="adExpiryDate" placeholder="သက်တမ်းကုန်ဆုံးရက်">
+        <div style="display: flex; gap: 12px; margin-top: 16px;">
+            <button class="modal-btn save" onclick="saveAd()">သိမ်းရန်</button>
+            <button class="modal-btn cancel" onclick="closeAdModal()">မလုပ်တော့ပါ</button>
+        </div>
+    </div>
+</div>
+
 <div id="screenshotModal" class="image-modal" onclick="window.closeModal()">
     <div class="image-modal-content" onclick="event.stopPropagation()">
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid rgba(0,212,255,0.2);">
@@ -1009,7 +1086,7 @@
 <div id="toast" class="toast"></div>
 
 <script>
-// ==================== MAIN SCRIPT ====================
+// ==================== MAIN SCRIPT (Original + Ads Added) ====================
 (function() {
     const API_BASE = window.location.origin;
     let token = localStorage.getItem('adminToken');
@@ -1020,6 +1097,10 @@
     let currentUserSearchPhone = "";
     let currentTab = "menu";
     let editingProductId = null;
+    
+    // ============ AD MANAGEMENT VARIABLES ============
+    let allAds = [];
+    let editingAdId = null;
     
     const costPriceMap = {
         "VIP LEVEL - 1": 14500,
@@ -1304,6 +1385,8 @@
                 if (bottomNav) bottomNav.style.display = 'flex';
                 loadAllData(); 
                 loadSalesHours();
+                loadAdSettings();
+                loadAds();
                 startAutoSync(); 
             } else { 
                 showToast('စကားဝှက် မှားယွင်းနေသည်', true); 
@@ -1331,6 +1414,7 @@
         await loadOrders(); 
         await loadUserStats(); 
         await loadProducts(); 
+        await loadAds();
         updateAllStats();
     }
     
@@ -1393,6 +1477,218 @@
             renderProducts(); 
         }
     }
+    
+    // ============ AD MANAGEMENT FUNCTIONS ============
+    async function loadAds() {
+        try {
+            const res = await fetchWithRetry(`${API_BASE}/api/admin/ads`);
+            if (!res) return;
+            const data = await res.json();
+            if (data.success) {
+                allAds = data.ads || [];
+                renderAds();
+            } else {
+                allAds = [];
+                renderAds();
+            }
+        } catch(e) {
+            console.error('Error loading ads:', e);
+            allAds = [];
+            renderAds();
+        }
+    }
+    
+    async function loadAdSettings() {
+        try {
+            const res = await fetch(`${API_BASE}/api/ad-settings`);
+            const data = await res.json();
+            if (data.success && data.settings) {
+                const modeSelect = document.getElementById('adRotationMode');
+                const autoCycle = document.getElementById('adAutoCycle');
+                const showNav = document.getElementById('adShowNavigation');
+                if (modeSelect) modeSelect.value = data.settings.rotation_mode || 'weighted';
+                if (autoCycle) autoCycle.value = data.settings.auto_cycle_seconds || 0;
+                if (showNav) showNav.checked = data.settings.show_navigation !== false;
+            }
+        } catch(e) { console.error('Error loading ad settings:', e); }
+    }
+    
+    window.saveAdSettings = async function() {
+        const rotation_mode = document.getElementById('adRotationMode')?.value || 'weighted';
+        const auto_cycle_seconds = parseInt(document.getElementById('adAutoCycle')?.value || '0');
+        const show_navigation = document.getElementById('adShowNavigation')?.checked || false;
+        
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/ad-settings`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rotation_mode, auto_cycle_seconds, show_navigation }),
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('✅ ကြော်ငြာဆက်တင်များ သိမ်းပြီးပါပြီ');
+            } else {
+                showToast('❌ သိမ်းဆည်းရန် မအောင်မြင်ပါ', true);
+            }
+        } catch(e) {
+            showToast('Error: ' + e.message, true);
+        }
+    };
+    
+    function renderAds() {
+        const container = document.getElementById('adsList');
+        if (!container) return;
+        
+        if (!allAds.length) {
+            container.innerHTML = '<div class="loading">ကြော်ငြာမရှိသေးပါ။ "ကြော်ငြာအသစ်" ကိုနှိပ်၍ ဖန်တီးပါ။</div>';
+            return;
+        }
+        
+        const today = new Date().toISOString().slice(0,10);
+        let html = '';
+        for (const ad of allAds) {
+            const isExpired = ad.expiry_date && ad.expiry_date < today;
+            let statusClass = 'ad-status-active';
+            let statusText = '✅ ဖွင့်ထား';
+            if (!ad.active) {
+                statusClass = 'ad-status-inactive';
+                statusText = '❌ ပိတ်ထား';
+            } else if (isExpired) {
+                statusClass = 'ad-status-expired';
+                statusText = '⏰ သက်တမ်းကုန်';
+            }
+            
+            html += `
+                <div class="ad-card" data-id="${ad.id}">
+                    <div class="${statusClass}">${statusText}</div>
+                    <img src="${escapeHtml(ad.image_url)}" onerror="this.src='https://placehold.co/728x200/333/white?text=No+Image'">
+                    <div><strong>${escapeHtml(ad.name)}</strong></div>
+                    <div style="font-size:0.7rem; color:#94a3b8; margin-top:4px;">🔗 ${escapeHtml(ad.destination_url.substring(0, 50))}</div>
+                    ${ad.alt_text ? `<div style="font-size:0.65rem; color:#64748b; margin-top:6px;">📝 ${escapeHtml(ad.alt_text)}</div>` : ''}
+                    <div style="font-size:0.65rem; color:#64748b; margin-top:8px;">
+                        <i class="fas fa-weight-hanging"></i> အလေးချိန်: ${ad.display_weight || 5} | 
+                        <i class="fas fa-calendar"></i> ${ad.expiry_date || 'သက်တမ်းမသတ်မှတ်ရ'} |
+                        <i class="fas fa-eye"></i> ${ad.views || 0} | 
+                        <i class="fas fa-mouse-pointer"></i> ${ad.clicks || 0}
+                    </div>
+                    <div class="ad-card-actions">
+                        <button class="ad-edit-btn" onclick="editAd(${ad.id})"><i class="fas fa-edit"></i> တည်းဖြတ်</button>
+                        <button class="ad-toggle-btn" onclick="toggleAd(${ad.id}, ${!ad.active})"><i class="fas ${ad.active ? 'fa-ban' : 'fa-play'}"></i> ${ad.active ? 'ပိတ်မယ်' : 'ဖွင့်မယ်'}</button>
+                        <button class="ad-delete-btn" onclick="deleteAd(${ad.id})"><i class="fas fa-trash"></i> ဖျက်မယ်</button>
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+    
+    window.openAddAdModal = function() {
+        editingAdId = null;
+        document.getElementById('adModalTitle').innerText = 'ကြော်ငြာအသစ်ထည့်ရန်';
+        document.getElementById('adName').value = '';
+        document.getElementById('adImageUrl').value = '';
+        document.getElementById('adDestinationUrl').value = '';
+        document.getElementById('adAltText').value = '';
+        document.getElementById('adDisplayWeight').value = '5';
+        document.getElementById('adExpiryDate').value = '';
+        document.getElementById('adModal').classList.add('active');
+    };
+    
+    window.closeAdModal = function() {
+        document.getElementById('adModal').classList.remove('active');
+    };
+    
+    window.editAd = function(id) {
+        const ad = allAds.find(a => a.id === id);
+        if (!ad) return;
+        editingAdId = id;
+        document.getElementById('adModalTitle').innerText = 'ကြော်ငြာတည်းဖြတ်ရန်';
+        document.getElementById('adName').value = ad.name;
+        document.getElementById('adImageUrl').value = ad.image_url;
+        document.getElementById('adDestinationUrl').value = ad.destination_url;
+        document.getElementById('adAltText').value = ad.alt_text || '';
+        document.getElementById('adDisplayWeight').value = ad.display_weight || 5;
+        document.getElementById('adExpiryDate').value = ad.expiry_date || '';
+        document.getElementById('adModal').classList.add('active');
+    };
+    
+    window.saveAd = async function() {
+        const name = document.getElementById('adName')?.value.trim();
+        const image_url = document.getElementById('adImageUrl')?.value.trim();
+        const destination_url = document.getElementById('adDestinationUrl')?.value.trim();
+        const alt_text = document.getElementById('adAltText')?.value.trim();
+        const display_weight = parseInt(document.getElementById('adDisplayWeight')?.value || '5');
+        const expiry_date = document.getElementById('adExpiryDate')?.value || null;
+        
+        if (!name || !image_url || !destination_url) {
+            showToast('ကျေးဇူးပြု၍ အမည်၊ ပုံ URL နှင့် Website Link ကို ဖြည့်ပါ', true);
+            return;
+        }
+        
+        const url = editingAdId ? `${API_BASE}/api/admin/ads/${editingAdId}` : `${API_BASE}/api/admin/ads`;
+        const method = editingAdId ? 'PUT' : 'POST';
+        const body = { name, image_url, destination_url, alt_text, display_weight, expiry_date };
+        
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(editingAdId ? '✅ ကြော်ငြာ တည်းဖြတ်ပြီးပါပြီ' : '✅ ကြော်ငြာအသစ် ထည့်ပြီးပါပြီ');
+                closeAdModal();
+                loadAds();
+            } else {
+                showToast('❌ သိမ်းဆည်းရန် မအောင်မြင်ပါ', true);
+            }
+        } catch(e) {
+            showToast('Error: ' + e.message, true);
+        }
+    };
+    
+    window.toggleAd = async function(id, newActiveStatus) {
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/ads/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ active: newActiveStatus }),
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(newActiveStatus ? '✅ ကြော်ငြာ ဖွင့်ပြီးပါပြီ' : '❌ ကြော်ငြာ ပိတ်ပြီးပါပြီ');
+                loadAds();
+            } else {
+                showToast('❌ မအောင်မြင်ပါ', true);
+            }
+        } catch(e) {
+            showToast('Error: ' + e.message, true);
+        }
+    };
+    
+    window.deleteAd = async function(id) {
+        if (!confirm('ဒီကြော်ငြာကို ဖျက်မှာလား။ ပြန်လည်ရယူလို့မရပါ။')) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/ads/${id}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('🗑 ကြော်ငြာ ဖျက်ပြီးပါပြီ');
+                loadAds();
+            } else {
+                showToast('❌ ဖျက်ရန် မအောင်မြင်ပါ', true);
+            }
+        } catch(e) {
+            showToast('Error: ' + e.message, true);
+        }
+    };
+    // ============ END AD MANAGEMENT ============
     
     function renderProducts() {
         const container = document.getElementById('productList');
@@ -1795,6 +2091,7 @@
     window.manualRefresh = function() { 
         loadAllData(); 
         loadSalesHours();
+        loadAdSettings();
         showToast('🔄 ဒေတာ စင့်ခ်လုပ်ပြီးပါပြီ'); 
     };
     
@@ -1824,6 +2121,7 @@
         if (tab === 'orders') applyFiltersAndSearch();
         else if (tab === 'users') renderUsersTab();
         else if (tab === 'market') loadProducts();
+        else if (tab === 'ads') loadAds();
     };
     
     document.querySelectorAll('.nav-item').forEach(btn => { 
@@ -1836,7 +2134,7 @@
         }); 
     });
     
-    // ============ SALES HOURS CONTROL WITH AUTO/MANUAL MODE ============
+    // ============ SALES HOURS CONTROL ============
     async function loadSalesHours() {
         try {
             const response = await fetch(`${API_BASE}/api/admin/sales-hours`, { credentials: 'include' });
@@ -2029,13 +2327,13 @@
         if (bottomNav) bottomNav.style.display = 'flex';
         loadAllData(); 
         loadSalesHours();
+        loadAdSettings();
         startAutoSync(); 
         setInterval(updateSalesStatusDisplay, 60000);
     }
 })();
-</script>
 
-<script>
+// ============ NOTIFICATION MANAGER (Original) ============
 (function() {
     class NotificationManager {
         constructor(apiBase) {
