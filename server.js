@@ -18,6 +18,10 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ==================== AD ROUTES ====================
+const adRoutes = require('./routes/ads');
+app.use('/api', adRoutes);
+
 // ==================== SALES HOURS CONFIGURATION ====================
 let salesHours = {
     enabled: true,
@@ -748,7 +752,6 @@ app.post('/api/chat/send', chatLimiter, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Invalid message' });
         }
         
-        // ============ BAD WORDS FILTER ============
         if (containsBadWords(message)) {
             return res.status(400).json({ 
                 success: false, 
@@ -833,12 +836,9 @@ app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
         if (error) throw error;
         console.log(`✅ Found ${data?.length || 0} private messages`);
         
-        // ============ MARK AS READ WHEN VIEWED ============
         if (currentUserId === 'admin') {
-            // Admin views messages from user -> mark as read
             await supabase.from('private_chat_messages').update({ is_read: true }).eq('sender_id', userId).eq('receiver_id', 'admin').eq('is_read', false);
         } else {
-            // User views messages from admin -> mark as read
             await supabase.from('private_chat_messages').update({ is_read: true }).eq('sender_id', 'admin').eq('receiver_id', currentUserId).eq('is_read', false);
         }
         
@@ -875,7 +875,6 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
         
         console.log(`✅ Private message saved successfully, ID: ${data[0]?.id}`);
         
-        // ============ AUTO REPLY LOGIC ============
         if (sender_id !== 'admin') {
             const isShopOpen = canPlaceOrder();
             const autoReply = getAutoReply(message, isShopOpen, sender_id);
@@ -896,7 +895,6 @@ app.get('/api/chat/private/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
         
-        // Count unread messages where receiver = userId AND is_read = false
         const { count, error } = await supabase
             .from('private_chat_messages')
             .select('*', { count: 'exact', head: true })
@@ -939,7 +937,6 @@ app.get('/api/chat/get-language/:userId', async (req, res) => {
 
 // ==================== START SERVER ====================
 
-// Start auto cleanup for global messages (every 3 minutes)
 setInterval(() => {
     cleanupOldGlobalMessages();
 }, 3 * 60 * 1000);
@@ -961,6 +958,7 @@ app.listen(PORT, () => {
 ║     🧹 Global Chat Auto Cleanup (3 min): WORKING ✅                      ║
 ║     🚫 Bad Words Filter: WORKING ✅                                     ║
 ║     🔔 Unread Count (receiver only): WORKING ✅                          ║
+║     📢 AD MANAGEMENT SYSTEM: WORKING ✅                                  ║
 ║                                                                          ║
 ║     🔒 SECURITY FEATURES ENABLED:                                        ║
 ║        ✅ Helmet.js (Security Headers)                                   ║
@@ -975,6 +973,7 @@ app.listen(PORT, () => {
 ║        ✅ Multi-Language Auto Reply (my/en/zh)                          ║
 ║        ✅ Global Chat Auto Cleanup (every 3 minutes)                    ║
 ║        ✅ Bad Words Filter                                              ║
+║        ✅ Ad Management System (ads table, rotation, tracking)          ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
