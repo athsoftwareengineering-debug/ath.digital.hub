@@ -743,6 +743,15 @@
         .ad-toggle-btn { background: rgba(245,158,11,0.2); color: #fbbf24; }
         .ad-delete-btn { background: rgba(244,63,94,0.2); color: #fb7185; }
         
+        /* Redemption Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 700;
+        }
+        
         @media (max-width: 480px) {
             .notification-dropdown {
                 position: fixed;
@@ -829,6 +838,7 @@
                 <li><a onclick="window.closeDrawer(); window.switchTab('users')"><i class="fas fa-users"></i> အသုံးပြုသူများ</a></li>
                 <li><a onclick="window.closeDrawer(); window.switchTab('market')"><i class="fas fa-store"></i> စတိုးဆိုင်</a></li>
                 <li><a onclick="window.closeDrawer(); window.switchTab('ads')"><i class="fas fa-ad"></i> ကြော်ငြာများ</a></li>
+                <li><a onclick="window.closeDrawer(); window.switchTab('redemptions')"><i class="fas fa-exchange-alt"></i> လဲလှယ်တောင်းဆိုမှုများ</a></li>
                 <li><a onclick="window.closeDrawer(); openAdminChatWidget()"><i class="fas fa-comments"></i> စကားဝိုင်း</a></li>
                 <li><div class="drawer-divider"></div></li>
                 <li><a onclick="window.closeDrawer(); window.exportUsersToCSV()"><i class="fas fa-file-excel"></i> အသုံးပြုသူများ တင်ပို့ခြင်း (CSV)</a></li>
@@ -989,13 +999,31 @@
             <div class="product-list" id="productList"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> ထုတ်ကုန်များ ဖွင့်နေသည်...</div></div>
         </div>
         
-        <!-- Ads Tab (New) -->
+        <!-- Ads Tab -->
         <div id="adsTab" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <h3><i class="fas fa-ad"></i> ကြော်ငြာများ</h3>
                 <button class="add-product-btn" onclick="openAddAdModal()"><i class="fas fa-plus"></i> ကြော်ငြာအသစ်</button>
             </div>
             <div class="ads-list" id="adsList"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> ကြော်ငြာများ ဖွင့်နေသည်...</div></div>
+        </div>
+        
+        <!-- Redemptions Tab -->
+        <div id="redemptionsTab" class="tab-content">
+            <div class="filter-bar" style="margin-bottom: 16px;">
+                <div class="filter-group">
+                    <select id="redemptionStatusFilter" class="filter-input">
+                        <option value="all">အားလုံး</option>
+                        <option value="pending">ဆိုင်းငံ့ထားသော</option>
+                        <option value="approved">အတည်ပြုပြီး</option>
+                        <option value="rejected">ပယ်ချထားသော</option>
+                    </select>
+                    <button class="filter-btn" onclick="filterRedemptions()">စစ်ထုတ်ရန်</button>
+                </div>
+            </div>
+            <div class="orders-list" id="redemptionsList">
+                <div class="loading"><i class="fas fa-spinner fa-pulse"></i> ဖွင့်နေသည်...</div>
+            </div>
         </div>
         
         <div class="last-update" id="lastUpdate"></div>
@@ -1007,6 +1035,7 @@
         <button class="nav-item" data-tab="users"><i class="fas fa-users"></i><span>အသုံးပြုသူများ</span></button>
         <button class="nav-item" data-tab="market"><i class="fas fa-store"></i><span>စတိုးဆိုင်</span></button>
         <button class="nav-item" data-tab="ads"><i class="fas fa-ad"></i><span>ကြော်ငြာများ</span></button>
+        <button class="nav-item" data-tab="redemptions"><i class="fas fa-exchange-alt"></i><span>လဲလှယ်</span></button>
         <button class="nav-item" data-tab="chat" onclick="openAdminChatWidget()"><i class="fas fa-comments"></i><span>စကားဝိုင်း</span></button>
     </div>
     
@@ -1056,7 +1085,7 @@
     </div>
 </div>
 
-<!-- Ad Modal (New) -->
+<!-- Ad Modal -->
 <div id="adModal" class="modal">
     <div class="modal-card">
         <h3 id="adModalTitle">ကြော်ငြာအသစ်ထည့်ရန်</h3>
@@ -1086,7 +1115,7 @@
 <div id="toast" class="toast"></div>
 
 <script>
-// ==================== MAIN SCRIPT (Original + Ads Added) ====================
+// ==================== MAIN SCRIPT (Original + Ads Added + Redemptions) ====================
 (function() {
     const API_BASE = window.location.origin;
     let token = localStorage.getItem('adminToken');
@@ -1101,6 +1130,9 @@
     // ============ AD MANAGEMENT VARIABLES ============
     let allAds = [];
     let editingAdId = null;
+    
+    // ============ REDEMPTION MANAGEMENT VARIABLES ============
+    let allRedemptions = [];
     
     const costPriceMap = {
         "VIP LEVEL - 1": 14500,
@@ -1387,6 +1419,7 @@
                 loadSalesHours();
                 loadAdSettings();
                 loadAds();
+                loadRedemptions();
                 startAutoSync(); 
             } else { 
                 showToast('စကားဝှက် မှားယွင်းနေသည်', true); 
@@ -1415,6 +1448,7 @@
         await loadUserStats(); 
         await loadProducts(); 
         await loadAds();
+        if (currentTab === 'redemptions') await loadRedemptions();
         updateAllStats();
     }
     
@@ -1477,6 +1511,166 @@
             renderProducts(); 
         }
     }
+    
+    // ============ REDEMPTION MANAGEMENT FUNCTIONS ============
+    async function loadRedemptions() {
+        try {
+            const res = await fetchWithRetry(`${API_BASE}/api/admin/redemptions`, {
+                credentials: 'include'
+            });
+            if (!res) return;
+            const data = await res.json();
+            if (data.success) {
+                allRedemptions = data.redemptions || [];
+                renderRedemptions();
+            } else {
+                allRedemptions = [];
+                renderRedemptions();
+            }
+        } catch(e) {
+            console.error('Error loading redemptions:', e);
+            document.getElementById('redemptionsList').innerHTML = '<div class="loading">ဒေတာရယူရန် အမှားရှိသည်</div>';
+        }
+    }
+    
+    function renderRedemptions() {
+        const container = document.getElementById('redemptionsList');
+        if (!container) return;
+        
+        const statusFilter = document.getElementById('redemptionStatusFilter')?.value || 'all';
+        let filtered = [...allRedemptions];
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter(r => r.status === statusFilter);
+        }
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="loading">လဲလှယ်တောင်းဆိုမှုမရှိသေးပါ</div>';
+            return;
+        }
+        
+        let html = '';
+        for (const r of filtered) {
+            const date = new Date(r.created_at);
+            let statusBadge = '';
+            let actionButtons = '';
+            
+            if (r.status === 'pending') {
+                statusBadge = '<span class="status-badge" style="background:rgba(245,158,11,0.2); color:#fbbf24;">⏳ ဆိုင်းငံ့</span>';
+                actionButtons = `
+                    <button class="action-btn approve" onclick="approveRedemption(${r.id})" style="background:#10b981; color:white; padding:6px 12px; border-radius:40px; border:none; cursor:pointer;">
+                        <i class="fas fa-check"></i> အတည်ပြု
+                    </button>
+                    <button class="action-btn reject" onclick="rejectRedemption(${r.id})" style="background:#f43f5e; color:white; padding:6px 12px; border-radius:40px; border:none; cursor:pointer;">
+                        <i class="fas fa-times"></i> ပယ်ချ
+                    </button>
+                `;
+            } else if (r.status === 'approved') {
+                statusBadge = '<span class="status-badge" style="background:rgba(16,185,129,0.2); color:#34d399;">✅ အတည်ပြုပြီး</span>';
+            } else {
+                statusBadge = '<span class="status-badge" style="background:rgba(244,63,94,0.2); color:#fb7185;">❌ ပယ်ချထား</span>';
+            }
+            
+            html += `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-plan"><i class="fas fa-exchange-alt"></i> လဲလှယ်တောင်းဆိုမှု #${r.id}</div>
+                        ${statusBadge}
+                    </div>
+                    <div class="order-details" style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:10px;">
+                        <div class="detail-item" style="flex:1;">
+                            <div class="detail-label" style="font-size:0.55rem; color:#64748b;">👤 တောင်းဆိုသူ</div>
+                            <div class="detail-value" style="font-size:0.75rem;">${escapeHtml(r.user_phone)}</div>
+                        </div>
+                        <div class="detail-item" style="flex:1;">
+                            <div class="detail-label" style="font-size:0.55rem; color:#64748b;">📱 လက်ခံမည့်သူ</div>
+                            <div class="detail-value" style="font-size:0.75rem;">${escapeHtml(r.target_phone)}</div>
+                        </div>
+                        <div class="detail-item" style="flex:1;">
+                            <div class="detail-label" style="font-size:0.55rem; color:#64748b;">🎯 Plan</div>
+                            <div class="detail-value" style="font-size:0.75rem; font-weight:600; color:var(--cyan);">${escapeHtml(r.plan_name)}</div>
+                        </div>
+                        <div class="detail-item" style="flex:1;">
+                            <div class="detail-label" style="font-size:0.55rem; color:#64748b;">💰 Credit သုံးစွဲ</div>
+                            <div class="detail-value" style="font-size:0.75rem; font-weight:600; color:var(--emerald);">${r.credit_used.toLocaleString()} MMK</div>
+                        </div>
+                        <div class="detail-item" style="flex:1;">
+                            <div class="detail-label" style="font-size:0.55rem; color:#64748b;">📅 ရက်စွဲ</div>
+                            <div class="detail-value" style="font-size:0.7rem;">${date.toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="order-actions" style="display:flex; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05);">
+                        ${actionButtons}
+                        <button class="action-btn delete" onclick="deleteRedemption(${r.id})" style="background:#475569; color:white; padding:6px 12px; border-radius:40px; border:none; cursor:pointer;">
+                            <i class="fas fa-trash"></i> ဖျက်ရန်
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+    
+    window.filterRedemptions = function() {
+        renderRedemptions();
+    };
+    
+    window.approveRedemption = async function(id) {
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/redemptions/${id}/approve`, {
+                method: 'PUT',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('✅ လဲလှယ်မှုကို အတည်ပြုပြီးပါပြီ');
+                loadRedemptions();
+                loadAllData();
+            } else {
+                showToast(data.error || 'အတည်ပြုရန် မအောင်မြင်ပါ', true);
+            }
+        } catch(e) {
+            showToast('Error: ' + e.message, true);
+        }
+    };
+    
+    window.rejectRedemption = async function(id) {
+        if (!confirm('ဤလဲလှယ်တောင်းဆိုမှုကို ပယ်ချမည်လား။ Credit များ ပြန်အမ်းပေးမည်။')) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/redemptions/${id}/reject`, {
+                method: 'PUT',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('❌ လဲလှယ်မှုကို ပယ်ချပြီးပါပြီ။ Credit များ ပြန်အမ်းပြီးပါပြီ။');
+                loadRedemptions();
+                loadAllData();
+            } else {
+                showToast(data.error || 'ပယ်ချရန် မအောင်မြင်ပါ', true);
+            }
+        } catch(e) {
+            showToast('Error: ' + e.message, true);
+        }
+    };
+    
+    window.deleteRedemption = async function(id) {
+        if (!confirm('ဤမှတ်တမ်းကို ဖျက်မည်လား။')) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/redemptions/${id}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('🗑 ဖျက်ပြီးပါပြီ');
+                loadRedemptions();
+            } else {
+                showToast(data.error || 'ဖျက်ရန် မအောင်မြင်ပါ', true);
+            }
+        } catch(e) {
+            showToast('Error: ' + e.message, true);
+        }
+    };
     
     // ============ AD MANAGEMENT FUNCTIONS ============
     async function loadAds() {
@@ -2122,6 +2316,7 @@
         else if (tab === 'users') renderUsersTab();
         else if (tab === 'market') loadProducts();
         else if (tab === 'ads') loadAds();
+        else if (tab === 'redemptions') loadRedemptions();
     };
     
     document.querySelectorAll('.nav-item').forEach(btn => { 
