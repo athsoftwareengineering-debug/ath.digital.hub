@@ -629,80 +629,6 @@
         #adContainer:empty {
             display: none;
         }
-
-        /* Credit & Referral Styles */
-        .credit-stats {
-            background: rgba(16,185,129,0.06);
-            border-radius: 14px;
-            padding: 12px;
-            margin: 12px 0;
-        }
-        .referral-code-box {
-            background: rgba(0,0,0,0.3);
-            border-radius: 40px;
-            padding: 10px 14px;
-            margin-bottom: 8px;
-            text-align: center;
-        }
-        .referral-code-box span {
-            font-family: monospace;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
-            word-break: break-all;
-        }
-        .copy-btn {
-            background: rgba(0,212,255,0.12);
-            border: 1px solid rgba(0,212,255,0.25);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.65rem;
-            cursor: pointer;
-        }
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            font-size: 0.7rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .stat-row:last-child {
-            border-bottom: none;
-        }
-        .input-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-top: 8px;
-        }
-        .input-group input, .input-group select {
-            flex: 1;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #2d3a5e;
-            border-radius: 40px;
-            padding: 8px 12px;
-            color: white;
-            font-size: 0.7rem;
-        }
-        .credit-btn {
-            background: linear-gradient(135deg, #10b981, #059669);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .add-referral-box {
-            background: rgba(245,158,11,0.08);
-            border-radius: 14px;
-            padding: 12px;
-            margin: 12px 0;
-        }
-        .add-referral-box .note {
-            font-size: 0.6rem;
-            color: #94a3b8;
-            margin-bottom: 8px;
-        }
     </style>
 </head>
 <body>
@@ -980,7 +906,7 @@
 
 <script>
     const API_BASE = window.location.origin;
-    let currentUser = null, currentUsername = null, currentUserId = null, currentReferralCode = null;
+    let currentUser = null, currentUsername = null, currentUserId = null;
     let allOrders = [];
     let selectedPayment = "kpay";
     let currentRenewMode = 'other';
@@ -1006,7 +932,7 @@
     
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text);
-        showToast(`📋 ${text} copied!`);
+        showToast(`📞 ${text} copied!`);
     }
     
     function getRemainingTime(activatedAt) {
@@ -1145,9 +1071,7 @@
             const data = await res.json();
             if (data.success && data.user) {
                 currentUserId = data.user.user_id;
-                currentReferralCode = data.user.referral_code;
                 localStorage.setItem('userId', currentUserId);
-                localStorage.setItem('referralCode', currentReferralCode);
                 document.getElementById('userIdDisplay').innerHTML = `🆔 ${currentUserId}`;
                 document.getElementById('drawerUserId').innerHTML = `🆔 ${currentUserId}`;
                 await renderProfile();
@@ -1192,12 +1116,10 @@
             currentUser = phone;
             currentUsername = username;
             currentUserId = user.user_id;
-            currentReferralCode = user.referral_code;
             
             localStorage.setItem('userPhone', phone);
             localStorage.setItem('userName', username);
             localStorage.setItem('userId', user.user_id);
-            localStorage.setItem('referralCode', user.referral_code);
             
             if (data.isNewUser) {
                 showToast(`🎉 ကြိုဆိုပါသည်! သင်၏ User ID: ${user.user_id}`);
@@ -1231,7 +1153,6 @@
         
         await loadUserOrders();
         await loadSalesStatus();
-        await loadCreditAndReferralData();
         
         if (currentTab === 'orders') renderMyOrders();
         if (currentTab === 'profile') await renderProfile();
@@ -1249,25 +1170,6 @@
         }, 500);
         
         showToast('✅ Data refreshed successfully');
-    }
-    
-    async function loadCreditAndReferralData() {
-        if (!currentUser) return;
-        try {
-            const creditRes = await fetch(`${API_BASE}/api/user/credit/${currentUser}`);
-            const creditData = await creditRes.json();
-            if (creditData.success) {
-                window.userCredit = creditData.credit;
-            }
-            
-            const referralRes = await fetch(`${API_BASE}/api/user/referral-stats/${currentUser}`);
-            const referralData = await referralRes.json();
-            if (referralData.success) {
-                window.userReferralCount = referralData.referralCount;
-            }
-        } catch(e) {
-            console.error('Error loading credit data:', e);
-        }
     }
     
     function exportMyOrders() {
@@ -1478,36 +1380,6 @@
         const pending = allOrders.filter(o => o.status === 'Pending').length;
         
         const userId = currentUserId || localStorage.getItem('userId') || 'Loading...';
-        const referralCode = currentReferralCode || localStorage.getItem('referralCode') || '-';
-        
-        // Load credit data
-        let creditBalance = 0;
-        let referralCount = 0;
-        let hasEnteredReferral = false;
-        
-        try {
-            const userRes = await fetch(`${API_BASE}/api/user/${currentUser}`);
-            const userData = await userRes.json();
-            if (userData.success) {
-                hasEnteredReferral = userData.user.has_entered_referral || false;
-            }
-            
-            const creditRes = await fetch(`${API_BASE}/api/user/credit/${currentUser}`);
-            const creditData = await creditRes.json();
-            if (creditData.success) creditBalance = creditData.credit;
-            
-            const referralRes = await fetch(`${API_BASE}/api/user/referral-stats/${currentUser}`);
-            const referralData = await referralRes.json();
-            if (referralData.success) referralCount = referralData.referralCount;
-        } catch(e) {
-            console.error('Error loading profile data:', e);
-        }
-        
-        let redeemableText = 'credit မလုံလောက်သေး';
-        if (creditBalance >= 30000) redeemableText = 'vip plan 4';
-        else if (creditBalance >= 25000) redeemableText = 'vip plan 3';
-        else if (creditBalance >= 20000) redeemableText = 'vip plan 2';
-        else if (creditBalance >= 15000) redeemableText = 'vip plan 1';
         
         container.innerHTML = `
             <div class="profile-card" style="text-align:center;">
@@ -1522,73 +1394,6 @@
                     <div style="background:rgba(16,185,129,0.05); padding:12px; border-radius:1rem;"><div style="font-size:1.3rem; font-weight:800; color:var(--emerald);">${approved}</div><div>အတည်ပြုပြီး</div></div>
                     <div style="background:rgba(245,158,11,0.05); padding:12px; border-radius:1rem;"><div style="font-size:1.3rem; font-weight:800; color:var(--amber);">${pending}</div><div>စောင့်ဆိုင်းဆဲ</div></div>
                 </div>
-                
-                <!-- Referral Code Section -->
-                <div style="background:rgba(0,212,255,0.05); border-radius:14px; padding:12px; margin:12px 0;">
-                    <div style="font-size:0.75rem; font-weight:600; color:var(--cyan); margin-bottom:8px;">
-                        <i class="fas fa-key"></i> မိတ်ဆက်ကုဒ်
-                    </div>
-                    <div class="referral-code-box">
-                        <span id="profileReferralCode">${escapeHtml(referralCode)}</span>
-                    </div>
-                    <button class="copy-btn" onclick="copyReferralCode()">
-                        <i class="fas fa-copy"></i> ကူးယူရန်
-                    </button>
-                </div>
-                
-                <!-- Credit & Referral Stats -->
-                <div class="credit-stats">
-                    <div style="font-size:0.75rem; font-weight:600; color:var(--emerald); margin-bottom:8px;">
-                        <i class="fas fa-chart-line"></i> မိတ်ဆက်စာရင်းအင်း
-                    </div>
-                    <div class="stat-row">
-                        <span>ခေါ်လာခဲ့သူ</span>
-                        <span id="referralCount" style="color:#34d399;">${referralCount}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>credit ရရှိထား</span>
-                        <span id="creditBalance" style="color:#fbbf24;">${creditBalance.toLocaleString()} MMK</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>လဲလှယ်နိုင်သော plan</span>
-                        <span id="redeemablePlan" style="color:#34d399;">${redeemableText}</span>
-                    </div>
-                </div>
-                
-                <!-- Add Referral Code Later -->
-                <div id="addReferralBox" class="add-referral-box" style="${hasEnteredReferral ? 'display:none;' : ''}">
-                    <div style="font-size:0.75rem; font-weight:600; color:var(--amber); margin-bottom:8px;">
-                        <i class="fas fa-gift"></i> မိတ်ဆက်ကုဒ်ထည့်ရန်
-                    </div>
-                    <div class="note">အကောင့်ဖွင့်တုန်းက မထည့်ခဲ့ရင် ဤနေရာတွင် ထည့်နိုင်ပါသည်။ (တစ်ကြိမ်သာ)</div>
-                    <div class="input-group">
-                        <input type="text" id="laterReferralCode" placeholder="referral code">
-                        <button onclick="addReferralCodeLater()" class="credit-btn" style="background:#fbbf24; color:#030712;">အတည်ပြု</button>
-                    </div>
-                    <div id="referralMessage" style="font-size:0.6rem; margin-top:8px;"></div>
-                </div>
-                
-                <!-- Credit Redeem Section -->
-                <div style="background:rgba(16,185,129,0.06); border-radius:14px; padding:12px; margin:12px 0;">
-                    <div style="font-size:0.75rem; font-weight:600; color:var(--emerald); margin-bottom:8px;">
-                        <i class="fas fa-exchange-alt"></i> credit ဖြင့် plan လဲလှယ်ရန်
-                    </div>
-                    <div class="input-group">
-                        <input type="tel" id="redeemPhone" placeholder="ဖုန်းနံပါတ်">
-                    </div>
-                    <div class="input-group" style="margin-top:8px;">
-                        <select id="redeemPlan">
-                            <option value="VIP LEVEL - 1" data-price="15000">vip plan 1 (15,000 credit)</option>
-                            <option value="VIP LEVEL - 2" data-price="20000">vip plan 2 (20,000 credit)</option>
-                            <option value="VIP LEVEL - 3" data-price="25000">vip plan 3 (25,000 credit)</option>
-                            <option value="VIP LEVEL - 4 (ULTRA)" data-price="30000">vip plan 4 (30,000 credit)</option>
-                        </select>
-                    </div>
-                    <button onclick="redeemWithCredit()" class="credit-btn" style="margin-top:12px; width:100%;">
-                        အတည်ပြုမည်
-                    </button>
-                </div>
-                
                 <div class="support-links">
                     <a href="https://t.me/ATHsupport" class="support-link" target="_blank"><i class="fab fa-telegram"></i> Telegram</a>
                     <a href="https://www.facebook.com/athdigitalhub" class="support-link" target="_blank"><i class="fab fa-facebook"></i> Facebook</a>
@@ -1738,7 +1543,6 @@
         currentUser = null;
         currentUsername = null;
         currentUserId = null;
-        currentReferralCode = null;
         marketLoaded = false;
         liveLoaded = false;
         
@@ -1773,96 +1577,7 @@
     function showSupport() { closeDrawer(); showToast("Contact: Telegram @ATHsupport, Viber 09799480995"); }
     function showNotifications() { showToast("No new notifications"); }
     
-    // ==================== CREDIT & REFERRAL FUNCTIONS ====================
-    
-    function copyReferralCode() {
-        const codeEl = document.getElementById('profileReferralCode');
-        if (codeEl) {
-            const code = codeEl.innerText;
-            if (code && code !== '-') {
-                navigator.clipboard.writeText(code);
-                showToast('referral code ကူးယူပြီးပါပြီ');
-            }
-        }
-    }
-    
-    async function addReferralCodeLater() {
-        const code = document.getElementById('laterReferralCode').value.trim();
-        const phone = currentUser;
-        const msgDiv = document.getElementById('referralMessage');
-        
-        if (!code) {
-            msgDiv.innerHTML = '<span style="color:#fb7185;">referral code ထည့်ပါ</span>';
-            return;
-        }
-        
-        msgDiv.innerHTML = '<span style="color:#00d4ff;">လုပ်ဆောင်နေသည်...</span>';
-        
-        try {
-            const res = await fetch(`${API_BASE}/api/user/add-referral`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone, referral_code: code })
-            });
-            const data = await res.json();
-            
-            if (data.success) {
-                msgDiv.innerHTML = '<span style="color:#34d399;">referral code ထည့်သွင်းပြီးပါပြီ</span>';
-                document.getElementById('addReferralBox').style.display = 'none';
-                await renderProfile();
-            } else {
-                msgDiv.innerHTML = `<span style="color:#fb7185;">${data.error}</span>`;
-            }
-        } catch(e) {
-            msgDiv.innerHTML = '<span style="color:#fb7185;">connection error</span>';
-        }
-    }
-    
-    async function redeemWithCredit() {
-        const user_phone = currentUser;
-        const target_phone = document.getElementById('redeemPhone').value.trim();
-        const planSelect = document.getElementById('redeemPlan');
-        const plan_name = planSelect.value;
-        const plan_price = parseInt(planSelect.options[planSelect.selectedIndex].getAttribute('data-price'));
-        
-        if (!user_phone) {
-            showToast("အကောင့်ဝင်ရန် လိုအပ်ပါသည်", true);
-            return;
-        }
-        if (!target_phone) {
-            showToast("ဖုန်းနံပါတ် ထည့်ပါ", true);
-            return;
-        }
-        
-        const btn = event.target;
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
-        btn.disabled = true;
-        
-        try {
-            const res = await fetch(`${API_BASE}/api/credit/redeem`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_phone, target_phone, plan_name, plan_price })
-            });
-            const data = await res.json();
-            
-            if (data.success) {
-                showToast(data.message);
-                await renderProfile();
-                document.getElementById('redeemPhone').value = '';
-            } else {
-                showToast(data.error, true);
-            }
-        } catch(e) {
-            showToast("connection error", true);
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    }
-    
-    // ==================== LANGUAGE SWITCHER ====================
+    // ==================== LANGUAGE SWITCHER (WORKING) ====================
     function changeLanguage(lang) {
         localStorage.setItem('app_language', lang);
         
@@ -1937,6 +1652,7 @@
         
         const t = translations[lang] || translations['my'];
         
+        // Update Drawer Menu
         const drawerLinks = document.querySelectorAll('.drawer-menu li a');
         const drawerTextKeys = ['home', 'plans', 'orders', 'live', 'market', 'profile', 'support', 'exportOrders', 'logout'];
         drawerLinks.forEach((link, index) => {
@@ -1946,6 +1662,7 @@
             }
         });
         
+        // Update Bottom Navigation
         const navItems = document.querySelectorAll('.bottom-nav .nav-item');
         const navTextKeys = ['home', 'plans', 'orders', 'live', 'chat'];
         navItems.forEach((item, index) => {
@@ -1955,17 +1672,21 @@
             }
         });
         
+        // Update Orders Tab buttons
         const selfBtn = document.querySelector('.orders-renew-btn.self');
         const otherBtn = document.querySelector('.orders-renew-btn.other');
         if (selfBtn) selfBtn.innerHTML = `<i class="fas fa-user"></i> ${t.buyForSelf}`;
         if (otherBtn) otherBtn.innerHTML = `<i class="fas fa-users"></i> ${t.buyForOther}`;
         
+        // Update Welcome Text
         const welcomeSpan = document.getElementById('welcomeText');
         if (welcomeSpan) welcomeSpan.textContent = t.welcome;
         
+        // Update Market Close Button
         const marketCloseBtn = document.querySelector('.market-close-btn');
         if (marketCloseBtn) marketCloseBtn.innerHTML = `<i class="fas fa-times-circle"></i> ${t.closeMarket}`;
         
+        // Update Payment Modal
         const paymentTitle = document.getElementById('paymentTitle');
         if (paymentTitle) paymentTitle.textContent = t.payment;
         
@@ -2005,13 +1726,11 @@
     const savedPhone = localStorage.getItem('userPhone');
     const savedName = localStorage.getItem('userName');
     const savedId = localStorage.getItem('userId');
-    const savedCode = localStorage.getItem('referralCode');
     
     if (savedPhone && savedName) {
         currentUser = savedPhone;
         currentUsername = savedName;
         currentUserId = savedId || null;
-        currentReferralCode = savedCode || null;
         
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
@@ -2062,9 +1781,6 @@
     window.closeUserChatWidget = closeUserChatWidget;
     window.closeMarketTab = closeMarketTab;
     window.loadSalesStatus = loadSalesStatus;
-    window.copyReferralCode = copyReferralCode;
-    window.addReferralCodeLater = addReferralCodeLater;
-    window.redeemWithCredit = redeemWithCredit;
 </script>
 
 <!-- ========== AD WIDGET SCRIPT ========== -->
