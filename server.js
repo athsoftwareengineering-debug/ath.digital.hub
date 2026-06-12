@@ -189,26 +189,35 @@ const orderLimiter = rateLimit({ windowMs: 60 * 1000, max: 3, message: { error: 
 
 app.use('/api/', apiLimiter);
 
-// ==================== SESSION CONFIGURATION ====================
+// ==================== SESSION CONFIGURATION (FIXED) ====================
 const sessionConfig = {
     secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
     resave: false,
     saveUninitialized: false,
-    name: 'sessionId',
+    name: 'ath_session_id',
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,  // Render uses HTTPS
         httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 2,
-        sameSite: 'strict',
-        domain: process.env.COOKIE_DOMAIN || undefined
+        maxAge: 1000 * 60 * 60 * 24,  // 24 hours
+        sameSite: 'none',  // Important for cross-site requests
     },
-    rolling: true
+    rolling: true,
+    proxy: true  // Important for Render
 };
-if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
+
+// Trust proxy for Render
+app.set('trust proxy', 1);
+
+// Session middleware
 app.use(session(sessionConfig));
 
 // ==================== CORS ====================
-app.use(cors({ origin: process.env.NODE_ENV === 'production' ? process.env.ALLOWED_ORIGINS?.split(',') : '*', credentials: true }));
+app.use(cors({ 
+    origin: process.env.NODE_ENV === 'production' ? process.env.ALLOWED_ORIGINS?.split(',') : '*', 
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(__dirname));
@@ -282,10 +291,13 @@ function checkRateLimit(phone) {
 }
 
 function isAuthenticated(req, res, next) {
+    console.log('🔐 Auth check - Session ID:', req.sessionID);
+    console.log('🔐 Auth check - isAdmin:', req.session?.isAdmin);
+    
     if (!req.session) {
         return res.status(401).json({ success: false, error: 'Session not initialized' });
     }
-    if (req.session.isAdmin) {
+    if (req.session.isAdmin === true) {
         next();
     } else {
         res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -995,11 +1007,34 @@ app.delete('/api/admin/orders/:id', isAuthenticated, async (req, res) => {
 app.post('/api/admin/login', loginLimiter, async (req, res) => {
     const { password } = req.body;
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-    if (password === adminPassword) { req.session.isAdmin = true; res.json({ success: true, message: 'Login successful' }); }
-    else { res.status(401).json({ success: false, message: 'Invalid password' }); }
+    
+    if (password === adminPassword) { 
+        req.session.isAdmin = true;
+        req.session.regenerate((err) => {
+            if (err) {
+                console.error('Session regenerate error:', err);
+                return res.status(500).json({ success: false, message: 'Session error' });
+            }
+            req.session.save((err) => {
+                if (err) {
+                    console.error('Session save error:', err);
+                    return res.status(500).json({ success: false, message: 'Session save error' });
+                }
+                console.log('✅ Admin logged in - Session ID:', req.sessionID);
+                res.json({ success: true, message: 'Login successful' });
+            });
+        });
+    } else { 
+        res.status(401).json({ success: false, message: 'Invalid password' });
+    }
 });
 
-app.post('/api/admin/logout', (req, res) => { req.session.destroy(); res.json({ success: true, message: 'Logged out successfully' }); });
+app.post('/api/admin/logout', (req, res) => { 
+    req.session.destroy((err) => {
+        if (err) console.error('Logout error:', err);
+        res.json({ success: true, message: 'Logged out successfully' });
+    }); 
+});
 
 // ==================== SYSTEM RESET API ====================
 app.post('/api/admin/system-reset', isAuthenticated, async (req, res) => {
