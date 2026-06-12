@@ -4,7 +4,6 @@ const { supabaseAdmin } = require('../database');
 
 // ==================== AUTHENTICATION MIDDLEWARE ====================
 function isAuthenticated(req, res, next) {
-    // Session ရှိမရှိ စစ်ဆေးပါ
     if (!req.session) {
         return res.status(401).json({ success: false, error: 'Session not initialized' });
     }
@@ -15,7 +14,7 @@ function isAuthenticated(req, res, next) {
     }
 }
 
-// ==================== PUBLIC ADS API (No Authentication Required) ====================
+// ==================== PUBLIC ADS API (No Auth) ====================
 
 // ကြော်ငြာများရယူရန် (သုံးစွဲသူ)
 router.get('/ads', async (req, res) => {
@@ -38,7 +37,7 @@ router.get('/ads', async (req, res) => {
     }
 });
 
-// ကြော်ငြာဆက်တင်ရယူရန် (သုံးစွဲသူ)
+// ကြော်ငြာဆက်တင်ရယူရန်
 router.get('/ad-settings', async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
@@ -54,7 +53,7 @@ router.get('/ad-settings', async (req, res) => {
     }
 });
 
-// ကလစ်ရေတွက်ရန် (သုံးစွဲသူ)
+// ကလစ်ရေတွက်ရန်
 router.post('/ads/:id/click', async (req, res) => {
     try {
         const { id } = req.params;
@@ -66,7 +65,7 @@ router.post('/ads/:id/click', async (req, res) => {
     }
 });
 
-// မြင်ရအကြိမ်ရေတွက်ရန် (သုံးစွဲသူ)
+// မြင်ရအကြိမ်ရေတွက်ရန်
 router.post('/ads/:id/view', async (req, res) => {
     try {
         const { id } = req.params;
@@ -78,7 +77,7 @@ router.post('/ads/:id/view', async (req, res) => {
     }
 });
 
-// ==================== ADMIN ADS API (Authentication Required) ====================
+// ==================== ADMIN ADS API (Auth Required) ====================
 
 // ကြော်ငြာများရယူရန် (အဒ်မင်)
 router.get('/admin/ads', isAuthenticated, async (req, res) => {
@@ -107,16 +106,9 @@ router.post('/admin/ads', isAuthenticated, async (req, res) => {
         const { data, error } = await supabaseAdmin
             .from('ads')
             .insert([{
-                name, 
-                image_url, 
-                destination_url, 
-                alt_text: alt_text || null,
-                display_weight: display_weight || 5, 
-                expiry_date: expiry_date || null,
-                active: true, 
-                clicks: 0, 
-                views: 0, 
-                created_at: new Date().toISOString()
+                name, image_url, destination_url, alt_text: alt_text || null,
+                display_weight: display_weight || 5, expiry_date: expiry_date || null,
+                active: true, clicks: 0, views: 0, created_at: new Date().toISOString()
             }])
             .select();
         if (error) throw error;
@@ -134,16 +126,7 @@ router.put('/admin/ads/:id', isAuthenticated, async (req, res) => {
         const { name, image_url, destination_url, alt_text, active, display_weight, expiry_date } = req.body;
         const { error } = await supabaseAdmin
             .from('ads')
-            .update({ 
-                name, 
-                image_url, 
-                destination_url, 
-                alt_text, 
-                active, 
-                display_weight, 
-                expiry_date, 
-                updated_at: new Date().toISOString() 
-            })
+            .update({ name, image_url, destination_url, alt_text, active, display_weight, expiry_date, updated_at: new Date().toISOString() })
             .eq('id', id);
         if (error) throw error;
         res.json({ success: true });
@@ -153,7 +136,7 @@ router.put('/admin/ads/:id', isAuthenticated, async (req, res) => {
     }
 });
 
-// ကြော်ငြာဖျက်ရန် (Soft Delete)
+// ကြော်ငြာဖျက်ရန်
 router.delete('/admin/ads/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
@@ -175,13 +158,7 @@ router.put('/admin/ad-settings', isAuthenticated, async (req, res) => {
         const { rotation_mode, auto_cycle_seconds, show_navigation } = req.body;
         const { error } = await supabaseAdmin
             .from('ad_settings')
-            .upsert({ 
-                id: 1, 
-                rotation_mode, 
-                auto_cycle_seconds, 
-                show_navigation, 
-                updated_at: new Date().toISOString() 
-            });
+            .upsert({ id: 1, rotation_mode, auto_cycle_seconds, show_navigation, updated_at: new Date().toISOString() });
         if (error) throw error;
         res.json({ success: true });
     } catch (err) {
