@@ -72,7 +72,6 @@ async function createNewUser(phone, username) {
                 reject_count: 0,
                 suspect_flag: false,
                 blocked: false,
-                credit_balance: 0,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             }])
@@ -258,137 +257,6 @@ async function searchUsers(searchTerm) {
     }
 }
 
-// ==================== CREDIT & REFERRAL FUNCTIONS ====================
-
-async function getUserCredit(phone) {
-    try {
-        const { data, error } = await supabaseAdmin
-            .from('user_stats')
-            .select('credit_balance')
-            .eq('phone', phone)
-            .maybeSingle();
-        if (error) throw error;
-        return data?.credit_balance || 0;
-    } catch (e) {
-        console.error('Error getting user credit:', e);
-        return 0;
-    }
-}
-
-async function addCredit(phone, amount, type, referencePhone = null) {
-    try {
-        const currentCredit = await getUserCredit(phone);
-        const newCredit = currentCredit + amount;
-        
-        await supabaseAdmin
-            .from('user_stats')
-            .update({ credit_balance: newCredit, updated_at: new Date().toISOString() })
-            .eq('phone', phone);
-        
-        await supabaseAdmin
-            .from('credit_transactions')
-            .insert({
-                user_phone: phone,
-                amount: amount,
-                type: type,
-                reference_phone: referencePhone,
-                created_at: new Date().toISOString()
-            });
-        
-        console.log(`✅ Added ${amount} credit to ${phone}`);
-        return true;
-    } catch (e) {
-        console.error('Error adding credit:', e);
-        return false;
-    }
-}
-
-async function deductCredit(phone, amount, type, orderId = null) {
-    try {
-        const currentCredit = await getUserCredit(phone);
-        if (currentCredit < amount) return false;
-        
-        const newCredit = currentCredit - amount;
-        
-        await supabaseAdmin
-            .from('user_stats')
-            .update({ credit_balance: newCredit, updated_at: new Date().toISOString() })
-            .eq('phone', phone);
-        
-        await supabaseAdmin
-            .from('credit_transactions')
-            .insert({
-                user_phone: phone,
-                amount: -amount,
-                type: type,
-                order_id: orderId,
-                created_at: new Date().toISOString()
-            });
-        
-        console.log(`✅ Deducted ${amount} credit from ${phone}`);
-        return true;
-    } catch (e) {
-        console.error('Error deducting credit:', e);
-        return false;
-    }
-}
-
-async function generateReferralCode(phone) {
-    const last6 = phone.slice(-6);
-    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-    return `ATH${last6}${random}`;
-}
-
-async function getUserByReferralCode(referralCode) {
-    try {
-        const { data, error } = await supabaseAdmin
-            .from('user_stats')
-            .select('*')
-            .eq('referral_code', referralCode)
-            .maybeSingle();
-        return data;
-    } catch (e) {
-        return null;
-    }
-}
-
-async function getReferralCount(phone) {
-    try {
-        const { count, error } = await supabaseAdmin
-            .from('referrals')
-            .select('*', { count: 'exact', head: true })
-            .eq('referrer_phone', phone)
-            .eq('is_qualified', true);
-        return count || 0;
-    } catch (e) {
-        return 0;
-    }
-}
-
-async function markReferralQualified(referredPhone) {
-    try {
-        await supabaseAdmin
-            .from('referrals')
-            .update({ is_qualified: true, qualified_at: new Date().toISOString() })
-            .eq('referred_phone', referredPhone);
-    } catch (e) {
-        console.error('Error marking referral qualified:', e);
-    }
-}
-
-async function hasEnteredReferralCode(phone) {
-    try {
-        const { data, error } = await supabaseAdmin
-            .from('user_stats')
-            .select('has_entered_referral')
-            .eq('phone', phone)
-            .maybeSingle();
-        return data?.has_entered_referral || false;
-    } catch (e) {
-        return false;
-    }
-}
-
 async function testConnection() {
     try {
         const { error } = await supabase.from('orders').select('count', { count: 'exact', head: true });
@@ -421,13 +289,5 @@ module.exports = {
     isPhoneBlocked,
     getAllUsers,
     searchUsers,
-    testConnection,
-    getUserCredit,
-    addCredit,
-    deductCredit,
-    generateReferralCode,
-    getUserByReferralCode,
-    getReferralCount,
-    markReferralQualified,
-    hasEnteredReferralCode
+    testConnection
 };
