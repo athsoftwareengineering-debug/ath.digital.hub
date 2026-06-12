@@ -567,8 +567,7 @@ app.post('/api/credit/redeem', async (req, res) => {
                 target_phone: target_phone,
                 plan_name: plan_name,
                 credit_used: plan_price,
-                status: 'approved',
-                order_id: orderId,
+                status: 'pending',
                 created_at: new Date().toISOString()
             });
         
@@ -576,6 +575,108 @@ app.post('/api/credit/redeem', async (req, res) => {
         
     } catch (error) {
         console.error('Error redeeming credit:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ==================== REDEMPTIONS API (Admin) ====================
+
+app.get('/api/admin/redemptions', isAuthenticated, async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('redemption_requests')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        res.json({ success: true, redemptions: data || [] });
+    } catch (error) {
+        console.error('Error fetching redemptions:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.put('/api/admin/redemptions/:id/approve', isAuthenticated, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const { data: redemption, error: fetchError } = await supabaseAdmin
+            .from('redemption_requests')
+            .select('*')
+            .eq('id', id)
+            .single();
+        if (fetchError) throw fetchError;
+        
+        if (redemption.status !== 'pending') {
+            return res.status(400).json({ success: false, error: 'Already processed' });
+        }
+        
+        const orderId = Date.now();
+        const { error: orderError } = await supabaseAdmin
+            .from('orders')
+            .insert({
+                id: orderId,
+                phone: redemption.target_phone,
+                plan: redemption.plan_name,
+                price: 0,
+                status: 'Approved',
+                payment_method: 'credit_redeem',
+                activated_at: new Date().toISOString(),
+                created_at: new Date().toISOString()
+            });
+        if (orderError) throw orderError;
+        
+        await supabaseAdmin
+            .from('redemption_requests')
+            .update({ status: 'approved', order_id: orderId, processed_at: new Date().toISOString() })
+            .eq('id', id);
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error approving redemption:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.put('/api/admin/redemptions/:id/reject', isAuthenticated, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const { data: redemption, error: fetchError } = await supabaseAdmin
+            .from('redemption_requests')
+            .select('*')
+            .eq('id', id)
+            .single();
+        if (fetchError) throw fetchError;
+        
+        if (redemption.status !== 'pending') {
+            return res.status(400).json({ success: false, error: 'Already processed' });
+        }
+        
+        await addCredit(redemption.user_phone, redemption.credit_used, 'refund', null);
+        
+        await supabaseAdmin
+            .from('redemption_requests')
+            .update({ status: 'rejected', processed_at: new Date().toISOString() })
+            .eq('id', id);
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error rejecting redemption:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.delete('/api/admin/redemptions/:id', isAuthenticated, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { error } = await supabaseAdmin
+            .from('redemption_requests')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting redemption:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
