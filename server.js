@@ -11,12 +11,21 @@ const morgan = require('morgan');
 const compression = require('compression');
 const sharp = require('sharp');
 const Joi = require('joi');
+const { Pool } = require('pg');
 const { supabase, supabaseAdmin, createNewUser, getUserByPhone, getUserStats, updateUserStats, isPhoneBlocked, getUserCredit, addCredit, deductCredit, generateReferralCode, getUserByReferralCode, getReferralCount, markReferralQualified, hasEnteredReferralCode } = require('./database');
 const { getAutoReply, setUserLanguage, getUserLanguage } = require('./config/autoReply');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// ==================== DATABASE SESSION STORE SETUP ====================
+const pgPool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+});
+
+const pgSession = require('connect-pg-simple')(session);
 
 // ==================== AD ROUTES ====================
 const adRoutes = require('./routes/ads');
@@ -189,7 +198,7 @@ const orderLimiter = rateLimit({ windowMs: 60 * 1000, max: 3, message: { error: 
 
 app.use('/api/', apiLimiter);
 
-// ==================== SESSION CONFIGURATION (FIXED) ====================
+// ==================== SESSION CONFIGURATION WITH DATABASE STORE ====================
 const sessionConfig = {
     secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
     resave: false,
@@ -199,10 +208,17 @@ const sessionConfig = {
         secure: true,  // Render uses HTTPS
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24,  // 24 hours
-        sameSite: 'none',  // Important for cross-site requests
+        sameSite: 'none',
+        domain: '.onrender.com',  // Important for cross-subdomain
     },
     rolling: true,
-    proxy: true  // Important for Render
+    proxy: true,
+    store: new pgSession({
+        pool: pgPool,
+        tableName: 'session',
+        createTableIfMissing: false,
+        ttl: 24 * 60 * 60  // 24 hours in seconds
+    })
 };
 
 // Trust proxy for Render
@@ -213,10 +229,11 @@ app.use(session(sessionConfig));
 
 // ==================== CORS ====================
 app.use(cors({ 
-    origin: process.env.NODE_ENV === 'production' ? process.env.ALLOWED_ORIGINS?.split(',') : '*', 
+    origin: process.env.NODE_ENV === 'production' ? 'https://ath-digital-hub.onrender.com' : '*', 
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposedHeaders: ['Set-Cookie']
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -293,6 +310,7 @@ function checkRateLimit(phone) {
 function isAuthenticated(req, res, next) {
     console.log('🔐 Auth check - Session ID:', req.sessionID);
     console.log('🔐 Auth check - isAdmin:', req.session?.isAdmin);
+    console.log('🔐 Auth check - Session exists:', !!req.session);
     
     if (!req.session) {
         return res.status(401).json({ success: false, error: 'Session not initialized' });
@@ -300,7 +318,7 @@ function isAuthenticated(req, res, next) {
     if (req.session.isAdmin === true) {
         next();
     } else {
-        res.status(401).json({ success: false, error: 'Unauthorized' });
+        res.status(401).json({ success: false, error: 'Unauthorized - Please login again' });
     }
 }
 
@@ -1021,7 +1039,7 @@ app.post('/api/admin/login', loginLimiter, async (req, res) => {
                     return res.status(500).json({ success: false, message: 'Session save error' });
                 }
                 console.log('✅ Admin logged in - Session ID:', req.sessionID);
-                res.json({ success: true, message: 'Login successful' });
+                res.json({ success: true, message: 'Login successful', sessionId: req.sessionID });
             });
         });
     } else { 
@@ -1305,6 +1323,9 @@ app.listen(PORT, () => {
 ║     📊 Live Dashboard:  http://localhost:${PORT}/dashboard.html           ║
 ║     💬 Global Chat:     http://localhost:${PORT}/chat.html                ║
 ║     💬 Admin Chat:      http://localhost:${PORT}/admin-chat.html          ║
+║                                                                          ║
+║     🔐 Session Store:   PostgreSQL Database                              ║
+║     ✅ Admin Session Persistence Fixed                                   ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
