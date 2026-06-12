@@ -212,6 +212,7 @@ app.use(cors({ origin: process.env.NODE_ENV === 'production' ? process.env.ALLOW
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(__dirname));
+app.use('/js', express.static(path.join(__dirname, 'public/js')));
 
 // ==================== FILE UPLOAD ====================
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -281,8 +282,14 @@ function checkRateLimit(phone) {
 }
 
 function isAuthenticated(req, res, next) {
-    if (req.session.isAdmin) next();
-    else res.status(401).json({ success: false, error: 'Unauthorized' });
+    if (!req.session) {
+        return res.status(401).json({ success: false, error: 'Session not initialized' });
+    }
+    if (req.session.isAdmin) {
+        next();
+    } else {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
 }
 
 async function addNotificationToDatabase(order) {
@@ -1162,30 +1169,6 @@ app.listen(PORT, () => {
 ║     📊 Live Dashboard:  http://localhost:${PORT}/dashboard.html           ║
 ║     💬 Global Chat:     http://localhost:${PORT}/chat.html                ║
 ║     💬 Admin Chat:      http://localhost:${PORT}/admin-chat.html          ║
-║     💬 Private 1-on-1 Chat: WORKING ✅                                   ║
-║     🌍 Multi-Language Auto Reply: WORKING ✅                             ║
-║     🧹 Global Chat Auto Cleanup (3 min): WORKING ✅                      ║
-║     🚫 Bad Words Filter: WORKING ✅                                     ║
-║     🔔 Unread Count (receiver only): WORKING ✅                          ║
-║     📢 AD MANAGEMENT SYSTEM: WORKING ✅                                  ║
-║     🎁 CREDIT & REFERRAL SYSTEM: WORKING ✅                              ║
-║                                                                          ║
-║     🔒 SECURITY FEATURES ENABLED:                                        ║
-║        ✅ Helmet.js (Security Headers)                                   ║
-║        ✅ CSP with iframe support                                        ║
-║        ✅ Rate Limiting                                                  ║
-║        ✅ Sales Hours Control (Auto/Manual Mode)                        ║
-║        ✅ Session-based Admin Auth                                       ║
-║        ✅ Image Processing (Sharp)                                       ║
-║        ✅ Database Notifications                                         ║
-║        ✅ Private 1-on-1 Chat with Unread Counts                        ║
-║        ✅ Mark as Read on view                                           ║
-║        ✅ Multi-Language Auto Reply (my/en/zh)                          ║
-║        ✅ Global Chat Auto Cleanup (every 3 minutes)                    ║
-║        ✅ Bad Words Filter                                              ║
-║        ✅ Ad Management System (ads table, rotation, tracking)          ║
-║        ✅ Credit System (earn 100 per referral)                         ║
-║        ✅ Referral Code System                                          ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
