@@ -11,21 +11,12 @@ const morgan = require('morgan');
 const compression = require('compression');
 const sharp = require('sharp');
 const Joi = require('joi');
-const { Pool } = require('pg');
-const { supabase, supabaseAdmin, createNewUser, getUserByPhone, getUserStats, updateUserStats, isPhoneBlocked, getUserCredit, addCredit, deductCredit, generateReferralCode, getUserByReferralCode, getReferralCount, markReferralQualified, hasEnteredReferralCode } = require('./database');
+const { supabase, supabaseAdmin, createNewUser, getUserByPhone, getUserStats, updateUserStats, isPhoneBlocked } = require('./database');
 const { getAutoReply, setUserLanguage, getUserLanguage } = require('./config/autoReply');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// ==================== DATABASE SESSION STORE SETUP ====================
-const pgPool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
-});
-
-const pgSession = require('connect-pg-simple')(session);
 
 // ==================== AD ROUTES ====================
 const adRoutes = require('./routes/ads');
@@ -198,47 +189,29 @@ const orderLimiter = rateLimit({ windowMs: 60 * 1000, max: 3, message: { error: 
 
 app.use('/api/', apiLimiter);
 
-// ==================== SESSION CONFIGURATION WITH DATABASE STORE ====================
+// ==================== SESSION CONFIGURATION ====================
 const sessionConfig = {
     secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
     resave: false,
     saveUninitialized: false,
-    name: 'ath_session_id',
+    name: 'sessionId',
     cookie: {
-        secure: true,  // Render uses HTTPS
+        secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24,  // 24 hours
-        sameSite: 'none',
-        domain: '.onrender.com',  // Important for cross-subdomain
+        maxAge: 1000 * 60 * 60 * 2,
+        sameSite: 'strict',
+        domain: process.env.COOKIE_DOMAIN || undefined
     },
-    rolling: true,
-    proxy: true,
-    store: new pgSession({
-        pool: pgPool,
-        tableName: 'session',
-        createTableIfMissing: false,
-        ttl: 24 * 60 * 60  // 24 hours in seconds
-    })
+    rolling: true
 };
-
-// Trust proxy for Render
-app.set('trust proxy', 1);
-
-// Session middleware
+if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
 app.use(session(sessionConfig));
 
 // ==================== CORS ====================
-app.use(cors({ 
-    origin: process.env.NODE_ENV === 'production' ? 'https://ath-digital-hub.onrender.com' : '*', 
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-    exposedHeaders: ['Set-Cookie']
-}));
+app.use(cors({ origin: process.env.NODE_ENV === 'production' ? process.env.ALLOWED_ORIGINS?.split(',') : '*', credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(__dirname));
-app.use('/js', express.static(path.join(__dirname, 'public/js')));
 
 // ==================== FILE UPLOAD ====================
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -308,18 +281,8 @@ function checkRateLimit(phone) {
 }
 
 function isAuthenticated(req, res, next) {
-    console.log('🔐 Auth check - Session ID:', req.sessionID);
-    console.log('🔐 Auth check - isAdmin:', req.session?.isAdmin);
-    console.log('🔐 Auth check - Session exists:', !!req.session);
-    
-    if (!req.session) {
-        return res.status(401).json({ success: false, error: 'Session not initialized' });
-    }
-    if (req.session.isAdmin === true) {
-        next();
-    } else {
-        res.status(401).json({ success: false, error: 'Unauthorized - Please login again' });
-    }
+    if (req.session.isAdmin) next();
+    else res.status(401).json({ success: false, error: 'Unauthorized' });
 }
 
 async function addNotificationToDatabase(order) {
@@ -414,66 +377,17 @@ app.get('/api/health', (req, res) => { res.json({ status: 'ok', timestamp: new D
 // ==================== USER REGISTRATION ====================
 app.post('/api/user/register', async (req, res) => {
     try {
-        const { phone, username, referral_code } = req.body;
-        
+        const { phone, username } = req.body;
         const { error: phoneError } = phoneSchema.validate(phone);
         if (phoneError) return res.status(400).json({ success: false, error: 'Invalid phone number format' });
-        
         const { error: usernameError } = usernameSchema.validate(username);
         if (usernameError) return res.status(400).json({ success: false, error: 'Invalid username format' });
-        
         let user = await getUserByPhone(phone);
         let isNewUser = false;
-        
-        if (!user) { 
-            user = await createNewUser(phone, username); 
-            isNewUser = true; 
-            
-            if (user) {
-                const ownCode = await generateReferralCode(phone);
-                await supabase
-                    .from('user_stats')
-                    .update({ referral_code: ownCode })
-                    .eq('phone', phone);
-                user.referral_code = ownCode;
-            }
-        }
-        
+        if (!user) { user = await createNewUser(phone, username); isNewUser = true; }
         if (!user) return res.status(500).json({ success: false, error: 'Failed to create user' });
         if (user.blocked) return res.status(403).json({ success: false, error: 'Your account has been blocked' });
-        
-        if (isNewUser && referral_code && user) {
-            const referrer = await getUserByReferralCode(referral_code);
-            if (referrer && referrer.phone !== phone) {
-                await supabase
-                    .from('referrals')
-                    .insert({
-                        referrer_phone: referrer.phone,
-                        referred_phone: phone,
-                        is_qualified: false,
-                        created_at: new Date().toISOString()
-                    });
-                
-                await supabase
-                    .from('user_stats')
-                    .update({ has_entered_referral: true })
-                    .eq('phone', phone);
-            }
-        }
-        
-        res.json({ 
-            success: true, 
-            user: { 
-                phone: user.phone, 
-                username: user.username, 
-                user_id: user.user_id, 
-                order_count: user.order_count, 
-                blocked: user.blocked,
-                referral_code: user.referral_code,
-                has_entered_referral: user.has_entered_referral || false
-            }, 
-            isNewUser: isNewUser 
-        });
+        res.json({ success: true, user: { phone: user.phone, username: user.username, user_id: user.user_id, order_count: user.order_count, blocked: user.blocked }, isNewUser: isNewUser });
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -485,228 +399,9 @@ app.get('/api/user/:phone', async (req, res) => {
         const { phone } = req.params;
         const user = await getUserByPhone(phone);
         if (!user) return res.status(404).json({ success: false, error: 'User not found' });
-        res.json({ success: true, user: { phone: user.phone, username: user.username, user_id: user.user_id, order_count: user.order_count, blocked: user.blocked, referral_code: user.referral_code, has_entered_referral: user.has_entered_referral || false } });
+        res.json({ success: true, user: { phone: user.phone, username: user.username, user_id: user.user_id, order_count: user.order_count, blocked: user.blocked } });
     } catch (error) {
         console.error('Error fetching user:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ==================== CREDIT & REFERRAL API ====================
-
-app.get('/api/user/credit/:phone', async (req, res) => {
-    try {
-        const { phone } = req.params;
-        const credit = await getUserCredit(phone);
-        res.json({ success: true, credit });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.get('/api/user/referral-stats/:phone', async (req, res) => {
-    try {
-        const { phone } = req.params;
-        const referralCount = await getReferralCount(phone);
-        const credit = await getUserCredit(phone);
-        res.json({ success: true, referralCount, credit });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.post('/api/user/add-referral', async (req, res) => {
-    try {
-        const { phone, referral_code } = req.body;
-        
-        const alreadyEntered = await hasEnteredReferralCode(phone);
-        if (alreadyEntered) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'referral code ကို တစ်ကြိမ်သာ ထည့်လို့ရပါသည်။' 
-            });
-        }
-        
-        const referrer = await getUserByReferralCode(referral_code);
-        if (!referrer || referrer.phone === phone) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'referral code မမှန်ကန်ပါ။' 
-            });
-        }
-        
-        await supabase
-            .from('referrals')
-            .insert({
-                referrer_phone: referrer.phone,
-                referred_phone: phone,
-                is_qualified: false,
-                created_at: new Date().toISOString()
-            });
-        
-        await supabase
-            .from('user_stats')
-            .update({ has_entered_referral: true })
-            .eq('phone', phone);
-        
-        res.json({ success: true, message: 'referral code ထည့်သွင်းပြီးပါပြီ။' });
-        
-    } catch (error) {
-        console.error('Error adding referral:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.post('/api/credit/redeem', async (req, res) => {
-    try {
-        const { user_phone, target_phone, plan_name, plan_price } = req.body;
-        
-        if (!user_phone || !target_phone || !plan_name || !plan_price) {
-            return res.status(400).json({ success: false, error: 'လိုအပ်သော အချက်အလက် မပြည့်စုံပါ။' });
-        }
-        
-        const credit = await getUserCredit(user_phone);
-        
-        if (credit < plan_price) {
-            return res.status(400).json({ 
-                success: false, 
-                error: `credit မလုံလောက်ပါ။ လိုအပ်သော credit: ${(plan_price - credit).toLocaleString()}` 
-            });
-        }
-        
-        await deductCredit(user_phone, plan_price, 'redeem');
-        
-        const orderId = Date.now();
-        await supabase
-            .from('orders')
-            .insert({
-                id: orderId,
-                phone: target_phone,
-                plan: plan_name,
-                price: 0,
-                status: 'Approved',
-                payment_method: 'credit_redeem',
-                activated_at: new Date().toISOString(),
-                created_at: new Date().toISOString()
-            });
-        
-        await supabase
-            .from('redemption_requests')
-            .insert({
-                user_phone: user_phone,
-                target_phone: target_phone,
-                plan_name: plan_name,
-                credit_used: plan_price,
-                status: 'pending',
-                created_at: new Date().toISOString()
-            });
-        
-        res.json({ success: true, message: `✅ ${target_phone} သို့ ${plan_name} ထည့်ပေးလိုက်ပါပြီ။` });
-        
-    } catch (error) {
-        console.error('Error redeeming credit:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ==================== REDEMPTIONS API (Admin) ====================
-
-app.get('/api/admin/redemptions', isAuthenticated, async (req, res) => {
-    try {
-        const { data, error } = await supabaseAdmin
-            .from('redemption_requests')
-            .select('*')
-            .order('created_at', { ascending: false });
-        if (error) throw error;
-        res.json({ success: true, redemptions: data || [] });
-    } catch (error) {
-        console.error('Error fetching redemptions:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.put('/api/admin/redemptions/:id/approve', isAuthenticated, async (req, res) => {
-    try {
-        const { id } = req.params;
-        
-        const { data: redemption, error: fetchError } = await supabaseAdmin
-            .from('redemption_requests')
-            .select('*')
-            .eq('id', id)
-            .single();
-        if (fetchError) throw fetchError;
-        
-        if (redemption.status !== 'pending') {
-            return res.status(400).json({ success: false, error: 'Already processed' });
-        }
-        
-        const orderId = Date.now();
-        const { error: orderError } = await supabaseAdmin
-            .from('orders')
-            .insert({
-                id: orderId,
-                phone: redemption.target_phone,
-                plan: redemption.plan_name,
-                price: 0,
-                status: 'Approved',
-                payment_method: 'credit_redeem',
-                activated_at: new Date().toISOString(),
-                created_at: new Date().toISOString()
-            });
-        if (orderError) throw orderError;
-        
-        await supabaseAdmin
-            .from('redemption_requests')
-            .update({ status: 'approved', order_id: orderId, processed_at: new Date().toISOString() })
-            .eq('id', id);
-        
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error approving redemption:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.put('/api/admin/redemptions/:id/reject', isAuthenticated, async (req, res) => {
-    try {
-        const { id } = req.params;
-        
-        const { data: redemption, error: fetchError } = await supabaseAdmin
-            .from('redemption_requests')
-            .select('*')
-            .eq('id', id)
-            .single();
-        if (fetchError) throw fetchError;
-        
-        if (redemption.status !== 'pending') {
-            return res.status(400).json({ success: false, error: 'Already processed' });
-        }
-        
-        await addCredit(redemption.user_phone, redemption.credit_used, 'refund', null);
-        
-        await supabaseAdmin
-            .from('redemption_requests')
-            .update({ status: 'rejected', processed_at: new Date().toISOString() })
-            .eq('id', id);
-        
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error rejecting redemption:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.delete('/api/admin/redemptions/:id', isAuthenticated, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { error } = await supabaseAdmin
-            .from('redemption_requests')
-            .delete()
-            .eq('id', id);
-        if (error) throw error;
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error deleting redemption:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -965,43 +660,7 @@ app.post('/api/admin/cleanup-old', isAuthenticated, async (req, res) => {
 });
 
 app.put('/api/admin/orders/:id/approve', isAuthenticated, async (req, res) => {
-    try {
-        const { id } = req.params;
-        
-        const { data: order } = await supabaseAdmin
-            .from('orders')
-            .select('phone, plan, price')
-            .eq('id', id)
-            .single();
-        
-        if (!order) throw new Error('Order not found');
-        
-        await supabaseAdmin
-            .from('orders')
-            .update({ status: 'Approved', activated_at: new Date().toISOString() })
-            .eq('id', id);
-        
-        const { data: referral } = await supabaseAdmin
-            .from('referrals')
-            .select('referrer_phone')
-            .eq('referred_phone', order.phone)
-            .eq('is_qualified', false)
-            .single();
-        
-        if (referral) {
-            await supabaseAdmin
-                .from('referrals')
-                .update({ is_qualified: true, qualified_at: new Date().toISOString() })
-                .eq('referred_phone', order.phone);
-            
-            await addCredit(referral.referrer_phone, 100, 'earn', order.phone);
-        }
-        
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error approving order:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
+    try { const { id } = req.params; await supabaseAdmin.from('orders').update({ status: 'Approved', activated_at: new Date().toISOString() }).eq('id', id); res.json({ success: true }); } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
 app.put('/api/admin/orders/:id/reject', isAuthenticated, async (req, res) => {
@@ -1025,34 +684,11 @@ app.delete('/api/admin/orders/:id', isAuthenticated, async (req, res) => {
 app.post('/api/admin/login', loginLimiter, async (req, res) => {
     const { password } = req.body;
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-    
-    if (password === adminPassword) { 
-        req.session.isAdmin = true;
-        req.session.regenerate((err) => {
-            if (err) {
-                console.error('Session regenerate error:', err);
-                return res.status(500).json({ success: false, message: 'Session error' });
-            }
-            req.session.save((err) => {
-                if (err) {
-                    console.error('Session save error:', err);
-                    return res.status(500).json({ success: false, message: 'Session save error' });
-                }
-                console.log('✅ Admin logged in - Session ID:', req.sessionID);
-                res.json({ success: true, message: 'Login successful', sessionId: req.sessionID });
-            });
-        });
-    } else { 
-        res.status(401).json({ success: false, message: 'Invalid password' });
-    }
+    if (password === adminPassword) { req.session.isAdmin = true; res.json({ success: true, message: 'Login successful' }); }
+    else { res.status(401).json({ success: false, message: 'Invalid password' }); }
 });
 
-app.post('/api/admin/logout', (req, res) => { 
-    req.session.destroy((err) => {
-        if (err) console.error('Logout error:', err);
-        res.json({ success: true, message: 'Logged out successfully' });
-    }); 
-});
+app.post('/api/admin/logout', (req, res) => { req.session.destroy(); res.json({ success: true, message: 'Logged out successfully' }); });
 
 // ==================== SYSTEM RESET API ====================
 app.post('/api/admin/system-reset', isAuthenticated, async (req, res) => {
@@ -1070,9 +706,6 @@ app.post('/api/admin/system-reset', isAuthenticated, async (req, res) => {
         await supabaseAdmin.from('orders').delete().neq('id', 0);
         await supabaseAdmin.from('user_stats').delete().neq('phone', '');
         await supabaseAdmin.from('admin_notifications').delete().neq('id', 0);
-        await supabaseAdmin.from('credit_transactions').delete().neq('id', 0);
-        await supabaseAdmin.from('redemption_requests').delete().neq('id', 0);
-        await supabaseAdmin.from('referrals').delete().neq('id', 0);
         orderRateLimit.clear();
         if (!keepProducts) await supabaseAdmin.from('market_products').delete().neq('id', 0);
         res.json({ success: true, message: 'System reset completed' });
@@ -1095,9 +728,6 @@ app.post('/api/admin/user-reset/:phone', isAuthenticated, async (req, res) => {
         await supabaseAdmin.from('orders').delete().eq('phone', phone);
         await supabaseAdmin.from('user_stats').delete().eq('phone', phone);
         await supabaseAdmin.from('admin_notifications').delete().eq('order_id', phone);
-        await supabaseAdmin.from('credit_transactions').delete().eq('user_phone', phone);
-        await supabaseAdmin.from('redemption_requests').delete().eq('user_phone', phone);
-        await supabaseAdmin.from('referrals').delete().or(`referrer_phone.eq.${phone},referred_phone.eq.${phone}`);
         res.json({ success: true });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
@@ -1323,9 +953,27 @@ app.listen(PORT, () => {
 ║     📊 Live Dashboard:  http://localhost:${PORT}/dashboard.html           ║
 ║     💬 Global Chat:     http://localhost:${PORT}/chat.html                ║
 ║     💬 Admin Chat:      http://localhost:${PORT}/admin-chat.html          ║
+║     💬 Private 1-on-1 Chat: WORKING ✅                                   ║
+║     🌍 Multi-Language Auto Reply: WORKING ✅                             ║
+║     🧹 Global Chat Auto Cleanup (3 min): WORKING ✅                      ║
+║     🚫 Bad Words Filter: WORKING ✅                                     ║
+║     🔔 Unread Count (receiver only): WORKING ✅                          ║
+║     📢 AD MANAGEMENT SYSTEM: WORKING ✅                                  ║
 ║                                                                          ║
-║     🔐 Session Store:   PostgreSQL Database                              ║
-║     ✅ Admin Session Persistence Fixed                                   ║
+║     🔒 SECURITY FEATURES ENABLED:                                        ║
+║        ✅ Helmet.js (Security Headers)                                   ║
+║        ✅ CSP with iframe support                                        ║
+║        ✅ Rate Limiting                                                  ║
+║        ✅ Sales Hours Control (Auto/Manual Mode)                        ║
+║        ✅ Session-based Admin Auth                                       ║
+║        ✅ Image Processing (Sharp)                                       ║
+║        ✅ Database Notifications                                         ║
+║        ✅ Private 1-on-1 Chat with Unread Counts                        ║
+║        ✅ Mark as Read on view                                           ║
+║        ✅ Multi-Language Auto Reply (my/en/zh)                          ║
+║        ✅ Global Chat Auto Cleanup (every 3 minutes)                    ║
+║        ✅ Bad Words Filter                                              ║
+║        ✅ Ad Management System (ads table, rotation, tracking)          ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
