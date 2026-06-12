@@ -1,9 +1,10 @@
 // ad-widget.js - ATH Digital Hub Ad Widget
 (function() {
+    'use strict';
+    
     const ADS_API = '/api/ads';
     let activeAds = [];
     let settings = null;
-    let currentAd = null;
     let cycleInterval = null;
     let adContainer = null;
     
@@ -30,7 +31,7 @@
             const data = await res.json();
             if (data.success) {
                 settings = data.settings;
-                console.log('⚙️ Ad settings loaded:', settings);
+                console.log('⚙️ Ad settings loaded');
             }
         } catch(e) { 
             console.error('Settings fetch error:', e); 
@@ -113,22 +114,18 @@
         const container = createAdContainer();
         if (!container || !ad) return;
         
-        const sponsoredText = settings?.sponsored_label || '📢 SPONSORED';
-        const closeText = settings?.close_button_text || '✖ ပိတ်မည်';
-        const nextText = settings?.next_button_text || '➡ နောက်တစ်ခု';
-        
         container.innerHTML = `
             <div style="background:linear-gradient(135deg,#0f0c29,#302b63); border-radius:24px; padding:16px; margin:8px 0; box-shadow:0 15px 35px rgba(0,0,0,0.3); border:1px solid rgba(0,212,255,0.2);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <span style="background:rgba(255,215,0,0.2); color:#FFD700; padding:4px 12px; border-radius:60px; font-size:11px; font-weight:bold;">${escapeHtml(sponsoredText)}</span>
-                    ${settings?.show_navigation ? `<button id="nextAdBtn" style="background:rgba(255,255,255,0.1); border:none; color:white; padding:4px 12px; border-radius:40px; cursor:pointer; font-size:12px;">${escapeHtml(nextText)}</button>` : ''}
+                    <span style="background:rgba(255,215,0,0.2); color:#FFD700; padding:4px 12px; border-radius:60px; font-size:11px; font-weight:bold;">📢 SPONSORED</span>
+                    ${settings?.show_navigation ? `<button id="nextAdBtn" style="background:rgba(255,255,255,0.1); border:none; color:white; padding:4px 12px; border-radius:40px; cursor:pointer; font-size:12px;">➡ နောက်တစ်ခု</button>` : ''}
                 </div>
                 <a href="${escapeHtml(ad.destination_url)}" target="_blank" id="adLink" style="display:block; text-align:center;">
                     <img src="${escapeHtml(ad.image_url)}" alt="${escapeHtml(ad.alt_text || ad.name)}" style="max-width:100%; border-radius:16px; max-height:120px; object-fit:contain;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'100\'%3E%3Crect width=\'200\' height=\'100\' fill=\'%23333\'/%3E%3Ctext x=\'100\' y=\'55\' text-anchor=\'middle\' fill=\'%23666\' font-size=\'12\'%3ENo Image%3C/text%3E%3C/svg%3E'">
                     ${ad.alt_text ? `<p style="color:#ccc; margin-top:10px; font-size:13px;">✨ ${escapeHtml(ad.alt_text)}</p>` : ''}
                 </a>
                 <div style="text-align:center; margin-top:12px;">
-                    <button id="closeAdBtn" style="background:rgba(220,60,60,0.3); border:none; color:#ff9e9e; padding:5px 16px; border-radius:40px; cursor:pointer; font-size:12px;">${escapeHtml(closeText)}</button>
+                    <button id="closeAdBtn" style="background:rgba(220,60,60,0.3); border:none; color:#ff9e9e; padding:5px 16px; border-radius:40px; cursor:pointer; font-size:12px;">✖ ပိတ်မည်</button>
                 </div>
             </div>
         `;
@@ -191,7 +188,7 @@
             return;
         }
         if (!isUserLoggedIn()) {
-            console.log('User not logged in, ad widget waiting for login');
+            console.log('User not logged in, waiting...');
             return;
         }
         
@@ -213,7 +210,7 @@
         setInterval(() => {
             const nowLoggedIn = isUserLoggedIn();
             if (nowLoggedIn && !wasLoggedIn && localStorage.getItem('ath_ad_closed') !== 'true') {
-                console.log('User logged in, initializing ad widget...');
+                console.log('User logged in, initializing...');
                 init();
             }
             wasLoggedIn = nowLoggedIn;
