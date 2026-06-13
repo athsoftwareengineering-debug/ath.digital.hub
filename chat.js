@@ -4,22 +4,30 @@ let currentChatUser = null;
 let currentChatUsername = null;
 let currentChatUserId = null;
 let refreshInterval = null;
-let isLoading = false;
 
 // ============ GET USER INFO ============
 function getCurrentUserInfo() {
+    // Try to get from localStorage
     currentChatUser = localStorage.getItem('userPhone');
     currentChatUsername = localStorage.getItem('userName');
     currentChatUserId = localStorage.getItem('userId');
     
+    // Try to get from parent window (index.html)
     try {
-        if (window.parent && window.parent.getCurrentUserPhone) currentChatUser = window.parent.getCurrentUserPhone();
-        if (window.parent && window.parent.getCurrentUsername) currentChatUsername = window.parent.getCurrentUsername();
-        if (window.parent && window.parent.getCurrentUserId) currentChatUserId = window.parent.getCurrentUserId();
+        if (window.parent && window.parent.getCurrentUserPhone) {
+            currentChatUser = window.parent.getCurrentUserPhone();
+        }
+        if (window.parent && window.parent.getCurrentUsername) {
+            currentChatUsername = window.parent.getCurrentUsername();
+        }
+        if (window.parent && window.parent.getCurrentUserId) {
+            currentChatUserId = window.parent.getCurrentUserId();
+        }
     } catch(e) {
         console.log('Cannot access parent window');
     }
     
+    // Demo mode fallback (for testing)
     if (!currentChatUser) {
         currentChatUser = 'guest';
         currentChatUsername = 'Guest User';
@@ -29,59 +37,24 @@ function getCurrentUserInfo() {
     console.log('Chat User:', currentChatUser, 'User ID:', currentChatUserId);
 }
 
-// ============ MYANMAR TIME (Fixed) ============
-function getMyanmarTime(timestamp) {
-    const date = new Date(timestamp);
-    const utcTime = date.getTime();
-    const myanmarOffset = 6.5 * 60 * 60 * 1000;
-    const myanmarDate = new Date(utcTime + myanmarOffset);
-    let hours = myanmarDate.getUTCHours();
-    const minutes = myanmarDate.getUTCMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-    return `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-}
-
-// ============ SECURE ESCAPE HTML (Fixed) ============
-function escapeHtml(str) {
-    if (!str) return '';
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
-
-// ============ LOAD MESSAGES (Fixed) ============
+// ============ LOAD MESSAGES ============
 async function loadChatMessages() {
-    if (isLoading) return;
-    isLoading = true;
-    
     const container = document.getElementById('chatMessages');
-    if (!container) {
-        isLoading = false;
-        return;
-    }
+    if (!container) return;
     
     try {
         const response = await fetch(`${CHAT_API_BASE}/api/chat/messages`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        
         const data = await response.json();
         
-        if (data.success && data.messages) {
-            if (data.messages.length > 0) {
-                renderChatMessages(data.messages);
-            } else {
-                container.innerHTML = `<div class="chat-loading"><i class="fas fa-comment-dots"></i><br>No messages yet. Start a conversation!</div>`;
-            }
+        if (data.success && data.messages && data.messages.length > 0) {
+            renderChatMessages(data.messages);
         } else {
-            throw new Error(data.error || 'Invalid response');
+            container.innerHTML = `
+                <div class="chat-loading">
+                    <i class="fas fa-comment-dots"></i><br>
+                    No messages yet. Start a conversation!
+                </div>
+            `;
         }
     } catch (error) {
         console.error('Error loading chat:', error);
@@ -91,8 +64,6 @@ async function loadChatMessages() {
                 Cannot connect to server
             </div>
         `;
-    } finally {
-        isLoading = false;
     }
 }
 
@@ -102,13 +73,19 @@ function renderChatMessages(messages) {
     if (!container) return;
     
     if (!messages || messages.length === 0) {
-        container.innerHTML = `<div class="chat-loading"><i class="fas fa-comment-dots"></i><br>Be the first to say hello! 👋</div>`;
+        container.innerHTML = `
+            <div class="chat-loading">
+                <i class="fas fa-comment-dots"></i><br>
+                Be the first to say hello! 👋
+            </div>
+        `;
         return;
     }
     
     let html = '';
     for (const msg of messages) {
-        const time = getMyanmarTime(msg.created_at);
+        const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        // Check if message is from current user
         const isUser = !msg.is_admin && msg.user_id === currentChatUserId;
         const senderName = msg.is_admin ? '👑 Admin' : (msg.username || 'User');
         const senderIcon = msg.is_admin ? '<i class="fas fa-shield-alt"></i>' : '<i class="fas fa-user"></i>';
@@ -119,18 +96,19 @@ function renderChatMessages(messages) {
                     ${senderIcon} ${escapeHtml(senderName)}
                 </div>
                 <div class="message-bubble">${escapeHtml(msg.message)}</div>
-                <div class="message-time">🕐 ${escapeHtml(time)}</div>
+                <div class="message-time">${time}</div>
             </div>
         `;
     }
     container.innerHTML = html;
     
+    // Auto scroll to bottom
     setTimeout(() => {
         container.scrollTop = container.scrollHeight;
     }, 100);
 }
 
-// ============ SEND MESSAGE (Fixed) ============
+// ============ SEND MESSAGE ============
 async function sendChatMessage() {
     const input = document.getElementById('chatMessageInput');
     const message = input.value.trim();
@@ -143,9 +121,7 @@ async function sendChatMessage() {
         return;
     }
     
-    // Show loading state
-    const originalBtnHtml = sendBtn.innerHTML;
-    sendBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
+    // Disable input while sending
     input.disabled = true;
     sendBtn.disabled = true;
     
@@ -166,7 +142,6 @@ async function sendChatMessage() {
             input.value = '';
             input.style.height = 'auto';
             await loadChatMessages();
-            showChatNotification('Message sent!');
         } else {
             showChatNotification(data.error || "Failed to send", true);
         }
@@ -176,35 +151,54 @@ async function sendChatMessage() {
     } finally {
         input.disabled = false;
         sendBtn.disabled = false;
-        sendBtn.innerHTML = originalBtnHtml;
         input.focus();
     }
 }
 
-// ============ SHOW NOTIFICATION ============
+// ============ SHOW NOTIFICATION (Toast) ============
 function showChatNotification(message, isError = false) {
+    // Try to use parent window toast
     try {
         if (window.parent && window.parent.showToast) {
             window.parent.showToast(message, isError);
         } else {
+            // Create temporary toast
             const toast = document.createElement('div');
             toast.textContent = message;
             toast.style.cssText = `
-                position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-                background: ${isError ? '#f43f5e' : '#10b981'}; color: white;
-                padding: 8px 16px; border-radius: 40px; font-size: 0.75rem;
-                z-index: 2000; white-space: nowrap;
-                animation: fadeIn 0.3s ease;
+                position: fixed;
+                bottom: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${isError ? '#f43f5e' : '#10b981'};
+                color: white;
+                padding: 8px 16px;
+                border-radius: 40px;
+                font-size: 0.75rem;
+                z-index: 2000;
+                white-space: nowrap;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             `;
             document.body.appendChild(toast);
             setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
+                if (toast && toast.remove) toast.remove();
             }, 2500);
         }
     } catch(e) {
         console.log('Toast error:', e);
+        alert(message);
     }
+}
+
+// ============ ESCAPE HTML (XSS Protection) ============
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
 }
 
 // ============ AUTO RESIZE TEXTAREA ============
@@ -216,7 +210,7 @@ function autoResizeTextarea() {
     }
 }
 
-// ============ TOGGLE CHAT ============
+// ============ TOGGLE CHAT MINIMIZE ============
 function toggleChat() {
     const container = document.querySelector('.chat-widget-container');
     if (container) {
@@ -241,12 +235,15 @@ function closeChatWidget() {
 function setupKeyboardShortcuts() {
     const input = document.getElementById('chatMessageInput');
     if (input) {
+        // Send on Enter (Shift+Enter for new line)
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendChatMessage();
             }
         });
+        
+        // Auto resize on input
         input.addEventListener('input', autoResizeTextarea);
     }
 }
@@ -258,6 +255,7 @@ async function initChat() {
     await loadChatMessages();
     setupKeyboardShortcuts();
     
+    // Refresh messages every 5 seconds (polling - no Supabase Realtime needed)
     if (refreshInterval) clearInterval(refreshInterval);
     refreshInterval = setInterval(() => {
         const container = document.querySelector('.chat-widget-container');
@@ -269,7 +267,7 @@ async function initChat() {
     console.log('Chat initialized successfully');
 }
 
-// ============ CLEANUP (Fixed) ============
+// ============ CLEANUP ============
 function cleanupChat() {
     if (refreshInterval) {
         clearInterval(refreshInterval);
@@ -279,11 +277,7 @@ function cleanupChat() {
 }
 
 // ============ START ============
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initChat);
-} else {
-    initChat();
-}
+document.addEventListener('DOMContentLoaded', initChat);
 window.addEventListener('beforeunload', cleanupChat);
 
 // ============ EXPOSE GLOBAL FUNCTIONS ============
