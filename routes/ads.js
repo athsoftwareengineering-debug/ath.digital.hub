@@ -2,19 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { supabaseAdmin } = require('../database');
 
-// ==================== AUTHENTICATION MIDDLEWARE ====================
 function isAuthenticated(req, res, next) {
-    if (!req.session) {
-        return res.status(401).json({ success: false, error: 'Session not initialized' });
-    }
-    if (req.session.isAdmin) {
-        next();
-    } else {
-        res.status(401).json({ success: false, error: 'Unauthorized' });
-    }
+    if (req.session.isAdmin) next();
+    else res.status(401).json({ success: false, error: 'Unauthorized' });
 }
-
-// ==================== PUBLIC ADS API (No Auth) ====================
 
 // ကြော်ငြာများရယူရန် (သုံးစွဲသူ)
 router.get('/ads', async (req, res) => {
@@ -32,52 +23,9 @@ router.get('/ads', async (req, res) => {
         );
         res.json({ success: true, ads: activeAds });
     } catch (err) {
-        console.error('Error fetching ads:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
-
-// ကြော်ငြာဆက်တင်ရယူရန်
-router.get('/ad-settings', async (req, res) => {
-    try {
-        const { data, error } = await supabaseAdmin
-            .from('ad_settings')
-            .select('*')
-            .eq('id', 1)
-            .single();
-        if (error && error.code !== 'PGRST116') throw error;
-        res.json({ success: true, settings: data || { rotation_mode: 'weighted', auto_cycle_seconds: 0, show_navigation: true } });
-    } catch (err) {
-        console.error('Error fetching ad settings:', err);
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-
-// ကလစ်ရေတွက်ရန်
-router.post('/ads/:id/click', async (req, res) => {
-    try {
-        const { id } = req.params;
-        await supabaseAdmin.rpc('increment_ad_clicks', { ad_id: parseInt(id) });
-        res.json({ success: true });
-    } catch (err) {
-        console.error('Error incrementing click:', err);
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-
-// မြင်ရအကြိမ်ရေတွက်ရန်
-router.post('/ads/:id/view', async (req, res) => {
-    try {
-        const { id } = req.params;
-        await supabaseAdmin.rpc('increment_ad_views', { ad_id: parseInt(id) });
-        res.json({ success: true });
-    } catch (err) {
-        console.error('Error incrementing view:', err);
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-
-// ==================== ADMIN ADS API (Auth Required) ====================
 
 // ကြော်ငြာများရယူရန် (အဒ်မင်)
 router.get('/admin/ads', isAuthenticated, async (req, res) => {
@@ -91,7 +39,6 @@ router.get('/admin/ads', isAuthenticated, async (req, res) => {
         if (error) throw error;
         res.json({ success: true, ads: data || [] });
     } catch (err) {
-        console.error('Error fetching admin ads:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -114,7 +61,6 @@ router.post('/admin/ads', isAuthenticated, async (req, res) => {
         if (error) throw error;
         res.json({ success: true, ad: data[0] });
     } catch (err) {
-        console.error('Error creating ad:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -131,7 +77,6 @@ router.put('/admin/ads/:id', isAuthenticated, async (req, res) => {
         if (error) throw error;
         res.json({ success: true });
     } catch (err) {
-        console.error('Error updating ad:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -147,7 +92,43 @@ router.delete('/admin/ads/:id', isAuthenticated, async (req, res) => {
         if (error) throw error;
         res.json({ success: true });
     } catch (err) {
-        console.error('Error deleting ad:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ကလစ်ရေတွက်ရန်
+router.post('/ads/:id/click', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await supabaseAdmin.rpc('increment_ad_clicks', { ad_id: parseInt(id) });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// မြင်ရအကြိမ်ရေတွက်ရန်
+router.post('/ads/:id/view', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await supabaseAdmin.rpc('increment_ad_views', { ad_id: parseInt(id) });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ကြော်ငြာဆက်တင်ရယူရန်
+router.get('/ad-settings', async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('ad_settings')
+            .select('*')
+            .eq('id', 1)
+            .single();
+        if (error && error.code !== 'PGRST116') throw error;
+        res.json({ success: true, settings: data || { rotation_mode: 'weighted', auto_cycle_seconds: 0, show_navigation: true } });
+    } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -162,7 +143,6 @@ router.put('/admin/ad-settings', isAuthenticated, async (req, res) => {
         if (error) throw error;
         res.json({ success: true });
     } catch (err) {
-        console.error('Error saving ad settings:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
