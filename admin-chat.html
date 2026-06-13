@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Admin Chat | ATH DIGITAL HUB</title>
+    <title>Admin Chat Dashboard | ATH DIGITAL HUB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
@@ -22,8 +22,8 @@
             position: fixed;
             bottom: 70px;
             right: 16px;
-            width: 380px;
-            height: 560px;
+            width: 400px;
+            height: 600px;
             background: linear-gradient(145deg, #0f111a, #0a0c15);
             border-radius: 1.2rem;
             border: 1px solid rgba(0,212,255,0.25);
@@ -45,7 +45,7 @@
             display: none;
         }
 
-        /* ============ CHAT HEADER ============ */
+        /* ============ HEADER ============ */
         .chat-header {
             display: flex;
             justify-content: space-between;
@@ -97,7 +97,6 @@
             height: 8px;
             background: #10b981;
             border-radius: 50%;
-            display: inline-block;
             animation: pulse 2s infinite;
         }
 
@@ -119,10 +118,10 @@
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s;
         }
 
         .chat-minimize-btn:hover {
@@ -130,7 +129,141 @@
             color: #00d4ff;
         }
 
-        /* ============ CHAT BODY ============ */
+        /* ============ MODE TOGGLE ============ */
+        .mode-toggle {
+            display: flex;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(0,212,255,0.1);
+            gap: 8px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 40px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .mode-btn.private {
+            background: rgba(0,212,255,0.15);
+            color: #00d4ff;
+            border: 1px solid rgba(0,212,255,0.3);
+        }
+
+        .mode-btn.private.active {
+            background: linear-gradient(135deg, #00d4ff, #0891b2);
+            color: white;
+            border: none;
+        }
+
+        .mode-btn.global {
+            background: rgba(16,185,129,0.15);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.3);
+        }
+
+        .mode-btn.global.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+        }
+
+        /* ============ USER LIST (Private Mode) ============ */
+        .user-list-container {
+            border-bottom: 1px solid rgba(0,212,255,0.1);
+            background: rgba(0,0,0,0.2);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .user-list-header {
+            padding: 10px 12px;
+            font-size: 0.65rem;
+            color: #00d4ff;
+            background: rgba(0,212,255,0.05);
+            border-bottom: 1px solid rgba(0,212,255,0.1);
+        }
+
+        .user-list {
+            list-style: none;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .user-item:hover {
+            background: rgba(0,212,255,0.1);
+        }
+
+        .user-item.active {
+            background: rgba(0,212,255,0.15);
+            border-left: 3px solid #00d4ff;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            background: rgba(0,212,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .user-phone {
+            font-size: 0.6rem;
+            color: #64748b;
+        }
+
+        .unread-badge {
+            background: #f43f5e;
+            color: white;
+            font-size: 0.55rem;
+            font-weight: bold;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+        }
+
+        /* ============ MESSAGES ============ */
         .chat-body {
             flex: 1;
             display: flex;
@@ -138,34 +271,6 @@
             overflow: hidden;
         }
 
-        /* User Selector */
-        .user-selector {
-            padding: 10px 12px;
-            background: rgba(0,0,0,0.3);
-            border-bottom: 1px solid rgba(0,212,255,0.1);
-        }
-
-        .user-select {
-            width: 100%;
-            padding: 8px 12px;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #2d3a5e;
-            border-radius: 40px;
-            color: white;
-            font-size: 0.75rem;
-            cursor: pointer;
-        }
-
-        .user-select:focus {
-            outline: none;
-            border-color: #00d4ff;
-        }
-
-        .user-select option {
-            background: #0f111a;
-        }
-
-        /* ============ MESSAGES CONTAINER ============ */
         .chat-messages-container {
             flex: 1;
             overflow-y: auto;
@@ -189,17 +294,6 @@
             border-radius: 4px;
         }
 
-        /* Empty state */
-        .chat-messages-container:empty::after {
-            content: "No messages yet";
-            text-align: center;
-            color: #64748b;
-            padding: 40px;
-            font-size: 0.8rem;
-            display: block;
-        }
-
-        /* ============ MESSAGE BUBBLES ============ */
         .chat-message {
             display: flex;
             flex-direction: column;
@@ -212,12 +306,26 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Admin sends message (right side) */
         .chat-message.admin {
             align-items: flex-end;
             margin-left: auto;
         }
 
+        /* User sends message (left side) - for private chat */
         .chat-message.user {
+            align-items: flex-start;
+            margin-right: auto;
+        }
+
+        /* Global chat - admin message */
+        .chat-message.global-admin {
+            align-items: flex-end;
+            margin-left: auto;
+        }
+
+        /* Global chat - other user message */
+        .chat-message.global-user {
             align-items: flex-start;
             margin-right: auto;
         }
@@ -230,13 +338,17 @@
             line-height: 1.4;
         }
 
-        .chat-message.admin .message-bubble {
+        /* Admin messages (blue gradient) */
+        .chat-message.admin .message-bubble,
+        .chat-message.global-admin .message-bubble {
             background: linear-gradient(135deg, #00d4ff, #0891b2);
             color: white;
             border-bottom-right-radius: 4px;
         }
 
-        .chat-message.user .message-bubble {
+        /* User messages (dark) */
+        .chat-message.user .message-bubble,
+        .chat-message.global-user .message-bubble {
             background: rgba(255,255,255,0.08);
             color: #e2e8f0;
             border-bottom-left-radius: 4px;
@@ -283,7 +395,6 @@
             resize: none;
             font-family: inherit;
             max-height: 80px;
-            transition: all 0.2s;
             line-height: 1.4;
             overflow-y: auto;
         }
@@ -349,23 +460,14 @@
             color: #94a3b8;
         }
 
-        /* Mark as read button */
-        .mark-read-btn {
-            background: none;
-            border: none;
-            color: #00d4ff;
-            font-size: 0.6rem;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 20px;
-            transition: all 0.2s;
+        .no-user-selected {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+            font-size: 0.75rem;
         }
 
-        .mark-read-btn:hover {
-            background: rgba(0,212,255,0.1);
-        }
-
-        /* ============ MOBILE RESPONSIVE ============ */
+        /* ============ MOBILE ============ */
         @media (max-width: 480px) {
             .chat-widget-container {
                 width: calc(100vw - 32px);
@@ -387,11 +489,16 @@
                 font-size: 0.75rem;
                 padding: 8px 12px;
             }
+            
+            .user-list-container {
+                max-height: 150px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="chat-widget-container" id="chatContainer">
+        <!-- Header -->
         <div class="chat-header" onclick="toggleMinimize()">
             <div class="chat-header-info">
                 <div class="chat-avatar">
@@ -414,18 +521,40 @@
                 </button>
             </div>
         </div>
-        
+
         <div class="chat-body">
-            <div class="user-selector">
-                <select id="userSelect" class="user-select" onchange="changeSelectedUser()">
-                    <option value="">-- Select a user to chat --</option>
-                </select>
+            <!-- Mode Toggle -->
+            <div class="mode-toggle">
+                <button id="privateModeBtn" class="mode-btn private active" onclick="setChatMode('private')">
+                    <i class="fas fa-lock"></i> Private Chat
+                </button>
+                <button id="globalModeBtn" class="mode-btn global" onclick="setChatMode('global')">
+                    <i class="fas fa-globe"></i> Global Chat
+                </button>
             </div>
-            
+
+            <!-- User List (only for private mode) -->
+            <div id="userListContainer" class="user-list-container" style="display: block;">
+                <div class="user-list-header">
+                    <i class="fas fa-users"></i> Users - Click to chat privately
+                </div>
+                <ul id="userList" class="user-list">
+                    <li style="padding: 20px; text-align: center; color: #64748b;">
+                        <i class="fas fa-spinner fa-pulse"></i> Loading users...
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Messages Container -->
             <div class="chat-messages-container" id="chatMessages">
-                <div class="chat-loading"><i class="fas fa-spinner fa-pulse"></i> Loading users...</div>
+                <div class="chat-loading">
+                    <i class="fas fa-comment-dots"></i><br>
+                    Select a user from the list above to start private chat<br>
+                    or switch to Global Chat mode
+                </div>
             </div>
-            
+
+            <!-- Input Area -->
             <div class="chat-input-container">
                 <div class="chat-input-wrapper">
                     <textarea id="chatInput" class="chat-message-input" placeholder="Type your message here..." rows="1" maxlength="1000"></textarea>
@@ -433,8 +562,8 @@
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
-                <div class="chat-note">
-                    <i class="fas fa-lock"></i> Private message - Only you and the user can see
+                <div id="chatNote" class="chat-note">
+                    <i class="fas fa-lock"></i> Private message - Only you and the selected user can see
                 </div>
             </div>
         </div>
@@ -443,13 +572,15 @@
     <script>
         (function() {
             const API_BASE = window.location.origin;
-            let currentUserId = null;
-            let currentUserPhone = null;
-            let currentUserName = null;
+            
+            // Chat state
+            let currentMode = 'private';  // 'private' or 'global'
+            let selectedUserId = null;
+            let selectedUserName = null;
+            let selectedUserPhone = null;
+            let allUsers = [];
             let messagesRefreshInterval = null;
             let usersRefreshInterval = null;
-            let allUsers = [];
-            let isAdmin = true;
             
             // Admin info
             const ADMIN_ID = 'admin';
@@ -490,9 +621,35 @@
                 return `${months[myanmarDate.getUTCMonth()]} ${myanmarDate.getUTCDate()}`;
             }
             
-            // ============ LOAD USERS ============
+            // ============ NOTIFICATION ============
+            function showNotification(message, isError = false) {
+                console.log(`🔔 ${isError ? 'Error' : 'Success'}: ${message}`);
+                try {
+                    if (window.parent && window.parent.showToast) {
+                        window.parent.showToast(message, isError);
+                        return;
+                    }
+                } catch(e) {}
+                
+                const toast = document.createElement('div');
+                toast.textContent = message;
+                toast.style.cssText = `
+                    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+                    background: ${isError ? '#f43f5e' : '#10b981'}; color: white;
+                    padding: 8px 16px; border-radius: 40px; font-size: 0.75rem;
+                    z-index: 2000; white-space: nowrap; animation: fadeIn 0.3s ease;
+                `;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 300);
+                }, 2500);
+            }
+            
+            // ============ LOAD USERS (for private chat) ============
             async function loadUsers() {
                 try {
+                    // Try to get users from admin API
                     const response = await fetch(`${API_BASE}/api/admin/users`, {
                         credentials: 'include'
                     });
@@ -510,71 +667,153 @@
                     
                     if (data.success && data.users) {
                         allUsers = data.users;
-                        renderUserSelect();
+                        renderUserList();
                     }
                 } catch (error) {
                     console.error('Error loading users:', error);
-                }
-            }
-            
-            function renderUserSelect() {
-                const select = document.getElementById('userSelect');
-                if (!select) return;
-                
-                if (!allUsers.length) {
-                    select.innerHTML = '<option value="">-- No users found --</option>';
-                    return;
-                }
-                
-                let html = '<option value="">-- Select a user to chat --</option>';
-                for (const user of allUsers) {
-                    const displayName = user.username || user.phone || user.user_id || 'Unknown';
-                    const unreadBadge = user.unread_count > 0 ? ` (${user.unread_count} new)` : '';
-                    html += `<option value="${escapeHtml(user.user_id)}" data-phone="${escapeHtml(user.phone || '')}" data-name="${escapeHtml(displayName)}">
-                        ${escapeHtml(displayName)} - ${escapeHtml(user.phone || 'No phone')}${unreadBadge}
-                    </option>`;
-                }
-                select.innerHTML = html;
-                
-                // Keep selected user if still exists
-                if (currentUserId) {
-                    const optionExists = Array.from(select.options).some(opt => opt.value === currentUserId);
-                    if (!optionExists) {
-                        currentUserId = null;
-                        currentUserPhone = null;
-                        currentUserName = null;
-                        const messagesContainer = document.getElementById('chatMessages');
-                        if (messagesContainer) {
-                            messagesContainer.innerHTML = '<div class="chat-loading">Select a user to start chatting</div>';
-                        }
-                    } else {
-                        select.value = currentUserId;
+                    // Show mock users for demo if API not ready
+                    const userList = document.getElementById('userList');
+                    if (userList) {
+                        userList.innerHTML = `
+                            <li style="padding: 15px; text-align: center; color: #64748b;">
+                                <i class="fas fa-database"></i> Users API not ready yet<br>
+                                <span style="font-size: 0.65rem;">Backend endpoint /api/admin/users needed</span>
+                            </li>
+                        `;
                     }
                 }
             }
             
-            // ============ LOAD MESSAGES ============
-            async function loadMessages() {
-                const container = document.getElementById('chatMessages');
+            function renderUserList() {
+                const container = document.getElementById('userList');
                 if (!container) return;
                 
-                if (!currentUserId) {
-                    container.innerHTML = '<div class="chat-loading"><i class="fas fa-comment-dots"></i><br>Select a user to start chatting</div>';
+                if (!allUsers.length) {
+                    container.innerHTML = '<li style="padding: 15px; text-align: center; color: #64748b;"><i class="fas fa-users"></i> No users found</li>';
                     return;
                 }
                 
+                let html = '';
+                for (const user of allUsers) {
+                    const displayName = user.username || user.phone || user.user_id || 'Unknown';
+                    const unreadCount = user.unread_count || 0;
+                    const isActive = (selectedUserId === user.user_id);
+                    
+                    html += `
+                        <li class="user-item ${isActive ? 'active' : ''}" onclick="selectUser('${escapeHtml(user.user_id)}', '${escapeHtml(displayName)}', '${escapeHtml(user.phone || '')}')">
+                            <div class="user-info">
+                                <div class="user-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="user-details">
+                                    <div class="user-name">${escapeHtml(displayName)}</div>
+                                    <div class="user-phone">📞 ${escapeHtml(user.phone || 'No phone')}</div>
+                                </div>
+                            </div>
+                            ${unreadCount > 0 ? `<div class="unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</div>` : ''}
+                        </li>
+                    `;
+                }
+                container.innerHTML = html;
+            }
+            
+            // ============ SELECT USER FOR PRIVATE CHAT ============
+            window.selectUser = function(userId, userName, userPhone) {
+                selectedUserId = userId;
+                selectedUserName = userName;
+                selectedUserPhone = userPhone;
+                
+                // Update UI
+                renderUserList();
+                
+                // Load messages for this user
+                loadPrivateMessages();
+                
+                // Update note
+                const note = document.getElementById('chatNote');
+                if (note) {
+                    note.innerHTML = `<i class="fas fa-lock"></i> Private chat with ${escapeHtml(userName)} - Only you two can see`;
+                }
+                
+                console.log(`Selected user: ${userName} (${userId})`);
+            };
+            
+            // ============ SET CHAT MODE ============
+            window.setChatMode = function(mode) {
+                currentMode = mode;
+                const privateBtn = document.getElementById('privateModeBtn');
+                const globalBtn = document.getElementById('globalModeBtn');
+                const userListContainer = document.getElementById('userListContainer');
+                const note = document.getElementById('chatNote');
+                
+                if (mode === 'private') {
+                    privateBtn.classList.add('active');
+                    globalBtn.classList.remove('active');
+                    userListContainer.style.display = 'block';
+                    note.innerHTML = `<i class="fas fa-lock"></i> Select a user from the list above to start private chat`;
+                    
+                    if (selectedUserId) {
+                        loadPrivateMessages();
+                        note.innerHTML = `<i class="fas fa-lock"></i> Private chat with ${escapeHtml(selectedUserName)} - Only you two can see`;
+                    } else {
+                        const messagesContainer = document.getElementById('chatMessages');
+                        if (messagesContainer) {
+                            messagesContainer.innerHTML = `
+                                <div class="no-user-selected">
+                                    <i class="fas fa-users" style="font-size: 2rem; opacity: 0.5;"></i><br>
+                                    Select a user from the list above<br>
+                                    to start private chat
+                                </div>
+                            `;
+                        }
+                    }
+                } else {
+                    privateBtn.classList.remove('active');
+                    globalBtn.classList.add('active');
+                    userListContainer.style.display = 'none';
+                    note.innerHTML = `<i class="fas fa-globe"></i> Global message - Everyone can see this message`;
+                    loadGlobalMessages();
+                }
+            };
+            
+            // ============ LOAD PRIVATE MESSAGES ============
+            async function loadPrivateMessages() {
+                const container = document.getElementById('chatMessages');
+                if (!container) return;
+                
+                if (!selectedUserId) {
+                    container.innerHTML = `
+                        <div class="no-user-selected">
+                            <i class="fas fa-comment-dots" style="font-size: 2rem; opacity: 0.5;"></i><br>
+                            Select a user from the list above<br>
+                            to start private chat
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = '<div class="chat-loading"><i class="fas fa-spinner fa-pulse"></i> Loading messages...</div>';
+                
                 try {
-                    const response = await fetch(`${API_BASE}/api/chat/private/conversation?userId=${currentUserId}&otherId=${ADMIN_ID}`, {
+                    // Try conversation endpoint first
+                    let response = await fetch(`${API_BASE}/api/chat/private/conversation?userId=${selectedUserId}&otherId=${ADMIN_ID}`, {
                         credentials: 'include'
                     });
                     
-                    if (!response.ok) {
-                        // Fallback to original endpoints
-                        const url1 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${ADMIN_ID}`;
+                    let messages = [];
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success && data.messages) {
+                            messages = data.messages;
+                        }
+                    } else {
+                        // Fallback to old endpoints
+                        const url1 = `${API_BASE}/api/chat/private/${selectedUserId}?currentUserId=${ADMIN_ID}`;
                         const response1 = await fetch(url1);
                         const data1 = await response1.json();
                         
-                        const url2 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`;
+                        const url2 = `${API_BASE}/api/chat/private/${selectedUserId}?currentUserId=${selectedUserId}`;
                         const response2 = await fetch(url2);
                         const data2 = await response2.json();
                         
@@ -591,47 +830,30 @@
                             }
                         }
                         uniqueMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-                        renderMessages(uniqueMessages);
-                        return;
+                        messages = uniqueMessages;
                     }
                     
-                    const data = await response.json();
-                    if (data.success && data.messages) {
-                        renderMessages(data.messages);
-                        // Mark as read
-                        await markMessagesAsRead();
-                    } else {
-                        container.innerHTML = '<div class="chat-loading">No messages yet. Send a message to start the conversation!</div>';
-                    }
+                    renderPrivateMessages(messages);
+                    await markPrivateMessagesAsRead();
+                    
                 } catch (error) {
-                    console.error('Error loading messages:', error);
+                    console.error('Error loading private messages:', error);
                     container.innerHTML = '<div class="chat-loading">Cannot connect to server</div>';
                 }
             }
             
-            async function markMessagesAsRead() {
-                if (!currentUserId) return;
-                
-                try {
-                    await fetch(`${API_BASE}/api/chat/private/mark-read/${currentUserId}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ admin_id: ADMIN_ID }),
-                        credentials: 'include'
-                    });
-                    // Update user list to reset unread count
-                    loadUsers();
-                } catch (e) {
-                    console.error('Error marking messages as read:', e);
-                }
-            }
-            
-            function renderMessages(messages) {
+            function renderPrivateMessages(messages) {
                 const container = document.getElementById('chatMessages');
                 if (!container) return;
                 
                 if (!messages || messages.length === 0) {
-                    container.innerHTML = '<div class="chat-loading">No messages yet. Send a message to start the conversation!</div>';
+                    container.innerHTML = `
+                        <div class="no-user-selected">
+                            <i class="fas fa-comment"></i><br>
+                            No messages yet.<br>
+                            Send a message to start the conversation!
+                        </div>
+                    `;
                     return;
                 }
                 
@@ -642,10 +864,9 @@
                     const myanmarTime = getMyanmarTime(msg.created_at);
                     const myanmarDate = getMyanmarDate(msg.created_at);
                     
-                    // Admin is sender if sender_id is 'admin' or sender_id === ADMIN_ID
+                    // Check if message is from admin (current user)
                     const isAdminMsg = msg.sender_id === ADMIN_ID || msg.sender_id === 'admin';
-                    const senderName = isAdminMsg ? '👑 Admin (You)' : (msg.sender_name || 'User');
-                    const senderIcon = isAdminMsg ? '<i class="fas fa-shield-alt"></i>' : '<i class="fas fa-user"></i>';
+                    const senderName = isAdminMsg ? '👑 Admin (You)' : (selectedUserName || 'User');
                     
                     if (lastDate !== myanmarDate) {
                         html += `<div style="text-align:center; margin:8px 0;"><span style="background:rgba(0,212,255,0.1); padding:2px 10px; border-radius:40px; font-size:0.55rem; color:#64748b;">📅 ${escapeHtml(myanmarDate)}</span></div>`;
@@ -655,7 +876,95 @@
                     html += `
                         <div class="chat-message ${isAdminMsg ? 'admin' : 'user'}">
                             <div class="message-sender">
-                                ${senderIcon} ${escapeHtml(senderName)}
+                                ${isAdminMsg ? '<i class="fas fa-shield-alt"></i>' : '<i class="fas fa-user"></i>'} 
+                                ${escapeHtml(senderName)}
+                            </div>
+                            <div class="message-bubble">${escapeHtml(msg.message)}</div>
+                            <div class="message-time">🕐 ${escapeHtml(myanmarTime)}</div>
+                        </div>
+                    `;
+                }
+                
+                container.innerHTML = html;
+                container.scrollTop = container.scrollHeight;
+            }
+            
+            async function markPrivateMessagesAsRead() {
+                if (!selectedUserId) return;
+                
+                try {
+                    await fetch(`${API_BASE}/api/chat/private/mark-read/${selectedUserId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ admin_id: ADMIN_ID }),
+                        credentials: 'include'
+                    });
+                    loadUsers(); // Refresh user list to update unread counts
+                } catch (e) {
+                    console.error('Error marking as read:', e);
+                }
+            }
+            
+            // ============ LOAD GLOBAL MESSAGES ============
+            async function loadGlobalMessages() {
+                const container = document.getElementById('chatMessages');
+                if (!container) return;
+                
+                container.innerHTML = '<div class="chat-loading"><i class="fas fa-spinner fa-pulse"></i> Loading global messages...</div>';
+                
+                try {
+                    const response = await fetch(`${API_BASE}/api/chat/messages`, {
+                        credentials: 'include'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.messages) {
+                        renderGlobalMessages(data.messages);
+                    } else {
+                        container.innerHTML = '<div class="chat-loading">No global messages yet. Be the first to say hello!</div>';
+                    }
+                } catch (error) {
+                    console.error('Error loading global messages:', error);
+                    container.innerHTML = '<div class="chat-loading">Cannot connect to server</div>';
+                }
+            }
+            
+            function renderGlobalMessages(messages) {
+                const container = document.getElementById('chatMessages');
+                if (!container) return;
+                
+                if (!messages || messages.length === 0) {
+                    container.innerHTML = '<div class="chat-loading">No global messages yet. Be the first to say hello! 🌍</div>';
+                    return;
+                }
+                
+                let html = '';
+                let lastDate = null;
+                
+                for (const msg of messages) {
+                    const myanmarTime = getMyanmarTime(msg.created_at);
+                    const myanmarDate = getMyanmarDate(msg.created_at);
+                    
+                    // Check if message is from admin
+                    const isAdminMsg = msg.is_admin === true;
+                    const senderName = isAdminMsg ? '👑 Admin' : (msg.username || 'User');
+                    
+                    if (lastDate !== myanmarDate) {
+                        html += `<div style="text-align:center; margin:8px 0;"><span style="background:rgba(0,212,255,0.1); padding:2px 10px; border-radius:40px; font-size:0.55rem; color:#64748b;">📅 ${escapeHtml(myanmarDate)}</span></div>`;
+                        lastDate = myanmarDate;
+                    }
+                    
+                    html += `
+                        <div class="chat-message ${isAdminMsg ? 'global-admin' : 'global-user'}">
+                            <div class="message-sender">
+                                ${isAdminMsg ? '<i class="fas fa-shield-alt"></i>' : '<i class="fas fa-user"></i>'} 
+                                ${escapeHtml(senderName)}
+                                <span class="badge global"><i class="fas fa-globe"></i> Global</span>
                             </div>
                             <div class="message-bubble">${escapeHtml(msg.message)}</div>
                             <div class="message-time">🕐 ${escapeHtml(myanmarTime)}</div>
@@ -668,17 +977,12 @@
             }
             
             // ============ SEND MESSAGE ============
-            async function sendMessage() {
+            window.sendMessage = async function() {
                 const input = document.getElementById('chatInput');
                 const message = input.value.trim();
                 const sendBtn = document.querySelector('.chat-send-btn');
                 
                 if (!message) return;
-                
-                if (!currentUserId) {
-                    showNotification("Please select a user first", true);
-                    return;
-                }
                 
                 // Disable input and show loading
                 input.disabled = true;
@@ -688,28 +992,62 @@
                 sendBtn.classList.add('loading');
                 
                 try {
-                    const response = await fetch(`${API_BASE}/api/chat/private/send`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            sender_id: ADMIN_ID,
-                            receiver_id: currentUserId,
-                            sender_name: ADMIN_NAME,
-                            receiver_name: currentUserName || 'User',
-                            message: message
-                        }),
-                        credentials: 'include'
-                    });
+                    let response;
+                    let data;
                     
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        input.value = '';
-                        autoResizeTextarea();
-                        await loadMessages();
-                        showNotification('✅ Message sent successfully');
+                    if (currentMode === 'private') {
+                        if (!selectedUserId) {
+                            showNotification("Please select a user first", true);
+                            return;
+                        }
+                        
+                        response = await fetch(`${API_BASE}/api/chat/private/send`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                sender_id: ADMIN_ID,
+                                receiver_id: selectedUserId,
+                                sender_name: ADMIN_NAME,
+                                receiver_name: selectedUserName || 'User',
+                                message: message
+                            }),
+                            credentials: 'include'
+                        });
+                        
+                        data = await response.json();
+                        
+                        if (data.success) {
+                            input.value = '';
+                            autoResizeTextarea();
+                            await loadPrivateMessages();
+                            showNotification(`✅ Private message sent to ${selectedUserName}`);
+                        } else {
+                            showNotification(data.error || "Failed to send", true);
+                        }
                     } else {
-                        showNotification(data.error || "Failed to send message", true);
+                        // Global chat
+                        response = await fetch(`${API_BASE}/api/chat/send`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                user_id: ADMIN_ID,
+                                username: ADMIN_NAME,
+                                message: message,
+                                is_admin: true
+                            }),
+                            credentials: 'include'
+                        });
+                        
+                        data = await response.json();
+                        
+                        if (data.success) {
+                            input.value = '';
+                            autoResizeTextarea();
+                            await loadGlobalMessages();
+                            showNotification(`✅ Global message sent`);
+                        } else {
+                            showNotification(data.error || "Failed to send", true);
+                        }
                     }
                 } catch (error) {
                     console.error('Send error:', error);
@@ -721,66 +1059,7 @@
                     sendBtn.classList.remove('loading');
                     input.focus();
                 }
-            }
-            
-            // ============ CHANGE SELECTED USER ============
-            function changeSelectedUser() {
-                const select = document.getElementById('userSelect');
-                const selectedOption = select.options[select.selectedIndex];
-                
-                if (select.value) {
-                    currentUserId = select.value;
-                    currentUserPhone = selectedOption?.getAttribute('data-phone') || '';
-                    currentUserName = selectedOption?.getAttribute('data-name') || 'User';
-                    
-                    console.log(`Selected user: ${currentUserName} (${currentUserId})`);
-                    loadMessages();
-                } else {
-                    currentUserId = null;
-                    currentUserPhone = null;
-                    currentUserName = null;
-                    const container = document.getElementById('chatMessages');
-                    if (container) {
-                        container.innerHTML = '<div class="chat-loading">Select a user to start chatting</div>';
-                    }
-                }
-            }
-            
-            // ============ SHOW NOTIFICATION ============
-            function showNotification(message, isError = false) {
-                console.log(`🔔 ${isError ? 'Error' : 'Success'}: ${message}`);
-                
-                // Try to use parent toast
-                try {
-                    if (window.parent && window.parent.showToast) {
-                        window.parent.showToast(message, isError);
-                        return;
-                    }
-                } catch(e) {}
-                
-                // Create temporary toast
-                const toast = document.createElement('div');
-                toast.textContent = message;
-                toast.style.cssText = `
-                    position: fixed;
-                    bottom: 100px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: ${isError ? '#f43f5e' : '#10b981'};
-                    color: white;
-                    padding: 8px 16px;
-                    border-radius: 40px;
-                    font-size: 0.75rem;
-                    z-index: 2000;
-                    white-space: nowrap;
-                    animation: fadeIn 0.3s ease;
-                `;
-                document.body.appendChild(toast);
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    setTimeout(() => toast.remove(), 300);
-                }, 2500);
-            }
+            };
             
             // ============ AUTO RESIZE TEXTAREA ============
             function autoResizeTextarea() {
@@ -806,84 +1085,62 @@
             }
             
             // ============ TOGGLE MINIMIZE ============
-            function toggleMinimize() {
+            window.toggleMinimize = function() {
                 const container = document.getElementById('chatContainer');
                 if (container) {
                     container.classList.toggle('minimized');
                 }
-            }
+            };
             
             // ============ CLOSE CHAT ============
-            function closeAdminChat() {
-                // Clear intervals
-                if (messagesRefreshInterval) {
-                    clearInterval(messagesRefreshInterval);
-                    messagesRefreshInterval = null;
-                }
-                if (usersRefreshInterval) {
-                    clearInterval(usersRefreshInterval);
-                    usersRefreshInterval = null;
-                }
+            window.closeAdminChat = function() {
+                if (messagesRefreshInterval) clearInterval(messagesRefreshInterval);
+                if (usersRefreshInterval) clearInterval(usersRefreshInterval);
                 
-                // Try to call parent close function
                 try {
                     if (window.parent && window.parent.closeAdminChatWidget) {
                         window.parent.closeAdminChatWidget();
                     }
                 } catch(e) {}
                 
-                // Remove iframe if exists
                 const container = document.getElementById('chatContainer');
-                if (container) {
-                    container.style.display = 'none';
-                }
-            }
+                if (container) container.style.display = 'none';
+            };
             
             // ============ INITIALIZE ============
             async function init() {
-                console.log('🚀 Admin Chat widget initializing...');
+                console.log('🚀 Admin Chat Dashboard initializing...');
                 
                 await loadUsers();
                 setupKeyboardShortcuts();
                 
                 // Refresh users every 30 seconds
                 usersRefreshInterval = setInterval(() => {
-                    loadUsers();
+                    if (currentMode === 'private') {
+                        loadUsers();
+                    }
                 }, 30000);
                 
-                // Refresh messages every 5 seconds when a user is selected
+                // Refresh messages based on mode
                 messagesRefreshInterval = setInterval(() => {
-                    if (currentUserId) {
-                        loadMessages();
+                    if (currentMode === 'private' && selectedUserId) {
+                        loadPrivateMessages();
+                    } else if (currentMode === 'global') {
+                        loadGlobalMessages();
                     }
                 }, 5000);
                 
-                console.log('✅ Admin Chat widget initialized');
+                console.log('✅ Admin Chat Dashboard initialized');
             }
             
-            // ============ CLEANUP ============
-            function cleanup() {
-                if (messagesRefreshInterval) {
-                    clearInterval(messagesRefreshInterval);
-                    messagesRefreshInterval = null;
-                }
-                if (usersRefreshInterval) {
-                    clearInterval(usersRefreshInterval);
-                    usersRefreshInterval = null;
-                }
-                console.log('🧹 Admin Chat widget cleaned up');
-            }
+            // Export to window
+            window.selectUser = window.selectUser;
+            window.setChatMode = window.setChatMode;
+            window.sendMessage = window.sendMessage;
+            window.toggleMinimize = window.toggleMinimize;
+            window.closeAdminChat = window.closeAdminChat;
             
-            // Export functions to window
-            window.toggleMinimize = toggleMinimize;
-            window.closeAdminChat = closeAdminChat;
-            window.sendMessage = sendMessage;
-            window.changeSelectedUser = changeSelectedUser;
-            window.autoResizeTextarea = autoResizeTextarea;
-            
-            // Start initialization
             init();
-            window.addEventListener('beforeunload', cleanup);
         })();
     </script>
 </body>
