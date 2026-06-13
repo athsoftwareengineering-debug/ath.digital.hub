@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Live Dashboard | ATH DIGITAL HUB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-deep: #0a0c15;
+            --cyan: #00d4ff;
+            --violet: #8b5cf6;
+            --emerald: #10b981;
+            --rose: #f43f5e;
+            --amber: #f59e0b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        body {
+            background: #0a0c15;
+            color: var(--text-primary);
+            font-family: 'Inter', 'Noto Sans Myanmar', sans-serif;
+            min-height: 100vh;
+            background-image: radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.12) 0%, transparent 50%),
+                              radial-gradient(circle at 85% 70%, rgba(0,212,255,0.08) 0%, transparent 55%);
+            padding: 20px 16px 40px;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        
+        /* login screen */
+        .login-section {
+            max-width: 350px;
+            margin: 80px auto;
+            background: linear-gradient(145deg, #0f111a, #0a0c15);
+            border-radius: 2rem;
+            padding: 2rem;
+            border: 1px solid rgba(0,212,255,0.3);
+            text-align: center;
+        }
+        .login-section input {
+            width: 100%;
+            padding: 14px;
+            margin: 16px 0;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 60px;
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+        }
+        .login-btn {
+            background: linear-gradient(135deg, var(--cyan), #0891b2);
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #030712;
+            font-size: 1rem;
+        }
+        
+        /* main dashboard */
+        .dashboard-header {
+            backdrop-filter: blur(20px);
+            background: rgba(10,12,21,0.6);
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 1.5rem;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .brand {
+            font-family: 'Space Grotesk', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #94a3b8, var(--cyan));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .phone-badge {
+            background: rgba(0,212,255,0.15);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-family: monospace;
+        }
+        .logout-btn {
+            background: rgba(244,63,94,0.2);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 40px;
+            color: #fb7185;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+        
+        /* collapsible info section */
+        .info-toggle {
+            background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(139,92,246,0.05));
+            border-radius: 1rem;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,212,255,0.2);
+            overflow: hidden;
+        }
+        .info-header {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--cyan);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .info-header i { transition: transform 0.3s; }
+        .info-header.open i { transform: rotate(180deg); }
+        .info-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding: 0 16px;
+            background: rgba(0,0,0,0.2);
+        }
+        .info-body.open {
+            max-height: 300px;
+            padding: 12px 16px;
+        }
+        .info-text {
+            font-size: 0.7rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        .info-text p { margin-bottom: 6px; }
+        .info-text i.fa-check-circle { color: var(--emerald); margin-right: 8px; width: 18px; }
+        .info-text i.fa-exchange-alt { color: var(--amber); margin-right: 8px; width: 18px; }
+        .info-text i.fa-chart-line { color: var(--cyan); margin-right: 8px; width: 18px; }
+        .info-text i.fa-lightbulb { color: #fbbf24; margin-right: 8px; width: 18px; }
+        
+        /* warning toggle */
+        .warning-toggle { margin-bottom: 20px; }
+        .warning-header {
+            background: rgba(244,63,94,0.1);
+            border-radius: 0.8rem;
+            padding: 10px;
+            border-left: 3px solid var(--rose);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .warning-header:hover { background: rgba(244,63,94,0.2); }
+        .warning-header span { font-size: 0.7rem; color: #fb7185; }
+        .warning-header i { transition: transform 0.3s ease; color: #fb7185; }
+        .warning-content {
+            display: none;
+            background: rgba(244,63,94,0.08);
+            border-radius: 0.8rem;
+            padding: 12px;
+            margin-top: -8px;
+            border-left: 3px solid var(--rose);
+        }
+        .warning-content span { font-size: 0.65rem; color: #fb7185; line-height: 1.5; }
+        
+        /* renew buttons */
+        .renew-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .renew-btn {
+            flex: 1;
+            background: linear-gradient(135deg, var(--amber), #d97706);
+            border: none;
+            padding: 12px;
+            border-radius: 60px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+        }
+        .renew-btn.self { background: linear-gradient(135deg, var(--cyan), #0891b2); }
+        .renew-btn:hover { transform: scale(0.98); filter: brightness(1.05); }
+        
+        /* search section */
+        .search-section {
+            background: rgba(0,212,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 1.2rem;
+            padding: 14px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(0,212,255,0.15);
+        }
+        .search-title {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+        .search-box {
+            display: flex;
+            gap: 8px;
+        }
+        .search-box input {
+            flex: 1;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 60px;
+            padding: 10px 16px;
+            color: white;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .search-box input:focus { border-color: var(--cyan); }
+        .search-box button {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            border: none;
+            padding: 8px 18px;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .search-box button.clear { background: #334155; color: white; }
+        .search-message {
+            font-size: 0.65rem;
+            margin-top: 10px;
+            text-align: center;
+            padding: 8px;
+            border-radius: 40px;
+        }
+        .search-message.success { background: rgba(16,185,129,0.15); color: #34d399; }
+        .search-message.error { background: rgba(244,63,94,0.15); color: #fb7185; }
+        
+        /* search result container */
+        .search-result-container {
+            display: none;
+            margin-bottom: 20px;
+        }
+        .search-result-container.active { display: block; }
+        .search-result-title {
+            font-size: 0.75rem;
+            color: var(--amber);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin: 20px 0 12px;
+        }
+        .live-badge {
+            font-size: 0.6rem;
+            background: rgba(244,63,94,0.2);
+            color: #f43f5e;
+            padding: 3px 10px;
+            border-radius: 40px;
+            animation: blinkRed 0.8s step-end infinite;
+        }
+        @keyframes blinkRed {
+            0%,100% { background: rgba(244,63,94,0.2); }
+            50% { background: rgba(244,63,94,0.9); color: white; }
+        }
+        
+        /* MY PLANS card */
+        .my-card {
+            background: linear-gradient(135deg, #0f111a, #131725);
+            border-radius: 1rem;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(0,212,255,0.12);
+            transition: 0.3s;
+            position: relative;
+        }
+        .my-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--cyan), var(--violet), transparent);
+        }
+        .my-card:hover { transform: translateY(-2px); border-color: rgba(0,212,255,0.3); }
+        .my-card .plan { font-weight: 700; background: linear-gradient(135deg, var(--cyan), #7dd3fc); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .my-card .phone-full { font-size: 0.7rem; font-family: monospace; color: var(--emerald); margin-top: 4px; }
+        .status { font-size: 0.6rem; padding: 4px 12px; border-radius: 40px; }
+        .status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
+        .status.rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
+        .price { font-size: 1rem; font-weight: 800; color: var(--emerald); }
+        .date { font-size: 0.6rem; color: var(--text-secondary); margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .countdown { background: rgba(0,212,255,0.08); border-radius: 40px; padding: 6px 12px; margin-top: 10px; font-size: 0.65rem; text-align: center; }
+        
+        /* search result card */
+        .search-result-card {
+            background: linear-gradient(135deg, #0f111a, #131725);
+            border-radius: 1rem;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(245,158,11,0.3);
+            transition: 0.3s;
+            position: relative;
+        }
+        .search-result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--amber), #d97706, transparent);
+        }
+        .search-result-card .plan { font-weight: 700; color: var(--amber); }
+        .search-result-card .phone-masked { font-size: 0.7rem; font-family: monospace; color: var(--text-secondary); margin-top: 4px; }
+        
+        /* LIVE card */
+        .live-card {
+            background: linear-gradient(135deg, #0f111a, #131725);
+            border-radius: 1rem;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(245,158,11,0.2);
+            transition: 0.2s;
+        }
+        .live-card:hover { transform: translateX(4px); border-color: rgba(245,158,11,0.5); }
+        .live-card .plan { font-weight: 700; color: var(--amber); }
+        .live-card .phone-masked { font-size: 0.7rem; font-family: monospace; background: #1e293b; display: inline-block; padding: 4px 12px; border-radius: 40px; margin-top: 4px; }
+        
+        @keyframes orangeBlink {
+            0% { border-color: rgba(245,158,11,0.3); box-shadow: 0 0 0px rgba(245,158,11,0); background: linear-gradient(135deg, #0f111a, #131725); }
+            30% { border-color: #f59e0b; box-shadow: 0 0 25px #f59e0b; background: rgba(245,158,11,0.25); }
+            70% { border-color: #f59e0b; box-shadow: 0 0 25px #f59e0b; background: rgba(245,158,11,0.25); }
+            100% { border-color: rgba(245,158,11,0.3); box-shadow: 0 0 0px rgba(245,158,11,0); background: linear-gradient(135deg, #0f111a, #131725); }
+        }
+        .search-orange-blink { animation: orangeBlink 0.8s ease-in-out 3; }
+        .blink-live { animation: blinkYellow 0.5s ease-in-out 2; }
+        .blink-rotate { animation: blinkCyan 0.5s ease-in-out 2; }
+        @keyframes blinkYellow {
+            0%,100% { background: linear-gradient(135deg, #0f111a, #131725); border-color: rgba(245,158,11,0.2); }
+            50% { background: rgba(245,158,11,0.2); border-color: #f59e0b; box-shadow: 0 0 15px #f59e0b; }
+        }
+        @keyframes blinkCyan {
+            0%,100% { background: linear-gradient(135deg, #0f111a, #131725); }
+            50% { background: rgba(0,212,255,0.15); border-color: #00d4ff; box-shadow: 0 0 15px #00d4ff; }
+        }
+        
+        .empty { text-align: center; padding: 32px; color: var(--text-secondary); font-size: 0.8rem; }
+        .separator { height: 2px; background: linear-gradient(90deg, transparent, rgba(0,212,255,0.3), transparent); margin: 16px 0 8px; }
+        .footer { text-align: center; font-size: 0.6rem; color: #475569; margin-top: 32px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); }
+        
+        /* Payment Method Tabs */
+        .payment-tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .payment-tab-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .payment-tab-btn.kpay-tab {
+            background: rgba(30,136,229,0.15);
+            border: 1px solid rgba(30,136,229,0.5);
+            color: #64b5f6;
+        }
+        .payment-tab-btn.kpay-tab.active {
+            background: linear-gradient(135deg, #1e88e5, #1565c0);
+            border: none;
+            color: white;
+        }
+        .payment-tab-btn.wavepay-tab {
+            background: rgba(67,160,71,0.15);
+            border: 1px solid rgba(67,160,71,0.5);
+            color: #81c784;
+        }
+        .payment-tab-btn.wavepay-tab.active {
+            background: linear-gradient(135deg, #43a047, #2e7d32);
+            border: none;
+            color: white;
+        }
+        .payment-tab-btn img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+        
+        /* Proof Method Tabs */
+        .proof-tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .proof-tab-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .proof-tab-btn.screenshot-tab {
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            color: var(--cyan);
+        }
+        .proof-tab-btn.screenshot-tab.active {
+            background: linear-gradient(135deg, #00d4ff, #0891b2);
+            border: none;
+            color: white;
+        }
+        .proof-tab-btn.text-tab {
+            background: rgba(245,158,11,0.15);
+            border: 1px solid rgba(245,158,11,0.3);
+            color: var(--amber);
+        }
+        .proof-tab-btn.text-tab.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none;
+            color: white;
+        }
+        
+        .method-panel { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* payment modal */
+        .modal-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(3,7,18,0.96); backdrop-filter: blur(20px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: 0.25s; z-index: 2000;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-card {
+            background: linear-gradient(145deg, #0f111a, #0a0c15);
+            border: 1px solid rgba(0,212,255,0.4);
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 480px;
+            padding: 1.5rem;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-close {
+            float: right;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .modal-close:hover { color: var(--rose); }
+        .info-card {
+            background: rgba(0,212,255,0.05);
+            border-radius: 1rem;
+            padding: 14px;
+            margin: 16px 0;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { font-size: 0.7rem; display: block; margin-bottom: 6px; }
+        .form-control {
+            width: 100%;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 60px;
+            padding: 12px 16px;
+            color: white;
+        }
+        .file-upload-btn {
+            background: rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.3);
+            padding: 12px;
+            border-radius: 60px;
+            width: 100%;
+            cursor: pointer;
+            text-align: center;
+            color: var(--cyan);
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 60px;
+            background: linear-gradient(135deg, var(--emerald), #059669);
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .note-text { font-size: 0.6rem; color: var(--text-secondary); text-align: center; margin-top: 12px; }
+        
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--emerald);
+            color: #030712;
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            z-index: 3000;
+            display: none;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-section">
+        <i class="fas fa-mobile-alt" style="font-size: 2.5rem; color: var(--cyan); margin-bottom: 1rem;"></i>
+        <h3 style="margin-bottom: 8px;">ATH DIGITAL HUB</h3>
+        <p style="font-size: 0.7rem; color: #94a3b8; margin-bottom: 16px;">ဝယ်ထားသော Plan များကြည့်ရန်</p>
+        <input type="tel" id="loginPhone" placeholder="📱 09xxxxxxxxx">
+        <button class="login-btn" id="doLoginBtn"><i class="fas fa-sign-in-alt"></i> ဝင်ရောက်မည်</button>
+    </div>
+
+    <!-- Dashboard (after login) -->
+    <div id="dashboardContent" style="display: none;">
+        <div class="dashboard-header">
+            <div class="brand"><i class="fas fa-chart-line"></i> ATH DIGITAL HUB</div>
+            <div><span class="phone-badge" id="displayPhone"></span>
+            <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> ထွက်ရန်</button></div>
+        </div>
+
+        <div class="info-toggle" id="infoToggle">
+            <div class="info-header">
+                <span><i class="fas fa-info-circle"></i> 📌 သက်တမ်းတိုးခြင်းအကြောင်း သိမှတ်စရာ (နှိပ်ပါ)</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="info-body">
+                <div class="info-text">
+                    <p><i class="fas fa-check-circle"></i> Plan တစ်ခုစီသည် <strong>30 ရက်</strong> သက်တမ်းရှိပါသည်။</p>
+                    <p><i class="fas fa-exchange-alt"></i> သက်တမ်းမကုန်သေးဘဲ ထပ်ဝယ်ပါက <strong>အရင် Plan ရဲ့ လက်ကျန်ရက်များ ဆုံးရှုံးမည်</strong> ဖြစ်ပြီး Plan အသစ် စတင်မည်ဖြစ်ပါသည်။</p>
+                    <p><i class="fas fa-chart-line"></i> <strong>ဒေတာ၊ မိနစ်၊ SMS ပမာဏများ</strong> သည် လက်ကျန်ရှိပါက အသစ်နှင့် <strong>ပေါင်းထည့်ပေးမည်</strong> ဖြစ်ပါသည်။</p>
+                    <p><i class="fas fa-lightbulb"></i> <strong>အကြံပြုချက် -</strong> သက်တမ်းကုန်ခါနီးမှ ထပ်ဝယ်ခြင်းသည် အကျိုးအရှိဆုံးဖြစ်ပါသည်။</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="warning-toggle" id="warningToggle">
+            <div class="warning-header">
+                <span><i class="fas fa-exclamation-triangle"></i> ⚠️ သတိပြုရန် - အရေးကြီးအကြောင်းအရာ (နှိပ်ပါ)</span>
+                <i class="fas fa-chevron-down" id="warningIcon"></i>
+            </div>
+            <div class="warning-content" id="warningContent">
+                <span><i class="fas fa-exclamation-triangle"></i> သတိပြုရန် - သက်တမ်းမကုန်သေးဘဲ ထပ်ဝယ်ပါက လက်ကျန်ရက်များ ဆုံးရှုံးမည်ဖြစ်ပြီး Plan အသစ်စတင်ပါမည်။</span>
+            </div>
+        </div>
+
+        <div class="renew-buttons">
+            <button class="renew-btn self" id="openSelfRenewBtn"><i class="fas fa-user"></i> ကိုယ်တိုင်ထပ်ဝယ်ရန်</button>
+            <button class="renew-btn" id="openOtherRenewBtn"><i class="fas fa-users"></i> အခြားသူအတွက် ထပ်ဝယ်ပေးရန်</button>
+        </div>
+
+        <div class="search-section">
+            <div class="search-title"><i class="fas fa-search"></i> အခြားသူများ သက်တမ်းစစ်ရန်</div>
+            <div class="search-box">
+                <input type="tel" id="searchPhone" placeholder="📱 ဖုန်းနံပါတ်ရိုက်ထည့်ပါ">
+                <button id="searchBtn"><i class="fas fa-search"></i> ရှာ</button>
+                <button id="clearSearchBtn" class="clear"><i class="fas fa-times"></i> ရှင်း</button>
+            </div>
+            <div id="searchMessage" class="search-message" style="display: none;"></div>
+        </div>
+
+        <div id="searchResultContainer" class="search-result-container">
+            <div class="search-result-title"><i class="fas fa-mobile-alt"></i> 🔍 ရှာဖွေတွေ့ရှိသူ၏ Plan များ</div>
+            <div id="searchResultOrders"></div>
+        </div>
+
+        <div class="section-title" id="myPlansTitle">
+            <h2><i class="fas fa-ticket-alt"></i> ကျွန်ုပ်၏ Plan များ</h2>
+            <span id="myCount" style="background:#1e293b; padding:4px 12px; border-radius:40px; font-size:0.65rem;">0</span>
+        </div>
+        <div id="myOrdersContainer"><div class="empty"><i class="fas fa-spinner fa-pulse"></i> ဖတ်နေသည်...</div></div>
+
+        <div class="separator"></div>
+
+        <div class="section-title">
+            <h2><i class="fas fa-broadcast-tower"></i> LIVE အော်ဒါများ <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span></h2>
+            <span id="liveTimer" style="background:#1e293b; padding:4px 12px; border-radius:40px; font-size:0.6rem;">auto 30s</span>
+        </div>
+        <div id="liveContainer"><div class="empty"><i class="fas fa-spinner fa-pulse"></i> စောင့်နေသည်...</div></div>
+
+        <div class="footer">⚡ သင့်အော်ဒါများ အလိုအလျောက်ပြသည် • LIVE အော်ဒါများ ၁၀ စက္ကန့်တစ်ခါ အလှည့်ကျပြသည်</div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div id="paymentModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-close" id="closeModalBtn">&times;</div>
+        <h3 style="text-align:center; margin-bottom:16px;"><i class="fas fa-credit-card"></i> <span id="modalTitle">ထပ်မံဝယ်ယူရန်</span></h3>
+        
+        <!-- Payment Method Selection Tab -->
+        <div class="payment-tab-buttons">
+            <button type="button" id="kpayTabBtn" class="payment-tab-btn kpay-tab active">
+                <img src="https://i.ibb.co/CpyBHvrS/1000011452.jpg" alt="KBZ Pay" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                <span>KBZ Pay</span>
+            </button>
+            <button type="button" id="wavepayTabBtn" class="payment-tab-btn wavepay-tab">
+                <img src="https://i.ibb.co/9990m00N/FB-IMG-1780586423015.jpg" alt="WavePay" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                <span>WavePay</span>
+            </button>
+        </div>
+        
+        <!-- Dynamic Account Info -->
+        <div class="info-card" id="accountInfo">
+            <div class="info-row"><span>ငွေလွှဲနည်းလမ်း</span><span id="paymentMethodName">KBZ Pay</span></div>
+            <div class="info-row"><span>အကောင့်အမည်</span><span>AUNG THU HTWE</span></div>
+            <div class="info-row"><span>ဖုန်းနံပါတ်</span><span id="accountPhone">09789999368 📋</span></div>
+        </div>
+        
+        <!-- Proof Method Tabs -->
+        <div class="proof-tab-buttons">
+            <button type="button" id="screenshotTabBtn" class="proof-tab-btn screenshot-tab active">
+                <i class="fas fa-camera"></i> 📸 Screenshot
+            </button>
+            <button type="button" id="textTabBtn" class="proof-tab-btn text-tab">
+                <i class="fas fa-keyboard"></i> ✏️ စာသားဖြည့်
+            </button>
+        </div>
+        
+        <!-- Screenshot Method Panel -->
+        <div id="screenshotPanel" class="method-panel">
+            <div class="form-group">
+                <label><i class="fas fa-image"></i> ငွေလွှဲပြေစာ (Screenshot)</label>
+                <button type="button" id="chooseFileBtn" class="file-upload-btn">
+                    <i class="fas fa-camera"></i> Screenshot ရွေးရန်
+                </button>
+                <input type="file" id="slipImage" accept="image/*" style="display:none;">
+                <div id="fileNameDisplay" class="file-name-display"></div>
+                <div class="note-text" style="margin-top: 8px;">※ ငွေလွှဲပြေစာကို Screenshot ရိုက်ပြီး တင်ပေးပါ။ (ဖုန်း Gallery မှ ရွေးချယ်နိုင်ပါသည်)</div>
+            </div>
+        </div>
+        
+        <!-- Text Method Panel -->
+        <div id="textPanel" class="method-panel" style="display: none;">
+            <div class="form-group">
+                <label><i class="fas fa-user"></i> ငွေလွှဲသူအမည် *</label>
+                <input type="text" id="senderName" class="form-control" placeholder="ဥပမာ - မောင်မောင်">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-credit-card"></i> ငွေလွှဲအကောင့်နောက်ဆုံး ၅ လုံး *</label>
+                <input type="text" id="last5Digits" class="form-control" placeholder="ဥပမာ - 12345" maxlength="5">
+                <div class="note-text">※ KBZ Pay / WavePay အကောင့်နံပါတ်ရဲ့ နောက်ဆုံးဂဏန်း ၅ လုံး</div>
+            </div>
+        </div>
+        
+        <form id="renewForm" style="margin-top: 16px;">
+            <div class="form-group">
+                <label>📱 လက်ခံမည့်သူ ဖုန်းနံပါတ် *</label>
+                <input type="tel" id="renewPhone" class="form-control" placeholder="09xxxxxxxxx">
+                <div class="note-text" id="phoneNote"></div>
+            </div>
+            <div class="form-group">
+                <label>🎯 Plan ရွေးရန် *</label>
+                <select id="renewPlan" class="form-control">
+                    <option value="VIP LEVEL - 1">VIP LEVEL - 1 (15,000 MMK)</option>
+                    <option value="VIP LEVEL - 2">VIP LEVEL - 2 (20,000 MMK)</option>
+                    <option value="VIP LEVEL - 3">VIP LEVEL - 3 (25,000 MMK)</option>
+                    <option value="VIP LEVEL - 4 (ULTRA)">VIP LEVEL - 4 (ULTRA) (30,000 MMK)</option>
+                </select>
+            </div>
+            <button type="submit" class="submit-btn"><i class="fas fa-check"></i> အော်ဒါတင်မည်</button>
+        </form>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+    (function() {
+        // DOM Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const dashboardContent = document.getElementById('dashboardContent');
+        const loginPhoneInput = document.getElementById('loginPhone');
+        const doLoginBtn = document.getElementById('doLoginBtn');
+        const displayPhoneSpan = document.getElementById('displayPhone');
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        let selectedPaymentMethod = 'kpay';
+        
+        const API_BASE = window.location.origin;
+        let currentUserPhone = localStorage.getItem('dashboardPhone') || '';
+        let liveOrders = [];
+        let lastOrderIds = [];
+        let autoRefreshInterval = null, rotateInterval = null, timerInterval = null;
+        let refreshSec = 30;
+        let renewMode = 'self';
+        let externalSearchPhone = '';
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.background = isError ? '#f43f5e' : '#10b981';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2500);
+        }
+
+        function maskPhone(phone) {
+            if (!phone || phone.length < 8) return phone || '';
+            return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
+        }
+
+        function updateAccountInfo() {
+            const paymentMethodName = document.getElementById('paymentMethodName');
+            if (selectedPaymentMethod === 'kpay') {
+                if (paymentMethodName) paymentMethodName.innerText = 'KBZ Pay';
+            } else {
+                if (paymentMethodName) paymentMethodName.innerText = 'WavePay';
+            }
+        }
+        
+        // Payment Method Tab switching
+        const kpayTab = document.getElementById('kpayTabBtn');
+        const wavepayTab = document.getElementById('wavepayTabBtn');
+        
+        if (kpayTab) {
+            kpayTab.addEventListener('click', function() {
+                selectedPaymentMethod = 'kpay';
+                kpayTab.classList.add('active');
+                wavepayTab.classList.remove('active');
+                updateAccountInfo();
+            });
+        }
+        if (wavepayTab) {
+            wavepayTab.addEventListener('click', function() {
+                selectedPaymentMethod = 'wavepay';
+                wavepayTab.classList.add('active');
+                kpayTab.classList.remove('active');
+                updateAccountInfo();
+            });
+        }
+        
+        // Proof method tabs switching
+        const screenshotTab = document.getElementById('screenshotTabBtn');
+        const textTab = document.getElementById('textTabBtn');
+        const screenshotPanel = document.getElementById('screenshotPanel');
+        const textPanel = document.getElementById('textPanel');
+        
+        function switchToScreenshot() {
+            if (screenshotPanel) screenshotPanel.style.display = 'block';
+            if (textPanel) textPanel.style.display = 'none';
+            if (screenshotTab) {
+                screenshotTab.classList.add('active');
+                screenshotTab.style.background = "linear-gradient(135deg, #00d4ff, #0891b2)";
+                screenshotTab.style.color = "white";
+            }
+            if (textTab) {
+                textTab.classList.remove('active');
+                textTab.style.background = "rgba(245,158,11,0.15)";
+                textTab.style.color = "var(--amber)";
+            }
+        }
+        
+        function switchToText() {
+            if (textPanel) textPanel.style.display = 'block';
+            if (screenshotPanel) screenshotPanel.style.display = 'none';
+            if (textTab) {
+                textTab.classList.add('active');
+                textTab.style.background = "linear-gradient(135deg, #f59e0b, #d97706)";
+                textTab.style.color = "white";
+            }
+            if (screenshotTab) {
+                screenshotTab.classList.remove('active');
+                screenshotTab.style.background = "rgba(0,212,255,0.15)";
+                screenshotTab.style.color = "var(--cyan)";
+            }
+        }
+        
+        if (screenshotTab) screenshotTab.addEventListener('click', switchToScreenshot);
+        if (textTab) textTab.addEventListener('click', switchToText);
+        
+        // File upload handler
+        const chooseFileBtn = document.getElementById('chooseFileBtn');
+        const slipImage = document.getElementById('slipImage');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        
+        if (chooseFileBtn && slipImage) {
+            chooseFileBtn.addEventListener('click', () => slipImage.click());
+            slipImage.addEventListener('change', () => {
+                if (slipImage.files.length > 0 && fileNameDisplay) {
+                    fileNameDisplay.innerHTML = `<i class="fas fa-check-circle"></i> ${slipImage.files[0].name}`;
+                }
+            });
+        }
+        
+        async function login(phone) {
+            if(!phone || phone.length < 9) {
+                showToast("ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)", true);
+                return false;
+            }
+            // Check if user is blocked
+            try {
+                const statsRes = await fetch(`${API_BASE}/api/admin/user-stats`);
+                const statsData = await statsRes.json();
+                if (statsData.stats?.find(u => u.phone === phone)?.blocked) {
+                    showToast("သင့်အကောင့်အား ပိတ်ထားပါသည်။ Customer Support ကို ဆက်သွယ်ပါ။", true);
+                    return false;
+                }
+            } catch(e) {
+                console.log("Block check failed");
+            }
+            
+            currentUserPhone = phone;
+            localStorage.setItem('dashboardPhone', phone);
+            loginScreen.style.display = 'none';
+            dashboardContent.style.display = 'block';
+            displayPhoneSpan.innerHTML = maskPhone(phone);
+            
+            await refreshMyAndLive();
+            startAutoRefresh();
+            showToast("အကောင့်ဝင်ရောက်မှု အောင်မြင်ပါသည်။", false);
+            return true;
+        }
+        
+        function logout() {
+            localStorage.removeItem('dashboardPhone');
+            currentUserPhone = '';
+            externalSearchPhone = '';
+            if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+            if(timerInterval) clearInterval(timerInterval);
+            if(rotateInterval) clearInterval(rotateInterval);
+            loginScreen.style.display = 'block';
+            dashboardContent.style.display = 'none';
+            if(document.getElementById('searchPhone')) document.getElementById('searchPhone').value = '';
+            if(document.getElementById('searchMessage')) document.getElementById('searchMessage').style.display = 'none';
+            hideSearchResult();
+            showToast("ထွက်ရန် အောင်မြင်ပါသည်။", false);
+        }
+        
+        // Warning Toggle
+        const warningToggle = document.getElementById('warningToggle');
+        const warningContent = document.getElementById('warningContent');
+        const warningIcon = document.getElementById('warningIcon');
+        if (warningToggle) {
+            warningToggle.addEventListener('click', function() {
+                if (warningContent.style.display === 'none' || warningContent.style.display === '') {
+                    warningContent.style.display = 'block';
+                    if (warningIcon) warningIcon.style.transform = 'rotate(180deg)';
+                } else {
+                    warningContent.style.display = 'none';
+                    if (warningIcon) warningIcon.style.transform = 'rotate(0deg)';
+                }
+            });
+        }
+        
+        // Collapsible info section
+        const infoToggle = document.getElementById('infoToggle');
+        const infoHeader = infoToggle.querySelector('.info-header');
+        const infoBody = infoToggle.querySelector('.info-body');
+        if (infoHeader) {
+            infoHeader.addEventListener('click', () => {
+                infoBody.classList.toggle('open');
+                infoHeader.classList.toggle('open');
+            });
+        }
+        
+        function formatDate(d) {
+            if(!d) return '';
+            let date = new Date(d);
+            return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
+        }
+        
+        function remainingTime(activatedAt) {
+            if (!activatedAt) return null;
+            let end = new Date(activatedAt).getTime() + (30 * 24 * 60 * 60 * 1000);
+            let remain = end - Date.now();
+            if (remain <= 0) return '✅ သက်တမ်းကုန်';
+            let days = Math.floor(remain / 86400000);
+            let hours = Math.floor((remain % 86400000) / 3600000);
+            let mins = Math.floor((remain % 3600000) / 60000);
+            return `${days}ရက် ${hours}နာရီ ${mins}မိနစ်`;
+        }
+        
+        async function fetchMyOrders(phone) {
+            if(!phone) return [];
+            try {
+                let res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(phone)}`);
+                let data = await res.json();
+                return data.orders || [];
+            } catch(e) { 
+                showToast("ဆာဗာချိတ်ဆက်မှု အမှား။ နောက်မှထပ်စမ်းပါ။", true);
+                return []; 
+            }
+        }
+        
+        async function fetchLiveOrders(excludePhone) {
+            try {
+                let res = await fetch(`${API_BASE}/api/admin/orders`);
+                let data = await res.json();
+                if(data.orders) {
+                    let filtered = data.orders.filter(o => o.phone !== excludePhone);
+                    filtered.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+                    return filtered.slice(0, 30);
+                }
+                return [];
+            } catch(e) { 
+                console.error("Error fetching live orders:", e);
+                return []; 
+            }
+        }
+        
+        function renderMyPlans(orders) {
+            let container = document.getElementById('myOrdersContainer');
+            let countSpan = document.getElementById('myCount');
+            
+            if(!currentUserPhone) {
+                if(container) container.innerHTML = '<div class="empty"><i class="fas fa-search"></i> ဖုန်းနံပါတ်ရှာပါ</div>';
+                if(countSpan) countSpan.innerText = '0';
+                return;
+            }
+            if(!orders || orders.length === 0) {
+                if(container) container.innerHTML = '<div class="empty"><i class="fas fa-inbox"></i> အော်ဒါမရှိသေးပါ</div>';
+                if(countSpan) countSpan.innerText = '0';
+                return;
+            }
+            if(countSpan) countSpan.innerText = orders.length;
+            let html = '';
+            for(let o of orders) {
+                let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+                let statusText = o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
+                let countdownHtml = '';
+                if(o.status === 'Approved' && o.activated_at) {
+                    let remain = remainingTime(o.activated_at);
+                    countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
+                }
+                html += `
+                    <div class="my-card" data-order-id="${o.id}">
+                        <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                            <span class="plan"><i class="fas fa-gem"></i> ${o.plan}</span>
+                            <span class="status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="phone-full"><i class="fas fa-phone-alt"></i> ${o.phone}</div>
+                        <div><span class="price">${o.price.toLocaleString()} MMK</span></div>
+                        <div class="date"><i class="fas fa-calendar-alt"></i> ဝယ်ရက်: ${formatDate(o.created_at)}</div>
+                        ${countdownHtml}
+                    </div>
+                `;
+            }
+            if(container) container.innerHTML = html;
+        }
+        
+        function renderSearchResult(orders) {
+            const container = document.getElementById('searchResultContainer');
+            const ordersContainer = document.getElementById('searchResultOrders');
+            
+            if(!orders || !orders.length) {
+                if(container) container.classList.remove('active');
+                return;
+            }
+            
+            if(container) container.classList.add('active');
+            let html = '';
+            for(let o of orders) {
+                let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+                let statusText = o.status === 'Pending' ? '⏳ စောင့်ဆိုင်းဆဲ' : (o.status === 'Approved' ? '✅ အတည်ပြုပြီး' : '❌ ပယ်ဖျက်ခံရ');
+                let countdownHtml = '';
+                if(o.status === 'Approved' && o.activated_at) {
+                    let remain = remainingTime(o.activated_at);
+                    countdownHtml = `<div class="countdown"><i class="fas fa-hourglass-half"></i> ကျန်ရှိ: ${remain}</div>`;
+                }
+                html += `
+                    <div class="search-result-card search-orange-blink" data-order-id="${o.id}">
+                        <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                            <span class="plan"><i class="fas fa-gem"></i> ${o.plan}</span>
+                            <span class="status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="phone-masked"><i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}</div>
+                        <div><span class="price">${o.price.toLocaleString()} MMK</span></div>
+                        <div class="date"><i class="fas fa-calendar-alt"></i> ဝယ်ရက်: ${formatDate(o.created_at)}</div>
+                        ${countdownHtml}
+                    </div>
+                `;
+            }
+            if(ordersContainer) ordersContainer.innerHTML = html;
+            
+            setTimeout(() => {
+                if(container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+        
+        function hideSearchResult() {
+            const container = document.getElementById('searchResultContainer');
+            if(container) container.classList.remove('active');
+            const ordersContainer = document.getElementById('searchResultOrders');
+            if(ordersContainer) ordersContainer.innerHTML = '';
+        }
+        
+        function renderLiveFeed(orders, isNewOrder = false) {
+            let container = document.getElementById('liveContainer');
+            if(!orders || !orders.length) {
+                if(container) container.innerHTML = '<div class="empty"><i class="fas fa-eye-slash"></i> လက်ရှိ LIVE အော်ဒါမရှိ</div>';
+                return;
+            }
+            let html = '';
+            for(let o of orders) {
+                let statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+                let statusText = o.status === 'Pending' ? 'Pending' : (o.status === 'Approved' ? 'Approved' : 'Rejected');
+                let remainHtml = '';
+                if(o.status === 'Approved' && o.activated_at) {
+                    let remain = remainingTime(o.activated_at);
+                    remainHtml = `<div class="countdown" style="margin-top:6px;"><i class="fas fa-hourglass-start"></i> ${remain}</div>`;
+                }
+                html += `
+                    <div class="live-card" data-order-id="${o.id}">
+                        <div class="card-header" style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <span class="plan"><i class="fas fa-mobile-alt"></i> ${o.plan}</span>
+                            <span class="status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="phone-masked"><i class="fas fa-phone-alt"></i> ${maskPhone(o.phone)}</div>
+                        <div><span class="price">${o.price.toLocaleString()}K</span></div>
+                        <div class="date"><i class="fas fa-clock"></i> ${new Date(o.created_at).toLocaleTimeString()}</div>
+                        ${remainHtml}
+                    </div>
+                `;
+            }
+            if(container) container.innerHTML = html;
+            
+            if(isNewOrder && orders.length > 0) {
+                const firstCard = document.querySelector('.live-card');
+                if(firstCard) firstCard.classList.add('blink-live');
+                setTimeout(() => firstCard?.classList.remove('blink-live'), 1000);
+            }
+        }
+        
+        async function refreshMyAndLive() {
+            if(!currentUserPhone) return;
+            let my = await fetchMyOrders(currentUserPhone);
+            let live = await fetchLiveOrders(currentUserPhone);
+            let newIds = live.map(o => o.id);
+            let hasNew = (lastOrderIds.length > 0 && newIds.length > 0 && newIds[0] !== lastOrderIds[0]);
+            lastOrderIds = newIds;
+            liveOrders = live;
+            
+            if(externalSearchPhone) {
+                let searchedOrders = await fetchMyOrders(externalSearchPhone);
+                renderSearchResult(searchedOrders);
+            } else {
+                hideSearchResult();
+                renderMyPlans(my);
+            }
+            renderLiveFeed(live, hasNew);
+        }
+        
+        function rotateLiveOrders() {
+            if(liveOrders.length <= 1) return;
+            const lastItem = liveOrders.pop();
+            liveOrders.unshift(lastItem);
+            renderLiveFeed(liveOrders, false);
+            const firstCard = document.querySelector('.live-card');
+            if(firstCard) {
+                firstCard.classList.add('blink-rotate');
+                setTimeout(() => firstCard.classList.remove('blink-rotate'), 800);
+            }
+        }
+        
+        function startAutoRefresh() {
+            if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+            if(timerInterval) clearInterval(timerInterval);
+            if(rotateInterval) clearInterval(rotateInterval);
+            
+            refreshSec = 30;
+            const timerSpan = document.getElementById('liveTimer');
+            const updateTimer = () => {
+                if(timerSpan) timerSpan.innerText = `auto ${refreshSec}s`;
+                refreshSec--;
+                if(refreshSec < 0) refreshSec = 30;
+            };
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            autoRefreshInterval = setInterval(async () => {
+                await refreshMyAndLive();
+                refreshSec = 30;
+                if(timerSpan) timerSpan.innerText = 'auto 30s';
+            }, 30000);
+            
+            rotateInterval = setInterval(() => {
+                if(liveOrders.length > 1) rotateLiveOrders();
+            }, 10000);
+        }
+        
+        async function searchOtherUser() {
+            let phone = document.getElementById('searchPhone').value.trim();
+            const msgDiv = document.getElementById('searchMessage');
+            
+            if(phone === '') {
+                externalSearchPhone = '';
+                if(msgDiv) msgDiv.style.display = 'none';
+                await refreshMyAndLive();
+                return;
+            }
+            if(phone.length < 9) {
+                if(msgDiv) {
+                    msgDiv.style.display = 'block';
+                    msgDiv.className = 'search-message error';
+                    msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)';
+                }
+                return;
+            }
+            
+            if(msgDiv) {
+                msgDiv.style.display = 'block';
+                msgDiv.className = 'search-message';
+                msgDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ရှာဖွေနေသည်...';
+            }
+            
+            let searchedOrders = await fetchMyOrders(phone);
+            
+            if(searchedOrders.length === 0) {
+                if(msgDiv) {
+                    msgDiv.className = 'search-message error';
+                    msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
+                }
+                externalSearchPhone = '';
+                hideSearchResult();
+                renderMyPlans(await fetchMyOrders(currentUserPhone));
+            } else {
+                if(msgDiv) {
+                    msgDiv.className = 'search-message success';
+                    msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။ 🟠 လိမ္မော်ရောင် မှိတ်တုတ်ပြသပါမည်။';
+                }
+                externalSearchPhone = phone;
+                renderSearchResult(searchedOrders);
+                renderMyPlans([]);
+            }
+        }
+        
+        function clearExternalSearch() {
+            document.getElementById('searchPhone').value = '';
+            externalSearchPhone = '';
+            document.getElementById('searchMessage').style.display = 'none';
+            refreshMyAndLive();
+        }
+        
+        async function submitRenewOrder(phone, plan, price) {
+            let fd = new FormData();
+            fd.append('phone', phone);
+            fd.append('plan', plan);
+            fd.append('price', price);
+            fd.append('payment_method', selectedPaymentMethod);
+            
+            const isScreenshotMode = screenshotPanel.style.display !== 'none';
+            
+            if (isScreenshotMode) {
+                const file = document.getElementById('slipImage').files[0];
+                if (!file) {
+                    showToast("ငွေလွှဲပြေစာ ထည့်ပါ", true);
+                    return null;
+                }
+                fd.append('slip', file);
+            } else {
+                const senderName = document.getElementById('senderName').value.trim();
+                const last5Digits = document.getElementById('last5Digits').value.trim();
+                
+                if (!senderName) {
+                    showToast("ငွေလွှဲသူအမည် ထည့်ပါ", true);
+                    return null;
+                }
+                if (!last5Digits || last5Digits.length !== 5) {
+                    showToast("အကောင့်နောက်ဆုံး ၅ လုံး အတိအကျ ထည့်ပါ", true);
+                    return null;
+                }
+                
+                fd.append('sender_name', senderName);
+                fd.append('last5_digits', last5Digits);
+            }
+            
+            try {
+                let res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
+                return await res.json();
+            } catch(e) {
+                showToast("Connection error", true);
+                return null;
+            }
+        }
+        
+        // Modal handlers
+        const modal = document.getElementById('paymentModal');
+        const renewPhone = document.getElementById('renewPhone');
+        const renewPlan = document.getElementById('renewPlan');
+        const modalTitle = document.getElementById('modalTitle');
+        const phoneNote = document.getElementById('phoneNote');
+        
+        function openRenewModal(mode) {
+            renewMode = mode;
+            if(mode === 'self') {
+                if(modalTitle) modalTitle.innerText = 'ကိုယ်တိုင် ထပ်ဝယ်ရန်';
+                if(renewPhone) {
+                    renewPhone.value = currentUserPhone;
+                    renewPhone.readOnly = true;
+                }
+                if(phoneNote) {
+                    phoneNote.innerHTML = '※ သင့်ကိုယ်ပိုင်နံပါတ်';
+                    phoneNote.style.color = '#10b981';
+                }
+            } else {
+                if(modalTitle) modalTitle.innerText = 'အခြားသူအတွက် ထပ်ဝယ်ပေးရန်';
+                if(renewPhone) {
+                    renewPhone.value = '';
+                    renewPhone.readOnly = false;
+                }
+                if(phoneNote) {
+                    phoneNote.innerHTML = '※ လက်ခံမည့်သူ၏ ဖုန်းနံပါတ် (သက်တမ်းတိုးခံရမည့်သူ)';
+                    phoneNote.style.color = '#f59e0b';
+                }
+            }
+            if (slipImage) slipImage.value = '';
+            if (fileNameDisplay) fileNameDisplay.innerHTML = '';
+            const senderNameInput = document.getElementById('senderName');
+            const last5DigitsInput = document.getElementById('last5Digits');
+            if (senderNameInput) senderNameInput.value = '';
+            if (last5DigitsInput) last5DigitsInput.value = '';
+            switchToScreenshot();
+            if(modal) modal.classList.add('active');
+        }
+        
+        const openSelfRenewBtn = document.getElementById('openSelfRenewBtn');
+        const openOtherRenewBtn = document.getElementById('openOtherRenewBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        
+        if(openSelfRenewBtn) openSelfRenewBtn.addEventListener('click', () => openRenewModal('self'));
+        if(openOtherRenewBtn) openOtherRenewBtn.addEventListener('click', () => openRenewModal('other'));
+        if(closeModalBtn) closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
+        if(modal) {
+            window.addEventListener('click', (e) => { if(e.target === modal) modal.classList.remove('active'); });
+        }
+        
+        const renewForm = document.getElementById('renewForm');
+        if(renewForm) {
+            renewForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const phone = renewPhone ? renewPhone.value.trim() : '';
+                const plan = renewPlan ? renewPlan.value : '';
+                let price = 0;
+                if(plan === 'VIP LEVEL - 1') price = 15000;
+                else if(plan === 'VIP LEVEL - 2') price = 20000;
+                else if(plan === 'VIP LEVEL - 3') price = 25000;
+                else if(plan === 'VIP LEVEL - 4 (ULTRA)') price = 30000;
+                
+                if(!phone || phone.length < 9) {
+                    showToast("ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)", true);
+                    return;
+                }
+                
+                const submitBtn = renewForm.querySelector('.submit-btn');
+                if(submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '⏳ အော်ဒါတင်နေပါသည်...';
+                }
+                
+                const result = await submitRenewOrder(phone, plan, price);
+                
+                if (result === null) {
+                    if(submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-check"></i> အော်ဒါတင်မည်';
+                    }
+                    return;
+                }
+                
+                if(result.success) {
+                    showToast(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${result.orderId}`, false);
+                    if(modal) modal.classList.remove('active');
+                    if(slipImage) slipImage.value = '';
+                    if(fileNameDisplay) fileNameDisplay.innerHTML = '';
+                    const senderNameInput = document.getElementById('senderName');
+                    const last5DigitsInput = document.getElementById('last5Digits');
+                    if(senderNameInput) senderNameInput.value = '';
+                    if(last5DigitsInput) last5DigitsInput.value = '';
+                    await refreshMyAndLive();
+                } else {
+                    showToast("အော်ဒါတင်ရာတွင် အမှားရှိပါသည်။ " + (result.error || ''), true);
+                }
+                if(submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check"></i> အော်ဒါတင်မည်';
+                }
+            });
+        }
+        
+        const modalPhoneCopy = document.getElementById('accountPhone');
+        if(modalPhoneCopy) {
+            modalPhoneCopy.addEventListener('click', () => {
+                navigator.clipboard.writeText('09789999368');
+                showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ", false);
+            });
+        }
+        
+        const searchBtn = document.getElementById('searchBtn');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        const searchPhoneInput = document.getElementById('searchPhone');
+        
+        if(searchBtn) searchBtn.addEventListener('click', searchOtherUser);
+        if(clearSearchBtn) clearSearchBtn.addEventListener('click', clearExternalSearch);
+        if(searchPhoneInput) {
+            searchPhoneInput.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') searchOtherUser();
+            });
+        }
+        
+        if(doLoginBtn) {
+            doLoginBtn.addEventListener('click', () => {
+                const phone = loginPhoneInput ? loginPhoneInput.value.trim() : '';
+                login(phone);
+            });
+        }
+        if(loginPhoneInput) {
+            loginPhoneInput.addEventListener('keypress', (e) => {
+                if(e.key === 'Enter') {
+                    const phone = loginPhoneInput.value.trim();
+                    login(phone);
+                }
+            });
+        }
+        if(logoutBtn) logoutBtn.addEventListener('click', logout);
+        
+        if(currentUserPhone && currentUserPhone.length > 8) {
+            loginScreen.style.display = 'none';
+            dashboardContent.style.display = 'block';
+            displayPhoneSpan.innerHTML = maskPhone(currentUserPhone);
+            refreshMyAndLive();
+            startAutoRefresh();
+        } else {
+            loginScreen.style.display = 'block';
+            dashboardContent.style.display = 'none';
+        }
+        
+        updateAccountInfo();
+    })();
+</script>
+</body>
+</html>
