@@ -1,11 +1,18 @@
-// routes/admin.js
+// routes/admin.js - ATH DIGITAL HUB Admin Routes (Complete)
 const express = require('express');
 const router = express.Router();
 const { supabaseAdmin } = require('../database');
 
-// ============ ADMIN AUTHENTICATION MIDDLEWARE ============
+// ============================================================
+// ADMIN AUTHENTICATION MIDDLEWARE
+// ============================================================
+
 function isAdmin(req, res, next) {
-    const token = req.headers.authorization || req.cookies?.adminToken || req.session?.adminToken;
+    // Check multiple possible sources for admin authentication
+    const token = req.headers.authorization?.split(' ')[1] || 
+                  req.cookies?.adminToken || 
+                  req.session?.adminToken;
+    
     if (token === 'logged_in' || (req.session && req.session.isAdmin)) {
         next();
     } else {
@@ -124,7 +131,7 @@ router.post('/clear-suspect', isAdmin, async (req, res) => {
     }
 });
 
-// POST /api/admin/user-delete - Delete user account
+// POST /api/admin/user-delete - Delete user account and all associated data
 router.post('/user-delete', isAdmin, async (req, res) => {
     const { phone } = req.body;
     
@@ -133,6 +140,15 @@ router.post('/user-delete', isAdmin, async (req, res) => {
     }
     
     try {
+        // Get user_id first
+        const { data: user, error: fetchError } = await supabaseAdmin
+            .from('user_stats')
+            .select('user_id')
+            .eq('phone', phone)
+            .single();
+        
+        if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
+        
         // Delete from user_stats
         const { error: statsError } = await supabaseAdmin
             .from('user_stats')
@@ -142,12 +158,18 @@ router.post('/user-delete', isAdmin, async (req, res) => {
         if (statsError) throw statsError;
         
         // Delete user's private messages
-        const { error: messagesError } = await supabaseAdmin
-            .from('private_messages')
-            .delete()
-            .or(`sender_id.eq.${phone},receiver_id.eq.${phone}`);
+        if (user && user.user_id) {
+            await supabaseAdmin
+                .from('private_messages')
+                .delete()
+                .or(`sender_id.eq.${user.user_id},receiver_id.eq.${user.user_id}`);
+        }
         
-        if (messagesError) console.error('Error deleting messages:', messagesError);
+        // Delete user's orders
+        await supabaseAdmin
+            .from('orders')
+            .delete()
+            .eq('phone', phone);
         
         res.json({ success: true, message: 'User deleted successfully' });
     } catch (error) {
@@ -223,7 +245,10 @@ router.post('/ads', isAdmin, async (req, res) => {
                 display_weight: display_weight || 5,
                 expiry_date: expiry_date || null,
                 active: true,
-                created_at: new Date().toISOString()
+                views: 0,
+                clicks: 0,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
             }])
             .select();
         
@@ -293,7 +318,7 @@ router.get('/ad-settings', isAdmin, async (req, res) => {
         const { data, error } = await supabaseAdmin
             .from('ad_settings')
             .select('*')
-            .single();
+            .maybeSingle();
         
         if (error && error.code !== 'PGRST116') throw error;
         
@@ -316,7 +341,7 @@ router.put('/ad-settings', isAdmin, async (req, res) => {
         const { data: existing } = await supabaseAdmin
             .from('ad_settings')
             .select('id')
-            .single();
+            .maybeSingle();
         
         let result;
         if (existing) {
@@ -429,7 +454,7 @@ router.delete('/orders/:id', isAdmin, async (req, res) => {
     }
 });
 
-// POST /api/admin/cleanup-old - Clean up old pending/rejected orders
+// POST /api/admin/cleanup-old - Clean up old pending/rejected orders (older than 30 days)
 router.post('/cleanup-old', isAdmin, async (req, res) => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -450,7 +475,7 @@ router.post('/cleanup-old', isAdmin, async (req, res) => {
     }
 });
 
-// POST /api/admin/system-reset - Reset entire system (DANGER!)
+// POST /api/admin/system-reset - Reset entire system (DANGER! Use with caution)
 router.post('/system-reset', isAdmin, async (req, res) => {
     const { confirm, keepProducts } = req.body;
     
@@ -487,7 +512,7 @@ router.post('/system-reset', isAdmin, async (req, res) => {
 // STATISTICS ROUTES
 // ============================================================
 
-// GET /api/admin/user-stats - Get user statistics
+// GET /api/admin/user-stats - Get user statistics for admin panel
 router.get('/user-stats', isAdmin, async (req, res) => {
     try {
         const { data: stats, error } = await supabaseAdmin
@@ -500,6 +525,60 @@ router.get('/user-stats', isAdmin, async (req, res) => {
         res.json({ success: true, stats: stats || [] });
     } catch (error) {
         console.error('Error getting user stats:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// GET /api/admin/notifications - Get admin notifications
+router.get('/notifications', isAdmin, async (req, res) => {
+    try {
+        const { data: notifications, error } = await supabaseAdmin
+            .from('notifications')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(50);
+        
+        if (error) throw error;
+        
+        res.json({ success: true, notifications: notifications || [] });
+    } catch (error) {
+        console.error('Error getting notifications:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// POST /api/admin/notifications/clear - Clear all notifications
+router.post('/notifications/clear', isAdmin, async (req, res) => {
+    try {
+        const { error } = await supabaseAdmin
+            .from('notifications')
+            .delete()
+            .neq('id', 0);
+        
+        if (error) throw error;
+        
+        res.json({ success: true, message: 'All notifications cleared' });
+    } catch (error) {
+        console.error('Error clearing notifications:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// DELETE /api/admin/notifications/:id - Delete single notification
+router.delete('/notifications/:id', isAdmin, async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        const { error } = await supabaseAdmin
+            .from('notifications')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting notification:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
