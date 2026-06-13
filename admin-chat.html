@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Admin Chat Dashboard | ATH DIGITAL HUB</title>
+    <title>Admin Chat | ATH DIGITAL HUB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
@@ -17,7 +17,6 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
         }
 
-        /* ============ CHAT WIDGET ============ */
         .chat-widget-container {
             position: fixed;
             bottom: 70px;
@@ -45,7 +44,6 @@
             display: none;
         }
 
-        /* ============ HEADER ============ */
         .chat-header {
             display: flex;
             justify-content: space-between;
@@ -129,7 +127,6 @@
             color: #00d4ff;
         }
 
-        /* ============ MODE TOGGLE ============ */
         .mode-toggle {
             display: flex;
             padding: 8px 12px;
@@ -177,7 +174,6 @@
             border: none;
         }
 
-        /* ============ USER LIST (Private Mode) ============ */
         .user-list-container {
             border-bottom: 1px solid rgba(0,212,255,0.1);
             background: rgba(0,0,0,0.2);
@@ -280,7 +276,6 @@
             padding: 0 5px;
         }
 
-        /* ============ MESSAGES ============ */
         .chat-body {
             flex: 1;
             display: flex;
@@ -323,25 +318,21 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Admin sends message (right side) */
         .chat-message.admin {
             align-items: flex-end;
             margin-left: auto;
         }
 
-        /* User sends message (left side) - for private chat */
         .chat-message.user {
             align-items: flex-start;
             margin-right: auto;
         }
 
-        /* Global chat - admin message */
         .chat-message.global-admin {
             align-items: flex-end;
             margin-left: auto;
         }
 
-        /* Global chat - other user message */
         .chat-message.global-user {
             align-items: flex-start;
             margin-right: auto;
@@ -355,7 +346,6 @@
             line-height: 1.4;
         }
 
-        /* Admin messages (blue gradient) */
         .chat-message.admin .message-bubble,
         .chat-message.global-admin .message-bubble {
             background: linear-gradient(135deg, #00d4ff, #0891b2);
@@ -363,7 +353,6 @@
             border-bottom-right-radius: 4px;
         }
 
-        /* User messages (dark) */
         .chat-message.user .message-bubble,
         .chat-message.global-user .message-bubble {
             background: rgba(255,255,255,0.08);
@@ -405,7 +394,6 @@
             color: #10b981;
         }
 
-        /* ============ INPUT AREA ============ */
         .chat-input-container {
             padding: 12px;
             background: rgba(0,0,0,0.4);
@@ -491,7 +479,6 @@
             background: rgba(0,0,0,0.2);
         }
 
-        /* Empty States */
         .empty-state {
             text-align: center;
             padding: 50px 20px;
@@ -521,7 +508,6 @@
             color: #94a3b8;
         }
 
-        /* ============ MOBILE ============ */
         @media (max-width: 480px) {
             .chat-widget-container {
                 width: calc(100vw - 32px);
@@ -552,7 +538,6 @@
 </head>
 <body>
     <div class="chat-widget-container" id="chatContainer">
-        <!-- Header -->
         <div class="chat-header" onclick="toggleMinimize()">
             <div class="chat-header-info">
                 <div class="chat-avatar">
@@ -577,7 +562,6 @@
         </div>
 
         <div class="chat-body">
-            <!-- Mode Toggle -->
             <div class="mode-toggle">
                 <button id="privateModeBtn" class="mode-btn private active" onclick="setChatMode('private')">
                     <i class="fas fa-lock"></i> Private Chat
@@ -587,11 +571,10 @@
                 </button>
             </div>
 
-            <!-- User List (only for private mode) -->
             <div id="userListContainer" class="user-list-container" style="display: block;">
                 <div class="user-list-header">
                     <span><i class="fas fa-users"></i> Users - Click to chat privately</span>
-                    <button class="refresh-users-btn" onclick="refreshUsers()">
+                    <button class="refresh-users-btn" onclick="loadUsers()">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                 </div>
@@ -602,7 +585,6 @@
                 </ul>
             </div>
 
-            <!-- Messages Container -->
             <div class="chat-messages-container" id="chatMessages">
                 <div class="empty-state">
                     <i class="fas fa-comment-dots"></i>
@@ -611,7 +593,6 @@
                 </div>
             </div>
 
-            <!-- Input Area -->
             <div class="chat-input-container">
                 <div class="chat-input-wrapper">
                     <textarea id="chatInput" class="chat-message-input" placeholder="Type your message here..." rows="1" maxlength="1000"></textarea>
@@ -630,51 +611,22 @@
         (function() {
             const API_BASE = window.location.origin;
             
-            // Chat state
-            let currentMode = 'private';  // 'private' or 'global'
+            let currentMode = 'private';
             let selectedUserId = null;
             let selectedUserName = null;
-            let selectedUserPhone = null;
             let allUsers = [];
             let messagesRefreshInterval = null;
             let usersRefreshInterval = null;
-            let privateMessages = {}; // Store messages per user
             
-            // Admin info
             const ADMIN_ID = 'admin';
             const ADMIN_NAME = 'Admin';
             
-            // Mock data for when API is not available
-            const MOCK_USERS = [
-                { user_id: 'user_001', phone: '09781234567', username: 'ကျော်ကျော်', created_at: new Date(), unread_count: 2 },
-                { user_id: 'user_002', phone: '09788765432', username: 'မိုးမိုး', created_at: new Date(), unread_count: 0 },
-                { user_id: 'user_003', phone: '09780001111', username: 'သူဇာ', created_at: new Date(), unread_count: 5 },
-                { user_id: 'user_004', phone: '09782223333', username: 'အောင်အောင်', created_at: new Date(), unread_count: 1 },
-                { user_id: 'user_005', phone: '09784445555', username: 'နန်းနန်း', created_at: new Date(), unread_count: 0 }
-            ];
+            // Check if admin is logged in
+            function isAdminLoggedIn() {
+                const token = localStorage.getItem('adminToken');
+                return token === 'logged_in';
+            }
             
-            // Mock private messages
-            const MOCK_PRIVATE_MESSAGES = {
-                'user_001': [
-                    { id: 1, sender_id: 'user_001', receiver_id: 'admin', message: 'မင်္ဂလာပါခင်ဗျာ။ ကျွန်တော် VIP Level 1 ဝယ်ချင်ပါတယ်။', created_at: new Date(Date.now() - 3600000), is_read: true },
-                    { id: 2, sender_id: 'admin', receiver_id: 'user_001', message: 'မင်္ဂလာပါခင်ဗျာ။ ကျေးဇူးပြုပြီး သင့်ဖုန်းနံပါတ်ကို အတည်ပြုပေးပါ။', created_at: new Date(Date.now() - 3000000), is_read: true },
-                    { id: 3, sender_id: 'user_001', receiver_id: 'admin', message: 'ကျွန်တော့်ဖုန်းက 09781234567 ပါခင်ဗျာ။', created_at: new Date(Date.now() - 1800000), is_read: false }
-                ],
-                'user_002': [
-                    { id: 4, sender_id: 'admin', receiver_id: 'user_002', message: 'ဟိုင်း! ဘာကူညီရမလဲခင်ဗျာ။', created_at: new Date(Date.now() - 86400000), is_read: true },
-                    { id: 5, sender_id: 'user_002', receiver_id: 'admin', message: 'ကျေးဇူးပါ။ ကျွန်မ အကောင့်လော့ဂ်အင်မဝင်နိုင်ဘူး။', created_at: new Date(Date.now() - 80000000), is_read: true }
-                ],
-                'user_003': []
-            };
-            
-            // Mock global messages
-            let MOCK_GLOBAL_MESSAGES = [
-                { id: 1, user_id: 'admin', username: 'Admin', message: 'Welcome to ATH DIGITAL HUB Global Chat! 🌍', is_admin: true, created_at: new Date(Date.now() - 86400000) },
-                { id: 2, user_id: 'user_001', username: 'ကျော်ကျော်', message: 'ဟိုင်းအားလုံး!', is_admin: false, created_at: new Date(Date.now() - 72000000) },
-                { id: 3, user_id: 'user_002', username: 'မိုးမိုး', message: 'မင်္ဂလာပါ', is_admin: false, created_at: new Date(Date.now() - 36000000) }
-            ];
-            
-            // ============ SECURE ESCAPE HTML ============
             function escapeHtml(str) {
                 if (!str) return '';
                 return String(str)
@@ -685,7 +637,6 @@
                     .replace(/'/g, '&#39;');
             }
             
-            // ============ MYANMAR TIME ============
             function getMyanmarTime(timestamp) {
                 const date = new Date(timestamp);
                 const utcTime = date.getTime();
@@ -709,46 +660,36 @@
                 return `${months[myanmarDate.getUTCMonth()]} ${myanmarDate.getUTCDate()}`;
             }
             
-            // ============ NOTIFICATION ============
             function showNotification(message, isError = false) {
-                console.log(`🔔 ${isError ? 'Error' : 'Success'}: ${message}`);
+                console.log(`${isError ? '❌' : '✅'}:`, message);
                 try {
                     if (window.parent && window.parent.showToast) {
                         window.parent.showToast(message, isError);
-                        return;
                     }
                 } catch(e) {}
-                
-                const toast = document.createElement('div');
-                toast.textContent = message;
-                toast.style.cssText = `
-                    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-                    background: ${isError ? '#f43f5e' : '#10b981'}; color: white;
-                    padding: 8px 16px; border-radius: 40px; font-size: 0.75rem;
-                    z-index: 2000; white-space: nowrap; animation: fadeIn 0.3s ease;
-                `;
-                document.body.appendChild(toast);
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    setTimeout(() => toast.remove(), 300);
-                }, 2500);
             }
             
-            // ============ LOAD USERS ============
             async function loadUsers() {
-                const userList = document.getElementById('userList');
-                if (userList) {
-                    userList.innerHTML = '<li style="padding: 20px; text-align: center; color: #64748b;"><i class="fas fa-spinner fa-pulse"></i> Loading users...</li>';
+                if (!isAdminLoggedIn()) {
+                    console.log('Admin not logged in');
+                    return;
                 }
+                
+                const container = document.getElementById('userList');
+                if (!container) return;
+                
+                container.innerHTML = '<li style="padding: 20px; text-align: center; color: #64748b;"><i class="fas fa-spinner fa-pulse"></i> Loading users...</li>';
                 
                 try {
                     const response = await fetch(`${API_BASE}/api/admin/users`, {
-                        credentials: 'include'
+                        credentials: 'include',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                        }
                     });
                     
                     if (response.status === 401) {
-                        console.log('Not authenticated');
-                        useMockUsers();
+                        container.innerHTML = '<li style="padding: 20px; text-align: center; color: #f43f5e;"><i class="fas fa-lock"></i> Please login as Admin first</li>';
                         return;
                     }
                     
@@ -759,21 +700,15 @@
                     const data = await response.json();
                     
                     if (data.success && data.users && data.users.length > 0) {
-                        allUsers = data.users;
+                        allUsers = data.users.filter(u => u.user_id !== 'admin');
+                        renderUserList();
                     } else {
-                        useMockUsers();
+                        container.innerHTML = '<li style="padding: 20px; text-align: center; color: #64748b;"><i class="fas fa-users"></i> No users found</li>';
                     }
                 } catch (error) {
                     console.error('Error loading users:', error);
-                    useMockUsers();
+                    container.innerHTML = `<li style="padding: 20px; text-align: center; color: #f43f5e;"><i class="fas fa-exclamation-triangle"></i> Failed to load users: ${error.message}</li>`;
                 }
-                
-                renderUserList();
-            }
-            
-            function useMockUsers() {
-                console.log('Using mock users data');
-                allUsers = MOCK_USERS;
             }
             
             function renderUserList() {
@@ -781,7 +716,7 @@
                 if (!container) return;
                 
                 if (!allUsers.length) {
-                    container.innerHTML = '<li style="padding: 15px; text-align: center; color: #64748b;"><i class="fas fa-users"></i> No users found</li>';
+                    container.innerHTML = '<li style="padding: 20px; text-align: center; color: #64748b;"><i class="fas fa-users"></i> No users found</li>';
                     return;
                 }
                 
@@ -809,11 +744,14 @@
                 container.innerHTML = html;
             }
             
-            // ============ SELECT USER ============
             window.selectUser = function(userId, userName, userPhone) {
+                if (!isAdminLoggedIn()) {
+                    showNotification('Please login as Admin first', true);
+                    return;
+                }
+                
                 selectedUserId = userId;
                 selectedUserName = userName;
-                selectedUserPhone = userPhone;
                 
                 renderUserList();
                 loadPrivateMessages();
@@ -826,14 +764,12 @@
                 console.log(`Selected user: ${userName} (${userId})`);
             };
             
-            // ============ REFRESH USERS ============
-            window.refreshUsers = function() {
-                loadUsers();
-                showNotification('🔄 Users list refreshed');
-            };
-            
-            // ============ SET CHAT MODE ============
             window.setChatMode = function(mode) {
+                if (!isAdminLoggedIn()) {
+                    showNotification('Please login as Admin first', true);
+                    return;
+                }
+                
                 currentMode = mode;
                 const privateBtn = document.getElementById('privateModeBtn');
                 const globalBtn = document.getElementById('globalModeBtn');
@@ -870,7 +806,6 @@
                 }
             };
             
-            // ============ LOAD PRIVATE MESSAGES ============
             async function loadPrivateMessages() {
                 const container = document.getElementById('chatMessages');
                 if (!container) return;
@@ -889,34 +824,35 @@
                 container.innerHTML = '<div class="chat-loading"><i class="fas fa-spinner fa-pulse"></i> Loading messages...</div>';
                 
                 try {
-                    let messages = [];
+                    const response = await fetch(`${API_BASE}/api/chat/private/conversation?userId=${selectedUserId}&otherId=${ADMIN_ID}`, {
+                        credentials: 'include'
+                    });
                     
-                    // Check if we have mock messages for this user
-                    if (MOCK_PRIVATE_MESSAGES[selectedUserId]) {
-                        messages = MOCK_PRIVATE_MESSAGES[selectedUserId];
-                    } else {
-                        // Try to fetch from API
-                        const response = await fetch(`${API_BASE}/api/chat/private/conversation?userId=${selectedUserId}&otherId=${ADMIN_ID}`, {
-                            credentials: 'include'
-                        });
-                        
-                        if (response.ok) {
-                            const data = await response.json();
-                            if (data.success && data.messages) {
-                                messages = data.messages;
-                            }
-                        }
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
                     }
                     
-                    renderPrivateMessages(messages);
+                    const data = await response.json();
                     
+                    if (data.success && data.messages) {
+                        renderPrivateMessages(data.messages);
+                        await markMessagesAsRead();
+                    } else {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-comment"></i>
+                                <h4>📭 No messages yet</h4>
+                                <p>Send a message to start the conversation!</p>
+                            </div>
+                        `;
+                    }
                 } catch (error) {
                     console.error('Error loading private messages:', error);
                     container.innerHTML = `
                         <div class="empty-state">
-                            <i class="fas fa-comment"></i>
-                            <h4>📭 No messages yet</h4>
-                            <p>Send a message to start the conversation!</p>
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h4>⚠️ Connection Error</h4>
+                            <p>Failed to load messages. Please try again.</p>
                         </div>
                     `;
                 }
@@ -968,7 +904,22 @@
                 container.scrollTop = container.scrollHeight;
             }
             
-            // ============ LOAD GLOBAL MESSAGES ============
+            async function markMessagesAsRead() {
+                if (!selectedUserId) return;
+                
+                try {
+                    await fetch(`${API_BASE}/api/chat/private/mark-read/${selectedUserId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ admin_id: ADMIN_ID }),
+                        credentials: 'include'
+                    });
+                    loadUsers();
+                } catch (e) {
+                    console.error('Error marking as read:', e);
+                }
+            }
+            
             async function loadGlobalMessages() {
                 const container = document.getElementById('chatMessages');
                 if (!container) return;
@@ -976,25 +927,36 @@
                 container.innerHTML = '<div class="chat-loading"><i class="fas fa-spinner fa-pulse"></i> Loading global messages...</div>';
                 
                 try {
-                    let messages = MOCK_GLOBAL_MESSAGES;
-                    
-                    // Try to fetch from API
                     const response = await fetch(`${API_BASE}/api/chat/messages`, {
                         credentials: 'include'
                     });
                     
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.success && data.messages && data.messages.length > 0) {
-                            messages = data.messages;
-                        }
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
                     }
                     
-                    renderGlobalMessages(messages);
+                    const data = await response.json();
                     
+                    if (data.success && data.messages) {
+                        renderGlobalMessages(data.messages);
+                    } else {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-globe"></i>
+                                <h4>🌍 Global Chat</h4>
+                                <p>No messages yet. Be the first to say hello!</p>
+                            </div>
+                        `;
+                    }
                 } catch (error) {
                     console.error('Error loading global messages:', error);
-                    renderGlobalMessages(MOCK_GLOBAL_MESSAGES);
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h4>⚠️ Connection Error</h4>
+                            <p>Failed to load global messages. Please try again.</p>
+                        </div>
+                    `;
                 }
             }
             
@@ -1045,8 +1007,12 @@
                 container.scrollTop = container.scrollHeight;
             }
             
-            // ============ SEND MESSAGE ============
             window.sendMessage = async function() {
+                if (!isAdminLoggedIn()) {
+                    showNotification('Please login as Admin first', true);
+                    return;
+                }
+                
                 const input = document.getElementById('chatInput');
                 const message = input.value.trim();
                 const sendBtn = document.querySelector('.chat-send-btn');
@@ -1065,86 +1031,57 @@
                 sendBtn.classList.add('loading');
                 
                 try {
-                    let success = false;
+                    let response;
+                    let data;
                     
                     if (currentMode === 'private') {
-                        // Add to mock messages
-                        if (!MOCK_PRIVATE_MESSAGES[selectedUserId]) {
-                            MOCK_PRIVATE_MESSAGES[selectedUserId] = [];
-                        }
-                        MOCK_PRIVATE_MESSAGES[selectedUserId].push({
-                            id: Date.now(),
-                            sender_id: ADMIN_ID,
-                            receiver_id: selectedUserId,
-                            message: message,
-                            created_at: new Date(),
-                            is_read: true
+                        response = await fetch(`${API_BASE}/api/chat/private/send`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                sender_id: ADMIN_ID,
+                                receiver_id: selectedUserId,
+                                sender_name: ADMIN_NAME,
+                                receiver_name: selectedUserName || 'User',
+                                message: message
+                            }),
+                            credentials: 'include'
                         });
-                        success = true;
                         
-                        // Try API
-                        try {
-                            const response = await fetch(`${API_BASE}/api/chat/private/send`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    sender_id: ADMIN_ID,
-                                    receiver_id: selectedUserId,
-                                    sender_name: ADMIN_NAME,
-                                    receiver_name: selectedUserName || 'User',
-                                    message: message
-                                }),
-                                credentials: 'include'
-                            });
-                            if (response.ok) success = true;
-                        } catch(e) {}
+                        data = await response.json();
                         
-                        if (success) {
+                        if (data.success) {
                             input.value = '';
                             autoResizeTextarea();
                             await loadPrivateMessages();
                             showNotification(`✅ Private message sent to ${selectedUserName}`);
+                        } else {
+                            showNotification(data.error || "Failed to send", true);
                         }
                     } else {
-                        // Add to mock global messages
-                        MOCK_GLOBAL_MESSAGES.push({
-                            id: Date.now(),
-                            user_id: ADMIN_ID,
-                            username: ADMIN_NAME,
-                            message: message,
-                            is_admin: true,
-                            created_at: new Date()
+                        response = await fetch(`${API_BASE}/api/chat/send`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                user_id: ADMIN_ID,
+                                username: ADMIN_NAME,
+                                message: message,
+                                is_admin: true
+                            }),
+                            credentials: 'include'
                         });
-                        success = true;
                         
-                        // Try API
-                        try {
-                            const response = await fetch(`${API_BASE}/api/chat/send`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    user_id: ADMIN_ID,
-                                    username: ADMIN_NAME,
-                                    message: message,
-                                    is_admin: true
-                                }),
-                                credentials: 'include'
-                            });
-                            if (response.ok) success = true;
-                        } catch(e) {}
+                        data = await response.json();
                         
-                        if (success) {
+                        if (data.success) {
                             input.value = '';
                             autoResizeTextarea();
                             await loadGlobalMessages();
                             showNotification(`✅ Global message sent`);
+                        } else {
+                            showNotification(data.error || "Failed to send", true);
                         }
                     }
-                    
-                    if (!success) {
-                        showNotification("Failed to send message", true);
-                    }
-                    
                 } catch (error) {
                     console.error('Send error:', error);
                     showNotification("Connection error: " + error.message, true);
@@ -1157,7 +1094,6 @@
                 }
             };
             
-            // ============ AUTO RESIZE TEXTAREA ============
             function autoResizeTextarea() {
                 const textarea = document.getElementById('chatInput');
                 if (textarea) {
@@ -1166,7 +1102,6 @@
                 }
             }
             
-            // ============ KEYBOARD SHORTCUTS ============
             function setupKeyboardShortcuts() {
                 const input = document.getElementById('chatInput');
                 if (input) {
@@ -1180,7 +1115,6 @@
                 }
             }
             
-            // ============ TOGGLE MINIMIZE ============
             window.toggleMinimize = function() {
                 const container = document.getElementById('chatContainer');
                 if (container) {
@@ -1188,7 +1122,6 @@
                 }
             };
             
-            // ============ CLOSE CHAT ============
             window.closeAdminChat = function() {
                 if (messagesRefreshInterval) clearInterval(messagesRefreshInterval);
                 if (usersRefreshInterval) clearInterval(usersRefreshInterval);
@@ -1203,40 +1136,46 @@
                 if (container) container.style.display = 'none';
             };
             
-            // ============ INITIALIZE ============
             async function init() {
-                console.log('🚀 Admin Chat Dashboard initializing...');
+                console.log('🚀 Admin Chat initializing...');
+                
+                if (!isAdminLoggedIn()) {
+                    console.log('Admin not logged in. Please login from Admin Panel first.');
+                    const container = document.getElementById('userList');
+                    if (container) {
+                        container.innerHTML = '<li style="padding: 20px; text-align: center; color: #f43f5e;"><i class="fas fa-lock"></i> Please login as Admin from Admin Panel first</li>';
+                    }
+                    return;
+                }
                 
                 await loadUsers();
                 setupKeyboardShortcuts();
                 
-                // Refresh users every 30 seconds
                 usersRefreshInterval = setInterval(() => {
-                    if (currentMode === 'private') {
+                    if (currentMode === 'private' && isAdminLoggedIn()) {
                         loadUsers();
                     }
                 }, 30000);
                 
-                // Refresh messages based on mode
                 messagesRefreshInterval = setInterval(() => {
-                    if (currentMode === 'private' && selectedUserId) {
-                        loadPrivateMessages();
-                    } else if (currentMode === 'global') {
-                        loadGlobalMessages();
+                    if (isAdminLoggedIn()) {
+                        if (currentMode === 'private' && selectedUserId) {
+                            loadPrivateMessages();
+                        } else if (currentMode === 'global') {
+                            loadGlobalMessages();
+                        }
                     }
                 }, 5000);
                 
-                console.log('✅ Admin Chat Dashboard initialized');
-                console.log('📌 Tip: Click on any user from the list to start private chat');
+                console.log('✅ Admin Chat initialized');
             }
             
-            // Export to window
             window.selectUser = window.selectUser;
             window.setChatMode = window.setChatMode;
             window.sendMessage = window.sendMessage;
             window.toggleMinimize = window.toggleMinimize;
             window.closeAdminChat = window.closeAdminChat;
-            window.refreshUsers = window.refreshUsers;
+            window.loadUsers = loadUsers;
             
             init();
         })();
