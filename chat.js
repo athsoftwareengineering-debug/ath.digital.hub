@@ -35,7 +35,7 @@ function getCurrentUserInfo() {
     console.log('Chat User:', currentChatUser, 'User ID:', currentChatUserId);
 }
 
-// ============ ADD MODE TABS (Admin ဘက်လိုလှအောင်) ============
+// ============ ADD MODE TABS ============
 function addModeTabs() {
     const chatBody = document.querySelector('.chat-body');
     if (!chatBody) return;
@@ -85,22 +85,21 @@ function addModeTabs() {
         </button>
     `;
     
-    // Insert tabs at the top of chat body
-    const messagesContainer = document.querySelector('.chat-messages-container');
+    const messagesContainer = document.getElementById('chatMessages');
     if (messagesContainer) {
         chatBody.insertBefore(tabsDiv, messagesContainer);
     } else {
         chatBody.insertBefore(tabsDiv, chatBody.firstChild);
     }
     
-    // Add event listeners
     document.getElementById('userGlobalTab')?.addEventListener('click', () => {
         currentMode = 'global';
         document.getElementById('userGlobalTab').style.background = 'linear-gradient(135deg, #00d4ff, #0891b2)';
         document.getElementById('userGlobalTab').style.color = 'white';
         document.getElementById('userPrivateTab').style.background = 'rgba(255,255,255,0.08)';
         document.getElementById('userPrivateTab').style.color = '#94a3b8';
-        document.querySelector('.chat-note').innerHTML = '<i class="fas fa-globe"></i> လူတိုင်းမြင်ရသော Chat - အားလုံးမြင်နိုင်ပါသည်';
+        const note = document.querySelector('.chat-note');
+        if (note) note.innerHTML = '<i class="fas fa-globe"></i> လူတိုင်းမြင်ရသော Chat - အားလုံးမြင်နိုင်ပါသည်';
         loadChatMessages();
     });
     
@@ -110,7 +109,8 @@ function addModeTabs() {
         document.getElementById('userPrivateTab').style.color = 'white';
         document.getElementById('userGlobalTab').style.background = 'rgba(255,255,255,0.08)';
         document.getElementById('userGlobalTab').style.color = '#94a3b8';
-        document.querySelector('.chat-note').innerHTML = '<i class="fas fa-lock"></i> Admin သို့ သီးသန့် - Admin မှသာ ဖတ်နိုင်ပါသည်';
+        const note = document.querySelector('.chat-note');
+        if (note) note.innerHTML = '<i class="fas fa-lock"></i> Admin သို့ သီးသန့် - Admin မှသာ ဖတ်နိုင်ပါသည်';
         loadPrivateMessagesForUser();
     });
 }
@@ -298,7 +298,6 @@ async function sendChatMessage() {
         let result;
         
         if (currentMode === 'private') {
-            // Private message to Admin
             response = await fetch(`${CHAT_API_BASE}/api/chat/private/send`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -322,7 +321,6 @@ async function sendChatMessage() {
                 showChatNotification(result.error || "ပို့လို့မရပါ", true);
             }
         } else {
-            // Global message
             response = await fetch(`${CHAT_API_BASE}/api/chat/send`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -455,7 +453,7 @@ function setupKeyboardShortcuts() {
     }
 }
 
-// ============ INITIALIZE ============
+// ============ INITIALIZE CHAT ============
 async function initChat() {
     console.log('Initializing chat...');
     getCurrentUserInfo();
@@ -478,9 +476,9 @@ async function initChat() {
                 loadPrivateMessagesForUser();
             }
         }
-    }, 5000);
+    }, 15000);  // 15 seconds refresh
     
-    console.log('Chat initialized successfully');
+    console.log('Chat initialized successfully (15s refresh)');
 }
 
 // ============ CLEANUP ============
@@ -501,3 +499,4 @@ window.sendChatMessage = sendChatMessage;
 window.toggleChat = toggleChat;
 window.loadChatMessages = loadChatMessages;
 window.closeChatWidget = closeChatWidget;
+window.chatEscapeHtml = escapeHtml;
