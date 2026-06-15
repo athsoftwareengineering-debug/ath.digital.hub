@@ -18,10 +18,6 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ==================== AD ROUTES ====================
-const adRoutes = require('./routes/ads');
-app.use('/api', adRoutes);
-
 // ==================== SALES HOURS CONFIGURATION ====================
 let salesHours = {
     enabled: true,
@@ -199,7 +195,7 @@ const sessionConfig = {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 2,
-        sameSite: 'strict',
+        sameSite: 'lax',
         domain: process.env.COOKIE_DOMAIN || undefined
     },
     rolling: true
@@ -212,6 +208,10 @@ app.use(cors({ origin: process.env.NODE_ENV === 'production' ? process.env.ALLOW
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(__dirname));
+
+// ==================== AD ROUTES ====================
+const adRoutes = require('./routes/ads');
+app.use('/api', adRoutes);
 
 // ==================== FILE UPLOAD ====================
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -281,8 +281,10 @@ function checkRateLimit(phone) {
 }
 
 function isAuthenticated(req, res, next) {
-    if (req.session.isAdmin) next();
-    else res.status(401).json({ success: false, error: 'Unauthorized' });
+    if (req.session && req.session.isAdmin === true) {
+        return next();
+    }
+    res.status(401).json({ success: false, error: 'Unauthorized' });
 }
 
 async function addNotificationToDatabase(order) {
