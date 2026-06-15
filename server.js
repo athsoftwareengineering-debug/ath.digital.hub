@@ -212,6 +212,7 @@ app.use(cors({ origin: process.env.NODE_ENV === 'production' ? process.env.ALLOW
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ==================== FILE UPLOAD ====================
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -363,15 +364,15 @@ app.post('/api/admin/toggle-shop', isAuthenticated, (req, res) => {
 // ==================== STATIC ROUTES ====================
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
 app.get('/admin.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin.html')); });
-app.get('/dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'dashboard_live.html')); });
-app.get('/chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'chat.html')); });
+app.get('/dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'live-dashboard.html')); });
+app.get('/chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'user-chat.html')); });
 app.get('/admin-chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin-chat.html')); });
 app.get('/market.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'market.html')); });
 app.get('/plans-widget.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'plans-widget.html')); });
-app.get('/sw.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'sw.js')); });
-app.get('/notifications.css', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'notifications.css')); });
-app.get('/notifications.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'notifications.js')); });
-app.get('/sales-hours.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'sales-hours.js')); });
+app.get('/sw.js', (req, res) => { res.sendFile(path.join(__dirname, 'sw.js')); });
+app.get('/notifications.css', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'css', 'notification.css')); });
+app.get('/notifications.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'notifications.js')); });
+app.get('/sales-hours.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'sales-hours.js')); });
 app.get('/api/health', (req, res) => { res.json({ status: 'ok', timestamp: new Date().toISOString() }); });
 
 // ==================== USER REGISTRATION ====================
@@ -886,6 +887,24 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
         res.json({ success: true, message: data[0] });
     } catch (error) {
         console.error('Error sending private message:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ==================== MARK PRIVATE MESSAGES AS READ ====================
+app.put('/api/chat/private/mark-read/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { error } = await supabase
+            .from('private_chat_messages')
+            .update({ is_read: true })
+            .eq('receiver_id', userId)
+            .eq('is_read', false);
+        
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error marking messages as read:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
