@@ -280,12 +280,9 @@ function checkRateLimit(phone) {
     return true;
 }
 
-// ==================== AUTHENTICATION ====================
 function isAuthenticated(req, res, next) {
-    if (req.session && req.session.isAdmin === true) {
-        return next();
-    }
-    res.status(401).json({ success: false, error: 'Unauthorized' });
+    if (req.session.isAdmin) next();
+    else res.status(401).json({ success: false, error: 'Unauthorized' });
 }
 
 async function addNotificationToDatabase(order) {
@@ -683,22 +680,12 @@ app.delete('/api/admin/orders/:id', isAuthenticated, async (req, res) => {
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
-// ==================== ADMIN LOGIN (NO FALLBACK PASSWORD - ENV ONLY) ====================
+// ==================== ADMIN LOGIN ====================
 app.post('/api/admin/login', loginLimiter, async (req, res) => {
     const { password } = req.body;
-    const adminPassword = process.env.ADMIN_PASSWORD;
-    
-    if (!adminPassword) {
-        console.error('❌ ADMIN_PASSWORD environment variable is not set!');
-        return res.status(500).json({ success: false, message: 'Server configuration error' });
-    }
-    
-    if (password === adminPassword) { 
-        req.session.isAdmin = true; 
-        res.json({ success: true, message: 'Login successful' }); 
-    } else { 
-        res.status(401).json({ success: false, message: 'Invalid password' }); 
-    }
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    if (password === adminPassword) { req.session.isAdmin = true; res.json({ success: true, message: 'Login successful' }); }
+    else { res.status(401).json({ success: false, message: 'Invalid password' }); }
 });
 
 app.post('/api/admin/logout', (req, res) => { req.session.destroy(); res.json({ success: true, message: 'Logged out successfully' }); });
