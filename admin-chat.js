@@ -6,18 +6,37 @@ let currentAdminId = 'admin';
 let currentAdminName = 'Admin';
 let privateRefreshInterval = null;
 let globalRefreshInterval = null;
+let userListRefreshInterval = null;
 let currentAdminMode = 'private';
 
-// User list ကို load လုပ်မယ်
+// ============ GET MYANMAR TIME ============
+function getMyanmarTime(timestamp) {
+    const date = new Date(timestamp);
+    const utcTime = date.getTime();
+    const myanmarOffset = 6.5 * 60 * 60 * 1000;
+    const myanmarDate = new Date(utcTime + myanmarOffset);
+    let hours = myanmarDate.getUTCHours();
+    const minutes = myanmarDate.getUTCMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${hours}:${minutes.toString().padStart(2,'0')} ${ampm}`;
+}
+
+// ============ LOAD USER LIST ============
 async function loadUserList() {
     const container = document.getElementById('userList');
-    if (!container) return;
+    if (!container) {
+        console.log('userList element not found');
+        return;
+    }
     
     try {
         const response = await fetch(`${API_BASE}/api/chat/admin/users`, {
             credentials: 'include'
         });
         const data = await response.json();
+        
+        console.log('Users loaded:', data);
         
         if (data.success && data.users && data.users.length > 0) {
             renderUserList(data.users);
@@ -26,7 +45,7 @@ async function loadUserList() {
         }
     } catch (error) {
         console.error('Error loading users:', error);
-        container.innerHTML = '<div class="loading">Error loading users</div>';
+        container.innerHTML = '<div class="loading">⚠️ Error loading users. Make sure you are logged in as Admin.</div>';
     }
 }
 
@@ -49,8 +68,9 @@ function renderUserList(users) {
     container.innerHTML = html;
 }
 
-// User ကို ရွေးပြီး private messages ကြည့်မယ်
+// ============ SELECT USER ============
 async function selectUser(userId, username) {
+    console.log('Selecting user:', userId, username);
     currentSelectedUser = userId;
     currentSelectedUserName = username;
     
@@ -67,25 +87,22 @@ async function selectUser(userId, username) {
     if (inputContainer) inputContainer.style.display = 'block';
     
     await loadPrivateMessages(userId);
-    
-    // Update active state in user list
-    document.querySelectorAll('.user-item').forEach(item => item.classList.remove('active'));
-    const activeItem = document.querySelector(`.user-item[onclick*="${userId}"]`);
-    if (activeItem) activeItem.classList.add('active');
 }
 
-// Private messages တွေကို load လုပ်မယ်
+// ============ LOAD PRIVATE MESSAGES ============
 async function loadPrivateMessages(userId) {
     const container = document.getElementById('chatMessages');
     if (!container) return;
     
-    container.innerHTML = '<div class="loading">Loading messages...</div>';
+    container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading messages...</div>';
     
     try {
         const response = await fetch(`${API_BASE}/api/chat/private/${userId}?currentUserId=admin`, {
             credentials: 'include'
         });
         const data = await response.json();
+        
+        console.log('Private messages:', data);
         
         if (data.success && data.messages && data.messages.length > 0) {
             renderPrivateMessages(data.messages);
@@ -94,7 +111,7 @@ async function loadPrivateMessages(userId) {
         }
     } catch (error) {
         console.error('Error loading messages:', error);
-        container.innerHTML = '<div class="no-selection">Error loading messages</div>';
+        container.innerHTML = '<div class="no-selection">⚠️ Error loading messages</div>';
     }
 }
 
@@ -103,16 +120,24 @@ function renderPrivateMessages(messages) {
     if (!container) return;
     
     let html = '';
+    let lastDate = null;
+    
     for (const msg of messages) {
-        const time = new Date(msg.created_at).toLocaleTimeString();
+        const msgDate = new Date(msg.created_at).toLocaleDateString();
+        const time = getMyanmarTime(msg.created_at);
         const isAdmin = msg.sender_id === 'admin';
         const senderName = isAdmin ? '👑 Admin (You)' : (msg.sender_name || 'User');
+        
+        if (lastDate !== msgDate) {
+            html += `<div style="text-align:center; margin:10px 0;"><span style="background:rgba(0,212,255,0.1); padding:4px 12px; border-radius:40px; font-size:0.6rem;">📅 ${msgDate}</span></div>`;
+            lastDate = msgDate;
+        }
         
         html += `
             <div class="chat-message ${isAdmin ? 'admin' : 'user'}">
                 <div class="message-sender">${escapeHtml(senderName)}</div>
                 <div class="message-bubble">${escapeHtml(msg.message)}</div>
-                <div class="message-time">${time}</div>
+                <div class="message-time">🕐 ${time}</div>
             </div>
         `;
     }
@@ -120,10 +145,10 @@ function renderPrivateMessages(messages) {
     container.scrollTop = container.scrollHeight;
 }
 
-// Private message ပို့မယ်
+// ============ SEND PRIVATE MESSAGE ============
 async function sendPrivateMessage() {
     const input = document.getElementById('chatInput');
-    const message = input.value.trim();
+    const message = input?.value.trim();
     
     if (!message) {
         showNotification("Please type a message", true);
@@ -134,7 +159,7 @@ async function sendPrivateMessage() {
         return;
     }
     
-    input.disabled = true;
+    if (input) input.disabled = true;
     
     try {
         const response = await fetch(`${API_BASE}/api/chat/private/send`, {
@@ -153,8 +178,9 @@ async function sendPrivateMessage() {
         const data = await response.json();
         
         if (data.success) {
-            input.value = '';
+            if (input) input.value = '';
             await loadPrivateMessages(currentSelectedUser);
+            showNotification(`✅ Sent to ${currentSelectedUserName}`);
         } else {
             showNotification(data.error || "Failed to send", true);
         }
@@ -162,12 +188,14 @@ async function sendPrivateMessage() {
         console.error('Send error:', error);
         showNotification("Connection error", true);
     } finally {
-        input.disabled = false;
-        input.focus();
+        if (input) {
+            input.disabled = false;
+            input.focus();
+        }
     }
 }
 
-// Global messages အတွက်
+// ============ GLOBAL CHAT FUNCTIONS ============
 async function loadGlobalMessages() {
     const container = document.getElementById('globalMessagesContainer');
     if (!container) return;
@@ -182,7 +210,7 @@ async function loadGlobalMessages() {
             container.innerHTML = '<div class="no-selection">🌍 No global messages yet.</div>';
         }
     } catch (error) {
-        container.innerHTML = '<div class="no-selection">Error loading messages</div>';
+        container.innerHTML = '<div class="no-selection">⚠️ Error loading messages</div>';
     }
 }
 
@@ -191,16 +219,24 @@ function renderGlobalMessages(messages) {
     if (!container) return;
     
     let html = '';
+    let lastDate = null;
+    
     for (const msg of messages) {
-        const time = new Date(msg.created_at).toLocaleTimeString();
+        const msgDate = new Date(msg.created_at).toLocaleDateString();
+        const time = getMyanmarTime(msg.created_at);
         const isAdmin = msg.is_admin === true;
         const senderName = isAdmin ? '👑 Admin' : (msg.username || 'User');
+        
+        if (lastDate !== msgDate) {
+            html += `<div style="text-align:center; margin:10px 0;"><span style="background:rgba(0,212,255,0.1); padding:4px 12px; border-radius:40px; font-size:0.6rem;">📅 ${msgDate}</span></div>`;
+            lastDate = msgDate;
+        }
         
         html += `
             <div class="chat-message ${isAdmin ? 'admin' : 'user'}">
                 <div class="message-sender">${escapeHtml(senderName)}</div>
                 <div class="message-bubble">${escapeHtml(msg.message)}</div>
-                <div class="message-time">${time}</div>
+                <div class="message-time">🕐 ${time}</div>
             </div>
         `;
     }
@@ -210,7 +246,7 @@ function renderGlobalMessages(messages) {
 
 async function sendGlobalMessage() {
     const input = document.getElementById('globalChatInput');
-    const message = input.value.trim();
+    const message = input?.value.trim();
     
     if (!message) return;
     
@@ -229,14 +265,17 @@ async function sendGlobalMessage() {
         const data = await response.json();
         
         if (data.success) {
-            input.value = '';
+            if (input) input.value = '';
             await loadGlobalMessages();
+            showNotification("✅ Global message sent");
         }
     } catch (error) {
         console.error('Send error:', error);
+        showNotification("Error sending message", true);
     }
 }
 
+// ============ MODE SWITCH ============
 function setAdminMode(mode) {
     currentAdminMode = mode;
     const privateLayout = document.getElementById('privateModeLayout');
@@ -244,22 +283,25 @@ function setAdminMode(mode) {
     const privateBtn = document.getElementById('privateTabBtn');
     const globalBtn = document.getElementById('globalTabBtn');
     
+    if (!privateLayout || !globalLayout) return;
+    
     if (mode === 'private') {
         privateLayout.style.display = 'flex';
         globalLayout.style.display = 'none';
-        privateBtn.classList.add('active');
-        globalBtn.classList.remove('active');
+        if (privateBtn) privateBtn.classList.add('active');
+        if (globalBtn) globalBtn.classList.remove('active');
         loadUserList();
         if (currentSelectedUser) loadPrivateMessages(currentSelectedUser);
     } else {
         privateLayout.style.display = 'none';
         globalLayout.style.display = 'flex';
-        privateBtn.classList.remove('active');
-        globalBtn.classList.add('active');
+        if (privateBtn) privateBtn.classList.remove('active');
+        if (globalBtn) globalBtn.classList.add('active');
         loadGlobalMessages();
     }
 }
 
+// ============ UTILITIES ============
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, function(m) {
@@ -300,24 +342,48 @@ function closeAdminChat() {
     }
 }
 
-// Initialize
+// ============ INITIALIZE ============
 async function init() {
-    console.log('Admin Chat Initialized');
+    console.log('Admin Chat Initializing...');
+    
+    // Check if elements exist
+    if (!document.getElementById('userList')) {
+        console.error('Required elements not found!');
+        return;
+    }
+    
     await loadUserList();
     setAdminMode('private');
+    
+    // Refresh intervals
     privateRefreshInterval = setInterval(() => {
         if (currentAdminMode === 'private' && currentSelectedUser) {
             loadPrivateMessages(currentSelectedUser);
             loadUserList();
         }
-    }, 5000);
+    }, 10000);
+    
     globalRefreshInterval = setInterval(() => {
         if (currentAdminMode === 'global') loadGlobalMessages();
-    }, 5000);
+    }, 10000);
+    
+    console.log('Admin Chat Ready');
 }
 
-init();
+// Start when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
 
+// Cleanup
+window.addEventListener('beforeunload', () => {
+    if (privateRefreshInterval) clearInterval(privateRefreshInterval);
+    if (globalRefreshInterval) clearInterval(globalRefreshInterval);
+});
+
+// Expose functions
 window.sendPrivateMessage = sendPrivateMessage;
 window.sendGlobalMessage = sendGlobalMessage;
 window.selectUser = selectUser;
