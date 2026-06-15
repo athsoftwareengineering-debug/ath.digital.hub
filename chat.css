@@ -9,54 +9,60 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* ============ CHAT WIDGET ============ */
+/* ============ MESSENGER STYLE CHAT WIDGET ============ */
 .chat-widget-container {
     position: fixed;
-    bottom: 85px;
-    right: 16px;
-    width: 380px;
-    height: 520px;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    max-width: 420px;
+    height: 100%;
+    max-height: 600px;
     background: linear-gradient(145deg, #0f111a, #0a0c15);
-    border-radius: 1.2rem;
-    border: 1px solid rgba(0,212,255,0.25);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    border-radius: 16px 16px 0 0;
+    border: 1px solid rgba(0,212,255,0.2);
+    border-bottom: none;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
     overflow: hidden;
     z-index: 1000;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    transition: all 0.3s ease-in-out;
 }
 
+/* Minimized state - Messenger style */
 .chat-widget-container.minimized {
-    height: 60px;
-    width: 280px;
+    height: 55px;
+    max-height: 55px;
+    border-radius: 16px 16px 0 0;
 }
 
-.chat-widget-container.minimized .chat-body {
+.chat-widget-container.minimized .chat-body,
+.chat-widget-container.minimized .user-chat-tabs {
     display: none;
 }
 
-/* ============ CHAT HEADER ============ */
+/* ============ CHAT HEADER (Like Messenger) ============ */
 .chat-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.05));
-    border-bottom: 1px solid rgba(0,212,255,0.15);
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #00d4ff, #0891b2);
+    cursor: pointer;
+    border-radius: 16px 16px 0 0;
 }
 
 .chat-header-info {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .chat-avatar {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #00d4ff, #0891b2);
+    width: 32px;
+    height: 32px;
+    background: rgba(255,255,255,0.2);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -64,23 +70,22 @@ body {
 }
 
 .chat-avatar i {
-    font-size: 1.3rem;
+    font-size: 1rem;
     color: white;
 }
 
 .chat-header-title {
     font-size: 0.85rem;
-    font-weight: 700;
-    color: #f1f5f9;
+    font-weight: 600;
+    color: white;
 }
 
 .chat-header-status {
-    font-size: 0.6rem;
-    color: #94a3b8;
+    font-size: 0.55rem;
+    color: rgba(255,255,255,0.8);
     display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 2px;
+-align-items: center;
+    gap: 4px;
 }
 
 .online-dot {
@@ -93,23 +98,22 @@ body {
 }
 
 @keyframes pulse {
-    0% { opacity: 1; transform: scale(1); }
+    0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.5; transform: scale(1.2); }
-    100% { opacity: 1; transform: scale(1); }
 }
 
 .chat-header-actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
 }
 
 .chat-minimize-btn {
     background: none;
     border: none;
-    color: #94a3b8;
+    color: white;
     cursor: pointer;
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     transition: all 0.2s;
     display: flex;
@@ -118,8 +122,28 @@ body {
 }
 
 .chat-minimize-btn:hover {
-    background: rgba(0,212,255,0.15);
-    color: #00d4ff;
+    background: rgba(255,255,255,0.15);
+}
+
+/* ============ MODE TABS (Like Messenger Tabs) ============ */
+.user-chat-tabs {
+    display: flex;
+    gap: 0;
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(0,212,255,0.1);
+}
+
+.user-tab-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 40px;
+    margin: 0 4px;
 }
 
 /* ============ CHAT BODY ============ */
@@ -137,7 +161,7 @@ body {
     padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 /* Scrollbar */
@@ -164,7 +188,7 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
@@ -215,22 +239,7 @@ body {
     padding: 0 6px;
 }
 
-/* ============ SYSTEM MESSAGE ============ */
-.chat-message.system {
-    align-items: center;
-    margin: 8px auto;
-    max-width: 90%;
-}
-
-.chat-message.system .message-bubble {
-    background: rgba(245,158,11,0.12);
-    color: #fbbf24;
-    font-size: 0.65rem;
-    padding: 6px 12px;
-    border-radius: 40px;
-}
-
-/* ============ INPUT AREA ============ */
+/* ============ INPUT AREA (Like Messenger) ============ */
 .chat-input-container {
     padding: 12px;
     background: rgba(0,0,0,0.4);
@@ -308,11 +317,15 @@ body {
 /* ============ MOBILE RESPONSIVE ============ */
 @media (max-width: 480px) {
     .chat-widget-container {
-        width: calc(100vw - 32px);
-        right: 16px;
-        left: 16px;
-        height: 65vh;
-        bottom: 75px;
+        max-width: 100%;
+        border-radius: 0;
+        max-height: 100%;
+        bottom: 0;
+    }
+    
+    .chat-widget-container.minimized {
+        border-radius: 16px 16px 0 0;
+        bottom: 0;
     }
     
     .chat-message {
@@ -322,5 +335,14 @@ body {
     .message-bubble {
         font-size: 0.75rem;
         padding: 8px 12px;
+    }
+}
+
+/* For desktop - float above content */
+@media (min-width: 481px) {
+    .chat-widget-container {
+        right: 20px;
+        bottom: 0;
+        border-radius: 16px 16px 0 0;
     }
 }
