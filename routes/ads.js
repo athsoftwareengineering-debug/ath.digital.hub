@@ -3,8 +3,10 @@ const router = express.Router();
 const { supabaseAdmin } = require('../database');
 
 function isAuthenticated(req, res, next) {
-    if (req.session.isAdmin) next();
-    else res.status(401).json({ success: false, error: 'Unauthorized' });
+    if (req.session && req.session.isAdmin === true) {
+        return next();
+    }
+    res.status(401).json({ success: false, error: 'Unauthorized' });
 }
 
 // ကြော်ငြာများရယူရန် (သုံးစွဲသူ)
