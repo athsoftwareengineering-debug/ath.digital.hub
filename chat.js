@@ -85,7 +85,6 @@ function renderChatMessages(messages) {
     let html = '';
     for (const msg of messages) {
         const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        // Check if message is from current user
         const isUser = !msg.is_admin && msg.user_id === currentChatUserId;
         const senderName = msg.is_admin ? '👑 Admin' : (msg.username || 'User');
         const senderIcon = msg.is_admin ? '<i class="fas fa-shield-alt"></i>' : '<i class="fas fa-user"></i>';
@@ -102,7 +101,6 @@ function renderChatMessages(messages) {
     }
     container.innerHTML = html;
     
-    // Auto scroll to bottom
     setTimeout(() => {
         container.scrollTop = container.scrollHeight;
     }, 100);
@@ -112,7 +110,7 @@ function renderChatMessages(messages) {
 async function sendChatMessage() {
     const input = document.getElementById('chatMessageInput');
     const message = input.value.trim();
-    const sendBtn = document.getElementById('chatSendBtn');
+    const sendBtn = document.querySelector('.chat-send-btn');
     
     if (!message) return;
     
@@ -121,9 +119,8 @@ async function sendChatMessage() {
         return;
     }
     
-    // Disable input while sending
     input.disabled = true;
-    sendBtn.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
     
     try {
         const response = await fetch(`${CHAT_API_BASE}/api/chat/send`, {
@@ -150,19 +147,17 @@ async function sendChatMessage() {
         showChatNotification("Connection error. Please try again.", true);
     } finally {
         input.disabled = false;
-        sendBtn.disabled = false;
+        if (sendBtn) sendBtn.disabled = false;
         input.focus();
     }
 }
 
-// ============ SHOW NOTIFICATION (Toast) ============
+// ============ SHOW NOTIFICATION ============
 function showChatNotification(message, isError = false) {
-    // Try to use parent window toast
     try {
         if (window.parent && window.parent.showToast) {
             window.parent.showToast(message, isError);
         } else {
-            // Create temporary toast
             const toast = document.createElement('div');
             toast.textContent = message;
             toast.style.cssText = `
@@ -190,7 +185,7 @@ function showChatNotification(message, isError = false) {
     }
 }
 
-// ============ ESCAPE HTML (XSS Protection) ============
+// ============ ESCAPE HTML ============
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, function(m) {
@@ -210,7 +205,7 @@ function autoResizeTextarea() {
     }
 }
 
-// ============ TOGGLE CHAT MINIMIZE ============
+// ============ TOGGLE CHAT ============
 function toggleChat() {
     const container = document.querySelector('.chat-widget-container');
     if (container) {
@@ -221,7 +216,7 @@ function toggleChat() {
     }
 }
 
-// ============ CLOSE CHAT WIDGET ============
+// ============ CLOSE CHAT ============
 function closeChatWidget() {
     const container = document.querySelector('.chat-widget-container');
     if (container && window.parent && window.parent.closeChatWidget) {
@@ -235,15 +230,12 @@ function closeChatWidget() {
 function setupKeyboardShortcuts() {
     const input = document.getElementById('chatMessageInput');
     if (input) {
-        // Send on Enter (Shift+Enter for new line)
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendChatMessage();
             }
         });
-        
-        // Auto resize on input
         input.addEventListener('input', autoResizeTextarea);
     }
 }
@@ -255,7 +247,6 @@ async function initChat() {
     await loadChatMessages();
     setupKeyboardShortcuts();
     
-    // Refresh messages every 5 seconds (polling - no Supabase Realtime needed)
     if (refreshInterval) clearInterval(refreshInterval);
     refreshInterval = setInterval(() => {
         const container = document.querySelector('.chat-widget-container');
@@ -285,4 +276,3 @@ window.sendChatMessage = sendChatMessage;
 window.toggleChat = toggleChat;
 window.loadChatMessages = loadChatMessages;
 window.closeChatWidget = closeChatWidget;
-window.chatEscapeHtml = escapeHtml;
