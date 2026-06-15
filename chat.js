@@ -4,6 +4,7 @@ let currentChatUser = null;
 let currentChatUsername = null;
 let currentChatUserId = null;
 let refreshInterval = null;
+let currentMode = 'global'; // 'global' or 'private'
 
 // ============ GET USER INFO ============
 function getCurrentUserInfo() {
@@ -37,7 +38,70 @@ function getCurrentUserInfo() {
     console.log('Chat User:', currentChatUser, 'User ID:', currentChatUserId);
 }
 
-// ============ LOAD MESSAGES ============
+// ============ MODE TOGGLE UI ============
+function addModeToggle() {
+    const inputContainer = document.querySelector('.chat-input-container');
+    if (!inputContainer) return;
+    
+    // Check if toggle already exists
+    if (document.querySelector('.chat-mode-toggle')) return;
+    
+    const modeToggle = document.createElement('div');
+    modeToggle.className = 'chat-mode-toggle';
+    modeToggle.style.cssText = `
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+        justify-content: center;
+    `;
+    
+    modeToggle.innerHTML = `
+        <button id="modeGlobalBtn" class="mode-btn active" style="
+            background: ${currentMode === 'global' ? 'linear-gradient(135deg, #00d4ff, #0891b2)' : 'rgba(255,255,255,0.1)'};
+            border: none;
+            padding: 5px 12px;
+            border-radius: 40px;
+            color: white;
+            font-size: 0.65rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        ">
+            <i class="fas fa-globe"></i> လူတိုင်းမြင်ရ
+        </button>
+        <button id="modePrivateBtn" class="mode-btn" style="
+            background: ${currentMode === 'private' ? 'linear-gradient(135deg, #f43f5e, #e11d48)' : 'rgba(255,255,255,0.1)'};
+            border: none;
+            padding: 5px 12px;
+            border-radius: 40px;
+            color: white;
+            font-size: 0.65rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        ">
+            <i class="fas fa-lock"></i> Admin သို့ သီးသန့်
+        </button>
+    `;
+    
+    inputContainer.insertBefore(modeToggle, inputContainer.firstChild);
+    
+    document.getElementById('modeGlobalBtn')?.addEventListener('click', () => {
+        currentMode = 'global';
+        document.getElementById('modeGlobalBtn').style.background = 'linear-gradient(135deg, #00d4ff, #0891b2)';
+        document.getElementById('modePrivateBtn').style.background = 'rgba(255,255,255,0.1)';
+        document.querySelector('.chat-note').innerHTML = '<i class="fas fa-globe"></i> လူတိုင်းမြင်ရသော Chat - အားလုံးမြင်နိုင်ပါသည်';
+        loadChatMessages();
+    });
+    
+    document.getElementById('modePrivateBtn')?.addEventListener('click', () => {
+        currentMode = 'private';
+        document.getElementById('modePrivateBtn').style.background = 'linear-gradient(135deg, #f43f5e, #e11d48)';
+        document.getElementById('modeGlobalBtn').style.background = 'rgba(255,255,255,0.1)';
+        document.querySelector('.chat-note').innerHTML = '<i class="fas fa-lock"></i> Admin သို့ သီးသန့် - Admin မှသာ ဖတ်နိုင်ပါသည်';
+        loadPrivateMessagesForUser();
+    });
+}
+
+// ============ LOAD GLOBAL MESSAGES ============
 async function loadChatMessages() {
     const container = document.getElementById('chatMessages');
     if (!container) return;
@@ -52,7 +116,7 @@ async function loadChatMessages() {
             container.innerHTML = `
                 <div class="chat-loading">
                     <i class="fas fa-comment-dots"></i><br>
-                    No messages yet. Start a conversation!
+                    မက်ဆေ့ခ်ျများ မရှိသေးပါ။ ပထမဆုံး စတင်လိုက်ပါ! 👋
                 </div>
             `;
         }
@@ -61,13 +125,13 @@ async function loadChatMessages() {
         container.innerHTML = `
             <div class="chat-loading" style="color: #f43f5e;">
                 <i class="fas fa-plug"></i><br>
-                Cannot connect to server
+                ဆာဗာသို့ ချိတ်ဆက်၍မရပါ
             </div>
         `;
     }
 }
 
-// ============ RENDER MESSAGES ============
+// ============ RENDER GLOBAL MESSAGES ============
 function renderChatMessages(messages) {
     const container = document.getElementById('chatMessages');
     if (!container) return;
@@ -76,18 +140,26 @@ function renderChatMessages(messages) {
         container.innerHTML = `
             <div class="chat-loading">
                 <i class="fas fa-comment-dots"></i><br>
-                Be the first to say hello! 👋
+                ပထမဆုံး မင်္ဂလာပါလို့ နှုတ်ဆက်လိုက်ပါ! 👋
             </div>
         `;
         return;
     }
     
     let html = '';
+    let lastDate = null;
+    
     for (const msg of messages) {
+        const msgDate = new Date(msg.created_at).toLocaleDateString();
         const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const isUser = !msg.is_admin && msg.user_id === currentChatUserId;
         const senderName = msg.is_admin ? '👑 Admin' : (msg.username || 'User');
         const senderIcon = msg.is_admin ? '<i class="fas fa-shield-alt"></i>' : '<i class="fas fa-user"></i>';
+        
+        if (lastDate !== msgDate) {
+            html += `<div style="text-align:center; margin:8px 0;"><span style="background:rgba(0,212,255,0.1); padding:2px 10px; border-radius:40px; font-size:0.55rem; color:#64748b;">📅 ${msgDate}</span></div>`;
+            lastDate = msgDate;
+        }
         
         html += `
             <div class="chat-message ${isUser ? 'user' : 'admin'}">
@@ -95,7 +167,7 @@ function renderChatMessages(messages) {
                     ${senderIcon} ${escapeHtml(senderName)}
                 </div>
                 <div class="message-bubble">${escapeHtml(msg.message)}</div>
-                <div class="message-time">${time}</div>
+                <div class="message-time">🕐 ${time}</div>
             </div>
         `;
     }
@@ -106,7 +178,87 @@ function renderChatMessages(messages) {
     }, 100);
 }
 
-// ============ SEND MESSAGE ============
+// ============ LOAD PRIVATE MESSAGES (User Side) ============
+async function loadPrivateMessagesForUser() {
+    const container = document.getElementById('chatMessages');
+    if (!container) return;
+    
+    if (!currentChatUserId || currentChatUserId === 'guest') {
+        container.innerHTML = `
+            <div class="chat-loading">
+                <i class="fas fa-lock"></i><br>
+                ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ။
+            </div>
+        `;
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${CHAT_API_BASE}/api/chat/private/${currentChatUserId}?currentUserId=${currentChatUserId}`, {
+            credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (data.success && data.messages && data.messages.length > 0) {
+            renderPrivateMessagesForUser(data.messages);
+        } else {
+            container.innerHTML = `
+                <div class="chat-loading">
+                    <i class="fas fa-lock"></i><br>
+                    Admin သို့ စာပို့ရန် အောက်ပါအကွက်တွင် ရေးပါ။<br>
+                    Admin မှ ပြန်လည်ဖြေကြားပါမည်။
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading private messages:', error);
+        container.innerHTML = `
+            <div class="chat-loading" style="color: #f43f5e;">
+                <i class="fas fa-plug"></i><br>
+                ကိုယ်ပိုင် မက်ဆေ့ခ်ျများ ရယူ၍မရပါ
+            </div>
+        `;
+    }
+}
+
+// ============ RENDER PRIVATE MESSAGES (User Side) ============
+function renderPrivateMessagesForUser(messages) {
+    const container = document.getElementById('chatMessages');
+    if (!container) return;
+    
+    let html = `<div style="background:rgba(0,212,255,0.1); padding:8px; border-radius:12px; margin-bottom:12px; text-align:center; font-size:11px;">
+        🔒 <strong>Admin နှင့် သီးသန့်စကားပြောခန်း</strong><br>
+        သင့်စာများကို Admin မှသာလျှင် ဖတ်ရှုနိုင်ပါသည်။
+    </div>`;
+    
+    let lastDate = null;
+    
+    for (const msg of messages) {
+        const msgDate = new Date(msg.created_at).toLocaleDateString();
+        const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const isUser = msg.sender_id === currentChatUserId;
+        const senderName = isUser ? 'ကျွန်ုပ်' : '👑 Admin';
+        
+        if (lastDate !== msgDate) {
+            html += `<div style="text-align:center; margin:8px 0;"><span style="background:rgba(0,212,255,0.1); padding:2px 10px; border-radius:40px; font-size:0.55rem; color:#64748b;">📅 ${msgDate}</span></div>`;
+            lastDate = msgDate;
+        }
+        
+        html += `
+            <div class="chat-message ${isUser ? 'user' : 'admin'}">
+                <div class="message-sender">
+                    ${isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-shield-alt"></i>'} ${escapeHtml(senderName)}
+                </div>
+                <div class="message-bubble">${escapeHtml(msg.message)}</div>
+                <div class="message-time">🕐 ${time}</div>
+            </div>
+        `;
+    }
+    container.innerHTML = html;
+    container.scrollTop = container.scrollHeight;
+}
+
+// ============ SEND MESSAGE (ပြင်ဆင်ပြီး) ============
 async function sendChatMessage() {
     const input = document.getElementById('chatMessageInput');
     const message = input.value.trim();
@@ -115,7 +267,7 @@ async function sendChatMessage() {
     if (!message) return;
     
     if (currentChatUser === 'guest' || !currentChatUserId) {
-        showChatNotification("Please login to send messages", true);
+        showChatNotification("ကျေးဇူးပြု၍ အကောင့်ဝင်ရန် လိုအပ်ပါသည်။", true);
         return;
     }
     
@@ -123,24 +275,54 @@ async function sendChatMessage() {
     if (sendBtn) sendBtn.disabled = true;
     
     try {
-        const response = await fetch(`${CHAT_API_BASE}/api/chat/send`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                user_id: currentChatUserId,
-                username: currentChatUsername || 'User',
-                message: message
-            })
-        });
+        let response;
+        let result;
         
-        const data = await response.json();
-        
-        if (data.success) {
-            input.value = '';
-            input.style.height = 'auto';
-            await loadChatMessages();
+        if (currentMode === 'private') {
+            // Private message to Admin
+            response = await fetch(`${CHAT_API_BASE}/api/chat/private/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    sender_id: currentChatUserId,
+                    receiver_id: 'admin',
+                    sender_name: currentChatUsername || 'User',
+                    receiver_name: 'Admin',
+                    message: message
+                })
+            });
+            result = await response.json();
+            
+            if (result.success) {
+                input.value = '';
+                input.style.height = 'auto';
+                await loadPrivateMessagesForUser();
+                showChatNotification("✅ Admin သို့ သီးသန့်ပို့ပြီးပါပြီ။ ပြန်လည်ဖြေကြားပါမည်။");
+            } else {
+                showChatNotification(result.error || "Failed to send", true);
+            }
         } else {
-            showChatNotification(data.error || "Failed to send", true);
+            // Global message (everyone can see)
+            response = await fetch(`${CHAT_API_BASE}/api/chat/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: currentChatUserId,
+                    username: currentChatUsername || 'User',
+                    message: message
+                })
+            });
+            result = await response.json();
+            
+            if (result.success) {
+                input.value = '';
+                input.style.height = 'auto';
+                await loadChatMessages();
+                showChatNotification("✅ လူတိုင်းမြင်ရသော chat တွင် ပို့ပြီးပါပြီ။");
+            } else {
+                showChatNotification(result.error || "Failed to send", true);
+            }
         }
     } catch (error) {
         console.error('Send error:', error);
@@ -152,7 +334,7 @@ async function sendChatMessage() {
     }
 }
 
-// ============ SHOW NOTIFICATION ============
+// ============ SHOW NOTIFICATION (Toast) ============
 function showChatNotification(message, isError = false) {
     try {
         if (window.parent && window.parent.showToast) {
@@ -185,7 +367,7 @@ function showChatNotification(message, isError = false) {
     }
 }
 
-// ============ ESCAPE HTML ============
+// ============ ESCAPE HTML (XSS Protection) ============
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, function(m) {
@@ -205,18 +387,22 @@ function autoResizeTextarea() {
     }
 }
 
-// ============ TOGGLE CHAT ============
+// ============ TOGGLE CHAT MINIMIZE ============
 function toggleChat() {
     const container = document.querySelector('.chat-widget-container');
     if (container) {
         container.classList.toggle('minimized');
         if (!container.classList.contains('minimized')) {
-            loadChatMessages();
+            if (currentMode === 'global') {
+                loadChatMessages();
+            } else {
+                loadPrivateMessagesForUser();
+            }
         }
     }
 }
 
-// ============ CLOSE CHAT ============
+// ============ CLOSE CHAT WIDGET ============
 function closeChatWidget() {
     const container = document.querySelector('.chat-widget-container');
     if (container && window.parent && window.parent.closeChatWidget) {
@@ -244,14 +430,26 @@ function setupKeyboardShortcuts() {
 async function initChat() {
     console.log('Initializing chat...');
     getCurrentUserInfo();
-    await loadChatMessages();
+    addModeToggle();
     setupKeyboardShortcuts();
     
+    // Load initial messages based on mode
+    if (currentMode === 'global') {
+        await loadChatMessages();
+    } else {
+        await loadPrivateMessagesForUser();
+    }
+    
+    // Refresh messages every 5 seconds (polling)
     if (refreshInterval) clearInterval(refreshInterval);
     refreshInterval = setInterval(() => {
         const container = document.querySelector('.chat-widget-container');
         if (container && !container.classList.contains('minimized')) {
-            loadChatMessages();
+            if (currentMode === 'global') {
+                loadChatMessages();
+            } else {
+                loadPrivateMessagesForUser();
+            }
         }
     }, 5000);
     
@@ -276,3 +474,4 @@ window.sendChatMessage = sendChatMessage;
 window.toggleChat = toggleChat;
 window.loadChatMessages = loadChatMessages;
 window.closeChatWidget = closeChatWidget;
+window.chatEscapeHtml = escapeHtml;
