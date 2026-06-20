@@ -5,11 +5,365 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Support - ATH DIGITAL HUB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="chat.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        .chat-widget-container {
+            position: fixed;
+            bottom: 70px;
+            right: 16px;
+            width: 380px;
+            height: 560px;
+            background: linear-gradient(145deg, #0f111a, #0a0c15);
+            border-radius: 1.2rem;
+            border: 1px solid rgba(0,212,255,0.25);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-widget-container.minimized {
+            height: 55px;
+        }
+        
+        .chat-widget-container.minimized .chat-body {
+            display: none;
+        }
+        
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.05));
+            border-bottom: 1px solid rgba(0,212,255,0.15);
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chat-avatar {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #00d4ff, #0891b2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-avatar i {
+            font-size: 1.1rem;
+            color: white;
+        }
+        
+        .chat-header-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+        
+        .chat-header-status {
+            font-size: 0.6rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        
+        .chat-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .chat-actions button {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .chat-actions button:hover {
+            background: rgba(0,212,255,0.15);
+            color: #00d4ff;
+        }
+        
+        .unread-badge {
+            position: absolute;
+            top: 5px;
+            right: 60px;
+            background: #f43f5e;
+            color: white;
+            font-size: 0.55rem;
+            font-weight: bold;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+            z-index: 10;
+            animation: badgePulse 0.5s ease-in-out;
+        }
+        
+        @keyframes badgePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .chat-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .mode-toggle {
+            display: flex;
+            gap: 0;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(0,212,255,0.1);
+        }
+        
+        .mode-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 40px;
+            margin: 0 4px;
+        }
+        
+        .mode-btn.private {
+            background: rgba(0,212,255,0.15);
+            color: #00d4ff;
+            border: 1px solid rgba(0,212,255,0.3);
+        }
+        
+        .mode-btn.private.active {
+            background: linear-gradient(135deg, #00d4ff, #0891b2);
+            color: white;
+            border: none;
+        }
+        
+        .mode-btn.global {
+            background: rgba(16,185,129,0.15);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.3);
+        }
+        
+        .mode-btn.global.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+        }
+        
+        .chat-messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .chat-messages-container::-webkit-scrollbar {
+            width: 3px;
+        }
+        
+        .chat-messages-container::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.03);
+        }
+        
+        .chat-messages-container::-webkit-scrollbar-thumb {
+            background: rgba(0,212,255,0.3);
+            border-radius: 3px;
+        }
+        
+        .chat-message {
+            display: flex;
+            flex-direction: column;
+            max-width: 85%;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .chat-message.user {
+            align-items: flex-end;
+            margin-left: auto;
+        }
+        
+        .chat-message.admin {
+            align-items: flex-start;
+            margin-right: auto;
+        }
+        
+        .message-bubble {
+            padding: 8px 12px;
+            border-radius: 16px;
+            word-wrap: break-word;
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+        
+        .chat-message.user .message-bubble {
+            background: linear-gradient(135deg, #00d4ff, #0891b2);
+            color: white;
+            border-bottom-right-radius: 3px;
+        }
+        
+        .chat-message.admin .message-bubble {
+            background: rgba(255,255,255,0.08);
+            color: #e2e8f0;
+            border-bottom-left-radius: 3px;
+        }
+        
+        .message-sender {
+            font-size: 0.5rem;
+            color: #94a3b8;
+            margin-bottom: 3px;
+            padding: 0 6px;
+        }
+        
+        .message-time {
+            font-size: 0.45rem;
+            color: #64748b;
+            margin-top: 3px;
+            padding: 0 6px;
+        }
+        
+        .badge {
+            font-size: 0.45rem;
+            border-radius: 20px;
+            padding: 2px 8px;
+            margin-left: 6px;
+        }
+        
+        .badge.private {
+            background: rgba(0,212,255,0.2);
+            color: #00d4ff;
+        }
+        
+        .badge.global {
+            background: rgba(16,185,129,0.2);
+            color: #10b981;
+        }
+        
+        .chat-input-container {
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-top: 1px solid rgba(0,212,255,0.1);
+        }
+        
+        .chat-input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #2d3a5e;
+            border-radius: 20px;
+            color: white;
+            font-size: 0.75rem;
+            resize: none;
+            font-family: inherit;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+        
+        .chat-send-btn {
+            background: linear-gradient(135deg, #00d4ff, #0891b2);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .chat-send-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .chat-note {
+            font-size: 0.5rem;
+            color: #64748b;
+            text-align: center;
+            margin-top: 6px;
+        }
+        
+        .chat-loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+        
+        @media (max-width: 480px) {
+            .chat-widget-container {
+                width: calc(100vw - 20px);
+                right: 10px;
+                left: 10px;
+                height: 65vh;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="chat-widget-container" id="chatContainer">
-        <div class="chat-header" onclick="toggleChat()">
+        <div class="chat-header" onclick="toggleMinimize()">
             <div class="chat-header-info">
                 <div class="chat-avatar">
                     <i class="fas fa-headset"></i>
@@ -22,37 +376,451 @@
                     </div>
                 </div>
             </div>
-            <div class="chat-header-actions">
-                <button class="chat-minimize-btn" onclick="event.stopPropagation(); toggleChat()">
+            <div class="chat-actions">
+                <button onclick="event.stopPropagation(); toggleMinimize()" title="Minimize">
                     <i class="fas fa-minus"></i>
                 </button>
-                <button class="chat-minimize-btn" onclick="event.stopPropagation(); closeChatWidget()">
+                <button onclick="event.stopPropagation(); closeUserChat()" title="Close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
+            <div id="headerUnreadBadge" class="unread-badge" style="display: none;">0</div>
         </div>
-        
         <div class="chat-body">
+            <div class="mode-toggle">
+                <button id="privateModeBtn" class="mode-btn private active" onclick="setChatMode('private')">
+                    <i class="fas fa-lock"></i> Private Chat (Admin)
+                </button>
+                <button id="globalModeBtn" class="mode-btn global" onclick="setChatMode('global')">
+                    <i class="fas fa-globe"></i> Global Chat (Everyone)
+                </button>
+            </div>
+            
             <div class="chat-messages-container" id="chatMessages">
-                <div class="chat-loading">
-                    <i class="fas fa-spinner fa-pulse"></i> Loading messages...
-                </div>
+                <div class="chat-loading"><i class="fas fa-spinner fa-pulse"></i> Loading messages...</div>
             </div>
             
             <div class="chat-input-container">
                 <div class="chat-input-wrapper">
-                    <textarea id="chatMessageInput" class="chat-message-input" placeholder="Type your message here..." rows="1" maxlength="500"></textarea>
-                    <button class="chat-send-btn" onclick="sendChatMessage()">
+                    <textarea id="chatInput" class="chat-input" placeholder="Type your message here..." rows="1" maxlength="500"></textarea>
+                    <button class="chat-send-btn" onclick="sendMessage()">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
-                <div class="chat-note">
-                    <i class="fas fa-globe"></i> Global chat - Everyone can see
+                <div class="chat-note" id="chatModeNote">
+                    <i class="fas fa-lock"></i> Private message - Only you and Admin can see
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="chat.js"></script>
+    <script>
+        const API_BASE = window.location.origin;
+        let currentUser = null;
+        let currentUsername = null;
+        let currentUserId = null;
+        let refreshInterval = null;
+        let isMinimized = false;
+        let currentMode = 'private';
+        let lastMessageCount = 0;
+        
+        function getMyanmarTime(timestamp) {
+            const date = new Date(timestamp);
+            const utcTime = date.getTime();
+            const myanmarOffset = 6.5 * 60 * 60 * 1000;
+            const myanmarDate = new Date(utcTime + myanmarOffset);
+            let hours = myanmarDate.getUTCHours();
+            const minutes = myanmarDate.getUTCMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+            return `${hours}:${minutesStr} ${ampm}`;
+        }
+        
+        function getMyanmarDate(timestamp) {
+            const date = new Date(timestamp);
+            const utcTime = date.getTime();
+            const myanmarOffset = 6.5 * 60 * 60 * 1000;
+            const myanmarDate = new Date(utcTime + myanmarOffset);
+            const months = ['ဇန်နဝါရီ', 'ဖေဖော်ဝါရီ', 'မတ်', 'ဧပြီ', 'မေ', 'ဇွန်', 'ဇူလိုင်', 'သြဂုတ်', 'စက်တင်ဘာ', 'အောက်တိုဘာ', 'နိုဝင်ဘာ', 'ဒီဇင်ဘာ'];
+            return `${months[myanmarDate.getUTCMonth()]} ${myanmarDate.getUTCDate()}`;
+        }
+        
+        function getCurrentUserInfo() {
+            currentUser = localStorage.getItem('userPhone');
+            currentUsername = localStorage.getItem('userName');
+            currentUserId = localStorage.getItem('userId');
+            
+            try {
+                if (window.parent && window.parent.getCurrentUserPhone) currentUser = window.parent.getCurrentUserPhone();
+                if (window.parent && window.parent.getCurrentUsername) currentUsername = window.parent.getCurrentUsername();
+                if (window.parent && window.parent.getCurrentUserId) currentUserId = window.parent.getCurrentUserId();
+            } catch(e) {
+                console.log('Cannot access parent window');
+            }
+            
+            if (!currentUser) {
+                currentUser = 'guest';
+                currentUsername = 'Guest User';
+                currentUserId = 'guest_' + Date.now();
+            }
+            console.log('📱 User Info - Phone:', currentUser, 'User ID:', currentUserId);
+        }
+        
+        async function updateUnreadCount() {
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/private/unread/${currentUserId}`);
+                const data = await response.json();
+                const badge = document.getElementById('headerUnreadBadge');
+                if (badge) {
+                    if (data.unreadCount > 0) {
+                        badge.style.display = 'flex';
+                        badge.innerText = data.unreadCount > 99 ? '99+' : data.unreadCount;
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            } catch(e) {
+                console.error('Error getting unread count:', e);
+            }
+        }
+        
+        function setChatMode(mode) {
+            currentMode = mode;
+            const privateBtn = document.getElementById('privateModeBtn');
+            const globalBtn = document.getElementById('globalModeBtn');
+            const modeNote = document.getElementById('chatModeNote');
+            
+            if (mode === 'private') {
+                privateBtn.classList.add('active');
+                globalBtn.classList.remove('active');
+                modeNote.innerHTML = '<i class="fas fa-lock"></i> Private message - Only you and Admin can see';
+                console.log('🔒 Switched to PRIVATE CHAT mode');
+            } else {
+                privateBtn.classList.remove('active');
+                globalBtn.classList.add('active');
+                modeNote.innerHTML = '<i class="fas fa-globe"></i> Global message - Everyone can see';
+                console.log('🌍 Switched to GLOBAL CHAT mode');
+            }
+            loadMessages();
+        }
+        
+        async function loadMessages() {
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+            
+            if (!currentUserId || currentUserId === 'guest_' + Date.now()) {
+                container.innerHTML = '<div class="chat-loading">Please login to start chatting</div>';
+                return;
+            }
+            
+            try {
+                let messages = [];
+                
+                if (currentMode === 'private') {
+                    console.log('🔍 Loading PRIVATE messages for user:', currentUserId);
+                    
+                    const response = await fetch(`${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`, {
+                        credentials: 'include'
+                    });
+                    const data = await response.json();
+                    
+                    console.log('📨 Private messages response:', data);
+                    
+                    if (data.success && data.messages) {
+                        messages = data.messages;
+                        console.log(`✅ Loaded ${messages.length} private messages`);
+                    }
+                } else {
+                    console.log('🌍 Loading GLOBAL messages');
+                    const response = await fetch(`${API_BASE}/api/chat/messages`);
+                    const data = await response.json();
+                    if (data.success && data.messages) {
+                        messages = data.messages;
+                        console.log(`✅ Loaded ${messages.length} global messages`);
+                    }
+                }
+                
+                if (messages.length > 0) {
+                    renderMessages(messages);
+                } else {
+                    const emptyText = currentMode === 'private' 
+                        ? '📭 No private messages yet. Send a message to Admin! 🔒'
+                        : '🌍 No global messages yet. Be the first to say hello!';
+                    container.innerHTML = `<div class="chat-loading">${emptyText}</div>`;
+                }
+            } catch (error) {
+                console.error('❌ Error loading messages:', error);
+                container.innerHTML = '<div class="chat-loading">Cannot connect to server</div>';
+            }
+        }
+        
+        function renderMessages(messages) {
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+            
+            let html = '';
+            let lastDate = null;
+            
+            for (const msg of messages) {
+                const myanmarTime = getMyanmarTime(msg.created_at);
+                const myanmarDate = getMyanmarDate(msg.created_at);
+                
+                let isUser = false;
+                let senderName = '';
+                let modeBadge = '';
+                
+                if (currentMode === 'private') {
+                    isUser = (msg.sender_id === currentUserId);
+                    senderName = isUser ? (currentUsername || 'You') : '👑 Admin';
+                    modeBadge = '<span class="badge private"><i class="fas fa-lock"></i> Private</span>';
+                } else {
+                    isUser = !msg.is_admin && msg.user_id === currentUserId;
+                    senderName = msg.is_admin ? '👑 Admin' : (msg.username || 'User');
+                    modeBadge = '<span class="badge global"><i class="fas fa-globe"></i> Global</span>';
+                }
+                
+                if (lastDate !== myanmarDate) {
+                    html += `<div style="text-align:center; margin:8px 0;"><span style="background:rgba(0,212,255,0.1); padding:2px 10px; border-radius:40px; font-size:0.55rem; color:#64748b;">📅 ${myanmarDate}</span></div>`;
+                    lastDate = myanmarDate;
+                }
+                
+                html += `
+                    <div class="chat-message ${isUser ? 'user' : 'admin'}">
+                        <div class="message-sender">
+                            ${isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-shield-alt"></i>'} 
+                            ${escapeHtml(senderName)} ${modeBadge}
+                        </div>
+                        <div class="message-bubble">${escapeHtml(msg.message)}</div>
+                        <div class="message-time">🕐 ${myanmarTime}</div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            const sendBtn = document.querySelector('.chat-send-btn');
+            
+            if (!message) return;
+            
+            if (currentUser === 'guest' || !currentUserId || currentUserId.startsWith('guest_')) {
+                showNotification("Please login to send messages", true);
+                return;
+            }
+            
+            input.disabled = true;
+            sendBtn.disabled = true;
+            
+            console.log(`📤 Sending ${currentMode} message...`);
+            
+            try {
+                let response;
+                let data;
+                
+                if (currentMode === 'private') {
+                    console.log('🔒 Sending PRIVATE message to admin');
+                    response = await fetch(`${API_BASE}/api/chat/private/send`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            sender_id: currentUserId,
+                            receiver_id: 'admin',
+                            sender_name: currentUsername || 'User',
+                            receiver_name: 'Admin',
+                            message: message
+                        })
+                    });
+                    
+                    data = await response.json();
+                    console.log('📨 Private send response:', data);
+                    
+                    if (data.success) {
+                        console.log('✅ Private message sent successfully!');
+                        input.value = '';
+                        input.style.height = 'auto';
+                        addMessageToUI(message, true);
+                        setTimeout(() => loadMessages(), 500);
+                        showNotification('✅ Private message sent to Admin');
+                    } else {
+                        console.error('❌ Private send failed:', data.error);
+                        showNotification(data.error || "Failed to send", true);
+                    }
+                } else {
+                    console.log('🌍 Sending GLOBAL message');
+                    response = await fetch(`${API_BASE}/api/chat/send`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            user_id: currentUserId,
+                            username: currentUsername || 'User',
+                            message: message
+                        })
+                    });
+                    
+                    data = await response.json();
+                    console.log('📨 Global send response:', data);
+                    
+                    if (data.success) {
+                        console.log('✅ Global message sent successfully!');
+                        input.value = '';
+                        input.style.height = 'auto';
+                        addMessageToUI(message, true);
+                        setTimeout(() => loadMessages(), 500);
+                        showNotification('✅ Global message sent');
+                    } else {
+                        console.error('❌ Global send failed:', data.error);
+                        showNotification(data.error || "Failed to send", true);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Send error:', error);
+                showNotification("Connection error: " + error.message, true);
+            } finally {
+                input.disabled = false;
+                sendBtn.disabled = false;
+                input.focus();
+            }
+        }
+        
+        function addMessageToUI(message, isUser) {
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+            
+            const now = new Date();
+            const myanmarTime = getMyanmarTime(now.toISOString());
+            const modeBadge = currentMode === 'private' 
+                ? '<span class="badge private"><i class="fas fa-lock"></i> Private</span>'
+                : '<span class="badge global"><i class="fas fa-globe"></i> Global</span>';
+            
+            const messageHtml = `
+                <div class="chat-message user">
+                    <div class="message-sender">
+                        <i class="fas fa-user"></i> 
+                        ${escapeHtml(currentUsername || 'You')} ${modeBadge}
+                    </div>
+                    <div class="message-bubble">${escapeHtml(message)}</div>
+                    <div class="message-time">🕐 ${myanmarTime}</div>
+                </div>
+            `;
+            
+            const today = getMyanmarDate(now.toISOString());
+            const existingDivider = Array.from(container.querySelectorAll('div[style*="text-align:center"]')).some(
+                div => div.innerText.includes(today)
+            );
+            
+            if (!existingDivider && container.children.length > 0) {
+                const divider = `<div style="text-align:center; margin:8px 0;"><span style="background:rgba(0,212,255,0.1); padding:2px 10px; border-radius:40px; font-size:0.55rem; color:#64748b;">📅 ${today}</span></div>`;
+                container.insertAdjacentHTML('beforeend', divider);
+            }
+            
+            container.insertAdjacentHTML('beforeend', messageHtml);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function showNotification(message, isError = false) {
+            console.log(`🔔 Notification: ${message} (${isError ? 'error' : 'success'})`);
+            try {
+                if (window.parent && window.parent.showToast) {
+                    window.parent.showToast(message, isError);
+                } else {
+                    const toast = document.createElement('div');
+                    toast.textContent = message;
+                    toast.style.cssText = `
+                        position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+                        background: ${isError ? '#f43f5e' : '#10b981'}; color: white;
+                        padding: 8px 16px; border-radius: 40px; font-size: 0.75rem;
+                        z-index: 2000; white-space: nowrap;
+                    `;
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 2500);
+                }
+            } catch(e) {
+                console.log('Toast error:', e);
+            }
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        function autoResizeTextarea() {
+            const textarea = document.getElementById('chatInput');
+            if (textarea) {
+                textarea.style.height = 'auto';
+                textarea.style.height = Math.min(textarea.scrollHeight, 60) + 'px';
+            }
+        }
+        
+        function setupKeyboardShortcuts() {
+            const input = document.getElementById('chatInput');
+            if (input) {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+                input.addEventListener('input', autoResizeTextarea);
+            }
+        }
+        
+        function toggleMinimize() {
+            const container = document.getElementById('chatContainer');
+            if (container) {
+                container.classList.toggle('minimized');
+                isMinimized = container.classList.contains('minimized');
+            }
+        }
+        
+        function closeUserChat() {
+            if (window.parent && window.parent.closeUserChatWidget) {
+                window.parent.closeUserChatWidget();
+            }
+        }
+        
+        async function init() {
+            console.log('🚀 Chat widget initializing...');
+            getCurrentUserInfo();
+            await loadMessages();
+            await updateUnreadCount();
+            setupKeyboardShortcuts();
+            refreshInterval = setInterval(() => {
+                const container = document.getElementById('chatContainer');
+                if (container && !container.classList.contains('minimized')) {
+                    console.log('🔄 Auto-refreshing messages...');
+                    loadMessages();
+                    if (currentMode === 'private') {
+                        updateUnreadCount();
+                    }
+                }
+            }, 5000);
+            console.log('✅ Chat widget initialized');
+        }
+        
+        function cleanup() { 
+            if (refreshInterval) clearInterval(refreshInterval);
+            console.log('🧹 Chat widget cleaned up');
+        }
+        
+        init();
+        window.addEventListener('beforeunload', cleanup);
+        window.sendMessage = sendMessage;
+        window.toggleMinimize = toggleMinimize;
+        window.closeUserChat = closeUserChat;
+        window.setChatMode = setChatMode;
+    </script>
 </body>
 </html>
