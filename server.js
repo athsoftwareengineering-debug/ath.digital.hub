@@ -18,9 +18,9 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ==================== AD ROUTES ====================
-const adRoutes = require('./routes/ads');
-app.use('/api', adRoutes);
+// ==================== AD ROUTES - ဖယ်ရှားပြီး ====================
+// const adRoutes = require('./routes/ads');
+// app.use('/api', adRoutes);
 
 // ==================== SALES HOURS CONFIGURATION ====================
 let salesHours = {
@@ -807,9 +807,9 @@ app.delete('/api/chat/messages/:id', isAuthenticated, async (req, res) => {
     }
 });
 
-// ==================== PRIVATE CHAT API (1-on-1) - FIXED ====================
+// ==================== PRIVATE CHAT API (1-on-1) ====================
 
-// ✅ Admin User List - ပြင်ဆင်ပြီး
+// Admin User List
 app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -823,7 +823,6 @@ app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
         const seen = new Set();
         
         for (const msg of data || []) {
-            // Admin က ပို့ထားတဲ့ User
             if (msg.sender_id === 'admin' && !seen.has(msg.receiver_id)) {
                 seen.add(msg.receiver_id);
                 uniqueUsers.push({ 
@@ -832,7 +831,6 @@ app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
                     last_message_time: msg.created_at 
                 });
             } 
-            // User က Admin ကို ပို့ထားတဲ့ User
             else if (msg.receiver_id === 'admin' && !seen.has(msg.sender_id)) {
                 seen.add(msg.sender_id);
                 uniqueUsers.push({ 
@@ -850,7 +848,7 @@ app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
     }
 });
 
-// ✅ Private Messages - User နဲ့ Admin ကြားက messages အကုန်ယူ
+// Private Messages
 app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
     try {
         const { userId } = req.params;
@@ -869,7 +867,6 @@ app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
         
         console.log(`✅ Found ${data?.length || 0} private messages`);
         
-        // Mark as read for user
         if (currentUserId !== 'admin') {
             await supabase
                 .from('private_chat_messages')
@@ -885,7 +882,7 @@ app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
     }
 });
 
-// ✅ Send Private Message
+// Send Private Message
 app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
     try {
         const { sender_id, receiver_id, sender_name, receiver_name, message } = req.body;
@@ -895,7 +892,6 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Invalid message' });
         }
         
-        // Bad words filter
         if (containsBadWords(message)) {
             return res.status(400).json({ 
                 success: false, 
@@ -920,7 +916,6 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
         
         console.log(`✅ Private message saved successfully, ID: ${data[0]?.id}`);
         
-        // Auto reply for users (not for admin)
         if (sender_id !== 'admin') {
             const isShopOpen = canPlaceOrder();
             const autoReply = getAutoReply(message, isShopOpen, sender_id);
@@ -936,12 +931,11 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
     }
 });
 
-// ✅ Unread Count - ပြင်ဆင်ပြီး
+// Unread Count
 app.get('/api/chat/private/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
         
-        // Admin က ပို့ထားတဲ့ Unread Messages
         const { count, error } = await supabase
             .from('private_chat_messages')
             .select('*', { count: 'exact', head: true })
@@ -1002,12 +996,10 @@ app.listen(PORT, () => {
 ║     💬 Global Chat:     http://localhost:${PORT}/chat.html                ║
 ║     💬 Admin Chat:      http://localhost:${PORT}/admin-chat.html          ║
 ║                                                                          ║
-║     🔒 CHAT FIXES APPLIED:                                              ║
-║        ✅ Admin User List - Fixed (shows both sender & receiver)        ║
-║        ✅ Private Messages - Fixed (user + admin messages)              ║
-║        ✅ Unread Count - Fixed (only admin to user)                     ║
-║        ✅ Auto Reply - Working                                          ║
-║        ✅ Bad Words Filter - Working                                    ║
+║     🔒 ADS SYSTEM: REMOVED ✅                                           ║
+║        ✅ Ads routes removed                                            ║
+║        ✅ Ads widget removed                                            ║
+║        ✅ Ads files deleted                                             ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
