@@ -11,16 +11,19 @@ const morgan = require('morgan');
 const compression = require('compression');
 const sharp = require('sharp');
 const Joi = require('joi');
-const { supabase, supabaseAdmin, createNewUser, getUserByPhone, getUserStats, updateUserStats, isPhoneBlocked } = require('./supabase');
+const { supabase, supabaseAdmin, createNewUser, getUserByPhone, getUserStats, updateUserStats, isPhoneBlocked } = require('./database');
 const { getAutoReply, setUserLanguage, getUserLanguage } = require('./config/autoReply');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ==================== AD ROUTES - ဖယ်ရှားပြီး ====================
-// const adRoutes = require('./routes/ads');
-// app.use('/api', adRoutes);
+// ==================== AD ROUTES ====================
+const adRoutes = require('./routes/ads');
+app.use('/api', adRoutes);
+
+// ==================== TYPING INDICATOR ====================
+const typingStatus = new Map();
 
 // ==================== SALES HOURS CONFIGURATION ====================
 let salesHours = {
@@ -291,6 +294,7 @@ async function addNotificationToDatabase(order) {
             order_id: order.id,
             title: `🆕 New Order #${order.id}`,
             message: `${order.plan} - ${order.price.toLocaleString()} MMK from ${maskPhone(order.phone)}`,
+            order_data: order,
             is_read: false,
             created_at: new Date().toISOString()
         }]);
@@ -374,6 +378,62 @@ app.get('/notifications.js', (req, res) => { res.sendFile(path.join(__dirname, '
 app.get('/sales-hours.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'sales-hours.js')); });
 app.get('/api/health', (req, res) => { res.json({ status: 'ok', timestamp: new Date().toISOString() }); });
 
+// ==================== ADMIN ME ENDPOINT ====================
+app.get('/api/admin/me', isAuthenticated, (req, res) => {
+    res.json({
+        success: true,
+        admin: {
+            id: 'admin',
+            name: 'Administrator',
+            email: 'admin@athdigitalhub.com'
+        }
+    });
+});
+
+// ==================== PING ENDPOINT ====================
+app.get('/api/chat/ping', (req, res) => {
+    res.json({ success: true, timestamp: new Date().toISOString() });
+});
+
+// ==================== TYPING INDICATOR ENDPOINTS ====================
+app.post('/api/chat/typing', async (req, res) => {
+    try {
+        const { userId, isTyping } = req.body;
+        if (!userId) return res.status(400).json({ success: false, error: 'User ID required' });
+        
+        typingStatus.set(userId, {
+            isTyping: isTyping || false,
+            updated_at: new Date().toISOString()
+        });
+        
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.get('/api/chat/typing/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const status = typingStatus.get(userId);
+        const isTyping = status ? status.isTyping : false;
+        res.json({ success: true, isTyping });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Cleanup old typing statuses (every 10 seconds)
+setInterval(() => {
+    const now = new Date();
+    for (const [key, value] of typingStatus) {
+        const updated = new Date(value.updated_at);
+        if ((now - updated) > 5000) {
+            typingStatus.delete(key);
+        }
+    }
+}, 10000);
+
 // ==================== USER REGISTRATION ====================
 app.post('/api/user/register', async (req, res) => {
     try {
@@ -420,9 +480,18 @@ app.get('/api/market/products', marketLimiter, async (req, res) => {
 
 app.post('/api/market/products', isAuthenticated, async (req, res) => {
     try {
-        const { name, price, image, category, icon, discount } = req.body;
+        const { name, price, image, category, icon, discount, stock } = req.body;
         if (!name || !price) return res.status(400).json({ success: false, error: 'Name and price are required' });
-        const { data, error } = await supabase.from('market_products').insert([{ name, price: parseInt(price), image: image || null, category: category || 'Uncategorized', icon: icon || 'fas fa-box', discount: discount || 0, created_at: new Date().toISOString() }]).select();
+        const { data, error } = await supabase.from('market_products').insert([{
+            name,
+            price: parseInt(price),
+            image: image || null,
+            category: category || 'Uncategorized',
+            icon: icon || 'fas fa-box',
+            discount: discount || 0,
+            stock: stock || 999,
+            created_at: new Date().toISOString()
+        }]).select();
         if (error) throw error;
         res.json({ success: true, product: data[0] });
     } catch (error) {
@@ -434,9 +503,18 @@ app.post('/api/market/products', isAuthenticated, async (req, res) => {
 app.put('/api/market/products/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, price, image, category, icon, discount } = req.body;
+        const { name, price, image, category, icon, discount, stock } = req.body;
         if (!name || !price) return res.status(400).json({ success: false, error: 'Name and price are required' });
-        const { data, error } = await supabase.from('market_products').update({ name, price: parseInt(price), image: image || null, category: category || 'Uncategorized', icon: icon || 'fas fa-box', discount: discount || 0, updated_at: new Date().toISOString() }).eq('id', parseInt(id)).select();
+        const { data, error } = await supabase.from('market_products').update({
+            name,
+            price: parseInt(price),
+            image: image || null,
+            category: category || 'Uncategorized',
+            icon: icon || 'fas fa-box',
+            discount: discount || 0,
+            stock: stock || 999,
+            updated_at: new Date().toISOString()
+        }).eq('id', parseInt(id)).select();
         if (error) throw error;
         res.json({ success: true, product: data[0] });
     } catch (error) {
@@ -808,39 +886,28 @@ app.delete('/api/chat/messages/:id', isAuthenticated, async (req, res) => {
 });
 
 // ==================== PRIVATE CHAT API (1-on-1) ====================
-
-// Admin User List
 app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('private_chat_messages')
-            .select('*')
+            .select('sender_id, sender_name, receiver_id, created_at, message')
             .order('created_at', { ascending: false });
         
         if (error) throw error;
         
         const uniqueUsers = [];
         const seen = new Set();
-        
         for (const msg of data || []) {
-            if (msg.sender_id === 'admin' && !seen.has(msg.receiver_id)) {
-                seen.add(msg.receiver_id);
-                uniqueUsers.push({ 
-                    user_id: msg.receiver_id, 
-                    username: msg.receiver_name || 'User',
-                    last_message_time: msg.created_at 
-                });
-            } 
-            else if (msg.receiver_id === 'admin' && !seen.has(msg.sender_id)) {
+            if (msg.receiver_id === 'admin' && !seen.has(msg.sender_id)) {
                 seen.add(msg.sender_id);
-                uniqueUsers.push({ 
-                    user_id: msg.sender_id, 
-                    username: msg.sender_name || 'User',
-                    last_message_time: msg.created_at 
+                uniqueUsers.push({
+                    user_id: msg.sender_id,
+                    username: msg.sender_name,
+                    last_message: msg.message,
+                    last_message_time: msg.created_at
                 });
             }
         }
-        
         res.json({ success: true, users: uniqueUsers });
     } catch (error) {
         console.error('Error fetching users:', error);
@@ -848,31 +915,19 @@ app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
     }
 });
 
-// Private Messages
 app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
     try {
         const { userId } = req.params;
-        const currentUserId = req.query.currentUserId || userId;
-        
+        const currentUserId = req.query.currentUserId || 'admin';
         console.log(`🔍 Fetching private messages - userId: ${userId}, currentUserId: ${currentUserId}`);
-        
-        const { data, error } = await supabase
-            .from('private_chat_messages')
-            .select('*')
-            .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.admin),and(sender_id.eq.admin,receiver_id.eq.${currentUserId})`)
-            .order('created_at', { ascending: true })
-            .limit(200);
-        
+        const { data, error } = await supabase.from('private_chat_messages').select('*').or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUserId})`).order('created_at', { ascending: true }).limit(200);
         if (error) throw error;
-        
         console.log(`✅ Found ${data?.length || 0} private messages`);
         
-        if (currentUserId !== 'admin') {
-            await supabase
-                .from('private_chat_messages')
-                .update({ is_read: true })
-                .eq('receiver_id', currentUserId)
-                .eq('is_read', false);
+        if (currentUserId === 'admin') {
+            await supabase.from('private_chat_messages').update({ is_read: true }).eq('sender_id', userId).eq('receiver_id', 'admin').eq('is_read', false);
+        } else {
+            await supabase.from('private_chat_messages').update({ is_read: true }).eq('sender_id', 'admin').eq('receiver_id', currentUserId).eq('is_read', false);
         }
         
         res.json({ success: true, messages: data || [] });
@@ -882,7 +937,6 @@ app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
     }
 });
 
-// Send Private Message
 app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
     try {
         const { sender_id, receiver_id, sender_name, receiver_name, message } = req.body;
@@ -890,13 +944,6 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
         console.log(`Message: ${message}`);
         if (!sender_id || !receiver_id || !message || message.trim() === '') {
             return res.status(400).json({ success: false, error: 'Invalid message' });
-        }
-        
-        if (containsBadWords(message)) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'သင့်စာတွင် မလျော်ကန်သော စကားလုံးများ ပါရှိပါသည်။ ကျေးဇူးပြု၍ လေးစားစွာ ပြောဆိုပါ။' 
-            });
         }
         
         const { data, error } = await supabase.from('private_chat_messages').insert([{
@@ -931,7 +978,73 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
     }
 });
 
-// Unread Count
+// ==================== DELETE PRIVATE MESSAGE ====================
+app.delete('/api/chat/private/delete', isAuthenticated, async (req, res) => {
+    try {
+        const { messageId } = req.body;
+        if (!messageId) return res.status(400).json({ success: false, error: 'Message ID required' });
+        
+        const { data: msg, error: findError } = await supabase
+            .from('private_chat_messages')
+            .select('sender_id')
+            .eq('id', messageId)
+            .single();
+        
+        if (findError || !msg) {
+            return res.status(404).json({ success: false, error: 'Message not found' });
+        }
+        
+        if (msg.sender_id !== 'admin') {
+            return res.status(403).json({ success: false, error: 'You can only delete your own messages' });
+        }
+        
+        const { error } = await supabase
+            .from('private_chat_messages')
+            .delete()
+            .eq('id', messageId);
+        
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting private message:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ==================== DELETE GLOBAL MESSAGE ====================
+app.delete('/api/chat/global/delete', isAuthenticated, async (req, res) => {
+    try {
+        const { messageId } = req.body;
+        if (!messageId) return res.status(400).json({ success: false, error: 'Message ID required' });
+        
+        const { data: msg, error: findError } = await supabase
+            .from('chat_messages')
+            .select('is_admin')
+            .eq('id', messageId)
+            .single();
+        
+        if (findError || !msg) {
+            return res.status(404).json({ success: false, error: 'Message not found' });
+        }
+        
+        if (!msg.is_admin) {
+            return res.status(403).json({ success: false, error: 'You can only delete admin messages' });
+        }
+        
+        const { error } = await supabase
+            .from('chat_messages')
+            .delete()
+            .eq('id', messageId);
+        
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting global message:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ==================== UNREAD COUNT (Only for receiver) ====================
 app.get('/api/chat/private/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -940,7 +1053,6 @@ app.get('/api/chat/private/unread/:userId', async (req, res) => {
             .from('private_chat_messages')
             .select('*', { count: 'exact', head: true })
             .eq('receiver_id', userId)
-            .eq('sender_id', 'admin')
             .eq('is_read', false);
         
         if (error) throw error;
@@ -948,6 +1060,27 @@ app.get('/api/chat/private/unread/:userId', async (req, res) => {
         res.json({ success: true, unreadCount: count || 0 });
     } catch (error) {
         console.error('Error getting unread count:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ==================== MARK MESSAGES AS READ ====================
+app.put('/api/chat/private/mark-read/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        const { error } = await supabase
+            .from('private_chat_messages')
+            .update({ is_read: true })
+            .eq('sender_id', userId)
+            .eq('receiver_id', 'admin')
+            .eq('is_read', false);
+        
+        if (error) throw error;
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error marking messages as read:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -996,10 +1129,20 @@ app.listen(PORT, () => {
 ║     💬 Global Chat:     http://localhost:${PORT}/chat.html                ║
 ║     💬 Admin Chat:      http://localhost:${PORT}/admin-chat.html          ║
 ║                                                                          ║
-║     🔒 ADS SYSTEM: REMOVED ✅                                           ║
-║        ✅ Ads routes removed                                            ║
-║        ✅ Ads widget removed                                            ║
-║        ✅ Ads files deleted                                             ║
+║     ✅ Admin ME Endpoint                                                 ║
+║     ✅ Ping Endpoint                                                     ║
+║     ✅ Typing Indicator Endpoints                                        ║
+║     ✅ Delete Private Message Endpoint                                   ║
+║     ✅ Delete Global Message Endpoint                                    ║
+║     ✅ User List with Last Message                                       ║
+║     ✅ Product Stock Field                                               ║
+║     ✅ Notification Order Data                                           ║
+║     ✅ Private 1-on-1 Chat with Unread Counts                            ║
+║     ✅ Mark as Read on view                                              ║
+║     ✅ Multi-Language Auto Reply (my/en/zh)                              ║
+║     ✅ Global Chat Auto Cleanup (every 3 minutes)                        ║
+║     ✅ Bad Words Filter                                                  ║
+║     ✅ Ad Management System                                              ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
