@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { supabaseAdmin } = require('../database');
+const { supabaseAdmin } = require('../supabase');  // ✅ ပြင်ဆင်ပြီး
 
 function isAuthenticated(req, res, next) {
-    if (req.session && req.session.isAdmin === true) {
-        return next();
-    }
-    res.status(401).json({ success: false, error: 'Unauthorized' });
+    if (req.session.isAdmin) next();
+    else res.status(401).json({ success: false, error: 'Unauthorized' });
 }
+
+// ==================== USER ADS API ====================
 
 // ကြော်ငြာများရယူရန် (သုံးစွဲသူ)
 router.get('/ads', async (req, res) => {
@@ -25,9 +25,12 @@ router.get('/ads', async (req, res) => {
         );
         res.json({ success: true, ads: activeAds });
     } catch (err) {
+        console.error('Error fetching ads:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
+// ==================== ADMIN ADS API ====================
 
 // ကြော်ငြာများရယူရန် (အဒ်မင်)
 router.get('/admin/ads', isAuthenticated, async (req, res) => {
@@ -41,6 +44,7 @@ router.get('/admin/ads', isAuthenticated, async (req, res) => {
         if (error) throw error;
         res.json({ success: true, ads: data || [] });
     } catch (err) {
+        console.error('Error fetching admin ads:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -55,14 +59,22 @@ router.post('/admin/ads', isAuthenticated, async (req, res) => {
         const { data, error } = await supabaseAdmin
             .from('ads')
             .insert([{
-                name, image_url, destination_url, alt_text: alt_text || null,
-                display_weight: display_weight || 5, expiry_date: expiry_date || null,
-                active: true, clicks: 0, views: 0, created_at: new Date().toISOString()
+                name, 
+                image_url, 
+                destination_url, 
+                alt_text: alt_text || null,
+                display_weight: display_weight || 5, 
+                expiry_date: expiry_date || null,
+                active: true, 
+                clicks: 0, 
+                views: 0, 
+                created_at: new Date().toISOString()
             }])
             .select();
         if (error) throw error;
         res.json({ success: true, ad: data[0] });
     } catch (err) {
+        console.error('Error creating ad:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -74,11 +86,21 @@ router.put('/admin/ads/:id', isAuthenticated, async (req, res) => {
         const { name, image_url, destination_url, alt_text, active, display_weight, expiry_date } = req.body;
         const { error } = await supabaseAdmin
             .from('ads')
-            .update({ name, image_url, destination_url, alt_text, active, display_weight, expiry_date, updated_at: new Date().toISOString() })
+            .update({ 
+                name, 
+                image_url, 
+                destination_url, 
+                alt_text, 
+                active, 
+                display_weight, 
+                expiry_date, 
+                updated_at: new Date().toISOString() 
+            })
             .eq('id', id);
         if (error) throw error;
         res.json({ success: true });
     } catch (err) {
+        console.error('Error updating ad:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -94,17 +116,38 @@ router.delete('/admin/ads/:id', isAuthenticated, async (req, res) => {
         if (error) throw error;
         res.json({ success: true });
     } catch (err) {
+        console.error('Error deleting ad:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
+// ==================== AD TRACKING API ====================
 
 // ကလစ်ရေတွက်ရန်
 router.post('/ads/:id/click', async (req, res) => {
     try {
         const { id } = req.params;
-        await supabaseAdmin.rpc('increment_ad_clicks', { ad_id: parseInt(id) });
+        // Get current clicks and increment
+        const { data: ad, error: fetchError } = await supabaseAdmin
+            .from('ads')
+            .select('clicks')
+            .eq('id', id)
+            .single();
+        
+        if (fetchError) throw fetchError;
+        
+        const { error } = await supabaseAdmin
+            .from('ads')
+            .update({ 
+                clicks: (ad?.clicks || 0) + 1,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', id);
+        
+        if (error) throw error;
         res.json({ success: true });
     } catch (err) {
+        console.error('Error tracking click:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -113,12 +156,32 @@ router.post('/ads/:id/click', async (req, res) => {
 router.post('/ads/:id/view', async (req, res) => {
     try {
         const { id } = req.params;
-        await supabaseAdmin.rpc('increment_ad_views', { ad_id: parseInt(id) });
+        // Get current views and increment
+        const { data: ad, error: fetchError } = await supabaseAdmin
+            .from('ads')
+            .select('views')
+            .eq('id', id)
+            .single();
+        
+        if (fetchError) throw fetchError;
+        
+        const { error } = await supabaseAdmin
+            .from('ads')
+            .update({ 
+                views: (ad?.views || 0) + 1,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', id);
+        
+        if (error) throw error;
         res.json({ success: true });
     } catch (err) {
+        console.error('Error tracking view:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
+// ==================== AD SETTINGS API ====================
 
 // ကြော်ငြာဆက်တင်ရယူရန်
 router.get('/ad-settings', async (req, res) => {
@@ -129,8 +192,16 @@ router.get('/ad-settings', async (req, res) => {
             .eq('id', 1)
             .single();
         if (error && error.code !== 'PGRST116') throw error;
-        res.json({ success: true, settings: data || { rotation_mode: 'weighted', auto_cycle_seconds: 0, show_navigation: true } });
+        res.json({ 
+            success: true, 
+            settings: data || { 
+                rotation_mode: 'weighted', 
+                auto_cycle_seconds: 0, 
+                show_navigation: true 
+            } 
+        });
     } catch (err) {
+        console.error('Error fetching ad settings:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -141,10 +212,17 @@ router.put('/admin/ad-settings', isAuthenticated, async (req, res) => {
         const { rotation_mode, auto_cycle_seconds, show_navigation } = req.body;
         const { error } = await supabaseAdmin
             .from('ad_settings')
-            .upsert({ id: 1, rotation_mode, auto_cycle_seconds, show_navigation, updated_at: new Date().toISOString() });
+            .upsert({ 
+                id: 1, 
+                rotation_mode, 
+                auto_cycle_seconds, 
+                show_navigation, 
+                updated_at: new Date().toISOString() 
+            });
         if (error) throw error;
         res.json({ success: true });
     } catch (err) {
+        console.error('Error saving ad settings:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
