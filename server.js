@@ -11,12 +11,16 @@ const morgan = require('morgan');
 const compression = require('compression');
 const sharp = require('sharp');
 const Joi = require('joi');
-const { supabase, supabaseAdmin, createNewUser, getUserByPhone, getUserStats, updateUserStats, isPhoneBlocked } = require('./database');
+const { supabase, supabaseAdmin, createNewUser, getUserByPhone, getUserStats, updateUserStats, isPhoneBlocked } = require('./supabase');
 const { getAutoReply, setUserLanguage, getUserLanguage } = require('./config/autoReply');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// ==================== AD ROUTES ====================
+const adRoutes = require('./routes/ads');
+app.use('/api', adRoutes);
 
 // ==================== SALES HOURS CONFIGURATION ====================
 let salesHours = {
@@ -195,7 +199,7 @@ const sessionConfig = {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 2,
-        sameSite: 'lax',
+        sameSite: 'strict',
         domain: process.env.COOKIE_DOMAIN || undefined
     },
     rolling: true
@@ -208,10 +212,6 @@ app.use(cors({ origin: process.env.NODE_ENV === 'production' ? process.env.ALLOW
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(__dirname));
-
-// ==================== AD ROUTES ====================
-const adRoutes = require('./routes/ads');
-app.use('/api', adRoutes);
 
 // ==================== FILE UPLOAD ====================
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -281,10 +281,8 @@ function checkRateLimit(phone) {
 }
 
 function isAuthenticated(req, res, next) {
-    if (req.session && req.session.isAdmin === true) {
-        return next();
-    }
-    res.status(401).json({ success: false, error: 'Unauthorized' });
+    if (req.session.isAdmin) next();
+    else res.status(401).json({ success: false, error: 'Unauthorized' });
 }
 
 async function addNotificationToDatabase(order) {
@@ -809,19 +807,42 @@ app.delete('/api/chat/messages/:id', isAuthenticated, async (req, res) => {
     }
 });
 
-// ==================== PRIVATE CHAT API (1-on-1) ====================
+// ==================== PRIVATE CHAT API (1-on-1) - FIXED ====================
+
+// ✅ Admin User List - ပြင်ဆင်ပြီး
 app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
     try {
-        const { data, error } = await supabase.from('private_chat_messages').select('sender_id, sender_name, receiver_id, created_at').order('created_at', { ascending: false });
+        const { data, error } = await supabase
+            .from('private_chat_messages')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
         if (error) throw error;
+        
         const uniqueUsers = [];
         const seen = new Set();
+        
         for (const msg of data || []) {
-            if (msg.receiver_id === 'admin' && !seen.has(msg.sender_id)) {
+            // Admin က ပို့ထားတဲ့ User
+            if (msg.sender_id === 'admin' && !seen.has(msg.receiver_id)) {
+                seen.add(msg.receiver_id);
+                uniqueUsers.push({ 
+                    user_id: msg.receiver_id, 
+                    username: msg.receiver_name || 'User',
+                    last_message_time: msg.created_at 
+                });
+            } 
+            // User က Admin ကို ပို့ထားတဲ့ User
+            else if (msg.receiver_id === 'admin' && !seen.has(msg.sender_id)) {
                 seen.add(msg.sender_id);
-                uniqueUsers.push({ user_id: msg.sender_id, username: msg.sender_name, last_message_time: msg.created_at });
+                uniqueUsers.push({ 
+                    user_id: msg.sender_id, 
+                    username: msg.sender_name || 'User',
+                    last_message_time: msg.created_at 
+                });
             }
         }
+        
         res.json({ success: true, users: uniqueUsers });
     } catch (error) {
         console.error('Error fetching users:', error);
@@ -829,19 +850,32 @@ app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
     }
 });
 
+// ✅ Private Messages - User နဲ့ Admin ကြားက messages အကုန်ယူ
 app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
     try {
         const { userId } = req.params;
-        const currentUserId = req.query.currentUserId || 'admin';
+        const currentUserId = req.query.currentUserId || userId;
+        
         console.log(`🔍 Fetching private messages - userId: ${userId}, currentUserId: ${currentUserId}`);
-        const { data, error } = await supabase.from('private_chat_messages').select('*').or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUserId})`).order('created_at', { ascending: true }).limit(200);
+        
+        const { data, error } = await supabase
+            .from('private_chat_messages')
+            .select('*')
+            .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.admin),and(sender_id.eq.admin,receiver_id.eq.${currentUserId})`)
+            .order('created_at', { ascending: true })
+            .limit(200);
+        
         if (error) throw error;
+        
         console.log(`✅ Found ${data?.length || 0} private messages`);
         
-        if (currentUserId === 'admin') {
-            await supabase.from('private_chat_messages').update({ is_read: true }).eq('sender_id', userId).eq('receiver_id', 'admin').eq('is_read', false);
-        } else {
-            await supabase.from('private_chat_messages').update({ is_read: true }).eq('sender_id', 'admin').eq('receiver_id', currentUserId).eq('is_read', false);
+        // Mark as read for user
+        if (currentUserId !== 'admin') {
+            await supabase
+                .from('private_chat_messages')
+                .update({ is_read: true })
+                .eq('receiver_id', currentUserId)
+                .eq('is_read', false);
         }
         
         res.json({ success: true, messages: data || [] });
@@ -851,6 +885,7 @@ app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
     }
 });
 
+// ✅ Send Private Message
 app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
     try {
         const { sender_id, receiver_id, sender_name, receiver_name, message } = req.body;
@@ -858,6 +893,14 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
         console.log(`Message: ${message}`);
         if (!sender_id || !receiver_id || !message || message.trim() === '') {
             return res.status(400).json({ success: false, error: 'Invalid message' });
+        }
+        
+        // Bad words filter
+        if (containsBadWords(message)) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'သင့်စာတွင် မလျော်ကန်သော စကားလုံးများ ပါရှိပါသည်။ ကျေးဇူးပြု၍ လေးစားစွာ ပြောဆိုပါ။' 
+            });
         }
         
         const { data, error } = await supabase.from('private_chat_messages').insert([{
@@ -877,6 +920,7 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
         
         console.log(`✅ Private message saved successfully, ID: ${data[0]?.id}`);
         
+        // Auto reply for users (not for admin)
         if (sender_id !== 'admin') {
             const isShopOpen = canPlaceOrder();
             const autoReply = getAutoReply(message, isShopOpen, sender_id);
@@ -892,15 +936,17 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
     }
 });
 
-// ==================== UNREAD COUNT (Only for receiver) ====================
+// ✅ Unread Count - ပြင်ဆင်ပြီး
 app.get('/api/chat/private/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
         
+        // Admin က ပို့ထားတဲ့ Unread Messages
         const { count, error } = await supabase
             .from('private_chat_messages')
             .select('*', { count: 'exact', head: true })
             .eq('receiver_id', userId)
+            .eq('sender_id', 'admin')
             .eq('is_read', false);
         
         if (error) throw error;
@@ -955,27 +1001,13 @@ app.listen(PORT, () => {
 ║     📊 Live Dashboard:  http://localhost:${PORT}/dashboard.html           ║
 ║     💬 Global Chat:     http://localhost:${PORT}/chat.html                ║
 ║     💬 Admin Chat:      http://localhost:${PORT}/admin-chat.html          ║
-║     💬 Private 1-on-1 Chat: WORKING ✅                                   ║
-║     🌍 Multi-Language Auto Reply: WORKING ✅                             ║
-║     🧹 Global Chat Auto Cleanup (3 min): WORKING ✅                      ║
-║     🚫 Bad Words Filter: WORKING ✅                                     ║
-║     🔔 Unread Count (receiver only): WORKING ✅                          ║
-║     📢 AD MANAGEMENT SYSTEM: WORKING ✅                                  ║
 ║                                                                          ║
-║     🔒 SECURITY FEATURES ENABLED:                                        ║
-║        ✅ Helmet.js (Security Headers)                                   ║
-║        ✅ CSP with iframe support                                        ║
-║        ✅ Rate Limiting                                                  ║
-║        ✅ Sales Hours Control (Auto/Manual Mode)                        ║
-║        ✅ Session-based Admin Auth                                       ║
-║        ✅ Image Processing (Sharp)                                       ║
-║        ✅ Database Notifications                                         ║
-║        ✅ Private 1-on-1 Chat with Unread Counts                        ║
-║        ✅ Mark as Read on view                                           ║
-║        ✅ Multi-Language Auto Reply (my/en/zh)                          ║
-║        ✅ Global Chat Auto Cleanup (every 3 minutes)                    ║
-║        ✅ Bad Words Filter                                              ║
-║        ✅ Ad Management System (ads table, rotation, tracking)          ║
+║     🔒 CHAT FIXES APPLIED:                                              ║
+║        ✅ Admin User List - Fixed (shows both sender & receiver)        ║
+║        ✅ Private Messages - Fixed (user + admin messages)              ║
+║        ✅ Unread Count - Fixed (only admin to user)                     ║
+║        ✅ Auto Reply - Working                                          ║
+║        ✅ Bad Words Filter - Working                                    ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
