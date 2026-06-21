@@ -259,7 +259,7 @@ async function searchUsers(searchTerm) {
 
 async function testConnection() {
     try {
-        const { error } = await supabase.from('orders').select('count', { count: 'exact', head: true });
+        const { error } = await supabaseAdmin.from('orders').select('count', { count: 'exact', head: true });
         if (error) {
             console.error('❌ Supabase connection test failed:', error.message);
             return false;
