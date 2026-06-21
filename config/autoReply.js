@@ -1,5 +1,11 @@
+// config/autoReply.js
+
 const fs = require('fs');
 const path = require('path');
+
+// ============ LANGUAGE DETECTION ============
+// အသုံးပြုသူတစ်ယောက်ချင်းစီရဲ့ ဘာသာစကားကို သိမ်းဖို့ Map
+const userLanguages = new Map();
 
 // ============ LANGUAGE FILES WITH FALLBACK ============
 function loadLanguageFile(lang) {
@@ -13,167 +19,122 @@ function loadLanguageFile(lang) {
     } catch (e) {
         console.error(`Error loading ${lang}.json:`, e.message);
     }
-    
-    // Fallback data - ဖိုင်မရှိရင် ဒီဒေတာကို သုံးမယ်
-    const fallback = {
-        "dataMB": {
-            "open": "✅ Yes, you can. You can purchase immediately.\n\n🛒 **How to buy:**\n1. Go to Plans Tab\n2. Choose your desired Plan\n3. Make payment\n4. Confirm with screenshot or text\n\n✨ ATH DIGITAL HUB",
-            "closed": "✅ Yes, you can.\n\n⏰ Shop is currently closed.\n⏰ Opening hours: 9:00 AM to 7:00 PM\n\nPlease come back during opening hours.\n\n✨ ATH DIGITAL HUB"
-        },
-        "vipPlan": {
-            "open": "📱 The following VIP Plans are available:\n\n🔥 **VIP LEVEL - 1** - 15,000 MMK\n   • 22 GB\n   • 8000 MINS\n   • 5000 SMS\n\n⭐ **VIP LEVEL - 2** - 20,000 MMK\n   • 40 GB\n   • 250 ON-NET MINS\n\n💎 **VIP LEVEL - 3** - 25,000 MMK\n   • 40 GB\n   • 1400 ON-NET MINS\n   • 8000 SMS\n\n👑 **VIP LEVEL - 4 (ULTRA)** - 30,000 MMK\n   • 120 GB\n\n✨ ATH DIGITAL HUB",
-            "closed": "📱 VIP Plans available:\n\n• VIP 1: 15,000 MMK (22 GB)\n• VIP 2: 20,000 MMK (40 GB)\n• VIP 3: 25,000 MMK (40 GB)\n• VIP 4: 30,000 MMK (120 GB)\n\n⏰ Shop is currently closed.\n\n✨ ATH DIGITAL HUB"
-        },
-        "priceAmount": {
-            "open": "💰 Plan prices:\n\n📌 **15,000 MMK** → 22 GB + 8000 MINS + 5000 SMS\n📌 **20,000 MMK** → 40 GB + 250 ON-NET MINS\n📌 **25,000 MMK** → 40 GB + 1400 ON-NET MINS + 8000 SMS\n📌 **30,000 MMK** → 120 GB\n\nYou can purchase any plan.\n\n✨ ATH DIGITAL HUB",
-            "closed": "💰 Plan prices:\n\n• 15,000 MMK → 22 GB\n• 20,000 MMK → 40 GB\n• 25,000 MMK → 40 GB\n• 30,000 MMK → 120 GB\n\n⏰ Shop is currently closed.\n\n✨ ATH DIGITAL HUB"
-        },
-        "payment": {
-            "open": "💳 **2 Payment Methods**\n\n📸 **Method 1 - Screenshot**\n1. Transfer to accounts below\n2. Take screenshot\n3. Upload screenshot when placing order\n\n✏️ **Method 2 - Text (if no screenshot)**\n1. Sender name\n2. Last 5 digits of transaction number\n3. Phone number to receive data\n\n🏦 **Accounts:**\n• KBZ Pay: 09789999368 (AUNG THU HTWE)\n• WavePay: 09789999368 (AUNG THU HTWE)\n• AYA Pay: 09789999368 (AUNG THU HTWE)\n\n✨ ATH DIGITAL HUB",
-            "closed": "💳 Payment: KBZ Pay / WavePay / AYA Pay\n📞 09789999368 (AUNG THU HTWE)\n\n⏰ Shop is currently closed.\n\n✨ ATH DIGITAL HUB"
-        },
-        "paymentDetail": {
-            "open": "💳 **Payment Details**\n\n**Method 1 - Screenshot**\nStep 1. Transfer to accounts below\nStep 2. Take screenshot\nStep 3. Upload screenshot when placing order\n\n**Method 2 - Text**\nStep 1. Sender name\nStep 2. Last 5 digits of transaction number\nStep 3. Phone number to receive data\n\n🏦 **Accounts:**\n• KBZ Pay: 09789999368 (AUNG THU HTWE)\n• WavePay: 09789999368 (AUNG THU HTWE)\n• AYA Pay: 09789999368 (AUNG THU HTWE)\n\n✨ ATH DIGITAL HUB",
-            "closed": "💳 Payment details will be explained after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "noScreenshot": {
-            "open": "📸 If you can't send screenshot, don't worry.\n\n**Text confirmation method:**\n1. Sender name\n2. Last 5 digits of transaction number\n3. Phone number to receive data\n\nYou can place order with these details.\n\n✨ ATH DIGITAL HUB",
-            "closed": "📸 Text confirmation is available if no screenshot.\n\n⏰ Please contact after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "giftPurchase": {
-            "open": "✅ Yes, you can buy for someone else.\n\nJust provide the **phone number to receive data** when making payment.\n\n✨ ATH DIGITAL HUB",
-            "closed": "✅ Yes, you can buy for others.\n\n⏰ Please contact after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "orderStatus": {
-            "open": "📋 **Order Status**\n\nYou can check your order status in \"My Orders\" Tab.\n\n• ⏳ Pending - Waiting for approval\n• ✅ Approved - Order confirmed\n• ❌ Rejected - Order declined\n\n✨ ATH DIGITAL HUB",
-            "closed": "📋 Order status will be checked after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "orderLate": {
-            "open": "📋 Please be patient.\n\nOur Admin is checking your order.\n\n✨ ATH DIGITAL HUB",
-            "closed": "📋 Your order will be checked after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "transferStatus": {
-            "open": "💰 To check your transfer, please provide:\n\n1. Account name used for transfer\n2. Last 5 digits of transaction number\n3. Phone number to receive data\n\nAdmin will check for you.\n\n✨ ATH DIGITAL HUB",
-            "closed": "💰 Transfer status will be checked after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "howToBuy": {
-            "open": "✅ **How to buy (Step by Step)**\n\n**Step 1** - Go to Plans Tab\n**Step 2** - Choose your desired Plan\n**Step 3** - Make payment\n**Step 4** - Confirm with screenshot or text\n**Step 5** - Admin confirms and Data/MB will be added\n\n✨ ATH DIGITAL HUB",
-            "closed": "⏰ **How to buy**\n\n⏰ Shop is currently closed.\n⏰ Opening hours: 9:00 AM to 7:00 PM\n\nPlease come back during opening hours.\n\n✨ ATH DIGITAL HUB"
-        },
-        "howToCheck": {
-            "open": "🔍 **How to check order status**\n\n📌 **Method 1** - Go to \"My Orders\" Tab\n📌 **Method 2** - Send your User ID in this chat\n📌 **Method 3** - Send your transfer details\n\n✨ ATH DIGITAL HUB",
-            "closed": "🔍 Order status will be checked after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "accountIssue": {
-            "open": "🔐 **Account Issues**\n\nPlease send the following to Admin:\n\n• Phone number\n• Username (if available)\n• User ID (if available)\n\nAdmin will help you.\n\n✨ ATH DIGITAL HUB",
-            "closed": "🔐 Account issues will be handled after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "help": {
-            "open": "🆘 **ATH DIGITAL HUB Help Menu**\n\n📌 **VIP Plans** → \"What plans are available?\"\n📌 **Payment** → \"How to pay?\"\n📌 **Order Status** → \"Is my order ready?\"\n📌 **How to Buy** → \"How to purchase?\"\n📌 **Opening Hours** → \"When is the shop open?\"\n📌 **Data Balance** → \"How to check data balance?\"\n\n📞 **Contact:** 09789999368 | t.me/ATHsupport\n\n✨ ATH DIGITAL HUB",
-            "closed": "🆘 **Help Menu**\n\n⏰ Shop is currently closed.\n⏰ Opening hours: 9:00 AM to 7:00 PM\n\n📞 Contact: 09789999368 | t.me/ATHsupport\n\n✨ ATH DIGITAL HUB"
-        },
-        "greeting": {
-            "open": "👋 Hello! Welcome to ATH DIGITAL HUB.\n\nHow can I help you?\n\n✨ ATH DIGITAL HUB",
-            "closed": "👋 Hello!\n\n⏰ Shop is currently closed.\n⏰ Opening hours: 9:00 AM to 7:00 PM\n\n✨ ATH DIGITAL HUB"
-        },
-        "serviceHours": {
-            "open": "⏰ **Opening/Closing Hours**\n\n🟢 **Opening Hours:** 9:00 AM\n🔴 **Closing Hours:** 7:00 PM\n\n📌 The shop is currently open.\n\n✨ ATH DIGITAL HUB",
-            "closed": "⏰ **Opening/Closing Hours**\n\n🟢 **Opening Hours:** 9:00 AM\n🔴 **Closing Hours:** 7:00 PM\n\n⏰ The shop is currently closed.\n\n✨ ATH DIGITAL HUB"
-        },
-        "checkDataBalance": {
-            "open": "📊 **How to Check Data Balance**\n\n(1) Dial *124# and check the message that appears\n\n(2) You can also check via MyID App\n(If network is poor, data may not show in MyID\nIf not showing, try logging out and logging back in)\n\n✨ ATH DIGITAL HUB",
-            "closed": "📊 **How to Check Data Balance**\n\nShop is closed, but you can check yourself:\n\n(1) Dial *124# and check the message that appears\n\n(2) You can also check via MyID App\n\n✨ ATH DIGITAL HUB"
-        },
-        "personalQuestion": {
-            "open": "🙏 Thank you for your message.\n\nI am **ATH DIGITAL HUB's Customer Support Auto Reply System**.\nI am not a human.\n\nWe only provide services for **Data/MB and VIP Plan sales**.\n\nI cannot answer personal questions or engage in casual conversation.\n\n✨ ATH DIGITAL HUB",
-            "closed": "🙏 Thank you for your message.\n\nI am ATH DIGITAL HUB's Auto Reply System.\n\n⏰ Shop is currently closed.\nI cannot answer personal questions.\n\n✨ ATH DIGITAL HUB"
-        },
-        "respectful": {
-            "open": "🙏 Thank you for your respect.\n\nI am ATH DIGITAL HUB's Customer Support.\n\nHow can I help you?\n\n✨ ATH DIGITAL HUB",
-            "closed": "🙏 Thank you.\n\n⏰ Shop is currently closed.\nPlease contact after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "rudeWords": {
-            "open": "⚠️ **Warning**\n\nPlease communicate respectfully.\n\nWe do not tolerate abusive language.\nThis is your first warning.\n\n✨ ATH DIGITAL HUB",
-            "closed": "⚠️ Please be respectful.\n\n⏰ Shop is currently closed.\n\n✨ ATH DIGITAL HUB"
-        },
-        "healthQuestion": {
-            "open": "🙏 Thank you for your message.\n\nI am ATH DIGITAL HUB's Customer Support Auto Reply System.\nI am not a doctor or health advisor.\n\nPlease consult a doctor.\n\n✨ ATH DIGITAL HUB",
-            "closed": "🙏 Thank you.\n\n⏰ Shop is currently closed.\nPlease contact after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "howToBuyPackage": {
-            "open": "📦 **How to Buy Package/Plan**\n\n**Step 1** - Go to Plans Tab\n**Step 2** - Choose your desired Plan\n**Step 3** - Make payment\n**Step 4** - Confirm with screenshot or text\n\n✨ ATH DIGITAL HUB",
-            "closed": "📦 Package purchase instructions will be provided after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "packageList": {
-            "open": "📦 **Available Packages/Plans**\n\n🔥 VIP 1 - 15,000 MMK (22 GB)\n⭐ VIP 2 - 20,000 MMK (40 GB)\n💎 VIP 3 - 25,000 MMK (40 GB)\n👑 VIP 4 - 30,000 MMK (120 GB)\n\n✨ ATH DIGITAL HUB",
-            "closed": "📦 VIP Plans: 15k / 20k / 25k / 30k MMK\n\n⏰ Shop is currently closed.\n\n✨ ATH DIGITAL HUB"
-        },
-        "newUser": {
-            "open": "🎉 **Welcome!**\n\nThank you for choosing ATH DIGITAL HUB.\n\n📌 **Getting Started:**\n1. Log in (Phone number + Username)\n2. Select a Plan from Plans Tab\n3. Make payment and place order\n\nType \"help\" if you need assistance.\n\n✨ ATH DIGITAL HUB",
-            "closed": "🎉 Welcome!\n\n⏰ Shop is currently closed.\nPlease start using after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "whatIsThis": {
-            "open": "🤖 **What is ATH DIGITAL HUB?**\n\nWe are an **Online Platform that sells VIP Plans (Data/MB)**.\n\n📌 **Services:**\n• Data/MB top-up\n• Minutes (MINS) top-up\n• SMS top-up\n\n✨ ATH DIGITAL HUB",
-            "closed": "🤖 ATH DIGITAL HUB is an online platform for VIP Plan (Data/MB) sales.\n\n⏰ Shop is currently closed.\n\n✨ ATH DIGITAL HUB"
-        },
-        "howToUploadSlip": {
-            "open": "📸 **How to Upload Payment Slip (Screenshot)**\n\n1. Take a screenshot after payment\n2. Click \"Choose Image\" when placing order\n3. Select the screenshot you took\n4. Click \"Place Order\"\n\n✨ ATH DIGITAL HUB",
-            "closed": "📸 Slip upload instructions will be provided after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "receiptLastDigits": {
-            "open": "🔢 **Explanation of Last 5 Digits**\n\n**\"Last 5 digits of transaction number\"** refers to -\n\nAfter you transfer money, your receipt/SMS contains a **Transaction ID/Reference Number**.\n\n**Example:**\nTransaction ID: T1234567890ABC\n→ Last 5 digits: 90ABC\n\n✨ ATH DIGITAL HUB",
-            "closed": "🔢 Last 5 digits explanation will be provided after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "aboutATH": {
-            "open": "📛 **Meaning of ATH DIGITAL HUB**\n\n**ATH** stands for **AUNG THU HTWE** - the founder's name.\n\n🔤 **Letter meanings:**\n• **A** = AUNG\n• **T** = THU\n• **H** = HTWE\n\n💡 **DIGITAL HUB** = Central hub for digital services\n\n📌 **Summary:** AUNG THU HTWE's Digital Service Hub\n\n✨ ATH DIGITAL HUB",
-            "closed": "📛 **ATH** = AUNG THU HTWE (founder's name)\n\n💡 **DIGITAL HUB** = Central hub for digital services\n\n⏰ Shop is currently closed.\n\n✨ ATH DIGITAL HUB"
-        },
-        "howToRenew": {
-            "open": "🔄 **How to Renew**\n\n(1) Click \"Buy for Myself\" in \"My Orders\" Tab\n(2) Or purchase a new Plan from Plans Tab\n\n📌 **Important:** If you purchase within 30 days before your current plan expires, your remaining data will be automatically added.\n\n✨ ATH DIGITAL HUB",
-            "closed": "🔄 **How to Renew**\n\n(1) Choose your desired Plan from Plans Tab\n(2) Make payment\n(3) Place order during opening hours\n\n📌 If you purchase within 30 days before expiry, remaining data will be added.\n\n⏰ Opening hours: 9:00 AM to 7:00 PM\n\n✨ ATH DIGITAL HUB"
-        },
-        "howManyDays": {
-            "open": "📅 **Validity Period**\n\nEach VIP Plan lasts for **30 days (1 month)**.\n\n📌 You can renew before it expires.\n\n✨ ATH DIGITAL HUB",
-            "closed": "📅 **Validity Period**\n\nEach VIP Plan lasts for **30 days (1 month)**.\n\n⏰ You can check this information even when shop is closed.\n\n✨ ATH DIGITAL HUB"
-        },
-        "whatCanUse": {
-            "open": "📱 **What You Can Use**\n\nEach VIP Plan includes:\n\n✅ **Data (MB)** - For internet\n✅ **Minutes (MINS)** - For calls\n✅ **SMS** - For text messages\n\n📌 Amounts vary by plan.\n\n✨ ATH DIGITAL HUB",
-            "closed": "📱 **What You Can Use**\n\nEach VIP Plan includes:\n\n• Data (MB) - For internet\n• Minutes (MINS) - For calls\n• SMS - For text messages\n\n⏰ Opening hours: 9:00 AM to 7:00 PM\n\n✨ ATH DIGITAL HUB"
-        },
-        "whatTimeToBuy": {
-            "open": "⏰ **When Can You Buy?**\n\n✅ The shop is currently open. You can buy now.\n\n🟢 **Opening Hours:** 9:00 AM\n🔴 **Closing Hours:** 7:00 PM\n\n✨ ATH DIGITAL HUB",
-            "closed": "⏰ **When Can You Buy?**\n\n⏰ The shop is currently closed.\n\n🟢 **Opening Hours:** 9:00 AM\n🔴 **Closing Hours:** 7:00 PM\n\n📌 Please come back during opening hours.\n\n✨ ATH DIGITAL HUB"
-        },
-        "whatAvailable": {
-            "open": "📦 **What's Available?**\n\n✅ **VIP Plans (Data/MB)**\n   • VIP 1 - 15,000 MMK\n   • VIP 2 - 20,000 MMK\n   • VIP 3 - 25,000 MMK\n   • VIP 4 - 30,000 MMK\n\n📌 For details, ask \"What plans are available?\"\n\n✨ ATH DIGITAL HUB",
-            "closed": "📦 **What's Available?**\n\n✅ VIP Plans (Data/MB) - 15,000 / 20,000 / 25,000 / 30,000 MMK\n\n⏰ You can browse plans even when shop is closed.\n\n✨ ATH DIGITAL HUB"
-        },
-        "howToReply": {
-            "open": "🤖 I am **ATH DIGITAL HUB's Customer Support Auto Reply System**.\n\n📌 **How I work**\n1. I search for keywords in your question\n2. If I find a match, I reply with a preset answer\n3. If not, I reply with a default message\n\n✨ ATH DIGITAL HUB",
-            "closed": "🤖 I am **ATH DIGITAL HUB's Customer Support Auto Reply System**.\n\n📌 I analyze your question and provide an appropriate answer.\n\n⏰ Shop is currently closed.\nPlease contact after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        },
-        "default": {
-            "open": "🙏 Thank you for your message.\n\n✅ The shop is currently open.\nOur Admin will respond shortly.\n\nFor faster response, type \"help\".\n\n✨ ATH DIGITAL HUB",
-            "closed": "🙏 Thank you for your message.\n\n⏰ The shop is currently closed.\n⏰ Opening hours: 9:00 AM to 7:00 PM\n\nWe will respond after 9:00 AM.\n\n✨ ATH DIGITAL HUB"
-        }
-    };
-    
-    return fallback;
+    return null;
 }
 
-// Load languages with fallback
+// Load languages
 const languages = {
-    my: loadLanguageFile('my'),
-    en: loadLanguageFile('en'),
-    zh: loadLanguageFile('zh')
+    my: loadLanguageFile('my') || null,
+    en: loadLanguageFile('en') || null,
+    zh: loadLanguageFile('zh') || null
 };
 
-console.log('✅ Languages loaded successfully!');
+// ============ DETECT LANGUAGE FROM MESSAGE ============
+function detectLanguage(message) {
+    const lowerMsg = message.toLowerCase();
+    
+    // Chinese characters detection (CJK Unified Ideographs)
+    const chineseRegex = /[\u4e00-\u9fa5]/;
+    if (chineseRegex.test(message)) {
+        return 'zh';
+    }
+    
+    // Myanmar detection
+    const myanmarRegex = /[\u1000-\u109F]/;
+    if (myanmarRegex.test(message)) {
+        return 'my';
+    }
+    
+    // English detection (default)
+    // Check if message contains mostly English characters
+    const englishChars = message.match(/[a-zA-Z]/g) || [];
+    const totalChars = message.replace(/\s/g, '').length;
+    if (totalChars > 0 && (englishChars.length / totalChars) > 0.5) {
+        return 'en';
+    }
+    
+    // Default to Myanmar if uncertain
+    return 'my';
+}
 
-let defaultLanguage = 'my';
-const userLanguages = new Map();
+// ============ GET USER LANGUAGE ============
+function getUserLanguage(userId) {
+    if (userLanguages.has(userId)) {
+        return userLanguages.get(userId);
+    }
+    // Default to Myanmar
+    return 'my';
+}
 
-// ==================== KEYWORDS (34 Categories) ====================
+// ============ SET USER LANGUAGE ============
+function setUserLanguage(userId, language) {
+    if (['my', 'en', 'zh'].includes(language)) {
+        userLanguages.set(userId, language);
+        console.log(`🌍 Language set for user ${userId}: ${language}`);
+        return true;
+    }
+    return false;
+}
+
+// ============ GET AUTO REPLY ============
+function getAutoReply(message, isShopOpen, userId = null) {
+    // 1. Detect language from message
+    const detectedLang = detectLanguage(message);
+    console.log(`🔍 Detected language: ${detectedLang} for message: "${message.substring(0, 30)}..."`);
+    
+    // 2. If userId is provided, save the detected language
+    if (userId) {
+        setUserLanguage(userId, detectedLang);
+    }
+    
+    // 3. Get the language data
+    let langData = languages[detectedLang];
+    
+    // 4. If the detected language data is not available, fallback to English or Myanmar
+    if (!langData) {
+        console.warn(`⚠️ No language data for ${detectedLang}, falling back to English`);
+        langData = languages.en || languages.my;
+    }
+    
+    // 5. Find matching keyword category
+    const lowerMessage = message.toLowerCase().trim();
+    let matchedCategory = null;
+    let matchedKeyword = null;
+    
+    for (const [category, keywordList] of Object.entries(keywords)) {
+        for (const keyword of keywordList) {
+            if (lowerMessage.includes(keyword.toLowerCase()) || lowerMessage === keyword.toLowerCase()) {
+                matchedCategory = category;
+                matchedKeyword = keyword;
+                break;
+            }
+        }
+        if (matchedCategory) break;
+    }
+    
+    // 6. Get reply based on category
+    let reply = null;
+    if (matchedCategory && langData[matchedCategory]) {
+        reply = isShopOpen ? langData[matchedCategory].open : langData[matchedCategory].closed;
+    }
+    
+    // 7. If no category matched, use default
+    if (!reply && langData.default) {
+        reply = isShopOpen ? langData.default.open : langData.default.closed;
+    }
+    
+    // 8. Ultimate fallback
+    if (!reply) {
+        reply = isShopOpen 
+            ? "🙏 Thank you for your message. Our Admin will respond shortly. ✨ ATH DIGITAL HUB"
+            : "🙏 Thank you for your message. Shop is currently closed. Please come back during opening hours. ✨ ATH DIGITAL HUB";
+    }
+    
+    console.log(`📤 Auto reply language: ${detectedLang}`);
+    return reply;
+}
+
+// ============ KEYWORDS (34 Categories) ============
 const keywords = {
     dataMB: [
         'ဒေတာ ထည့်လို့ရသေးလား', 'mb ထည့်လို့ရသေးလား', 'data', 'mb', 'ဒေတာ',
@@ -243,11 +204,7 @@ const keywords = {
         'ဘာစားပြီးပြီလဲ', 'စားပြီးပြီလား', 'နေကောင်းလား', 'ဘယ်မှာနေတာလဲ',
         'ဘာတွေလုပ်နေတာလဲ', 'အိပ်နေတာလား', 'ဘာစားချင်လဲ', 'နေရတာ ပျင်းလား',
         'ဘာအလုပ်လုပ်လဲ', 'ဘယ်မှာအလုပ်လုပ်လဲ', 'ဘယ်နှစ်နှစ်လဲ', 'အသက်ဘယ်လောက်လဲ',
-        'မိဘတွေရှိလား', 'မောင်နှမရှိလား', 'အိမ်ထောင်ရှိလား', 'သားသမီးရှိလား',
-        'ကိုကြီးကလစာဘယ်လောက်ရတာလဲ', 'ကိုရီးကလစာကောင်းလား',
-        'လစာဘယ်လောက်ရလဲ', 'ဘယ်လောက်တန်လဲ',
-        'ဒီမှာ လုပ်ရတာမပျော်တော့ဘူး', 'ဒီမှာမလုပ်ချင်တော့ဘူး',
-        'ဒီစက်ရုံမှာ မလုပ်ချင်တော့ဘူး', 'အလုပ်ထွက်မယ်'
+        'မိဘတွေရှိလား', 'မောင်နှမရှိလား', 'အိမ်ထောင်ရှိလား', 'သားသမီးရှိလား'
     ],
     respectful: [
         'ကိုကြီး', 'ကိုကို', 'အကို', 'မောင်လေး', 'ဆရာ', 'ခင်ဗျား'
@@ -279,85 +236,46 @@ const keywords = {
     ],
     howToUploadSlip: [
         'ပြေစာဘယ်လိုတင်လို့ရလဲ', 'ဘယ်လိုတင်ရလဲ',
-        'ပြေစာတင်နည်း', 'ငွေလွှဲပြေစာဘယ်လိုတင်ရမလဲ',
-        'screenshot ဘယ်လိုတင်ရမလဲ', 'ဓာတ်ပုံဘယ်လိုတင်ရမလဲ'
+        'ပြေစာတင်နည်း', 'screenshot ဘယ်လိုတင်ရမလဲ'
     ],
     receiptLastDigits: [
         'ပြေစာကနောက်ဆုံးနံပါတ်က ဘယ်ဟာကိုပြောတာလဲ',
-        'နောက်ဆုံးနံပါတ်', 'ပြေစာနောက်ဆုံးဂဏန်း',
-        'ဘယ်နံပါတ်ကိုထည့်ရမလဲ', 'နောက်ဆုံးဂဏန်းဘယ်လောက်ထည့်ရမလဲ'
+        'နောက်ဆုံးနံပါတ်', 'ပြေစာနောက်ဆုံးဂဏန်း'
     ],
     aboutATH: [
         'အေတီအိတ်ချ်', 'ATH', 'ATH DIGITAL HUB', 'ath',
-        'ဘာကိုပြောတာလဲ', 'ဘာအဓိပ္ပါယ်လဲ', 'ဘာနံမည်လဲ',
-        'ath ဆိုတာဘာလဲ', 'ဘယ်လိုကြောင့်ဒီနံမည်ပေးတာလဲ'
+        'ဘာကိုပြောတာလဲ', 'ဘာအဓိပ္ပါယ်လဲ'
     ],
     howToRenew: [
-        'ဘယ်လိုသက်တမ်းတိုးရမလဲ', 'သက်တမ်းတိုးနည်း', 'renew', 'ထပ်ဝယ်ရမလဲ',
-        'ဘယ်လိုထပ်ဝယ်ရမလဲ', 'plan ထပ်ဝယ်ရမလဲ'
+        'ဘယ်လိုသက်တမ်းတိုးရမလဲ', 'သက်တမ်းတိုးနည်း', 'renew', 'ထပ်ဝယ်ရမလဲ'
     ],
     howManyDays: [
-        'ဘယ်နှစ်ရက်သုံးလို့ရလဲ', 'ဘယ်လောက်ကြာကြာခံလဲ', 'ဘယ်နှစ်ရက်ခံလဲ',
-        'ဘယ်လောက်ကြာမလဲ', 'ရက်ဘယ်လောက်လဲ', 'သက်တမ်းဘယ်လောက်လဲ'
+        'ဘယ်နှစ်ရက်သုံးလို့ရလဲ', 'ဘယ်လောက်ကြာကြာခံလဲ',
+        'ဘယ်လောက်ကြာမလဲ', 'သက်တမ်းဘယ်လောက်လဲ'
     ],
     whatCanUse: [
-        'ဘာတွေသုံးလို့ရလဲ', 'ဘာအတွက်သုံးလို့ရလဲ', 'ဘာတွေပါလဲ',
-        'ဘာအကျိုးခံစားရမလဲ', 'ဘာတွေရနိုင်လဲ'
+        'ဘာတွေသုံးလို့ရလဲ', 'ဘာအတွက်သုံးလို့ရလဲ', 'ဘာတွေပါလဲ'
     ],
     whatTimeToBuy: [
-        'ဘယ်ချိန်ဝယ်လို့ရလဲ', 'ဘယ်အချိန်ဝယ်လို့ရလဲ', 'ဘယ်အချိန်ထိဝယ်လို့ရလဲ',
-        'ဘယ်အချိန်မှာဝယ်လို့ရလဲ', 'ဘယ်အချိန်ရောင်းလဲ'
+        'ဘယ်ချိန်ဝယ်လို့ရလဲ', 'ဘယ်အချိန်ဝယ်လို့ရလဲ',
+        'ဘယ်အချိန်ရောင်းလဲ'
     ],
     whatAvailable: [
-        'ဘာတွေရှိလဲ', 'ဘာတွေရောင်းလဲ', 'ဘယ်လိုဝန်ဆောင်မှုတွေရှိလဲ',
-        'ဘာတွေရနေလဲ', 'ဘာတွေလုပ်ပေးလဲ'
+        'ဘာတွေရှိလဲ', 'ဘာတွေရောင်းလဲ', 'ဘယ်လိုဝန်ဆောင်မှုတွေရှိလဲ'
     ],
     howToReply: [
         'မင်းဘယ်လိုဖြေမလဲ', 'ဘယ်လိုဖြေမလဲ', 'ဘယ်လိုအလုပ်လုပ်လဲ',
-        'how do you reply', 'how it works', 'စနစ်အလုပ်လုပ်ပုံ'
+        'how do you reply', 'how it works'
     ]
 };
 
-function getUserLanguage(userId) {
-    if (userLanguages.has(userId)) return userLanguages.get(userId);
-    return defaultLanguage;
-}
+// ============ EXPORT ============
+module.exports = { 
+    getAutoReply, 
+    setUserLanguage, 
+    getUserLanguage,
+    detectLanguage,
+    languages
+};
 
-function setUserLanguage(userId, language) {
-    if (['my', 'en', 'zh'].includes(language)) {
-        userLanguages.set(userId, language);
-        return true;
-    }
-    return false;
-}
-
-function getAutoReply(message, isShopOpen, userId = null) {
-    const lowerMessage = message.toLowerCase().trim();
-    const lang = userId ? getUserLanguage(userId) : defaultLanguage;
-    const langData = languages[lang] || languages.my;
-    
-    // Check keywords
-    for (const [category, keywordList] of Object.entries(keywords)) {
-        for (const keyword of keywordList) {
-            if (lowerMessage.includes(keyword.toLowerCase()) || lowerMessage === keyword.toLowerCase()) {
-                const replyData = langData[category];
-                if (replyData) {
-                    return isShopOpen ? replyData.open : replyData.closed;
-                }
-            }
-        }
-    }
-    
-    // Default reply
-    const defaultReply = langData.default;
-    if (defaultReply) {
-        return isShopOpen ? defaultReply.open : defaultReply.closed;
-    }
-    
-    // Ultimate fallback
-    return isShopOpen 
-        ? "🙏 Thank you for your message. Our Admin will respond shortly. ✨ ATH DIGITAL HUB"
-        : "🙏 Thank you for your message. Shop is currently closed. Please come back during opening hours. ✨ ATH DIGITAL HUB";
-}
-
-module.exports = { getAutoReply, setUserLanguage, getUserLanguage };
+console.log('✅ autoReply.js loaded with language detection!');
