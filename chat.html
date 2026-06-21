@@ -123,6 +123,7 @@
             color: #00d4ff;
         }
         
+        /* Unread Badge on Header */
         .unread-badge {
             position: absolute;
             top: 5px;
@@ -155,6 +156,7 @@
             overflow: hidden;
         }
         
+        /* Mode Toggle Buttons */
         .mode-toggle {
             display: flex;
             gap: 0;
@@ -465,9 +467,15 @@
                 currentUsername = 'Guest User';
                 currentUserId = 'guest_' + Date.now();
             }
-            console.log('📱 User Info - Phone:', currentUser, 'User ID:', currentUserId);
+            console.log('========== USER INFO ==========');
+            console.log('📱 Phone:', currentUser);
+            console.log('👤 Username:', currentUsername);
+            console.log('🆔 User ID:', currentUserId);
+            console.log('🔘 Mode:', currentMode);
+            console.log('================================');
         }
         
+        // Get unread count for user (messages from admin that user hasn't read)
         async function updateUnreadCount() {
             try {
                 const response = await fetch(`${API_BASE}/api/chat/private/unread/${currentUserId}`);
@@ -521,17 +529,47 @@
                 if (currentMode === 'private') {
                     console.log('🔍 Loading PRIVATE messages for user:', currentUserId);
                     
-                    const response = await fetch(`${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`, {
-                        credentials: 'include'
-                    });
-                    const data = await response.json();
+                    // Method 1: Get messages where user is sender
+                    const url1 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=${currentUserId}`;
+                    const response1 = await fetch(url1);
+                    const data1 = await response1.json();
                     
-                    console.log('📨 Private messages response:', data);
+                    // Method 2: Get messages where user is receiver (using admin as current user)
+                    const url2 = `${API_BASE}/api/chat/private/${currentUserId}?currentUserId=admin`;
+                    const response2 = await fetch(url2);
+                    const data2 = await response2.json();
                     
-                    if (data.success && data.messages) {
-                        messages = data.messages;
-                        console.log(`✅ Loaded ${messages.length} private messages`);
+                    let allMessages = [];
+                    if (data1.success && data1.messages) {
+                        allMessages.push(...data1.messages);
                     }
+                    if (data2.success && data2.messages) {
+                        allMessages.push(...data2.messages);
+                    }
+                    
+                    // Remove duplicates by id
+                    const uniqueMessages = [];
+                    const seenIds = new Set();
+                    for (const msg of allMessages) {
+                        if (!seenIds.has(msg.id)) {
+                            seenIds.add(msg.id);
+                            uniqueMessages.push(msg);
+                        }
+                    }
+                    
+                    // Sort by time
+                    uniqueMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                    messages = uniqueMessages;
+                    
+                    // Check for new messages (from admin)
+                    if (messages.length > lastMessageCount && lastMessageCount > 0) {
+                        const newCount = messages.length - lastMessageCount;
+                        console.log(`🔔 ${newCount} new message(s) from Admin!`);
+                        updateUnreadCount();
+                    }
+                    lastMessageCount = messages.length;
+                    
+                    console.log(`✅ Loaded ${messages.length} total private messages`);
                 } else {
                     console.log('🌍 Loading GLOBAL messages');
                     const response = await fetch(`${API_BASE}/api/chat/messages`);
@@ -572,6 +610,7 @@
                 let modeBadge = '';
                 
                 if (currentMode === 'private') {
+                    // Check if message is from current user
                     isUser = (msg.sender_id === currentUserId);
                     senderName = isUser ? (currentUsername || 'You') : '👑 Admin';
                     modeBadge = '<span class="badge private"><i class="fas fa-lock"></i> Private</span>';
@@ -617,6 +656,8 @@
             sendBtn.disabled = true;
             
             console.log(`📤 Sending ${currentMode} message...`);
+            console.log('Message:', message);
+            console.log('From User ID:', currentUserId);
             
             try {
                 let response;
@@ -627,7 +668,6 @@
                     response = await fetch(`${API_BASE}/api/chat/private/send`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
                         body: JSON.stringify({
                             sender_id: currentUserId,
                             receiver_id: 'admin',
@@ -656,7 +696,6 @@
                     response = await fetch(`${API_BASE}/api/chat/send`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
                         body: JSON.stringify({
                             user_id: currentUserId,
                             username: currentUsername || 'User',
