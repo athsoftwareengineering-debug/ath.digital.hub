@@ -65,11 +65,14 @@ router.post('/admin/sales-hours', isAuthenticated, (req, res) => {
 });
 
 // ============ GET SALES STATUS (Public) ============
+// ဒီနေရာက အရေးကြီးဆုံးပါ။ canPlaceOrder ကို function အနေနဲ့ ခေါ်ပါ။
 router.get('/sales/status', (req, res) => {
     try {
         // canPlaceOrder က function ဖြစ်တဲ့အတွက် () ထည့်ပြီး ခေါ်ပါ
         const isOpen = canPlaceOrder();
         const message = getStatusMessage();
+        
+        console.log(`📊 Sales status checked: isOpen=${isOpen}, mode=${salesHours.mode}`);
         
         res.json({ 
             success: true, 
@@ -81,10 +84,12 @@ router.get('/sales/status', (req, res) => {
             message: message 
         });
     } catch (error) {
-        console.error('Error getting sales status:', error);
+        console.error('❌ Error in /api/sales/status:', error);
+        console.error('❌ Error stack:', error.stack);
         res.status(500).json({ 
             success: false, 
-            error: error.message 
+            error: error.message,
+            stack: error.stack 
         });
     }
 });
