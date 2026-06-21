@@ -218,7 +218,10 @@ app.use(session(sessionConfig));
 app.use(cors({ origin: process.env.NODE_ENV === 'production' ? process.env.ALLOWED_ORIGINS?.split(',') : '*', credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(express.static('public'));
+
+// ==================== STATIC FILES ====================
+// ဒီနေရာက အရေးကြီးဆုံးပါ။ public folder ကို static အနေနဲ့ သတ်မှတ်ပါ။
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ==================== API ROUTES ====================
 app.use('/api', adRoutes);
@@ -345,19 +348,63 @@ async function broadcastNewOrder(order) {
 app.get('/api/payment-methods', (req, res) => { res.json({ methods: PAYMENT_METHODS }); });
 
 // ==================== STATIC ROUTES ====================
-app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
-app.get('/admin.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin.html')); });
-app.get('/dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'dashboard.html')); });
-app.get('/chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'chat.html')); });
-app.get('/admin-chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin-chat.html')); });
-app.get('/market.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'market.html')); });
-app.get('/plans-widget.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'plans-widget.html')); });
-app.get('/sw.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'sw.js')); });
-app.get('/js/notifications.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'notifications.js')); });
-app.get('/js/sales-hours.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'sales-hours.js')); });
-app.get('/js/ad-widget.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'ad-widget.js')); });
-app.get('/js/user-chat.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'user-chat.js')); });
-app.get('/api/health', (req, res) => { res.json({ status: 'ok', timestamp: new Date().toISOString() }); });
+// ဒီနေရာမှာ HTML ဖိုင်တွေကို ပြသဖို့ သတ်မှတ်ပါ။
+app.get('/', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'public', 'index.html')); 
+});
+
+app.get('/admin.html', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'public', 'admin.html')); 
+});
+
+app.get('/admin-chat.html', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'public', 'admin-chat.html')); 
+});
+
+app.get('/chat.html', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'public', 'chat.html')); 
+});
+
+app.get('/dashboard.html', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'public', 'dashboard.html')); 
+});
+
+app.get('/market.html', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'public', 'market.html')); 
+});
+
+app.get('/plans-widget.html', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'public', 'plans-widget.html')); 
+});
+
+app.get('/sw.js', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'public', 'sw.js')); 
+});
+
+// CSS and JS files
+app.get('/css/notification.css', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'public', 'css', 'notification.css')); 
+});
+
+app.get('/js/notifications.js', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'public', 'js', 'notifications.js')); 
+});
+
+app.get('/js/sales-hours.js', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'public', 'js', 'sales-hours.js')); 
+});
+
+app.get('/js/ad-widget.js', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'public', 'js', 'ad-widget.js')); 
+});
+
+app.get('/js/user-chat.js', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'public', 'js', 'user-chat.js')); 
+});
+
+app.get('/api/health', (req, res) => { 
+    res.json({ status: 'ok', timestamp: new Date().toISOString() }); 
+});
 
 // ==================== USER REGISTRATION ====================
 app.post('/api/user/register', async (req, res) => {
@@ -983,6 +1030,21 @@ app.listen(PORT, () => {
 ║     🚫 Bad Words Filter: WORKING ✅                                     ║
 ║     🔔 Unread Count (receiver only): WORKING ✅                          ║
 ║     📢 AD MANAGEMENT SYSTEM: WORKING ✅                                  ║
+║                                                                          ║
+║     🔒 SECURITY FEATURES ENABLED:                                        ║
+║        ✅ Helmet.js (Security Headers)                                   ║
+║        ✅ CSP with iframe support                                        ║
+║        ✅ Rate Limiting                                                  ║
+║        ✅ Sales Hours Control (Auto/Manual Mode)                        ║
+║        ✅ Session-based Admin Auth                                       ║
+║        ✅ Image Processing (Sharp)                                       ║
+║        ✅ Database Notifications                                         ║
+║        ✅ Private 1-on-1 Chat with Unread Counts                        ║
+║        ✅ Mark as Read on view                                           ║
+║        ✅ Multi-Language Auto Reply (my/en/zh)                          ║
+║        ✅ Global Chat Auto Cleanup (every 3 minutes)                    ║
+║        ✅ Bad Words Filter                                              ║
+║        ✅ Ad Management System (ads table, rotation, tracking)          ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
