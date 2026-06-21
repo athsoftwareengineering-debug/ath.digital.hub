@@ -353,6 +353,25 @@
             color: #94a3b8;
         }
         
+        /* Empty state - စာမရှိချိန်ပြမယ့် ပုံစံ */
+        .chat-empty {
+            text-align: center;
+            padding: 50px 20px;
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+        .chat-empty i {
+            font-size: 2.5rem;
+            color: #334155;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .chat-empty .sub-text {
+            font-size: 0.65rem;
+            color: #475569;
+            margin-top: 6px;
+        }
+        
         @media (max-width: 480px) {
             .chat-widget-container {
                 width: calc(100vw - 20px);
@@ -583,10 +602,12 @@
                 if (messages.length > 0) {
                     renderMessages(messages);
                 } else {
+                    // ============ ပြင်ဆင်ထားတဲ့ နေရာ ============
+                    // ဒီနေရာမှာ စာသားကို ပြောင်းထားပါတယ်
                     const emptyText = currentMode === 'private' 
-                        ? '📭 No private messages yet. Send a message to Admin! 🔒'
-                        : '🌍 No global messages yet. Be the first to say hello!';
-                    container.innerHTML = `<div class="chat-loading">${emptyText}</div>`;
+                        ? '💬 သင့်စာကို အောက်တွင် ရိုက်ထည့်ပါ။ Admin ပြန်ဖြေပေးပါမည်။'
+                        : '🌍 လူတိုင်းမြင်ရမည့် စာကို ရိုက်ထည့်ပါ။';
+                    container.innerHTML = `<div class="chat-empty"><i class="fas fa-comment-dots"></i>${emptyText}<div class="sub-text">စာရိုက်ရန် အောက်ပါအကွက်တွင် ရိုက်ထည့်ပါ။</div></div>`;
                 }
             } catch (error) {
                 console.error('❌ Error loading messages:', error);
