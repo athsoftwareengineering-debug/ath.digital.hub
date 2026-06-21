@@ -11,20 +11,21 @@ const morgan = require('morgan');
 const compression = require('compression');
 const sharp = require('sharp');
 const Joi = require('joi');
-const { supabase, supabaseAdmin, createNewUser, getUserByPhone, getUserStats, updateUserStats, isPhoneBlocked } = require('./supabase');
-const { getAutoReply, setUserLanguage, getUserLanguage } = require('./config/autoReply');
+
+// ============ DATABASE ============
+const { supabase, supabaseAdmin, createNewUser, getUserByPhone, getUserStats, updateUserStats, isPhoneBlocked } = require('./database.js');
+
+// ============ AUTO REPLY ============
+const { getAutoReply, setUserLanguage, getUserLanguage } = require('./config/autoReply.js');
+
+// ============ ROUTES ============
+const adRoutes = require('./routes/ad-routes.js');
+const salesHoursRoutes = require('./routes/admin-sales-hours.js');
+
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// ==================== AD ROUTES ====================
-const adRoutes = require('./routes/ad-routes');
-app.use('/api', adRoutes);
-
-// ==================== SALES HOURS ROUTES ====================
-const salesHoursRoutes = require('./routes/admin-sales-hours');
-app.use('/api', salesHoursRoutes);
 
 // ==================== SALES HOURS CONFIGURATION ====================
 let salesHours = {
@@ -192,6 +193,8 @@ const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: { er
 const orderLimiter = rateLimit({ windowMs: 60 * 1000, max: 3, message: { error: 'Too many orders' }, keyGenerator: (req) => req.body.phone || req.ip });
 
 app.use('/api/', apiLimiter);
+app.use('/api/admin/', adminLimiter);
+app.use('/api/chat/', chatLimiter);
 
 // ==================== SESSION CONFIGURATION ====================
 const sessionConfig = {
@@ -215,7 +218,11 @@ app.use(session(sessionConfig));
 app.use(cors({ origin: process.env.NODE_ENV === 'production' ? process.env.ALLOWED_ORIGINS?.split(',') : '*', credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(express.static(__dirname));
+app.use(express.static('public'));
+
+// ==================== API ROUTES ====================
+app.use('/api', adRoutes);
+app.use('/api', salesHoursRoutes);
 
 // ==================== FILE UPLOAD ====================
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -337,33 +344,6 @@ async function broadcastNewOrder(order) {
 
 app.get('/api/payment-methods', (req, res) => { res.json({ methods: PAYMENT_METHODS }); });
 
-// ==================== SALES HOURS API ====================
-app.get('/api/sales/status', (req, res) => {
-    res.json({ success: true, isOpen: canPlaceOrder(), mode: salesHours.mode, startHour: salesHours.startHour, endHour: salesHours.endHour, manualStatus: salesHours.manualStatus, message: getStatusMessage() });
-});
-
-app.post('/api/admin/sales-hours', isAuthenticated, (req, res) => {
-    const { enabled, mode, startHour, endHour, manualStatus } = req.body;
-    if (enabled !== undefined) salesHours.enabled = enabled;
-    if (mode !== undefined && (mode === 'auto' || mode === 'manual')) salesHours.mode = mode;
-    if (startHour !== undefined && startHour >= 0 && startHour <= 23) salesHours.startHour = startHour;
-    if (endHour !== undefined && endHour >= 0 && endHour <= 23) salesHours.endHour = endHour;
-    if (manualStatus !== undefined) salesHours.manualStatus = manualStatus;
-    res.json({ success: true, salesHours: salesHours });
-});
-
-app.get('/api/admin/sales-hours', isAuthenticated, (req, res) => { res.json({ success: true, salesHours: salesHours }); });
-
-app.post('/api/admin/toggle-shop', isAuthenticated, (req, res) => {
-    const { isOpen } = req.body;
-    if (salesHours.mode === 'manual') {
-        salesHours.manualStatus = isOpen;
-        res.json({ success: true, isOpen: isOpen });
-    } else {
-        res.status(400).json({ success: false, error: 'Auto mode မှာ manual toggle မရပါ' });
-    }
-});
-
 // ==================== STATIC ROUTES ====================
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
 app.get('/admin.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin.html')); });
@@ -373,7 +353,6 @@ app.get('/admin-chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'p
 app.get('/market.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'market.html')); });
 app.get('/plans-widget.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'plans-widget.html')); });
 app.get('/sw.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'sw.js')); });
-app.get('/css/notification.css', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'css', 'notification.css')); });
 app.get('/js/notifications.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'notifications.js')); });
 app.get('/js/sales-hours.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'sales-hours.js')); });
 app.get('/js/ad-widget.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'ad-widget.js')); });
@@ -540,7 +519,7 @@ app.post('/api/orders', orderLimiter, upload.single('slip'), async (req, res) =>
 });
 
 // ==================== ADMIN API ====================
-app.get('/api/admin/orders', isAuthenticated, adminLimiter, async (req, res) => {
+app.get('/api/admin/orders', isAuthenticated, async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin.from('orders').select('*').order('created_at', { ascending: false });
         if (error) throw error;
@@ -551,7 +530,7 @@ app.get('/api/admin/orders', isAuthenticated, adminLimiter, async (req, res) => 
     }
 });
 
-app.get('/api/admin/user-stats', isAuthenticated, adminLimiter, async (req, res) => {
+app.get('/api/admin/user-stats', isAuthenticated, async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin.from('user_stats').select('*').order('created_at', { ascending: false });
         if (error) throw error;
@@ -562,7 +541,7 @@ app.get('/api/admin/user-stats', isAuthenticated, adminLimiter, async (req, res)
     }
 });
 
-app.get('/api/admin/suspect-users', isAuthenticated, adminLimiter, async (req, res) => {
+app.get('/api/admin/suspect-users', isAuthenticated, async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin.from('user_stats').select('*').eq('suspect_flag', true).order('reject_count', { ascending: false });
         if (error) throw error;
@@ -570,7 +549,7 @@ app.get('/api/admin/suspect-users', isAuthenticated, adminLimiter, async (req, r
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
-app.get('/api/admin/blocked-users', isAuthenticated, adminLimiter, async (req, res) => {
+app.get('/api/admin/blocked-users', isAuthenticated, async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin.from('user_stats').select('*').eq('blocked', true).order('created_at', { ascending: false });
         if (error) throw error;
@@ -578,7 +557,7 @@ app.get('/api/admin/blocked-users', isAuthenticated, adminLimiter, async (req, r
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
-app.get('/api/admin/search-users', isAuthenticated, adminLimiter, async (req, res) => {
+app.get('/api/admin/search-users', isAuthenticated, async (req, res) => {
     try {
         const { q } = req.query;
         if (!q || q.trim() === '') return res.json({ success: true, users: [] });
@@ -589,7 +568,7 @@ app.get('/api/admin/search-users', isAuthenticated, adminLimiter, async (req, re
 });
 
 // ==================== DATABASE NOTIFICATIONS ====================
-app.get('/api/admin/notifications', isAuthenticated, adminLimiter, async (req, res) => {
+app.get('/api/admin/notifications', isAuthenticated, async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin.from('admin_notifications').select('*').order('created_at', { ascending: false }).limit(100);
         if (error) throw error;
@@ -739,7 +718,7 @@ app.post('/api/admin/user-reset/:phone', isAuthenticated, async (req, res) => {
 });
 
 // ==================== PUBLIC CHAT API (Global) ====================
-app.get('/api/chat/messages', chatLimiter, async (req, res) => {
+app.get('/api/chat/messages', async (req, res) => {
     try {
         const { data, error } = await supabase.from('chat_messages').select('*').order('created_at', { ascending: true }).limit(200);
         if (error) throw error;
@@ -750,7 +729,7 @@ app.get('/api/chat/messages', chatLimiter, async (req, res) => {
     }
 });
 
-app.post('/api/chat/send', chatLimiter, async (req, res) => {
+app.post('/api/chat/send', async (req, res) => {
     try {
         const { user_id, username, message } = req.body;
         
@@ -782,7 +761,7 @@ app.post('/api/chat/send', chatLimiter, async (req, res) => {
     }
 });
 
-app.post('/api/chat/admin/send', isAuthenticated, chatLimiter, async (req, res) => {
+app.post('/api/chat/admin/send', isAuthenticated, async (req, res) => {
     try {
         const { user_id, username, message } = req.body;
         if (!message || message.trim() === '') return res.status(400).json({ success: false, error: 'Invalid message' });
@@ -833,7 +812,7 @@ app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
     }
 });
 
-app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
+app.get('/api/chat/private/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
         const currentUserId = req.query.currentUserId || 'admin';
@@ -855,7 +834,7 @@ app.get('/api/chat/private/:userId', chatLimiter, async (req, res) => {
     }
 });
 
-app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
+app.post('/api/chat/private/send', async (req, res) => {
     try {
         const { sender_id, receiver_id, sender_name, receiver_name, message } = req.body;
         console.log(`📨 Sending private message - from: ${sender_id} (${sender_name}), to: ${receiver_id} (${receiver_name})`);
