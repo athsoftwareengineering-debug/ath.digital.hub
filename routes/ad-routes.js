@@ -1,7 +1,7 @@
 // routes/ad-routes.js
 const express = require('express');
 const router = express.Router();
-const { supabaseAdmin } = require('../supabase');
+const { supabaseAdmin } = require('../database.js');
 
 function isAuthenticated(req, res, next) {
     if (req.session.isAdmin) next();
@@ -62,6 +62,7 @@ router.post('/admin/ads', isAuthenticated, async (req, res) => {
         if (error) throw error;
         res.json({ success: true, ad: data[0] });
     } catch (err) {
+        console.error('Error creating ad:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -73,11 +74,15 @@ router.put('/admin/ads/:id', isAuthenticated, async (req, res) => {
         const { name, image_url, destination_url, alt_text, active, display_weight, expiry_date } = req.body;
         const { error } = await supabaseAdmin
             .from('ads')
-            .update({ name, image_url, destination_url, alt_text, active, display_weight, expiry_date, updated_at: new Date().toISOString() })
+            .update({ 
+                name, image_url, destination_url, alt_text, active, 
+                display_weight, expiry_date, updated_at: new Date().toISOString() 
+            })
             .eq('id', id);
         if (error) throw error;
         res.json({ success: true });
     } catch (err) {
+        console.error('Error updating ad:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -93,6 +98,7 @@ router.delete('/admin/ads/:id', isAuthenticated, async (req, res) => {
         if (error) throw error;
         res.json({ success: true });
     } catch (err) {
+        console.error('Error deleting ad:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -101,9 +107,12 @@ router.delete('/admin/ads/:id', isAuthenticated, async (req, res) => {
 router.post('/ads/:id/click', async (req, res) => {
     try {
         const { id } = req.params;
-        await supabaseAdmin.rpc('increment_ad_clicks', { ad_id: parseInt(id) });
+        // Increment click count
+        const { error } = await supabaseAdmin.rpc('increment_ad_clicks', { ad_id: parseInt(id) });
+        if (error) throw error;
         res.json({ success: true });
     } catch (err) {
+        console.error('Error tracking click:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -112,9 +121,11 @@ router.post('/ads/:id/click', async (req, res) => {
 router.post('/ads/:id/view', async (req, res) => {
     try {
         const { id } = req.params;
-        await supabaseAdmin.rpc('increment_ad_views', { ad_id: parseInt(id) });
+        const { error } = await supabaseAdmin.rpc('increment_ad_views', { ad_id: parseInt(id) });
+        if (error) throw error;
         res.json({ success: true });
     } catch (err) {
+        console.error('Error tracking view:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -128,8 +139,16 @@ router.get('/ad-settings', async (req, res) => {
             .eq('id', 1)
             .single();
         if (error && error.code !== 'PGRST116') throw error;
-        res.json({ success: true, settings: data || { rotation_mode: 'weighted', auto_cycle_seconds: 0, show_navigation: true } });
+        res.json({ 
+            success: true, 
+            settings: data || { 
+                rotation_mode: 'weighted', 
+                auto_cycle_seconds: 0, 
+                show_navigation: true 
+            } 
+        });
     } catch (err) {
+        console.error('Error getting ad settings:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -140,10 +159,17 @@ router.put('/admin/ad-settings', isAuthenticated, async (req, res) => {
         const { rotation_mode, auto_cycle_seconds, show_navigation } = req.body;
         const { error } = await supabaseAdmin
             .from('ad_settings')
-            .upsert({ id: 1, rotation_mode, auto_cycle_seconds, show_navigation, updated_at: new Date().toISOString() });
+            .upsert({ 
+                id: 1, 
+                rotation_mode, 
+                auto_cycle_seconds, 
+                show_navigation, 
+                updated_at: new Date().toISOString() 
+            });
         if (error) throw error;
         res.json({ success: true });
     } catch (err) {
+        console.error('Error updating ad settings:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
