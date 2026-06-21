@@ -11,7 +11,7 @@ const morgan = require('morgan');
 const compression = require('compression');
 const sharp = require('sharp');
 const Joi = require('joi');
-const { supabase, supabaseAdmin, createNewUser, getUserByPhone, getUserStats, updateUserStats, isPhoneBlocked } = require('./database');
+const { supabase, supabaseAdmin, createNewUser, getUserByPhone, getUserStats, updateUserStats, isPhoneBlocked } = require('./supabase');
 const { getAutoReply, setUserLanguage, getUserLanguage } = require('./config/autoReply');
 require('dotenv').config();
 
@@ -19,11 +19,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ==================== AD ROUTES ====================
-const adRoutes = require('./routes/ads');
+const adRoutes = require('./routes/ad-routes');
 app.use('/api', adRoutes);
 
-// ==================== TYPING INDICATOR ====================
-const typingStatus = new Map();
+// ==================== SALES HOURS ROUTES ====================
+const salesHoursRoutes = require('./routes/admin-sales-hours');
+app.use('/api', salesHoursRoutes);
 
 // ==================== SALES HOURS CONFIGURATION ====================
 let salesHours = {
@@ -294,7 +295,6 @@ async function addNotificationToDatabase(order) {
             order_id: order.id,
             title: `🆕 New Order #${order.id}`,
             message: `${order.plan} - ${order.price.toLocaleString()} MMK from ${maskPhone(order.phone)}`,
-            order_data: order,
             is_read: false,
             created_at: new Date().toISOString()
         }]);
@@ -367,72 +367,18 @@ app.post('/api/admin/toggle-shop', isAuthenticated, (req, res) => {
 // ==================== STATIC ROUTES ====================
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
 app.get('/admin.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin.html')); });
-app.get('/dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'dashboard_live.html')); });
+app.get('/dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'dashboard.html')); });
 app.get('/chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'chat.html')); });
 app.get('/admin-chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin-chat.html')); });
 app.get('/market.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'market.html')); });
 app.get('/plans-widget.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'plans-widget.html')); });
 app.get('/sw.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'sw.js')); });
-app.get('/notifications.css', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'notifications.css')); });
-app.get('/notifications.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'notifications.js')); });
-app.get('/sales-hours.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'sales-hours.js')); });
+app.get('/css/notification.css', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'css', 'notification.css')); });
+app.get('/js/notifications.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'notifications.js')); });
+app.get('/js/sales-hours.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'sales-hours.js')); });
+app.get('/js/ad-widget.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'ad-widget.js')); });
+app.get('/js/user-chat.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'user-chat.js')); });
 app.get('/api/health', (req, res) => { res.json({ status: 'ok', timestamp: new Date().toISOString() }); });
-
-// ==================== ADMIN ME ENDPOINT ====================
-app.get('/api/admin/me', isAuthenticated, (req, res) => {
-    res.json({
-        success: true,
-        admin: {
-            id: 'admin',
-            name: 'Administrator',
-            email: 'admin@athdigitalhub.com'
-        }
-    });
-});
-
-// ==================== PING ENDPOINT ====================
-app.get('/api/chat/ping', (req, res) => {
-    res.json({ success: true, timestamp: new Date().toISOString() });
-});
-
-// ==================== TYPING INDICATOR ENDPOINTS ====================
-app.post('/api/chat/typing', async (req, res) => {
-    try {
-        const { userId, isTyping } = req.body;
-        if (!userId) return res.status(400).json({ success: false, error: 'User ID required' });
-        
-        typingStatus.set(userId, {
-            isTyping: isTyping || false,
-            updated_at: new Date().toISOString()
-        });
-        
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.get('/api/chat/typing/:userId', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const status = typingStatus.get(userId);
-        const isTyping = status ? status.isTyping : false;
-        res.json({ success: true, isTyping });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// Cleanup old typing statuses (every 10 seconds)
-setInterval(() => {
-    const now = new Date();
-    for (const [key, value] of typingStatus) {
-        const updated = new Date(value.updated_at);
-        if ((now - updated) > 5000) {
-            typingStatus.delete(key);
-        }
-    }
-}, 10000);
 
 // ==================== USER REGISTRATION ====================
 app.post('/api/user/register', async (req, res) => {
@@ -480,18 +426,9 @@ app.get('/api/market/products', marketLimiter, async (req, res) => {
 
 app.post('/api/market/products', isAuthenticated, async (req, res) => {
     try {
-        const { name, price, image, category, icon, discount, stock } = req.body;
+        const { name, price, image, category, icon, discount } = req.body;
         if (!name || !price) return res.status(400).json({ success: false, error: 'Name and price are required' });
-        const { data, error } = await supabase.from('market_products').insert([{
-            name,
-            price: parseInt(price),
-            image: image || null,
-            category: category || 'Uncategorized',
-            icon: icon || 'fas fa-box',
-            discount: discount || 0,
-            stock: stock || 999,
-            created_at: new Date().toISOString()
-        }]).select();
+        const { data, error } = await supabase.from('market_products').insert([{ name, price: parseInt(price), image: image || null, category: category || 'Uncategorized', icon: icon || 'fas fa-box', discount: discount || 0, created_at: new Date().toISOString() }]).select();
         if (error) throw error;
         res.json({ success: true, product: data[0] });
     } catch (error) {
@@ -503,18 +440,9 @@ app.post('/api/market/products', isAuthenticated, async (req, res) => {
 app.put('/api/market/products/:id', isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, price, image, category, icon, discount, stock } = req.body;
+        const { name, price, image, category, icon, discount } = req.body;
         if (!name || !price) return res.status(400).json({ success: false, error: 'Name and price are required' });
-        const { data, error } = await supabase.from('market_products').update({
-            name,
-            price: parseInt(price),
-            image: image || null,
-            category: category || 'Uncategorized',
-            icon: icon || 'fas fa-box',
-            discount: discount || 0,
-            stock: stock || 999,
-            updated_at: new Date().toISOString()
-        }).eq('id', parseInt(id)).select();
+        const { data, error } = await supabase.from('market_products').update({ name, price: parseInt(price), image: image || null, category: category || 'Uncategorized', icon: icon || 'fas fa-box', discount: discount || 0, updated_at: new Date().toISOString() }).eq('id', parseInt(id)).select();
         if (error) throw error;
         res.json({ success: true, product: data[0] });
     } catch (error) {
@@ -888,24 +816,14 @@ app.delete('/api/chat/messages/:id', isAuthenticated, async (req, res) => {
 // ==================== PRIVATE CHAT API (1-on-1) ====================
 app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
     try {
-        const { data, error } = await supabase
-            .from('private_chat_messages')
-            .select('sender_id, sender_name, receiver_id, created_at, message')
-            .order('created_at', { ascending: false });
-        
+        const { data, error } = await supabase.from('private_chat_messages').select('sender_id, sender_name, receiver_id, created_at').order('created_at', { ascending: false });
         if (error) throw error;
-        
         const uniqueUsers = [];
         const seen = new Set();
         for (const msg of data || []) {
             if (msg.receiver_id === 'admin' && !seen.has(msg.sender_id)) {
                 seen.add(msg.sender_id);
-                uniqueUsers.push({
-                    user_id: msg.sender_id,
-                    username: msg.sender_name,
-                    last_message: msg.message,
-                    last_message_time: msg.created_at
-                });
+                uniqueUsers.push({ user_id: msg.sender_id, username: msg.sender_name, last_message_time: msg.created_at });
             }
         }
         res.json({ success: true, users: uniqueUsers });
@@ -978,72 +896,6 @@ app.post('/api/chat/private/send', chatLimiter, async (req, res) => {
     }
 });
 
-// ==================== DELETE PRIVATE MESSAGE ====================
-app.delete('/api/chat/private/delete', isAuthenticated, async (req, res) => {
-    try {
-        const { messageId } = req.body;
-        if (!messageId) return res.status(400).json({ success: false, error: 'Message ID required' });
-        
-        const { data: msg, error: findError } = await supabase
-            .from('private_chat_messages')
-            .select('sender_id')
-            .eq('id', messageId)
-            .single();
-        
-        if (findError || !msg) {
-            return res.status(404).json({ success: false, error: 'Message not found' });
-        }
-        
-        if (msg.sender_id !== 'admin') {
-            return res.status(403).json({ success: false, error: 'You can only delete your own messages' });
-        }
-        
-        const { error } = await supabase
-            .from('private_chat_messages')
-            .delete()
-            .eq('id', messageId);
-        
-        if (error) throw error;
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error deleting private message:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ==================== DELETE GLOBAL MESSAGE ====================
-app.delete('/api/chat/global/delete', isAuthenticated, async (req, res) => {
-    try {
-        const { messageId } = req.body;
-        if (!messageId) return res.status(400).json({ success: false, error: 'Message ID required' });
-        
-        const { data: msg, error: findError } = await supabase
-            .from('chat_messages')
-            .select('is_admin')
-            .eq('id', messageId)
-            .single();
-        
-        if (findError || !msg) {
-            return res.status(404).json({ success: false, error: 'Message not found' });
-        }
-        
-        if (!msg.is_admin) {
-            return res.status(403).json({ success: false, error: 'You can only delete admin messages' });
-        }
-        
-        const { error } = await supabase
-            .from('chat_messages')
-            .delete()
-            .eq('id', messageId);
-        
-        if (error) throw error;
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error deleting global message:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
 // ==================== UNREAD COUNT (Only for receiver) ====================
 app.get('/api/chat/private/unread/:userId', async (req, res) => {
     try {
@@ -1060,27 +912,6 @@ app.get('/api/chat/private/unread/:userId', async (req, res) => {
         res.json({ success: true, unreadCount: count || 0 });
     } catch (error) {
         console.error('Error getting unread count:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ==================== MARK MESSAGES AS READ ====================
-app.put('/api/chat/private/mark-read/:userId', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        
-        const { error } = await supabase
-            .from('private_chat_messages')
-            .update({ is_read: true })
-            .eq('sender_id', userId)
-            .eq('receiver_id', 'admin')
-            .eq('is_read', false);
-        
-        if (error) throw error;
-        
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error marking messages as read:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -1128,21 +959,27 @@ app.listen(PORT, () => {
 ║     📊 Live Dashboard:  http://localhost:${PORT}/dashboard.html           ║
 ║     💬 Global Chat:     http://localhost:${PORT}/chat.html                ║
 ║     💬 Admin Chat:      http://localhost:${PORT}/admin-chat.html          ║
+║     💬 Private 1-on-1 Chat: WORKING ✅                                   ║
+║     🌍 Multi-Language Auto Reply: WORKING ✅                             ║
+║     🧹 Global Chat Auto Cleanup (3 min): WORKING ✅                      ║
+║     🚫 Bad Words Filter: WORKING ✅                                     ║
+║     🔔 Unread Count (receiver only): WORKING ✅                          ║
+║     📢 AD MANAGEMENT SYSTEM: WORKING ✅                                  ║
 ║                                                                          ║
-║     ✅ Admin ME Endpoint                                                 ║
-║     ✅ Ping Endpoint                                                     ║
-║     ✅ Typing Indicator Endpoints                                        ║
-║     ✅ Delete Private Message Endpoint                                   ║
-║     ✅ Delete Global Message Endpoint                                    ║
-║     ✅ User List with Last Message                                       ║
-║     ✅ Product Stock Field                                               ║
-║     ✅ Notification Order Data                                           ║
-║     ✅ Private 1-on-1 Chat with Unread Counts                            ║
-║     ✅ Mark as Read on view                                              ║
-║     ✅ Multi-Language Auto Reply (my/en/zh)                              ║
-║     ✅ Global Chat Auto Cleanup (every 3 minutes)                        ║
-║     ✅ Bad Words Filter                                                  ║
-║     ✅ Ad Management System                                              ║
+║     🔒 SECURITY FEATURES ENABLED:                                        ║
+║        ✅ Helmet.js (Security Headers)                                   ║
+║        ✅ CSP with iframe support                                        ║
+║        ✅ Rate Limiting                                                  ║
+║        ✅ Sales Hours Control (Auto/Manual Mode)                        ║
+║        ✅ Session-based Admin Auth                                       ║
+║        ✅ Image Processing (Sharp)                                       ║
+║        ✅ Database Notifications                                         ║
+║        ✅ Private 1-on-1 Chat with Unread Counts                        ║
+║        ✅ Mark as Read on view                                           ║
+║        ✅ Multi-Language Auto Reply (my/en/zh)                          ║
+║        ✅ Global Chat Auto Cleanup (every 3 minutes)                    ║
+║        ✅ Bad Words Filter                                              ║
+║        ✅ Ad Management System (ads table, rotation, tracking)          ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
