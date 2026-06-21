@@ -793,16 +793,27 @@ app.delete('/api/chat/messages/:id', isAuthenticated, async (req, res) => {
 });
 
 // ==================== PRIVATE CHAT API (1-on-1) ====================
+
+// Get admin users list (users who sent messages to admin)
 app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
     try {
-        const { data, error } = await supabase.from('private_chat_messages').select('sender_id, sender_name, receiver_id, created_at').order('created_at', { ascending: false });
+        const { data, error } = await supabase
+            .from('private_chat_messages')
+            .select('sender_id, sender_name, receiver_id, created_at')
+            .order('created_at', { ascending: false });
+        
         if (error) throw error;
+        
         const uniqueUsers = [];
         const seen = new Set();
         for (const msg of data || []) {
             if (msg.receiver_id === 'admin' && !seen.has(msg.sender_id)) {
                 seen.add(msg.sender_id);
-                uniqueUsers.push({ user_id: msg.sender_id, username: msg.sender_name, last_message_time: msg.created_at });
+                uniqueUsers.push({ 
+                    user_id: msg.sender_id, 
+                    username: msg.sender_name, 
+                    last_message_time: msg.created_at 
+                });
             }
         }
         res.json({ success: true, users: uniqueUsers });
@@ -812,19 +823,40 @@ app.get('/api/chat/admin/users', isAuthenticated, async (req, res) => {
     }
 });
 
+// Get private messages between user and admin
 app.get('/api/chat/private/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
         const currentUserId = req.query.currentUserId || 'admin';
+        
         console.log(`🔍 Fetching private messages - userId: ${userId}, currentUserId: ${currentUserId}`);
-        const { data, error } = await supabase.from('private_chat_messages').select('*').or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUserId})`).order('created_at', { ascending: true }).limit(200);
+        
+        const { data, error } = await supabase
+            .from('private_chat_messages')
+            .select('*')
+            .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUserId})`)
+            .order('created_at', { ascending: true })
+            .limit(200);
+        
         if (error) throw error;
+        
         console.log(`✅ Found ${data?.length || 0} private messages`);
         
+        // Mark messages as read
         if (currentUserId === 'admin') {
-            await supabase.from('private_chat_messages').update({ is_read: true }).eq('sender_id', userId).eq('receiver_id', 'admin').eq('is_read', false);
+            await supabase
+                .from('private_chat_messages')
+                .update({ is_read: true })
+                .eq('sender_id', userId)
+                .eq('receiver_id', 'admin')
+                .eq('is_read', false);
         } else {
-            await supabase.from('private_chat_messages').update({ is_read: true }).eq('sender_id', 'admin').eq('receiver_id', currentUserId).eq('is_read', false);
+            await supabase
+                .from('private_chat_messages')
+                .update({ is_read: true })
+                .eq('sender_id', 'admin')
+                .eq('receiver_id', currentUserId)
+                .eq('is_read', false);
         }
         
         res.json({ success: true, messages: data || [] });
@@ -834,24 +866,30 @@ app.get('/api/chat/private/:userId', async (req, res) => {
     }
 });
 
+// Send private message
 app.post('/api/chat/private/send', async (req, res) => {
     try {
         const { sender_id, receiver_id, sender_name, receiver_name, message } = req.body;
+        
         console.log(`📨 Sending private message - from: ${sender_id} (${sender_name}), to: ${receiver_id} (${receiver_name})`);
         console.log(`Message: ${message}`);
+        
         if (!sender_id || !receiver_id || !message || message.trim() === '') {
             return res.status(400).json({ success: false, error: 'Invalid message' });
         }
         
-        const { data, error } = await supabase.from('private_chat_messages').insert([{
-            sender_id: sender_id,
-            receiver_id: receiver_id,
-            sender_name: sender_name || 'User',
-            receiver_name: receiver_name || 'User',
-            message: message.substring(0, 500),
-            is_read: false,
-            created_at: new Date().toISOString()
-        }]).select();
+        const { data, error } = await supabase
+            .from('private_chat_messages')
+            .insert([{
+                sender_id: sender_id,
+                receiver_id: receiver_id,
+                sender_name: sender_name || 'User',
+                receiver_name: receiver_name || 'User',
+                message: message.substring(0, 500),
+                is_read: false,
+                created_at: new Date().toISOString()
+            }])
+            .select();
         
         if (error) {
             console.error('Database error:', error);
@@ -860,6 +898,7 @@ app.post('/api/chat/private/send', async (req, res) => {
         
         console.log(`✅ Private message saved successfully, ID: ${data[0]?.id}`);
         
+        // Auto reply for user messages
         if (sender_id !== 'admin') {
             const isShopOpen = canPlaceOrder();
             const autoReply = getAutoReply(message, isShopOpen, sender_id);
@@ -875,7 +914,7 @@ app.post('/api/chat/private/send', async (req, res) => {
     }
 });
 
-// ==================== UNREAD COUNT (Only for receiver) ====================
+// Get unread count for user
 app.get('/api/chat/private/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -944,21 +983,6 @@ app.listen(PORT, () => {
 ║     🚫 Bad Words Filter: WORKING ✅                                     ║
 ║     🔔 Unread Count (receiver only): WORKING ✅                          ║
 ║     📢 AD MANAGEMENT SYSTEM: WORKING ✅                                  ║
-║                                                                          ║
-║     🔒 SECURITY FEATURES ENABLED:                                        ║
-║        ✅ Helmet.js (Security Headers)                                   ║
-║        ✅ CSP with iframe support                                        ║
-║        ✅ Rate Limiting                                                  ║
-║        ✅ Sales Hours Control (Auto/Manual Mode)                        ║
-║        ✅ Session-based Admin Auth                                       ║
-║        ✅ Image Processing (Sharp)                                       ║
-║        ✅ Database Notifications                                         ║
-║        ✅ Private 1-on-1 Chat with Unread Counts                        ║
-║        ✅ Mark as Read on view                                           ║
-║        ✅ Multi-Language Auto Reply (my/en/zh)                          ║
-║        ✅ Global Chat Auto Cleanup (every 3 minutes)                    ║
-║        ✅ Bad Words Filter                                              ║
-║        ✅ Ad Management System (ads table, rotation, tracking)          ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
