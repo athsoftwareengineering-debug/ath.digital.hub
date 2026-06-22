@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         /* ============================================================
-           ATH ADMIN PANEL - IMPROVED UI (Mobile Optimized)
+           ATH ADMIN PANEL - BUTTONS 50/50 LAYOUT (Mobile Optimized)
            ============================================================ */
 
         /* ===== BASE STYLES ===== */
@@ -88,7 +88,7 @@
             background: var(--cyan);
         }
 
-        /* ===== TOP BAR - IMPROVED ===== */
+        /* ===== TOP BAR ===== */
         .top-bar {
             backdrop-filter: blur(20px) saturate(1.2);
             background: var(--bg-card);
@@ -177,7 +177,7 @@
             transform: scale(0.95);
         }
 
-        /* ===== STATS GRID - IMPROVED ===== */
+        /* ===== STATS GRID ===== */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -602,7 +602,7 @@
         }
 
         /* ============================================================
-           ORDER CARD - BUTTONS FULL WIDTH ROWS (Mobile Optimized)
+           ORDER CARD - 50/50 BUTTON LAYOUT (Mobile Optimized)
            ============================================================ */
 
         .orders-list {
@@ -810,7 +810,7 @@
             gap: 4px;
         }
 
-        /* ===== ORDER ACTIONS - FULL WIDTH ROWS ===== */
+        /* ===== ORDER ACTIONS - 50/50 LAYOUT ===== */
         .order-card .order-actions-wrapper {
             width: 100%;
             display: flex;
@@ -821,7 +821,7 @@
             border-top: 1px solid var(--border-color);
         }
 
-        /* Row 1: Detail + Screenshot (half each) */
+        /* Row 1: Detail + Screenshot - 50% each */
         .order-card .order-actions-row-1 {
             display: flex;
             gap: 8px;
@@ -832,7 +832,7 @@
             min-width: 0;
         }
 
-        /* Row 2: Approve + Reject (half each) - only if Pending */
+        /* Row 2: Approve + Reject - 50% each (only if Pending) */
         .order-card .order-actions-row-2 {
             display: flex;
             gap: 8px;
@@ -843,7 +843,7 @@
             min-width: 0;
         }
 
-        /* Row 3: Delete (full width) */
+        /* Row 3: Delete - 100% */
         .order-card .order-actions-row-3 {
             display: flex;
             gap: 8px;
@@ -854,11 +854,11 @@
             min-width: 0;
         }
 
-        /* ===== ORDER ACTIONS BUTTONS (Modern & Beautiful) ===== */
+        /* ===== ORDER ACTIONS BUTTONS ===== */
         .order-card .order-actions-wrapper button {
             padding: 12px 16px;
             border-radius: 14px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
             border: none;
             cursor: pointer;
@@ -866,7 +866,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             touch-action: manipulation;
             min-height: 48px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -898,7 +898,7 @@
         }
 
         .order-card .order-actions-wrapper button i {
-            font-size: 1rem;
+            font-size: 0.95rem;
             transition: transform 0.3s;
         }
 
@@ -1853,30 +1853,31 @@
                 min-width: 100px;
             }
 
-            /* Mobile Button Styles - Full Width Columns */
-            .order-card .order-actions-wrapper button {
-                padding: 14px 16px;
-                font-size: 0.75rem;
-                min-height: 50px;
-                border-radius: 12px;
-                width: 100%;
-            }
-
-            .order-card .order-actions-wrapper button i {
-                font-size: 0.95rem;
-            }
-
+            /* Mobile: 50/50 buttons become 100% columns */
             .order-card .order-actions-row-1,
-            .order-card .order-actions-row-2,
-            .order-card .order-actions-row-3 {
+            .order-card .order-actions-row-2 {
                 flex-direction: column;
                 gap: 6px;
             }
 
             .order-card .order-actions-row-1 button,
-            .order-card .order-actions-row-2 button,
-            .order-card .order-actions-row-3 button {
+            .order-card .order-actions-row-2 button {
                 width: 100%;
+                min-height: 50px;
+                padding: 14px 16px;
+                font-size: 0.75rem;
+                border-radius: 12px;
+            }
+
+            .order-card .order-actions-row-3 button {
+                min-height: 50px;
+                padding: 14px 16px;
+                font-size: 0.75rem;
+                border-radius: 12px;
+            }
+
+            .order-card .order-actions-wrapper button i {
+                font-size: 0.95rem;
             }
 
             .order-card .order-proof {
@@ -2265,7 +2266,7 @@
 
             .order-card .order-actions-wrapper button {
                 padding: 10px 14px;
-                font-size: 0.75rem;
+                font-size: 0.7rem;
                 min-height: 44px;
             }
 
@@ -3782,9 +3783,9 @@
                                     </div>
                                 </div>
                                 
-                                <!-- ===== ORDER ACTIONS - FULL WIDTH ROWS ===== -->
+                                <!-- ===== ORDER ACTIONS - 50/50 LAYOUT ===== -->
                                 <div class="order-actions-wrapper">
-                                    <!-- Row 1: Detail + Screenshot -->
+                                    <!-- Row 1: Detail + Screenshot (50% + 50%) -->
                                     <div class="order-actions-row-1">
                                         <button class="btn-detail" onclick="window.viewOrderDetail(${o.id})">
                                             <i class="fas fa-info-circle"></i> အသေးစိတ်
@@ -3794,7 +3795,7 @@
                                         </button>` : ''}
                                     </div>
                                     
-                                    <!-- Row 2: Approve + Reject (only if Pending) -->
+                                    <!-- Row 2: Approve + Reject (50% + 50%) - only if Pending -->
                                     ${o.status === 'Pending' ? `
                                     <div class="order-actions-row-2">
                                         <button class="btn-approve" onclick="window.approveOrder(${o.id})">
@@ -3806,7 +3807,7 @@
                                     </div>
                                     ` : ''}
                                     
-                                    <!-- Row 3: Delete -->
+                                    <!-- Row 3: Delete (100%) -->
                                     <div class="order-actions-row-3">
                                         <button class="btn-delete" onclick="window.deleteOrder(${o.id})">
                                             <i class="fas fa-trash"></i> ဖျက်မယ်
