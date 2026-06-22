@@ -382,24 +382,44 @@
         }
         #bulkActions button:hover { transform: scale(0.98); }
         
-        /* ===== ORDER, USER, PRODUCT, AD CARDS ===== */
-        .orders-list, .users-list, .ads-list, .product-list {
+        /* ============================================================
+           ORDER CARD - HORIZONTAL LAYOUT (Mobile Friendly)
+           ============================================================ */
+        
+        .orders-list {
             display: flex;
             flex-direction: column;
             gap: 10px;
             margin-bottom: 16px;
         }
         
-        .order-card, .user-card, .ad-card, .product-card {
+        /* ===== ORDER CARD HORIZONTAL ===== */
+        .order-card {
             background: var(--bg-card);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border-color);
             border-radius: 1.2rem;
             padding: 14px;
             transition: all 0.2s;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: stretch;
+            gap: 12px;
+            position: relative;
         }
-        .order-card:hover, .user-card:hover, .ad-card:hover, .product-card:hover {
+        
+        .order-card:hover {
             border-color: rgba(0,212,255,0.3);
+        }
+        
+        /* ===== LEFT SECTION - ORDER INFO ===== */
+        .order-card .order-left {
+            flex: 2;
+            min-width: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
         
         .order-card .order-header {
@@ -407,64 +427,246 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
+            gap: 6px;
+            padding-bottom: 6px;
             border-bottom: 1px solid var(--border-color);
         }
         
-        .order-card .order-details {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        .order-card .detail-item {
-            flex: 1;
-            min-width: 70px;
-        }
-        .order-card .detail-label {
-            font-size: 0.5rem;
-            color: var(--text-secondary);
-            margin-bottom: 2px;
-        }
-        .order-card .detail-value {
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .order-card .detail-value.price { color: var(--emerald); }
-        .order-card .detail-value.cost { color: var(--amber); }
-        .order-card .detail-value.profit { color: var(--cyan); }
-        
-        .clickable-phone {
-            cursor: pointer;
+        .order-card .order-header .order-id {
+            font-family: monospace;
+            font-size: 0.65rem;
+            background: rgba(0,212,255,0.1);
+            padding: 2px 10px;
+            border-radius: 20px;
+            color: var(--cyan);
             display: inline-flex;
             align-items: center;
             gap: 4px;
         }
-        .clickable-phone:hover { color: var(--cyan); }
         
+        .order-card .order-header .order-checkbox {
+            accent-color: var(--cyan);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        
+        .order-card .order-header .order-status {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 0.55rem;
+            font-weight: 700;
+        }
+        
+        .order-card .order-plan {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+        
+        .order-card .order-plan i {
+            color: var(--cyan);
+            margin-right: 4px;
+        }
+        
+        .order-card .order-phone {
+            font-size: 0.8rem;
+            font-family: monospace;
+            font-weight: 600;
+            color: var(--cyan);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0,212,255,0.08);
+            padding: 2px 12px;
+            border-radius: 40px;
+            width: fit-content;
+        }
+        
+        .order-card .order-phone:hover {
+            background: rgba(0,212,255,0.15);
+        }
+        
+        .order-card .order-date {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        /* ===== RIGHT SECTION - PRICE & ACTIONS ===== */
+        .order-card .order-right {
+            flex: 1;
+            min-width: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 8px;
+            border-left: 1px solid var(--border-color);
+            padding-left: 12px;
+        }
+        
+        .order-card .order-prices {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            width: 100%;
+        }
+        
+        .order-card .order-price {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--emerald);
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .order-card .order-price small {
+            font-size: 0.6rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+        
+        .order-card .order-cost {
+            font-size: 0.65rem;
+            color: var(--amber);
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .order-card .order-profit {
+            font-size: 0.65rem;
+            color: var(--cyan);
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        /* ===== ORDER ACTIONS ===== */
         .order-card .order-actions {
             display: flex;
-            gap: 6px;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid var(--border-color);
+            gap: 4px;
             flex-wrap: wrap;
+            justify-content: flex-end;
+            width: 100%;
         }
+        
         .order-card .order-actions button {
-            flex: 1;
-            min-width: 60px;
-            padding: 6px 10px;
+            padding: 4px 10px;
             border-radius: 40px;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             cursor: pointer;
             font-weight: 600;
             border: none;
             transition: all 0.2s;
             touch-action: manipulation;
+            white-space: nowrap;
         }
-        .order-card .order-actions button:hover { transform: scale(0.98); }
+        
+        .order-card .order-actions button:hover {
+            transform: scale(0.96);
+        }
+        
+        .order-card .order-actions .btn-approve {
+            background: var(--emerald);
+            color: white;
+        }
+        
+        .order-card .order-actions .btn-reject {
+            background: var(--rose);
+            color: white;
+        }
+        
+        .order-card .order-actions .btn-delete {
+            background: #475569;
+            color: white;
+        }
+        
+        .order-card .order-actions .btn-detail {
+            background: rgba(139,92,246,0.2);
+            color: var(--violet);
+        }
+        
+        .order-card .order-actions .btn-screenshot {
+            background: rgba(0,212,255,0.15);
+            color: var(--cyan);
+        }
+        
+        /* ===== PROOF SECTION (SENDER INFO) ===== */
+        .order-card .order-proof {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 6px 10px;
+            background: rgba(0,212,255,0.05);
+            border-radius: 40px;
+            border: 1px solid var(--border-color);
+            margin-top: 4px;
+        }
+        
+        .order-card .order-proof-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+        }
+        
+        .order-card .order-proof-item strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        .order-card .order-proof-item .sender-name {
+            color: var(--emerald);
+        }
+        
+        .order-card .order-proof-item .last5 {
+            color: var(--amber);
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+        
+        .order-card .order-proof-item .payment-method {
+            color: var(--violet);
+        }
+        
+        /* ===== COUNTDOWN ===== */
+        .order-card .order-countdown {
+            width: 100%;
+            background: rgba(0,212,255,0.08);
+            border-radius: 40px;
+            padding: 4px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.6rem;
+            font-family: monospace;
+            border: 1px solid rgba(0,212,255,0.2);
+            margin-top: 4px;
+        }
+        
+        /* ===== USER, AD, PRODUCT CARDS ===== */
+        .user-card, .ad-card, .product-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 1.2rem;
+            padding: 14px;
+            transition: all 0.2s;
+        }
+        .user-card:hover, .ad-card:hover, .product-card:hover {
+            border-color: rgba(0,212,255,0.3);
+        }
         
         .ad-card img {
             width: 100%;
@@ -505,21 +707,411 @@
         .product-card-actions .edit-btn { background: rgba(0,212,255,0.2); color: var(--cyan); }
         .product-card-actions .delete-btn { background: rgba(244,63,94,0.2); color: #fb7185; }
         
-        .countdown-box {
-            background: rgba(0,212,255,0.08);
-            border-radius: 40px;
-            padding: 6px 12px;
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-size: 0.65rem;
-            font-family: monospace;
-            border: 1px solid rgba(0,212,255,0.2);
+        /* ============================================================
+           MOBILE RESPONSIVE - HORIZONTAL LAYOUT
+           ============================================================ */
+        
+        @media (max-width: 480px) {
+            .order-card {
+                flex-direction: column;
+                padding: 12px;
+                gap: 8px;
+            }
+            
+            .order-card .order-left {
+                flex: 1;
+                min-width: unset;
+                width: 100%;
+            }
+            
+            .order-card .order-right {
+                flex: 1;
+                min-width: unset;
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                padding-left: 0;
+                padding-top: 10px;
+                align-items: stretch;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+            
+            .order-card .order-prices {
+                align-items: flex-start;
+                flex: 1;
+                min-width: 100px;
+            }
+            
+            .order-card .order-price {
+                font-size: 0.85rem;
+            }
+            
+            .order-card .order-actions {
+                flex: 1;
+                min-width: 100px;
+                justify-content: flex-start;
+            }
+            
+            .order-card .order-actions button {
+                padding: 6px 12px;
+                font-size: 0.6rem;
+                flex: 1;
+                min-width: 50px;
+                text-align: center;
+                justify-content: center;
+            }
+            
+            .order-card .order-proof {
+                flex-direction: column;
+                align-items: flex-start;
+                border-radius: 12px;
+                padding: 8px 12px;
+                gap: 4px;
+            }
+            
+            .order-card .order-proof-item {
+                font-size: 0.55rem;
+            }
+            
+            .order-card .order-header .order-id {
+                font-size: 0.55rem;
+            }
+            
+            .order-card .order-plan {
+                font-size: 0.75rem;
+            }
+            
+            .order-card .order-phone {
+                font-size: 0.7rem;
+                padding: 2px 10px;
+            }
+            
+            .order-card .order-countdown {
+                font-size: 0.55rem;
+                padding: 4px 10px;
+            }
+            
+            /* Other mobile styles */
+            body { padding: 8px; padding-bottom: 70px; }
+            .top-bar { padding: 8px 12px; border-radius: 1rem; }
+            .top-bar .logo { font-size: 0.9rem; }
+            .menu-btn, .top-icon-btn { width: 44px; height: 44px; font-size: 1.2rem; min-height: 44px; min-width: 44px; }
+            
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+            .stat-card { padding: 10px 8px; border-radius: 1rem; }
+            .stat-number { font-size: 1.2rem; }
+            .stat-label { font-size: 0.5rem; }
+            
+            .search-bar, .filter-bar { 
+                padding: 12px; 
+                flex-direction: column;
+                border-radius: 1rem;
+            }
+            .search-bar .search-input { width: 100%; font-size: 0.9rem; padding: 12px 16px; min-height: 48px; border-radius: 12px; }
+            .search-bar .search-btn, 
+            .search-bar .clear-search { 
+                width: 100%; 
+                justify-content: center; 
+                padding: 12px 20px;
+                font-size: 0.85rem;
+                min-height: 48px;
+                border-radius: 12px;
+            }
+            .filter-group { flex-direction: column; width: 100%; }
+            .filter-group .filter-input { 
+                width: 100%; 
+                padding: 12px 16px;
+                font-size: 0.9rem;
+                min-height: 48px;
+                border-radius: 12px;
+            }
+            .filter-bar > div:last-child {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .filter-btn {
+                flex: 1;
+                justify-content: center;
+                min-height: 44px;
+                padding: 12px 16px;
+                font-size: 0.8rem;
+                min-width: 60px;
+                border-radius: 12px;
+            }
+            
+            .ad-card-actions, .product-card-actions { flex-direction: column; }
+            .ad-card-actions button, 
+            .product-card-actions button {
+                padding: 12px 8px;
+                font-size: 0.75rem;
+                min-height: 44px;
+                border-radius: 12px;
+            }
+            
+            .add-product-btn {
+                padding: 10px 16px;
+                font-size: 0.8rem;
+                min-height: 44px;
+                border-radius: 12px;
+            }
+            
+            .bottom-nav .nav-item { 
+                padding: 6px 8px; 
+                font-size: 0.6rem; 
+                min-width: 44px;
+                min-height: 44px;
+            }
+            .bottom-nav .nav-item i { font-size: 1.3rem; }
+            
+            .notification-dropdown {
+                position: fixed;
+                top: 55px;
+                left: 8px;
+                right: 8px;
+                width: auto;
+                max-height: 70vh;
+                border-radius: 1rem;
+            }
+            .notification-item { padding: 14px 16px; }
+            .notification-title { font-size: 0.85rem; }
+            .notification-message { font-size: 0.7rem; }
+            .notification-delete { width: 36px; height: 36px; border-radius: 50%; opacity: 1; }
+            
+            .modal-card, .alert-card { 
+                padding: 1.2rem; 
+                max-width: 95%; 
+                max-height: 95vh;
+                border-radius: 1.2rem;
+            }
+            .modal-card input, 
+            .modal-card select, 
+            .modal-card textarea {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+                border-radius: 12px;
+            }
+            .modal-btn {
+                padding: 12px 16px;
+                font-size: 0.85rem;
+                border-radius: 12px;
+                min-height: 48px;
+            }
+            
+            .alert-btn {
+                padding: 12px;
+                font-size: 0.8rem;
+                border-radius: 12px;
+                min-height: 48px;
+            }
+            
+            .sales-hours-controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .sales-hours-controls > div {
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+            .hour-select {
+                padding: 10px 14px;
+                font-size: 0.8rem;
+                border-radius: 12px;
+                min-height: 44px;
+                flex: 1;
+                min-width: 60px;
+                width: 100%;
+            }
+            .mode-btn {
+                padding: 10px 16px;
+                font-size: 0.75rem;
+                border-radius: 12px;
+                min-height: 44px;
+                min-width: 60px;
+                flex: 1;
+            }
+            
+            .toggle-switch {
+                width: 52px;
+                height: 28px;
+            }
+            .toggle-switch .toggle-slider:before {
+                height: 20px;
+                width: 20px;
+                left: 4px;
+                bottom: 4px;
+            }
+            input:checked + .toggle-slider:before {
+                transform: translateX(24px);
+            }
+            
+            .drawer { 
+                width: 280px; 
+                left: -280px; 
+                padding: 16px; 
+            }
+            .drawer-menu a { 
+                padding: 12px 16px; 
+                font-size: 0.9rem; 
+                border-radius: 12px; 
+            }
+            .drawer-menu a i { font-size: 1.1rem; }
+            .drawer-avatar { width: 56px; height: 56px; font-size: 1.4rem; }
+            .drawer-stats { padding: 10px; }
+            .drawer-stat-item { padding: 8px 0; }
+            .drawer-stat-label { font-size: 0.6rem; }
+            .drawer-stat-value { font-size: 0.7rem; }
+            
+            .sales-status {
+                font-size: 0.7rem;
+                padding: 10px;
+                border-radius: 12px;
+            }
+            
+            .toast {
+                bottom: 80px;
+                padding: 12px 20px;
+                font-size: 0.8rem;
+                max-width: 92%;
+                border-radius: 12px;
+                white-space: normal;
+            }
+            
+            .login-box {
+                padding: 1.5rem;
+                border-radius: 1.5rem;
+                margin: 30px auto;
+            }
+            .login-box input {
+                padding: 14px 16px;
+                font-size: 1rem;
+                border-radius: 12px;
+                min-height: 48px;
+            }
+            .login-btn {
+                padding: 14px;
+                font-size: 1rem;
+                border-radius: 12px;
+                min-height: 52px;
+            }
+            
+            .image-modal-content {
+                padding: 8px;
+                border-radius: 16px;
+                max-width: 95%;
+            }
+            .image-modal-content img {
+                max-height: 60vh;
+            }
+            .image-modal-content .close-modal {
+                width: 36px;
+                height: 36px;
+                font-size: 1.2rem;
+            }
+            
+            #bulkActions {
+                padding: 12px;
+                gap: 8px;
+                border-radius: 1rem;
+            }
+            #bulkActions button {
+                padding: 10px 16px;
+                font-size: 0.75rem;
+                min-height: 44px;
+                border-radius: 12px;
+                flex: 1;
+                min-width: 50px;
+            }
         }
         
-        /* ===== SALES HOURS ===== */
+        /* ===== EXTRA SMALL PHONES (under 380px) ===== */
+        @media (max-width: 380px) {
+            .stats-grid { 
+                grid-template-columns: 1fr 1fr; 
+                gap: 4px; 
+            }
+            .stat-card { 
+                padding: 6px 4px; 
+                border-radius: 0.8rem;
+            }
+            .stat-number { font-size: 1rem; }
+            .stat-label { font-size: 0.45rem; }
+            
+            .bottom-nav .nav-item { 
+                padding: 4px 4px; 
+                font-size: 0.45rem; 
+                min-width: 32px;
+            }
+            .bottom-nav .nav-item i { font-size: 0.9rem; }
+            
+            .order-card .order-actions button {
+                font-size: 0.55rem;
+                padding: 6px 8px;
+                min-height: 36px;
+            }
+            
+            .modal-card, .alert-card {
+                padding: 1rem;
+                max-width: 98%;
+                border-radius: 1rem;
+            }
+            
+            .drawer {
+                width: 260px;
+                left: -260px;
+            }
+        }
+        
+        /* ===== TABLET OPTIMIZATION ===== */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .order-card .order-right {
+                flex: 1;
+                min-width: 120px;
+            }
+            
+            .order-card .order-actions button {
+                padding: 6px 12px;
+                font-size: 0.6rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
+            }
+            
+            .modal-card, .alert-card {
+                max-width: 85%;
+                padding: 1.5rem;
+                border-radius: 1.5rem;
+            }
+            
+            .filter-bar {
+                flex-wrap: wrap;
+                border-radius: 1rem;
+            }
+            .filter-group {
+                flex: 1;
+                min-width: 200px;
+            }
+        }
+        
+        /* ===== SAFE AREA FOR NOTCH PHONES ===== */
+        @supports (padding: max(0px)) {
+            .bottom-nav {
+                padding-bottom: max(env(safe-area-inset-bottom), 10px);
+            }
+            .admin-chat-container {
+                bottom: max(70px, env(safe-area-inset-bottom) + 60px);
+            }
+            .chat-widget-container {
+                bottom: max(70px, env(safe-area-inset-bottom) + 60px);
+            }
+        }
+        
+        /* ===== OTHER EXISTING STYLES ===== */
         .sales-hours-card {
             background: var(--bg-card);
             backdrop-filter: blur(10px);
@@ -1026,10 +1618,6 @@
         .fw-bold { font-weight: 700; }
         .fw-mono { font-family: monospace; }
         
-        /* ============================================================
-           MOBILE OPTIMIZATION - PHONE CONTROL
-           ============================================================ */
-        
         /* ===== GLOBAL TOUCH OPTIMIZATION ===== */
         * {
             -webkit-tap-highlight-color: transparent;
@@ -1049,367 +1637,6 @@
         .order-card .order-actions button {
             touch-action: manipulation;
             -webkit-touch-callout: none;
-        }
-        
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 480px) {
-            body { padding: 8px; padding-bottom: 70px; }
-            .top-bar { padding: 8px 12px; border-radius: 1rem; }
-            .top-bar .logo { font-size: 0.9rem; }
-            .menu-btn, .top-icon-btn { width: 44px; height: 44px; font-size: 1.2rem; min-height: 44px; min-width: 44px; }
-            
-            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-            .stat-card { padding: 10px 8px; border-radius: 1rem; }
-            .stat-number { font-size: 1.2rem; }
-            .stat-label { font-size: 0.5rem; }
-            
-            .search-bar, .filter-bar { 
-                padding: 12px; 
-                flex-direction: column;
-                border-radius: 1rem;
-            }
-            .search-bar .search-input { width: 100%; font-size: 0.9rem; padding: 12px 16px; min-height: 48px; border-radius: 12px; }
-            .search-bar .search-btn, 
-            .search-bar .clear-search { 
-                width: 100%; 
-                justify-content: center; 
-                padding: 12px 20px;
-                font-size: 0.85rem;
-                min-height: 48px;
-                border-radius: 12px;
-            }
-            .filter-group { flex-direction: column; width: 100%; }
-            .filter-group .filter-input { 
-                width: 100%; 
-                padding: 12px 16px;
-                font-size: 0.9rem;
-                min-height: 48px;
-                border-radius: 12px;
-            }
-            .filter-bar > div:last-child {
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-            .filter-btn {
-                flex: 1;
-                justify-content: center;
-                min-height: 44px;
-                padding: 12px 16px;
-                font-size: 0.8rem;
-                min-width: 60px;
-                border-radius: 12px;
-            }
-            
-            .order-card .order-details { flex-direction: column; gap: 4px; }
-            .order-card .detail-item { 
-                display: flex; 
-                justify-content: space-between; 
-                padding: 6px 0; 
-                border-bottom: 1px solid var(--border-color);
-                min-width: 60px;
-            }
-            .order-card .detail-item:last-child { border-bottom: none; }
-            .order-card .detail-value { font-size: 0.85rem; }
-            .order-card .detail-label { font-size: 0.55rem; }
-            .order-card { padding: 16px; border-radius: 1rem; margin-bottom: 12px; }
-            
-            .order-card .order-actions { flex-direction: column; }
-            .order-card .order-actions button { 
-                padding: 12px 8px; 
-                font-size: 0.75rem; 
-                min-height: 48px;
-                border-radius: 12px;
-            }
-            
-            .ad-card-actions, .product-card-actions { flex-direction: column; }
-            .ad-card-actions button, 
-            .product-card-actions button {
-                padding: 12px 8px;
-                font-size: 0.75rem;
-                min-height: 44px;
-                border-radius: 12px;
-            }
-            
-            .add-product-btn {
-                padding: 10px 16px;
-                font-size: 0.8rem;
-                min-height: 44px;
-                border-radius: 12px;
-            }
-            
-            .bottom-nav .nav-item { 
-                padding: 6px 8px; 
-                font-size: 0.6rem; 
-                min-width: 44px;
-                min-height: 44px;
-            }
-            .bottom-nav .nav-item i { font-size: 1.3rem; }
-            
-            .notification-dropdown {
-                position: fixed;
-                top: 55px;
-                left: 8px;
-                right: 8px;
-                width: auto;
-                max-height: 70vh;
-                border-radius: 1rem;
-            }
-            .notification-item { padding: 14px 16px; }
-            .notification-title { font-size: 0.85rem; }
-            .notification-message { font-size: 0.7rem; }
-            .notification-delete { width: 36px; height: 36px; border-radius: 50%; opacity: 1; }
-            
-            .modal-card, .alert-card { 
-                padding: 1.2rem; 
-                max-width: 95%; 
-                max-height: 95vh;
-                border-radius: 1.2rem;
-            }
-            .modal-card input, 
-            .modal-card select, 
-            .modal-card textarea {
-                padding: 12px 16px;
-                font-size: 0.9rem;
-                border-radius: 12px;
-            }
-            .modal-btn {
-                padding: 12px 16px;
-                font-size: 0.85rem;
-                border-radius: 12px;
-                min-height: 48px;
-            }
-            
-            .alert-btn {
-                padding: 12px;
-                font-size: 0.8rem;
-                border-radius: 12px;
-                min-height: 48px;
-            }
-            
-            .sales-hours-controls {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 8px;
-            }
-            .sales-hours-controls > div {
-                justify-content: space-between;
-                flex-wrap: wrap;
-            }
-            .hour-select {
-                padding: 10px 14px;
-                font-size: 0.8rem;
-                border-radius: 12px;
-                min-height: 44px;
-                flex: 1;
-                min-width: 60px;
-                width: 100%;
-            }
-            .mode-btn {
-                padding: 10px 16px;
-                font-size: 0.75rem;
-                border-radius: 12px;
-                min-height: 44px;
-                min-width: 60px;
-                flex: 1;
-            }
-            
-            /* Toggle switch - bigger */
-            .toggle-switch {
-                width: 52px;
-                height: 28px;
-            }
-            .toggle-switch .toggle-slider:before {
-                height: 20px;
-                width: 20px;
-                left: 4px;
-                bottom: 4px;
-            }
-            input:checked + .toggle-slider:before {
-                transform: translateX(24px);
-            }
-            
-            .drawer { 
-                width: 280px; 
-                left: -280px; 
-                padding: 16px; 
-            }
-            .drawer-menu a { 
-                padding: 12px 16px; 
-                font-size: 0.9rem; 
-                border-radius: 12px; 
-            }
-            .drawer-menu a i { font-size: 1.1rem; }
-            .drawer-avatar { width: 56px; height: 56px; font-size: 1.4rem; }
-            .drawer-stats { padding: 10px; }
-            .drawer-stat-item { padding: 8px 0; }
-            .drawer-stat-label { font-size: 0.6rem; }
-            .drawer-stat-value { font-size: 0.7rem; }
-            
-            .sales-status {
-                font-size: 0.7rem;
-                padding: 10px;
-                border-radius: 12px;
-            }
-            
-            .countdown-box {
-                padding: 8px 14px;
-                font-size: 0.7rem;
-                border-radius: 12px;
-            }
-            
-            .order-card .proof-text {
-                padding: 8px 12px;
-                font-size: 0.7rem;
-                border-radius: 12px;
-            }
-            
-            .toast {
-                bottom: 80px;
-                padding: 12px 20px;
-                font-size: 0.8rem;
-                max-width: 92%;
-                border-radius: 12px;
-                white-space: normal;
-            }
-            
-            .login-box {
-                padding: 1.5rem;
-                border-radius: 1.5rem;
-                margin: 30px auto;
-            }
-            .login-box input {
-                padding: 14px 16px;
-                font-size: 1rem;
-                border-radius: 12px;
-                min-height: 48px;
-            }
-            .login-btn {
-                padding: 14px;
-                font-size: 1rem;
-                border-radius: 12px;
-                min-height: 52px;
-            }
-            
-            .image-modal-content {
-                padding: 8px;
-                border-radius: 16px;
-                max-width: 95%;
-            }
-            .image-modal-content img {
-                max-height: 60vh;
-            }
-            .image-modal-content .close-modal {
-                width: 36px;
-                height: 36px;
-                font-size: 1.2rem;
-            }
-            
-            #bulkActions {
-                padding: 12px;
-                gap: 8px;
-                border-radius: 1rem;
-            }
-            #bulkActions button {
-                padding: 10px 16px;
-                font-size: 0.75rem;
-                min-height: 44px;
-                border-radius: 12px;
-                flex: 1;
-                min-width: 50px;
-            }
-        }
-        
-        /* ===== EXTRA SMALL PHONES (under 380px) ===== */
-        @media (max-width: 380px) {
-            .stats-grid { 
-                grid-template-columns: 1fr 1fr; 
-                gap: 4px; 
-            }
-            .stat-card { 
-                padding: 6px 4px; 
-                border-radius: 0.8rem;
-            }
-            .stat-number { font-size: 1rem; }
-            .stat-label { font-size: 0.45rem; }
-            
-            .bottom-nav .nav-item { 
-                padding: 4px 4px; 
-                font-size: 0.45rem; 
-                min-width: 32px;
-            }
-            .bottom-nav .nav-item i { font-size: 0.9rem; }
-            
-            .order-card .order-actions button {
-                font-size: 0.65rem;
-                padding: 10px 6px;
-                min-height: 40px;
-            }
-            
-            .modal-card, .alert-card {
-                padding: 1rem;
-                max-width: 98%;
-                border-radius: 1rem;
-            }
-            
-            .drawer {
-                width: 260px;
-                left: -260px;
-            }
-        }
-        
-        /* ===== TABLET OPTIMIZATION ===== */
-        @media (min-width: 481px) and (max-width: 768px) {
-            .search-btn, .filter-btn {
-                padding: 10px 18px;
-                font-size: 0.8rem;
-                min-height: 44px;
-                border-radius: 12px;
-            }
-            
-            .order-card .order-actions button {
-                padding: 10px 12px;
-                font-size: 0.7rem;
-                min-height: 44px;
-                border-radius: 12px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 8px;
-            }
-            
-            .modal-card, .alert-card {
-                max-width: 85%;
-                padding: 1.5rem;
-                border-radius: 1.5rem;
-            }
-            
-            .filter-bar {
-                flex-wrap: wrap;
-                border-radius: 1rem;
-            }
-            .filter-group {
-                flex: 1;
-                min-width: 200px;
-            }
-            
-            .top-bar {
-                border-radius: 1.5rem;
-            }
-        }
-        
-        /* ===== SAFE AREA FOR NOTCH PHONES ===== */
-        @supports (padding: max(0px)) {
-            .bottom-nav {
-                padding-bottom: max(env(safe-area-inset-bottom), 10px);
-            }
-            .admin-chat-container {
-                bottom: max(70px, env(safe-area-inset-bottom) + 60px);
-            }
-            .chat-widget-container {
-                bottom: max(70px, env(safe-area-inset-bottom) + 60px);
-            }
         }
     </style>
 </head>
@@ -2767,7 +2994,7 @@
         }
     };
     
-    // ===== RENDER ORDERS =====
+    // ===== RENDER ORDERS (Horizontal Layout) =====
     function renderOrders(orders) {
         const container = document.getElementById('ordersList');
         if (!container) return;
@@ -2786,79 +3013,64 @@
             if (o.status === 'Approved' && o.activated_at) {
                 const initialCountdown = formatCountdown(o.activated_at);
                 countdownHtml = `
-                    <div class="countdown-box" id="countdown-${o.id}">
+                    <div class="order-countdown" id="countdown-${o.id}">
                         <i class="fas fa-hourglass-half"></i>
                         <span class="countdown-timer">${initialCountdown || 'တွက်နေသည်...'}</span>
                     </div>
                 `;
             }
             
-            let proofHtml = '';
-            if (o.sender_name && o.last5_digits) {
-                proofHtml = `
-                    <div style="display:flex; justify-content:center; align-items:center; gap:16px; flex-wrap:wrap; background:rgba(0,212,255,0.05); border-radius:40px; padding:6px 14px; margin:6px 0; border:1px solid var(--border-color);">
-                        <div style="display:flex; align-items:center; gap:6px; font-size:0.65rem;"><span style="color:var(--text-secondary);">👤 ပေးပို့သူ:</span><span style="font-weight:600; color:var(--emerald);">${escapeHtml(o.sender_name)}</span></div>
-                        <div style="display:flex; align-items:center; gap:6px; font-size:0.65rem;"><span style="color:var(--text-secondary);">🧾 နောက်ဆုံး ၅လုံး:</span><span style="font-weight:600; color:var(--amber); font-family:monospace; letter-spacing:1px;">${escapeHtml(o.last5_digits)}</span></div>
-                        <div style="display:flex; align-items:center; gap:6px; font-size:0.65rem;"><span style="color:var(--text-secondary);">💳 ငွေပေးချေမှု:</span><span style="font-weight:600; color:var(--violet);">${getPaymentIcon(o.payment_method || 'kpay')}</span></div>
-                    </div>
-                `;
-            } else if (o.payment_method) {
-                proofHtml = `
-                    <div style="display:flex; justify-content:center; align-items:center; gap:16px; flex-wrap:wrap; background:rgba(0,212,255,0.05); border-radius:40px; padding:6px 14px; margin:6px 0; border:1px solid var(--border-color);">
-                        <div style="display:flex; align-items:center; gap:6px; font-size:0.65rem;"><span style="color:var(--text-secondary);">💳 ငွေပေးချေမှု:</span><span style="font-weight:600; color:var(--violet);">${getPaymentIcon(o.payment_method)}</span></div>
-                    </div>
-                `;
+            // Build proof items
+            let proofItems = '';
+            if (o.sender_name) {
+                proofItems += `<span class="order-proof-item"><span style="color:var(--text-secondary);">👤 ပေးပို့သူ:</span> <strong class="sender-name">${escapeHtml(o.sender_name)}</strong></span>`;
+            }
+            if (o.last5_digits) {
+                proofItems += `<span class="order-proof-item"><span style="color:var(--text-secondary);">🧾 နောက်ဆုံး ၅လုံး:</span> <strong class="last5">${escapeHtml(o.last5_digits)}</strong></span>`;
+            }
+            if (o.payment_method) {
+                proofItems += `<span class="order-proof-item"><span style="color:var(--text-secondary);">💳 ငွေပေးချေမှု:</span> <strong class="payment-method">${getPaymentIcon(o.payment_method)}</strong></span>`;
             }
             
             html += `
                 <div class="order-card" data-order-id="${o.id}">
-                    <div class="order-header">
-                        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                            <span style="font-family:monospace; font-size:0.65rem; background:rgba(0,212,255,0.1); padding:2px 8px; border-radius:20px; color:var(--cyan);"><i class="fas fa-hashtag"></i> ${o.id}</span>
-                            <input type="checkbox" onchange="window.toggleSelectOrder(${o.id})" style="accent-color:var(--cyan); width:16px; height:16px; cursor:pointer;">
+                    <!-- LEFT SECTION -->
+                    <div class="order-left">
+                        <div class="order-header">
+                            <span class="order-id"><i class="fas fa-hashtag"></i> ${o.id}</span>
+                            <input type="checkbox" class="order-checkbox" onchange="window.toggleSelectOrder(${o.id})" style="accent-color:var(--cyan);">
+                            <span class="order-status" style="background:${statusBg}; color:${statusColor};">${statusText}</span>
                         </div>
-                        <span style="display:inline-block; padding:2px 10px; border-radius:40px; font-size:0.55rem; font-weight:700; background:${statusBg}; color:${statusColor};">${statusText}</span>
+                        <div class="order-plan"><i class="fas fa-tag"></i> ${escapeHtml(o.plan)}</div>
+                        <div class="order-phone" onclick="window.copyToClipboard('${escapeHtml(o.phone)}')">
+                            <i class="fas fa-phone-alt"></i> ${escapeHtml(maskPhone(o.phone))} 📋
+                        </div>
+                        <div class="order-date"><i class="fas fa-calendar-alt"></i> ${new Date(o.created_at).toLocaleString()}</div>
                     </div>
                     
-                    <div class="order-details">
-                        <div class="detail-item">
-                            <div class="detail-label"><i class="fas fa-mobile-alt"></i> ဖုန်းနံပါတ်</div>
-                            <div class="detail-value clickable-phone" onclick="window.copyToClipboard('${escapeHtml(o.phone)}')">📞 ${escapeHtml(maskPhone(o.phone))} 📋</div>
+                    <!-- RIGHT SECTION -->
+                    <div class="order-right">
+                        <div class="order-prices">
+                            <div class="order-price">${o.price.toLocaleString()} <small>K</small></div>
+                            <div class="order-cost"><i class="fas fa-box"></i> ${getCostPrice(o.plan).toLocaleString()}K</div>
+                            <div class="order-profit"><i class="fas fa-chart-line"></i> ${getProfit(o.price, o.plan).toLocaleString()}K</div>
                         </div>
-                        <div class="detail-item">
-                            <div class="detail-label"><i class="fas fa-tag"></i> အစီအစဉ်</div>
-                            <div class="detail-value" style="font-size:0.7rem;">${escapeHtml(o.plan)}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label"><i class="fas fa-coins"></i> စျေးနှုန်း</div>
-                            <div class="detail-value price">${o.price.toLocaleString()}K</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label"><i class="fas fa-box"></i> ကုန်ကျစရိတ်</div>
-                            <div class="detail-value cost">${getCostPrice(o.plan).toLocaleString()}K</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label"><i class="fas fa-chart-line"></i> အမြတ်</div>
-                            <div class="detail-value profit">${getProfit(o.price, o.plan).toLocaleString()}K</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label"><i class="fas fa-calendar"></i> ရက်စွဲ</div>
-                            <div class="detail-value" style="font-size:0.6rem;">${new Date(o.created_at).toLocaleString()}</div>
+                        <div class="order-actions">
+                            <button class="btn-detail" onclick="window.viewOrderDetail(${o.id})"><i class="fas fa-info-circle"></i></button>
+                            ${o.slip_url ? `<button class="btn-screenshot" onclick="window.openScreenshot('${escapeHtml(o.slip_url)}')"><i class="fas fa-image"></i></button>` : ''}
+                            ${o.status === 'Pending' ? `
+                                <button class="btn-approve" onclick="window.approveOrder(${o.id})"><i class="fas fa-check"></i></button>
+                                <button class="btn-reject" onclick="window.rejectOrder(${o.id})"><i class="fas fa-times"></i></button>
+                            ` : ''}
+                            <button class="btn-delete" onclick="window.deleteOrder(${o.id})"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                     
-                    ${proofHtml}
+                    <!-- PROOF SECTION (full width) -->
+                    ${proofItems ? `<div class="order-proof">${proofItems}</div>` : ''}
+                    
+                    <!-- COUNTDOWN (full width) -->
                     ${countdownHtml}
-                    
-                    <div class="order-actions">
-                        <button onclick="window.viewOrderDetail(${o.id})" style="background:rgba(139,92,246,0.2); color:var(--violet);">📄 အသေးစိတ်</button>
-                        ${o.slip_url ? `<button onclick="window.openScreenshot('${escapeHtml(o.slip_url)}')" style="background:rgba(0,212,255,0.15); color:var(--cyan);"><i class="fas fa-image"></i> ဖန်သားပြင်</button>` : ''}
-                        ${o.status === 'Pending' ? `
-                            <button onclick="window.approveOrder(${o.id})" style="background:var(--emerald); color:white;"><i class="fas fa-check"></i> အတည်ပြု</button>
-                            <button onclick="window.rejectOrder(${o.id})" style="background:var(--rose); color:white;"><i class="fas fa-times"></i> ပယ်ချ</button>
-                        ` : ''}
-                        <button onclick="window.deleteOrder(${o.id})" style="background:#475569; color:white;"><i class="fas fa-trash"></i> ဖျက်မယ်</button>
-                    </div>
                 </div>
             `;
         }
@@ -2872,6 +3084,9 @@
         }
     }
     
+    // ... (rest of the functions remain the same)
+    
+    // ===== VIEW ORDER DETAIL =====
     window.viewOrderDetail = function(orderId) {
         const order = allOrders.find(o => o.id === orderId);
         if (!order) return;
@@ -3053,7 +3268,6 @@
     window.deselectAllOrders = function() {
         selectedOrders.clear();
         updateBulkActionsUI();
-        // Uncheck all checkboxes
         document.querySelectorAll('.order-card input[type="checkbox"]').forEach(cb => cb.checked = false);
     };
     
@@ -3343,20 +3557,17 @@
     
     // ===== KEYBOARD SHORTCUTS =====
     document.addEventListener('keydown', function(e) {
-        // Ctrl + 1-5 for tabs
         if (e.ctrlKey && e.key >= '1' && e.key <= '5') {
             e.preventDefault();
             const tabs = ['menu', 'orders', 'users', 'market', 'ads'];
             window.switchTab(tabs[parseInt(e.key) - 1]);
         }
-        // Escape
         if (e.key === 'Escape') {
             document.querySelectorAll('.modal.active, .custom-alert.active, .image-modal.active').forEach(el => {
                 el.classList.remove('active');
             });
             window.closeDrawer();
         }
-        // Ctrl + R (without page reload)
         if (e.ctrlKey && e.key === 'r') {
             e.preventDefault();
             window.manualRefresh();
@@ -3532,7 +3743,6 @@
         }
     }
     
-    // Initialize notification manager
     document.addEventListener('DOMContentLoaded', function() {
         const bellBtn = document.getElementById('notificationBellBtn');
         if (!bellBtn) return;
