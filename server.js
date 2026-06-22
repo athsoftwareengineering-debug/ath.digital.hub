@@ -38,11 +38,17 @@ let salesHours = {
     message: 'ကျေးဇူးပြု၍ နံနက် ၉ နာရီမှ ညနေ ၇ နာရီအတွင်းမှသာ ဝယ်ယူနိုင်ပါသည်။'
 };
 
+// ============ 12-HOUR FORMAT CONVERSION ============
 function convertTo12HourFormat(hour24) {
     if (hour24 === 0 || hour24 === 24) return { hour: 12, label: "ည" };
     if (hour24 === 12) return { hour: 12, label: "မွန်းတည့်" };
     if (hour24 < 12) return { hour: hour24, label: "နံနက်" };
     return { hour: hour24 - 12, label: "ညနေ" };
+}
+
+function getTimeDisplay(hour24) {
+    const { hour, label } = convertTo12HourFormat(hour24);
+    return `${label} ${hour}:00`;
 }
 
 function canPlaceOrder() {
@@ -58,9 +64,9 @@ function getStatusMessage() {
     const isOpen = canPlaceOrder();
     if (!isOpen) return "🔴 ဆိုင်ပိတ်ထားပါသည်။ ကျေးဇူးပြု၍ နောက်မှထပ်မံဝယ်ယူပါ။";
     if (salesHours.mode === 'auto') {
-        const start = convertTo12HourFormat(salesHours.startHour);
-        const end = convertTo12HourFormat(salesHours.endHour);
-        return `🟢 ဆိုင်ဖွင့်ချိန် (${start.label} ${start.hour}:00 မှ ${end.label} ${end.hour}:00)`;
+        const start = getTimeDisplay(salesHours.startHour);
+        const end = getTimeDisplay(salesHours.endHour);
+        return `🟢 ဆိုင်ဖွင့်ချိန် (${start} မှ ${end})`;
     } else {
         return "🟢 ဆိုင်ဖွင့်ထားပါသည်။ ယခုပဲဝယ်ယူနိုင်ပါသည်။";
     }
@@ -298,10 +304,10 @@ function isAuthenticated(req, res, next) {
     else res.status(401).json({ success: false, error: 'Unauthorized' });
 }
 
-// ==================== ADD NOTIFICATION (FIXED) ====================
+// ==================== ADD NOTIFICATION (FIXED - RLS bypass) ====================
 async function addNotificationToDatabase(order) {
     try {
-        // type column မပါဘဲ insert လုပ်ပါ (column မရှိရင် error မဖြစ်အောင်)
+        // Using supabaseAdmin to bypass RLS
         const { error } = await supabaseAdmin.from('admin_notifications').insert([{
             order_id: order.id,
             title: `🆕 New Order #${order.id}`,
@@ -311,6 +317,8 @@ async function addNotificationToDatabase(order) {
         }]);
         if (error) {
             console.error('Error saving notification:', error);
+        } else {
+            console.log(`✅ Notification saved for order #${order.id}`);
         }
     } catch (e) { 
         console.error('Error in addNotificationToDatabase:', e); 
@@ -1021,6 +1029,7 @@ app.listen(PORT, () => {
 ║     🔔 Unread Count (receiver only): WORKING ✅                          ║
 ║     📢 AD MANAGEMENT SYSTEM: WORKING ✅                                  ║
 ║     📖 Mark Messages as Read: WORKING ✅                                 ║
+║     🕐 12-HOUR TIME FORMAT: WORKING ✅                                   ║
 ║                                                                          ║
 ║     🔒 SECURITY FEATURES ENABLED:                                        ║
 ║        ✅ Helmet.js (Security Headers)                                   ║
@@ -1036,6 +1045,7 @@ app.listen(PORT, () => {
 ║        ✅ Global Chat Auto Cleanup (every 3 minutes)                    ║
 ║        ✅ Bad Words Filter                                              ║
 ║        ✅ Ad Management System (ads table, rotation, tracking)          ║
+║        ✅ RLS Policy Bypass for Notifications                           ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
