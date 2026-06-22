@@ -2,7 +2,10 @@
 <html lang="my" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0c15">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Admin Panel | ATH DIGITAL HUB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -89,6 +92,7 @@
             justify-content: center;
             transition: all 0.2s;
             position: relative;
+            touch-action: manipulation;
         }
         .menu-btn:hover, .top-icon-btn:hover { background: rgba(0,212,255,0.1); transform: scale(1.05); }
         .menu-btn:active, .top-icon-btn:active { transform: scale(0.95); }
@@ -180,6 +184,7 @@
             font-size: 0.6rem;
             transition: all 0.2s;
             min-width: 48px;
+            touch-action: manipulation;
         }
         .nav-item i { font-size: 1.2rem; }
         .nav-item.active { color: var(--cyan); background: rgba(0,212,255,0.1); }
@@ -330,6 +335,7 @@
             color: var(--text-primary);
             transition: all 0.2s;
             white-space: nowrap;
+            touch-action: manipulation;
         }
         .search-btn:hover, .filter-btn:hover {
             background: var(--cyan);
@@ -343,6 +349,7 @@
             font-size: 0.65rem;
             cursor: pointer;
             color: var(--text-primary);
+            touch-action: manipulation;
         }
         .clear-search:hover { background: #475569; }
         
@@ -371,6 +378,7 @@
             border: none;
             font-weight: 600;
             transition: all 0.2s;
+            touch-action: manipulation;
         }
         #bulkActions button:hover { transform: scale(0.98); }
         
@@ -454,6 +462,7 @@
             font-weight: 600;
             border: none;
             transition: all 0.2s;
+            touch-action: manipulation;
         }
         .order-card .order-actions button:hover { transform: scale(0.98); }
         
@@ -485,6 +494,7 @@
             cursor: pointer;
             border: none;
             transition: all 0.2s;
+            touch-action: manipulation;
         }
         .ad-card-actions button:hover, .product-card-actions button:hover { transform: scale(0.98); }
         
@@ -610,6 +620,7 @@
             cursor: pointer;
             border: none;
             transition: all 0.2s;
+            touch-action: manipulation;
         }
         .mode-btn.active {
             background: linear-gradient(135deg, var(--cyan), #0891b2);
@@ -684,6 +695,7 @@
             border-radius: 40px;
             color: var(--cyan);
             cursor: pointer;
+            touch-action: manipulation;
         }
         .notification-clear:hover { background: rgba(0,212,255,0.2); }
         
@@ -731,10 +743,12 @@
             border-radius: 8px;
             cursor: pointer;
             transition: opacity 0.2s;
+            touch-action: manipulation;
         }
         .notification-item:hover .notification-delete { opacity: 1; }
         .notification-empty { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
         
+        /* ===== FIXED NOTIFICATION OVERLAY ===== */
         .notification-overlay {
             position: fixed;
             top: 0;
@@ -745,6 +759,7 @@
             backdrop-filter: blur(3px);
             z-index: 9999;
             display: none;
+            pointer-events: none;
         }
         .notification-overlay.show { display: block; }
         
@@ -780,6 +795,7 @@
             cursor: pointer;
             color: white;
             transition: all 0.2s;
+            touch-action: manipulation;
         }
         .login-btn:hover { transform: scale(0.98); }
         .login-box .logo-icon {
@@ -859,6 +875,7 @@
             border: none;
             transition: all 0.2s;
             flex: 1;
+            touch-action: manipulation;
         }
         .modal-btn:hover { transform: scale(0.98); }
         .modal-btn.save { background: var(--emerald); color: white; }
@@ -887,6 +904,7 @@
             border-radius: 50%;
             cursor: pointer;
             font-size: 1.2rem;
+            touch-action: manipulation;
         }
         
         .alert-icon {
@@ -949,6 +967,7 @@
             cursor: pointer;
             border: none;
             transition: all 0.2s;
+            touch-action: manipulation;
         }
         .alert-btn:hover { transform: scale(0.98); }
         .alert-btn.confirm { background: var(--rose); color: white; }
@@ -1007,33 +1026,125 @@
         .fw-bold { font-weight: 700; }
         .fw-mono { font-family: monospace; }
         
+        /* ============================================================
+           MOBILE OPTIMIZATION - PHONE CONTROL
+           ============================================================ */
+        
+        /* ===== GLOBAL TOUCH OPTIMIZATION ===== */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        button, 
+        .nav-item, 
+        .menu-btn, 
+        .top-icon-btn,
+        .search-btn,
+        .filter-btn,
+        .clear-search,
+        .modal-btn,
+        .alert-btn,
+        .ad-card-actions button,
+        .product-card-actions button,
+        .order-card .order-actions button {
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+        }
+        
         /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
             body { padding: 8px; padding-bottom: 70px; }
             .top-bar { padding: 8px 12px; border-radius: 1rem; }
             .top-bar .logo { font-size: 0.9rem; }
-            .menu-btn, .top-icon-btn { width: 34px; height: 34px; font-size: 1rem; }
+            .menu-btn, .top-icon-btn { width: 44px; height: 44px; font-size: 1.2rem; min-height: 44px; min-width: 44px; }
             
             .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-            .stat-card { padding: 8px 6px; border-radius: 1rem; }
-            .stat-number { font-size: 1.1rem; }
+            .stat-card { padding: 10px 8px; border-radius: 1rem; }
+            .stat-number { font-size: 1.2rem; }
             .stat-label { font-size: 0.5rem; }
             
-            .search-bar, .filter-bar { padding: 8px; flex-direction: column; }
-            .search-bar .search-input { width: 100%; }
-            .search-bar .search-btn, .search-bar .clear-search { width: 100%; justify-content: center; }
-            .filter-group { flex-direction: column; }
-            .filter-group .filter-input { width: 100%; }
+            .search-bar, .filter-bar { 
+                padding: 12px; 
+                flex-direction: column;
+                border-radius: 1rem;
+            }
+            .search-bar .search-input { width: 100%; font-size: 0.9rem; padding: 12px 16px; min-height: 48px; border-radius: 12px; }
+            .search-bar .search-btn, 
+            .search-bar .clear-search { 
+                width: 100%; 
+                justify-content: center; 
+                padding: 12px 20px;
+                font-size: 0.85rem;
+                min-height: 48px;
+                border-radius: 12px;
+            }
+            .filter-group { flex-direction: column; width: 100%; }
+            .filter-group .filter-input { 
+                width: 100%; 
+                padding: 12px 16px;
+                font-size: 0.9rem;
+                min-height: 48px;
+                border-radius: 12px;
+            }
+            .filter-bar > div:last-child {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .filter-btn {
+                flex: 1;
+                justify-content: center;
+                min-height: 44px;
+                padding: 12px 16px;
+                font-size: 0.8rem;
+                min-width: 60px;
+                border-radius: 12px;
+            }
             
             .order-card .order-details { flex-direction: column; gap: 4px; }
-            .order-card .detail-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border-color); }
+            .order-card .detail-item { 
+                display: flex; 
+                justify-content: space-between; 
+                padding: 6px 0; 
+                border-bottom: 1px solid var(--border-color);
+                min-width: 60px;
+            }
             .order-card .detail-item:last-child { border-bottom: none; }
+            .order-card .detail-value { font-size: 0.85rem; }
+            .order-card .detail-label { font-size: 0.55rem; }
+            .order-card { padding: 16px; border-radius: 1rem; margin-bottom: 12px; }
             
             .order-card .order-actions { flex-direction: column; }
-            .order-card .order-actions button { padding: 8px; }
+            .order-card .order-actions button { 
+                padding: 12px 8px; 
+                font-size: 0.75rem; 
+                min-height: 48px;
+                border-radius: 12px;
+            }
             
-            .bottom-nav .nav-item { padding: 2px 6px; font-size: 0.5rem; min-width: 36px; }
-            .bottom-nav .nav-item i { font-size: 1rem; }
+            .ad-card-actions, .product-card-actions { flex-direction: column; }
+            .ad-card-actions button, 
+            .product-card-actions button {
+                padding: 12px 8px;
+                font-size: 0.75rem;
+                min-height: 44px;
+                border-radius: 12px;
+            }
+            
+            .add-product-btn {
+                padding: 10px 16px;
+                font-size: 0.8rem;
+                min-height: 44px;
+                border-radius: 12px;
+            }
+            
+            .bottom-nav .nav-item { 
+                padding: 6px 8px; 
+                font-size: 0.6rem; 
+                min-width: 44px;
+                min-height: 44px;
+            }
+            .bottom-nav .nav-item i { font-size: 1.3rem; }
             
             .notification-dropdown {
                 position: fixed;
@@ -1041,24 +1152,264 @@
                 left: 8px;
                 right: 8px;
                 width: auto;
+                max-height: 70vh;
+                border-radius: 1rem;
+            }
+            .notification-item { padding: 14px 16px; }
+            .notification-title { font-size: 0.85rem; }
+            .notification-message { font-size: 0.7rem; }
+            .notification-delete { width: 36px; height: 36px; border-radius: 50%; opacity: 1; }
+            
+            .modal-card, .alert-card { 
+                padding: 1.2rem; 
+                max-width: 95%; 
+                max-height: 95vh;
+                border-radius: 1.2rem;
+            }
+            .modal-card input, 
+            .modal-card select, 
+            .modal-card textarea {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+                border-radius: 12px;
+            }
+            .modal-btn {
+                padding: 12px 16px;
+                font-size: 0.85rem;
+                border-radius: 12px;
+                min-height: 48px;
             }
             
-            .modal-card, .alert-card { padding: 1rem; max-width: 100%; }
+            .alert-btn {
+                padding: 12px;
+                font-size: 0.8rem;
+                border-radius: 12px;
+                min-height: 48px;
+            }
             
-            .sales-hours-controls { flex-direction: column; align-items: stretch; }
-            .sales-hours-controls > div { justify-content: center; }
-            .hour-select { width: 100%; }
+            .sales-hours-controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .sales-hours-controls > div {
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+            .hour-select {
+                padding: 10px 14px;
+                font-size: 0.8rem;
+                border-radius: 12px;
+                min-height: 44px;
+                flex: 1;
+                min-width: 60px;
+                width: 100%;
+            }
+            .mode-btn {
+                padding: 10px 16px;
+                font-size: 0.75rem;
+                border-radius: 12px;
+                min-height: 44px;
+                min-width: 60px;
+                flex: 1;
+            }
             
-            .ad-card-actions, .product-card-actions { flex-direction: column; }
+            /* Toggle switch - bigger */
+            .toggle-switch {
+                width: 52px;
+                height: 28px;
+            }
+            .toggle-switch .toggle-slider:before {
+                height: 20px;
+                width: 20px;
+                left: 4px;
+                bottom: 4px;
+            }
+            input:checked + .toggle-slider:before {
+                transform: translateX(24px);
+            }
             
-            .drawer { width: 260px; left: -260px; }
+            .drawer { 
+                width: 280px; 
+                left: -280px; 
+                padding: 16px; 
+            }
+            .drawer-menu a { 
+                padding: 12px 16px; 
+                font-size: 0.9rem; 
+                border-radius: 12px; 
+            }
+            .drawer-menu a i { font-size: 1.1rem; }
+            .drawer-avatar { width: 56px; height: 56px; font-size: 1.4rem; }
+            .drawer-stats { padding: 10px; }
+            .drawer-stat-item { padding: 8px 0; }
+            .drawer-stat-label { font-size: 0.6rem; }
+            .drawer-stat-value { font-size: 0.7rem; }
+            
+            .sales-status {
+                font-size: 0.7rem;
+                padding: 10px;
+                border-radius: 12px;
+            }
+            
+            .countdown-box {
+                padding: 8px 14px;
+                font-size: 0.7rem;
+                border-radius: 12px;
+            }
+            
+            .order-card .proof-text {
+                padding: 8px 12px;
+                font-size: 0.7rem;
+                border-radius: 12px;
+            }
+            
+            .toast {
+                bottom: 80px;
+                padding: 12px 20px;
+                font-size: 0.8rem;
+                max-width: 92%;
+                border-radius: 12px;
+                white-space: normal;
+            }
+            
+            .login-box {
+                padding: 1.5rem;
+                border-radius: 1.5rem;
+                margin: 30px auto;
+            }
+            .login-box input {
+                padding: 14px 16px;
+                font-size: 1rem;
+                border-radius: 12px;
+                min-height: 48px;
+            }
+            .login-btn {
+                padding: 14px;
+                font-size: 1rem;
+                border-radius: 12px;
+                min-height: 52px;
+            }
+            
+            .image-modal-content {
+                padding: 8px;
+                border-radius: 16px;
+                max-width: 95%;
+            }
+            .image-modal-content img {
+                max-height: 60vh;
+            }
+            .image-modal-content .close-modal {
+                width: 36px;
+                height: 36px;
+                font-size: 1.2rem;
+            }
+            
+            #bulkActions {
+                padding: 12px;
+                gap: 8px;
+                border-radius: 1rem;
+            }
+            #bulkActions button {
+                padding: 10px 16px;
+                font-size: 0.75rem;
+                min-height: 44px;
+                border-radius: 12px;
+                flex: 1;
+                min-width: 50px;
+            }
         }
         
+        /* ===== EXTRA SMALL PHONES (under 380px) ===== */
         @media (max-width: 380px) {
-            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .stats-grid { 
+                grid-template-columns: 1fr 1fr; 
+                gap: 4px; 
+            }
+            .stat-card { 
+                padding: 6px 4px; 
+                border-radius: 0.8rem;
+            }
             .stat-number { font-size: 1rem; }
-            .bottom-nav .nav-item { font-size: 0.45rem; min-width: 30px; padding: 2px 4px; }
+            .stat-label { font-size: 0.45rem; }
+            
+            .bottom-nav .nav-item { 
+                padding: 4px 4px; 
+                font-size: 0.45rem; 
+                min-width: 32px;
+            }
             .bottom-nav .nav-item i { font-size: 0.9rem; }
+            
+            .order-card .order-actions button {
+                font-size: 0.65rem;
+                padding: 10px 6px;
+                min-height: 40px;
+            }
+            
+            .modal-card, .alert-card {
+                padding: 1rem;
+                max-width: 98%;
+                border-radius: 1rem;
+            }
+            
+            .drawer {
+                width: 260px;
+                left: -260px;
+            }
+        }
+        
+        /* ===== TABLET OPTIMIZATION ===== */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .search-btn, .filter-btn {
+                padding: 10px 18px;
+                font-size: 0.8rem;
+                min-height: 44px;
+                border-radius: 12px;
+            }
+            
+            .order-card .order-actions button {
+                padding: 10px 12px;
+                font-size: 0.7rem;
+                min-height: 44px;
+                border-radius: 12px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
+            }
+            
+            .modal-card, .alert-card {
+                max-width: 85%;
+                padding: 1.5rem;
+                border-radius: 1.5rem;
+            }
+            
+            .filter-bar {
+                flex-wrap: wrap;
+                border-radius: 1rem;
+            }
+            .filter-group {
+                flex: 1;
+                min-width: 200px;
+            }
+            
+            .top-bar {
+                border-radius: 1.5rem;
+            }
+        }
+        
+        /* ===== SAFE AREA FOR NOTCH PHONES ===== */
+        @supports (padding: max(0px)) {
+            .bottom-nav {
+                padding-bottom: max(env(safe-area-inset-bottom), 10px);
+            }
+            .admin-chat-container {
+                bottom: max(70px, env(safe-area-inset-bottom) + 60px);
+            }
+            .chat-widget-container {
+                bottom: max(70px, env(safe-area-inset-bottom) + 60px);
+            }
         }
     </style>
 </head>
@@ -1255,7 +1606,7 @@
                             <input type="checkbox" id="adShowNavigation" checked> ခလုတ်ပြမယ်
                         </label>
                     </div>
-                    <button onclick="window.saveAdSettings()" style="background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.3); padding:6px 16px; border-radius:40px; cursor:pointer; font-size:0.65rem; color:var(--text-primary);">
+                    <button onclick="window.saveAdSettings()" style="background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.3); padding:6px 16px; border-radius:40px; cursor:pointer; font-size:0.65rem; color:var(--text-primary); touch-action:manipulation;">
                         <i class="fas fa-save"></i> သိမ်းမယ်
                     </button>
                 </div>
@@ -1325,7 +1676,7 @@
         <div id="marketTab" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                 <h3 style="font-size: 1rem;"><i class="fas fa-store"></i> ထုတ်ကုန်များ</h3>
-                <button class="add-product-btn" onclick="window.openAddProductModal()" style="background:var(--emerald); color:white; border:none; padding:6px 14px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;">
+                <button class="add-product-btn" onclick="window.openAddProductModal()" style="background:var(--emerald); color:white; border:none; padding:6px 14px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px; touch-action:manipulation;">
                     <i class="fas fa-plus"></i> ထုတ်ကုန်ထည့်ရန်
                 </button>
             </div>
@@ -1338,7 +1689,7 @@
         <div id="adsTab" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                 <h3 style="font-size: 1rem;"><i class="fas fa-ad"></i> ကြော်ငြာများ</h3>
-                <button class="add-product-btn" onclick="window.openAddAdModal()" style="background:var(--emerald); color:white; border:none; padding:6px 14px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px;">
+                <button class="add-product-btn" onclick="window.openAddAdModal()" style="background:var(--emerald); color:white; border:none; padding:6px 14px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px; touch-action:manipulation;">
                     <i class="fas fa-plus"></i> ကြော်ငြာအသစ်
                 </button>
             </div>
