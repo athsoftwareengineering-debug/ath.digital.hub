@@ -28,13 +28,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ==================== SALES HOURS CONFIGURATION ====================
+// ဆိုင်ကို ဖွင့်ထားတယ် (manualStatus: true)
 let salesHours = {
     enabled: true,
     mode: 'manual',
     startHour: 9,
     endHour: 19,
     timezone: 'Asia/Yangon',
-    manualStatus: false,
+    manualStatus: true,   // ← ဆိုင်ဖွင့်ထားတယ်
     message: 'ကျေးဇူးပြု၍ နံနက် ၉ နာရီမှ ညနေ ၇ နာရီအတွင်းမှသာ ဝယ်ယူနိုင်ပါသည်။'
 };
 
@@ -486,6 +487,7 @@ app.get('/api/live/order/:phone', async (req, res) => {
 // ==================== CREATE ORDER ====================
 app.post('/api/orders', orderLimiter, upload.single('slip'), async (req, res) => {
     try {
+        // ဆိုင်ဖွင့်ထားလို့ canPlaceOrder() က true ပြန်မယ်
         if (!canPlaceOrder()) {
             if (req.file) fs.unlinkSync(req.file.path);
             return res.status(403).json({ success: false, error: getStatusMessage(), isOpen: false, mode: salesHours.mode });
@@ -917,7 +919,7 @@ app.post('/api/chat/private/send', async (req, res) => {
     }
 });
 
-// ============ MARK MESSAGES AS READ (ဒီနေရာကို ထည့်ပါ) ============
+// ============ MARK MESSAGES AS READ ============
 app.put('/api/chat/private/mark-read/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -925,7 +927,6 @@ app.put('/api/chat/private/mark-read/:userId', async (req, res) => {
         
         console.log(`📖 Marking messages as read - userId: ${userId}, currentUserId: ${currentUserId}`);
         
-        // Mark messages as read
         const { error } = await supabase
             .from('private_chat_messages')
             .update({ is_read: true })
