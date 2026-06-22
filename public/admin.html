@@ -500,6 +500,10 @@
             cursor: pointer;
             touch-action: manipulation;
             white-space: nowrap;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .search-btn:hover,
@@ -521,6 +525,10 @@
             cursor: pointer;
             touch-action: manipulation;
             transition: all var(--transition-speed);
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .clear-search:hover {
@@ -554,17 +562,43 @@
             animation: fadeIn 0.3s ease;
         }
         #bulkActions button {
-            padding: 6px 16px;
-            border-radius: 40px;
-            font-size: 0.7rem;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
             cursor: pointer;
             border: none;
-            font-weight: 600;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
             touch-action: manipulation;
+            min-height: 44px;
+            min-width: 80px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         #bulkActions button:hover {
-            transform: scale(0.98);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        #bulkActions .bulk-approve {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        #bulkActions .bulk-reject {
+            background: linear-gradient(135deg, #f43f5e, #dc2626);
+            color: white;
+        }
+        #bulkActions .bulk-delete {
+            background: linear-gradient(135deg, #64748b, #475569);
+            color: white;
+        }
+        #bulkActions .bulk-cancel {
+            background: transparent;
+            border: 1px solid #64748b;
+            color: var(--text-secondary);
+        }
+        #bulkActions .bulk-cancel:hover {
+            background: rgba(100,116,139,0.15);
         }
 
         /* ============================================================
@@ -675,9 +709,9 @@
 
         .order-card .order-status {
             display: inline-block;
-            padding: 3px 14px;
+            padding: 4px 16px;
             border-radius: 40px;
-            font-size: 0.55rem;
+            font-size: 0.6rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -776,57 +810,98 @@
             gap: 4px;
         }
 
-        /* Actions */
+        /* ===== ORDER ACTIONS - BIGGER & CLEANER ===== */
         .order-card .order-actions {
             display: flex;
-            gap: 4px;
+            gap: 8px;
             flex-wrap: wrap;
             justify-content: flex-end;
             width: 100%;
+            margin-top: 4px;
         }
 
         .order-card .order-actions button {
-            padding: 5px 12px;
-            border-radius: 40px;
-            font-size: 0.6rem;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.75rem;
             font-weight: 600;
             border: none;
             cursor: pointer;
-            transition: all var(--transition-speed);
+            transition: all 0.25s ease;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
+            gap: 6px;
             touch-action: manipulation;
+            min-height: 40px;
+            min-width: 56px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            letter-spacing: 0.3px;
         }
 
         .order-card .order-actions button:hover {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         }
 
         .order-card .order-actions button:active {
             transform: scale(0.95);
         }
 
-        .btn-approve {
-            background: var(--emerald);
+        .order-card .order-actions button i {
+            font-size: 0.85rem;
+        }
+
+        /* Individual button styles */
+        .order-card .order-actions .btn-approve {
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
         }
-        .btn-reject {
-            background: var(--rose);
+        .order-card .order-actions .btn-approve:hover {
+            background: linear-gradient(135deg, #34d399, #10b981);
+            box-shadow: 0 8px 25px rgba(16,185,129,0.35);
+        }
+
+        .order-card .order-actions .btn-reject {
+            background: linear-gradient(135deg, #f43f5e, #dc2626);
             color: white;
         }
-        .btn-delete {
-            background: #475569;
+        .order-card .order-actions .btn-reject:hover {
+            background: linear-gradient(135deg, #fb7185, #f43f5e);
+            box-shadow: 0 8px 25px rgba(244,63,94,0.35);
+        }
+
+        .order-card .order-actions .btn-delete {
+            background: linear-gradient(135deg, #64748b, #475569);
             color: white;
         }
-        .btn-detail {
-            background: rgba(139,92,246,0.2);
-            color: var(--violet);
+        .order-card .order-actions .btn-delete:hover {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+            box-shadow: 0 8px 25px rgba(100,116,139,0.35);
         }
-        .btn-screenshot {
-            background: rgba(0,212,255,0.15);
-            color: var(--cyan);
+
+        .order-card .order-actions .btn-detail {
+            background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(139,92,246,0.1));
+            color: #a78bfa;
+            border: 1px solid rgba(139,92,246,0.2);
+        }
+        .order-card .order-actions .btn-detail:hover {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border-color: #8b5cf6;
+            box-shadow: 0 8px 25px rgba(139,92,246,0.35);
+        }
+
+        .order-card .order-actions .btn-screenshot {
+            background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.08));
+            color: #00d4ff;
+            border: 1px solid rgba(0,212,255,0.2);
+        }
+        .order-card .order-actions .btn-screenshot:hover {
+            background: linear-gradient(135deg, #00d4ff, #0891b2);
+            color: white;
+            border-color: #00d4ff;
+            box-shadow: 0 8px 25px rgba(0,212,255,0.35);
         }
 
         /* Proof Section */
@@ -1084,23 +1159,31 @@
         }
 
         .mode-btn {
-            padding: 6px 18px;
-            border-radius: 40px;
-            font-size: 0.65rem;
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
             border: none;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
             touch-action: manipulation;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         .mode-btn.active {
             background: linear-gradient(135deg, var(--cyan), #0891b2);
             color: white;
+            box-shadow: 0 4px 15px rgba(0,212,255,0.3);
         }
         .mode-btn.inactive {
-            background: rgba(0,212,255,0.15);
+            background: rgba(0,212,255,0.1);
             color: var(--cyan);
-            border: 1px solid rgba(0,212,255,0.3);
+            border: 1px solid rgba(0,212,255,0.2);
+        }
+        .mode-btn:hover {
+            transform: translateY(-2px);
         }
 
         /* ===== NOTIFICATIONS ===== */
@@ -1706,18 +1789,29 @@
             .order-card .order-prices {
                 align-items: flex-start;
                 flex: 1;
+                min-width: 100px;
             }
 
             .order-card .order-actions {
                 flex: 1;
+                min-width: 140px;
                 justify-content: flex-start;
+                gap: 6px;
             }
 
             .order-card .order-actions button {
-                padding: 6px 12px;
-                font-size: 0.55rem;
+                padding: 10px 14px;
+                font-size: 0.7rem;
+                min-height: 44px;
+                min-width: 48px;
+                border-radius: 10px;
                 flex: 1;
+                min-width: 60px;
                 justify-content: center;
+            }
+
+            .order-card .order-actions button i {
+                font-size: 0.9rem;
             }
 
             .order-card .order-proof {
@@ -2105,8 +2199,10 @@
             }
 
             .order-card .order-actions button {
-                padding: 6px 12px;
-                font-size: 0.55rem;
+                padding: 8px 14px;
+                font-size: 0.7rem;
+                min-height: 38px;
+                min-width: 50px;
             }
 
             .modal-card,
@@ -2438,7 +2534,7 @@
             <div id="marketTab" class="tab-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                     <h3 style="font-size: 1rem;"><i class="fas fa-store"></i> ထုတ်ကုန်များ</h3>
-                    <button class="add-product-btn" onclick="window.openAddProductModal()" style="background:var(--emerald); color:white; border:none; padding:6px 14px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px; touch-action:manipulation;">
+                    <button class="add-product-btn" onclick="window.openAddProductModal()" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:10px 20px; border-radius:12px; font-size:0.75rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px; touch-action:manipulation; min-height:44px; transition:all 0.25s ease;">
                         <i class="fas fa-plus"></i> ထုတ်ကုန်ထည့်ရန်
                     </button>
                 </div>
@@ -2451,7 +2547,7 @@
             <div id="adsTab" class="tab-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                     <h3 style="font-size: 1rem;"><i class="fas fa-ad"></i> ကြော်ငြာများ</h3>
-                    <button class="add-product-btn" onclick="window.openAddAdModal()" style="background:var(--emerald); color:white; border:none; padding:6px 14px; border-radius:40px; font-size:0.7rem; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px; touch-action:manipulation;">
+                    <button class="add-product-btn" onclick="window.openAddAdModal()" style="background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; padding:10px 20px; border-radius:12px; font-size:0.75rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px; touch-action:manipulation; min-height:44px; transition:all 0.25s ease;">
                         <i class="fas fa-plus"></i> ကြော်ငြာအသစ်
                     </button>
                 </div>
@@ -3553,7 +3649,7 @@
                 }
             };
 
-            // ===== RENDER ORDERS (Horizontal Layout) =====
+            // ===== RENDER ORDERS =====
             function renderOrders(orders) {
                 const container = document.getElementById('ordersList');
                 if (!container) return;
@@ -3844,10 +3940,10 @@
                     el.style.display = 'flex';
                     el.innerHTML = `
                             <span style="font-size:0.7rem; color:var(--cyan);">${count} ခု ရွေးထားသည်</span>
-                            <button onclick="window.bulkApprove()" style="background:var(--emerald); color:white;"><i class="fas fa-check"></i> အတည်ပြု</button>
-                            <button onclick="window.bulkReject()" style="background:var(--rose); color:white;"><i class="fas fa-times"></i> ပယ်ချ</button>
-                            <button onclick="window.bulkDelete()" style="background:#64748b; color:white;"><i class="fas fa-trash"></i> ဖျက်မယ်</button>
-                            <button onclick="window.deselectAllOrders()" style="background:transparent; border:1px solid #64748b; color:var(--text-secondary);">✕</button>
+                            <button class="bulk-approve" onclick="window.bulkApprove()"><i class="fas fa-check"></i> အတည်ပြု</button>
+                            <button class="bulk-reject" onclick="window.bulkReject()"><i class="fas fa-times"></i> ပယ်ချ</button>
+                            <button class="bulk-delete" onclick="window.bulkDelete()"><i class="fas fa-trash"></i> ဖျက်မယ်</button>
+                            <button class="bulk-cancel" onclick="window.deselectAllOrders()">✕</button>
                         `;
                 } else {
                     el.style.display = 'none';
