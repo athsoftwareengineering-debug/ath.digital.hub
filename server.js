@@ -28,14 +28,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ==================== SALES HOURS CONFIGURATION ====================
-// ဆိုင်ကို ဖွင့်ထားတယ် (manualStatus: true)
 let salesHours = {
     enabled: true,
-    mode: 'manual',
+    mode: 'auto',
     startHour: 9,
     endHour: 19,
     timezone: 'Asia/Yangon',
-    manualStatus: true,   // ← ဆိုင်ဖွင့်ထားတယ်
+    manualStatus: false,
     message: 'ကျေးဇူးပြု၍ နံနက် ၉ နာရီမှ ညနေ ၇ နာရီအတွင်းမှသာ ဝယ်ယူနိုင်ပါသည်။'
 };
 
@@ -299,16 +298,23 @@ function isAuthenticated(req, res, next) {
     else res.status(401).json({ success: false, error: 'Unauthorized' });
 }
 
+// ==================== ADD NOTIFICATION (FIXED) ====================
 async function addNotificationToDatabase(order) {
     try {
-        await supabaseAdmin.from('admin_notifications').insert([{
+        // type column မပါဘဲ insert လုပ်ပါ (column မရှိရင် error မဖြစ်အောင်)
+        const { error } = await supabaseAdmin.from('admin_notifications').insert([{
             order_id: order.id,
             title: `🆕 New Order #${order.id}`,
             message: `${order.plan} - ${order.price.toLocaleString()} MMK from ${maskPhone(order.phone)}`,
             is_read: false,
             created_at: new Date().toISOString()
         }]);
-    } catch (e) { console.error('Error saving notification:', e); }
+        if (error) {
+            console.error('Error saving notification:', error);
+        }
+    } catch (e) { 
+        console.error('Error in addNotificationToDatabase:', e); 
+    }
 }
 
 async function autoCleanupOldOrders() {
@@ -487,7 +493,6 @@ app.get('/api/live/order/:phone', async (req, res) => {
 // ==================== CREATE ORDER ====================
 app.post('/api/orders', orderLimiter, upload.single('slip'), async (req, res) => {
     try {
-        // ဆိုင်ဖွင့်ထားလို့ canPlaceOrder() က true ပြန်မယ်
         if (!canPlaceOrder()) {
             if (req.file) fs.unlinkSync(req.file.path);
             return res.status(403).json({ success: false, error: getStatusMessage(), isOpen: false, mode: salesHours.mode });
@@ -515,7 +520,10 @@ app.post('/api/orders', orderLimiter, upload.single('slip'), async (req, res) =>
         if (insertError) throw insertError;
         await updateUserStats(phone, false);
         const { data: newOrder } = await supabase.from('orders').select('*').eq('id', orderId).single();
-        if (newOrder) { await broadcastNewOrder(newOrder); await addNotificationToDatabase(newOrder); }
+        if (newOrder) { 
+            await broadcastNewOrder(newOrder); 
+            await addNotificationToDatabase(newOrder); 
+        }
         res.json({ success: true, orderId: orderId, message: 'Order created successfully' });
     } catch (error) {
         console.error('Error creating order:', error);
