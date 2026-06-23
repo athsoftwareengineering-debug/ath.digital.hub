@@ -180,6 +180,7 @@
         let planSales = { 1: 0, 2: 0, 3: 0, 4: 0 };
         let isShopOpen = true;
         let isLoading = false;
+        let shopStatusInterval = null;
         
         const featureConfig = {
             data: { icon: "fa-database", class: "feature-data" },
@@ -399,16 +400,37 @@
             }
         }
         
-        // ============ CHECK SHOP STATUS ============
+        // ============ CHECK SHOP STATUS (Polling - 5 seconds) ============
         async function checkShopStatus() {
             try {
                 const response = await fetch('/api/sales/status');
                 const data = await response.json();
                 isShopOpen = data.isOpen;
                 updateButtonsStatus();
+                // Also update any status display if exists
+                const statusEl = document.getElementById('salesStatus');
+                if (statusEl) {
+                    statusEl.textContent = data.message;
+                    statusEl.className = `sales-status ${data.isOpen ? 'open' : 'closed'}`;
+                }
             } catch(e) {
                 console.error('Error checking shop status:', e);
             }
+        }
+        
+        // ============ START POLLING ============
+        function startShopStatusPolling() {
+            if (shopStatusInterval) {
+                clearInterval(shopStatusInterval);
+                shopStatusInterval = null;
+            }
+            
+            // Check immediately
+            checkShopStatus();
+            
+            // Then every 5 seconds
+            shopStatusInterval = setInterval(checkShopStatus, 5000);
+            console.log('🔄 Shop status polling started (every 5 seconds)');
         }
         
         // ============ LISTEN FOR PARENT MESSAGES ============
@@ -425,11 +447,13 @@
             container.innerHTML = '<div class="loading-text"><i class="fas fa-spinner fa-pulse"></i> Loading sales data...</div>';
             
             await loadSalesDataFromServer();
-            await checkShopStatus();
             
+            // Start polling for shop status (5 seconds)
+            startShopStatusPolling();
+            
+            // Sales data refresh every 30 seconds
             setInterval(async () => {
                 await loadSalesDataFromServer();
-                await checkShopStatus();
             }, 30000);
         }
         
@@ -439,6 +463,8 @@
         window.updateButtonsStatus = updateButtonsStatus;
         window.renderPlans = renderPlans;
         window.loadSalesDataFromServer = loadSalesDataFromServer;
+        window.checkShopStatus = checkShopStatus;
+        window.startShopStatusPolling = startShopStatusPolling;
     </script>
 </body>
 </html>
