@@ -631,6 +631,20 @@
             border-color: #f43f5e;
             transform: scale(0.98);
         }
+
+        /* ===== SUPPORT MODAL ===== */
+        #supportModal .modal-card {
+            max-width: 400px;
+            text-align: center;
+            padding: 1.5rem;
+        }
+        #supportModal .modal-card a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        #supportModal .modal-card a:active {
+            transform: scale(0.97);
+        }
     </style>
 </head>
 <body>
@@ -722,7 +736,7 @@
             
             <li><div class="drawer-divider"></div></li>
             <li><a onclick="closeDrawer(); exportMyOrders()"><i class="fas fa-file-excel"></i> <span>Export Orders (CSV)</span></a></li>
-            <li><a onclick="closeDrawer(); showSupport()"><i class="fas fa-headset"></i> <span>Customer Support</span></a></li>
+            <li><a onclick="closeDrawer(); showSupportModal()"><i class="fas fa-headset"></i> <span>Customer Support</span></a></li>
             <li><a onclick="closeDrawer(); logout()"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
         </ul>
     </div>
@@ -762,8 +776,16 @@
                 <p style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 8px;">သင့်အတွက် အကောင်းဆုံး VIP Plan များ</p>
             </div>
             
-            <div style="background:rgba(245,158,11,0.1); border-left:3px solid var(--amber); padding:12px; border-radius:0.8rem; margin-top: 16px;">
-                <i class="fas fa-bullhorn"></i> 🎉 New VIP Plan များ ထပ်ထည့်ထားပါသည်။ ယခုပဲ ဝယ်ယူလိုက်ပါ။
+            <!-- ===== MARQUEE ANNOUNCEMENT ===== -->
+            <div style="background:rgba(245,158,11,0.1); border-left:3px solid var(--amber); padding:10px 0; border-radius:0.8rem; margin-top: 16px; overflow: hidden;">
+                <marquee behavior="scroll" direction="left" scrollamount="8" style="font-size:0.8rem; color: var(--text-primary); padding: 0 12px;">
+                    <i class="fas fa-bullhorn" style="color: var(--amber);"></i> 
+                    🎉 New VIP Plan များ ထပ်ထည့်ထားပါသည်။ ယခုပဲ ဝယ်ယူလိုက်ပါ။ 
+                    <span style="color: var(--amber); margin: 0 20px;">✦</span> 
+                    အမြန်ဆုံး ဝယ်ယူသူများအတွက် အထူးလျှော့စျေး 
+                    <span style="color: var(--amber); margin: 0 20px;">✦</span> 
+                    🔥 VIP Plans များ အကန့်အသတ်ဖြင့်သာ ရရှိနိုင်ပါသည်။
+                </marquee>
             </div>
         </div>
 
@@ -913,6 +935,72 @@
             <button class="close-modal" onclick="closeModal()">&times;</button>
         </div>
         <img id="modalImage" src="" alt="Screenshot">
+    </div>
+</div>
+
+<!-- ===== SUPPORT MODAL ===== -->
+<div id="supportModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 400px; text-align: center;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 1rem;"><i class="fas fa-headset" style="color: var(--cyan);"></i> <span id="supportTitle">Customer Support</span></h3>
+            <button onclick="closeSupportModal()" style="background:none; border:none; color:white; font-size:1.3rem; cursor:pointer;">&times;</button>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.6;">
+                📞 ဆက်သွယ်ရန်
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Telegram Channel -->
+                <a href="https://t.me/ATHDIGITALHUBOFFICIAL" target="_blank" 
+                   style="display: flex; align-items: center; justify-content: center; gap: 10px; 
+                          padding: 12px 20px; background: linear-gradient(135deg, #0088cc, #006699); 
+                          border-radius: 60px; color: white; text-decoration: none; font-weight: 600; font-size: 0.85rem;
+                          transition: all 0.3s ease;">
+                    <i class="fab fa-telegram" style="font-size: 1.2rem;"></i> 
+                    Join Telegram Channel
+                    <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
+                </a>
+                
+                <!-- Telegram Support -->
+                <a href="https://t.me/ATHsupport" target="_blank" 
+                   style="display: flex; align-items: center; justify-content: center; gap: 10px; 
+                          padding: 12px 20px; background: rgba(0,212,255,0.1); 
+                          border: 1px solid rgba(0,212,255,0.3); border-radius: 60px; 
+                          color: var(--text-primary); text-decoration: none; font-weight: 500; font-size: 0.8rem;
+                          transition: all 0.3s ease;">
+                    <i class="fab fa-telegram"></i> 
+                    Telegram Support
+                </a>
+                
+                <!-- Phone -->
+                <a href="tel:09789999368" 
+                   style="display: flex; align-items: center; justify-content: center; gap: 10px; 
+                          padding: 12px 20px; background: rgba(16,185,129,0.1); 
+                          border: 1px solid rgba(16,185,129,0.3); border-radius: 60px; 
+                          color: var(--text-primary); text-decoration: none; font-weight: 500; font-size: 0.8rem;
+                          transition: all 0.3s ease;">
+                    <i class="fas fa-phone"></i> 
+                    📞 09789999368
+                </a>
+                
+                <!-- Viber -->
+                <a href="viber://chat?number=09799480995" 
+                   style="display: flex; align-items: center; justify-content: center; gap: 10px; 
+                          padding: 12px 20px; background: rgba(139,92,246,0.1); 
+                          border: 1px solid rgba(139,92,246,0.3); border-radius: 60px; 
+                          color: var(--text-primary); text-decoration: none; font-weight: 500; font-size: 0.8rem;
+                          transition: all 0.3s ease;">
+                    <i class="fab fa-viber" style="color: #8b5cf6;"></i> 
+                    Viber Support
+                </a>
+            </div>
+        </div>
+        
+        <button onclick="closeSupportModal()" style="width: 100%; padding: 12px; border-radius: 60px; background: #334155; color: white; border: none; cursor: pointer; font-weight: 600;">
+            <i class="fas fa-times"></i> ပိတ်ရန်
+        </button>
     </div>
 </div>
 
@@ -1636,7 +1724,22 @@
         document.getElementById('drawer').classList.remove('open');
         document.getElementById('drawerOverlay').classList.remove('open');
     }
-    function showSupport() { closeDrawer(); showToast("Contact: Telegram @ATHsupport, Viber 09799480995"); }
+    
+    // ===== SUPPORT MODAL FUNCTIONS =====
+    function showSupportModal() {
+        document.getElementById('supportModal').classList.add('active');
+        closeDrawer();
+    }
+    
+    function closeSupportModal() {
+        document.getElementById('supportModal').classList.remove('active');
+    }
+    
+    // ===== OLD showSupport - REPLACED =====
+    function showSupport() {
+        showSupportModal();
+    }
+    
     function showNotifications() { showToast("No new notifications"); }
     
     // ==================== LANGUAGE SWITCHER (WORKING) ====================
@@ -1716,7 +1819,9 @@
         
         // Update Drawer Menu
         const drawerLinks = document.querySelectorAll('.drawer-menu li a');
-        const drawerTextKeys = ['home', 'plans', 'orders', 'live', 'market', 'profile', 'support', 'exportOrders', 'logout'];
+        // ✅ FIXED: exportOrders နဲ့ support ကို မှန်ကန်အောင်ပြင်ထားတယ်
+        const drawerTextKeys = ['home', 'plans', 'orders', 'live', 'market', 'profile', 'exportOrders', 'support', 'logout'];
+        
         drawerLinks.forEach((link, index) => {
             if (index < drawerTextKeys.length) {
                 const span = link.querySelector('span');
@@ -1817,6 +1922,8 @@
     window.switchTab = switchTab;
     window.toggleDrawer = toggleDrawer;
     window.closeDrawer = closeDrawer;
+    window.showSupportModal = showSupportModal;
+    window.closeSupportModal = closeSupportModal;
     window.showSupport = showSupport;
     window.showNotifications = showNotifications;
     window.changeLanguage = changeLanguage;
