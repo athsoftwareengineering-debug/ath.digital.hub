@@ -551,6 +551,36 @@ app.get('/api/admin/orders', isAuthenticated, async (req, res) => {
     }
 });
 
+// ==================== GET APPROVED ORDER COUNTS BY PLAN ====================
+app.get('/api/orders/approved-counts', async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('orders')
+            .select('plan, status')
+            .eq('status', 'Approved');
+        
+        if (error) throw error;
+        
+        const counts = {
+            "VIP LEVEL - 1": 0,
+            "VIP LEVEL - 2": 0,
+            "VIP LEVEL - 3": 0,
+            "VIP LEVEL - 4 (ULTRA)": 0
+        };
+        
+        data.forEach(order => {
+            if (counts[order.plan] !== undefined) {
+                counts[order.plan] += 1;
+            }
+        });
+        
+        res.json({ success: true, counts });
+    } catch(e) {
+        console.error('Error getting approved counts:', e);
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
 app.get('/api/admin/user-stats', isAuthenticated, async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin.from('user_stats').select('*').order('created_at', { ascending: false });
