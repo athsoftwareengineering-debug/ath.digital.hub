@@ -615,6 +615,70 @@
         }
 
         /* ============================================================
+           ORDERS TAB - FILTER BAR (New Orders / Approved Orders)
+           ============================================================ */
+        .orders-filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+        .orders-filter-bar button {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            touch-action: manipulation;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .orders-filter-bar button.active {
+            background: linear-gradient(135deg, var(--cyan), #0891b2);
+            color: white;
+            border-color: var(--cyan);
+            box-shadow: 0 4px 15px rgba(0,212,255,0.25);
+        }
+        .orders-filter-bar button:hover:not(.active) {
+            background: rgba(0,212,255,0.08);
+            border-color: rgba(0,212,255,0.3);
+        }
+        .orders-filter-bar button .badge-count {
+            background: rgba(255,255,255,0.2);
+            padding: 1px 10px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 700;
+        }
+        .orders-filter-bar button.active .badge-count {
+            background: rgba(255,255,255,0.25);
+        }
+        .orders-filter-bar button .badge-count.pending-badge {
+            background: rgba(245,158,11,0.2);
+            color: #fbbf24;
+        }
+        .orders-filter-bar button.active .badge-count.pending-badge {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        .orders-filter-bar button .badge-count.approved-badge {
+            background: rgba(16,185,129,0.2);
+            color: #34d399;
+        }
+        .orders-filter-bar button.active .badge-count.approved-badge {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        /* ============================================================
            BULK ACTIONS
            ============================================================ */
         #bulkActions {
@@ -1038,21 +1102,37 @@
         .order-card .order-proof {
             width: 100%;
             display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            padding: 8px 16px;
+            flex-direction: column;
+            padding: 8px 12px;
+            border-radius: 12px;
+            gap: 4px;
+            margin-top: 6px;
             background: rgba(0,212,255,0.04);
-            border-radius: 60px;
             border: 1px solid var(--border-color);
-            margin-top: 4px;
+        }
+
+        .order-card .order-proof .proof-row-1 {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            gap: 10px;
+            align-items: center;
+        }
+        .order-card .order-proof .proof-row-1 .proof-item {
+            flex: 1;
+            min-width: 0;
+        }
+        .order-card .order-proof .proof-row-1 .proof-item:last-child {
+            text-align: right;
         }
 
         .order-card .order-proof-item {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             color: var(--text-secondary);
+            white-space: nowrap;
         }
 
         .order-card .order-proof-item strong {
@@ -1072,7 +1152,69 @@
             color: var(--violet) !important;
         }
 
-        /* Countdown */
+        /* Payment + Countdown - 50%+50% */
+        .order-card .order-payment-countdown {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+            padding: 6px 12px;
+            margin-top: 4px;
+            background: rgba(0,0,0,0.15);
+            border-radius: 40px;
+            border: 1px solid var(--border-color);
+        }
+
+        .order-card .order-payment-countdown .payment-section {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .order-card .order-payment-countdown .payment-section .payment-method {
+            color: var(--violet) !important;
+            font-weight: 600;
+            font-size: 0.6rem;
+        }
+
+        .order-card .order-payment-countdown .countdown-section {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 6px;
+            font-size: 0.6rem;
+            font-family: 'Inter', monospace;
+            color: var(--cyan);
+        }
+
+        .order-card .order-payment-countdown .countdown-section i {
+            font-size: 0.7rem;
+            color: var(--cyan);
+        }
+
+        .order-card .order-payment-countdown .countdown-section .countdown-timer {
+            font-weight: 600;
+            color: var(--cyan);
+            letter-spacing: 0.5px;
+        }
+
+        .order-card .order-payment-countdown .countdown-section.expired {
+            color: var(--rose);
+        }
+        .order-card .order-payment-countdown .countdown-section.expired i {
+            color: var(--rose);
+        }
+        .order-card .order-payment-countdown .countdown-section.expired .countdown-timer {
+            color: var(--rose);
+        }
+
+        /* Countdown (legacy - kept for compatibility) */
         .order-card .order-countdown {
             width: 100%;
             background: rgba(0,212,255,0.06);
@@ -1754,34 +1896,157 @@
                 padding: 12px 10px;
             }
 
+            /* ===== ORDER CARD - TWO ROWS 50%+50% ===== */
             .order-card {
                 flex-direction: column;
-                padding: 14px;
+                padding: 12px;
+                gap: 8px;
+            }
+
+            /* Row 1: Order ID + Status (50%+50%) */
+            .order-card .order-header {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 6px;
+                width: 100%;
+                padding-bottom: 6px;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .order-card .order-header .order-id {
+                flex: 1;
+                font-size: 0.55rem;
+                padding: 3px 8px;
+                text-align: left;
+            }
+
+            .order-card .order-header .order-status {
+                flex: 1;
+                font-size: 0.55rem;
+                padding: 3px 8px;
+                text-align: right;
+            }
+
+            .order-card .order-header .order-checkbox {
+                flex-shrink: 0;
+                width: 16px;
+                height: 16px;
+                accent-color: var(--cyan);
+                cursor: pointer;
+                margin: 0 2px;
+                order: -1;
+            }
+
+            /* Row 2: Order Info + Prices (50%+50%) */
+            .order-card .order-left-and-right {
+                display: flex;
+                flex-direction: row;
+                align-items: stretch;
                 gap: 10px;
+                width: 100%;
+                padding: 4px 0;
+            }
+
+            .order-card .order-left {
+                flex: 1;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+                justify-content: center;
             }
 
             .order-card .order-right {
-                border-left: none;
-                border-top: 1px solid var(--border-color);
-                padding-left: 0;
-                padding-top: 10px;
-                align-items: stretch;
-                flex-direction: row;
-                flex-wrap: wrap;
-                justify-content: space-between;
-            }
-
-            .order-card .order-prices {
-                align-items: flex-start;
                 flex: 1;
-                min-width: 100px;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                justify-content: center;
+                gap: 1px;
+                padding-left: 10px;
+                border-left: 1px solid var(--border-color);
             }
 
-            /* ===== 50/50 Buttons on Mobile ===== */
+            .order-card .order-plan {
+                font-size: 0.75rem;
+                font-weight: 700;
+            }
+
+            .order-card .order-plan i {
+                font-size: 0.7rem;
+            }
+
+            .order-card .order-phone {
+                font-size: 0.65rem;
+                padding: 2px 8px;
+            }
+
+            .order-card .order-date {
+                font-size: 0.5rem;
+            }
+
+            .order-card .order-price {
+                font-size: 0.9rem;
+            }
+
+            .order-card .order-price small {
+                font-size: 0.5rem;
+            }
+
+            .order-card .order-cost,
+            .order-card .order-profit {
+                font-size: 0.55rem;
+            }
+
+            /* ===== PROOF SECTION ===== */
+            .order-card .order-proof {
+                padding: 6px 10px;
+                margin-top: 4px;
+                gap: 3px;
+            }
+
+            .order-card .order-proof .proof-row-1 {
+                gap: 6px;
+            }
+
+            .order-card .order-proof-item {
+                font-size: 0.5rem;
+            }
+
+            /* ===== PAYMENT + COUNTDOWN (50%+50%) ===== */
+            .order-card .order-payment-countdown {
+                padding: 5px 10px;
+                margin-top: 3px;
+                border-radius: 30px;
+            }
+
+            .order-card .order-payment-countdown .payment-section .payment-method {
+                font-size: 0.55rem;
+            }
+
+            .order-card .order-payment-countdown .countdown-section {
+                font-size: 0.55rem;
+            }
+
+            .order-card .order-payment-countdown .countdown-section i {
+                font-size: 0.6rem;
+            }
+
+            /* ===== ACTIONS (မူလအတိုင်း 50%+50%) ===== */
+            .order-card .order-actions-wrapper {
+                margin-top: 8px;
+                padding-top: 8px;
+                gap: 6px;
+            }
+
             .order-card .order-actions-row-1,
             .order-card .order-actions-row-2 {
+                display: flex;
                 flex-direction: row !important;
-                gap: 8px;
+                gap: 6px;
                 width: 100%;
             }
 
@@ -1789,54 +2054,40 @@
             .order-card .order-actions-row-2 button {
                 flex: 1 !important;
                 width: auto !important;
-                min-height: 48px;
-                padding: 12px 8px;
-                font-size: 0.7rem;
-                border-radius: 12px;
+                min-height: 40px;
+                padding: 8px 6px;
+                font-size: 0.6rem;
+                border-radius: 10px;
             }
 
             .order-card .order-actions-row-3 button {
                 width: 100%;
-                min-height: 48px;
-                padding: 12px 16px;
-                font-size: 0.75rem;
-                border-radius: 12px;
+                min-height: 40px;
+                padding: 8px 12px;
+                font-size: 0.65rem;
+                border-radius: 10px;
             }
 
             .order-card .order-actions-wrapper button i {
-                font-size: 0.9rem;
-            }
-
-            .order-card .order-proof {
-                flex-direction: column;
-                align-items: flex-start;
-                border-radius: 12px;
-                padding: 8px 14px;
-                gap: 4px;
-            }
-
-            .order-card .order-proof-item {
-                font-size: 0.55rem;
-            }
-
-            .order-card .order-header .order-id {
-                font-size: 0.55rem;
-            }
-
-            .order-card .order-plan {
                 font-size: 0.75rem;
             }
 
-            .order-card .order-phone {
+            /* ===== ORDERS FILTER BAR (Mobile) ===== */
+            .orders-filter-bar {
+                gap: 6px;
+                flex-wrap: wrap;
+            }
+            .orders-filter-bar button {
+                padding: 8px 12px;
                 font-size: 0.7rem;
-                padding: 2px 10px;
+                min-height: 38px;
             }
-
-            .order-card .order-countdown {
+            .orders-filter-bar button .badge-count {
                 font-size: 0.5rem;
-                padding: 4px 12px;
+                padding: 1px 8px;
             }
 
+            /* ===== TOP BAR ===== */
             .top-bar {
                 padding: 10px 14px;
                 border-radius: 1rem;
@@ -1853,6 +2104,7 @@
                 font-size: 1rem;
             }
 
+            /* ===== SEARCH & FILTER ===== */
             .search-bar,
             .filter-bar {
                 padding: 10px;
@@ -1892,6 +2144,7 @@
                 min-width: 60px;
             }
 
+            /* ===== BOTTOM NAV ===== */
             .bottom-nav .nav-item {
                 padding: 4px 6px;
                 font-size: 0.5rem;
@@ -1902,6 +2155,7 @@
                 font-size: 1rem;
             }
 
+            /* ===== MODALS ===== */
             .modal-card,
             .alert-card {
                 padding: 1rem;
@@ -1932,6 +2186,7 @@
                 min-height: 44px;
             }
 
+            /* ===== SALES HOURS ===== */
             .sales-hours-controls {
                 flex-direction: column;
                 align-items: stretch;
@@ -1977,6 +2232,7 @@
                 transform: translateX(24px);
             }
 
+            /* ===== DRAWER ===== */
             .drawer {
                 width: 260px;
                 left: -260px;
@@ -2014,6 +2270,7 @@
                 font-size: 0.65rem;
             }
 
+            /* ===== OTHERS ===== */
             .sales-status {
                 font-size: 0.65rem;
                 padding: 8px;
@@ -2145,15 +2402,15 @@
 
             .order-card .order-actions-row-1 button,
             .order-card .order-actions-row-2 button {
-                font-size: 0.6rem;
-                padding: 10px 6px;
-                min-height: 40px;
+                font-size: 0.55rem;
+                padding: 8px 4px;
+                min-height: 34px;
             }
 
             .order-card .order-actions-row-3 button {
-                font-size: 0.65rem;
-                padding: 10px 12px;
-                min-height: 40px;
+                font-size: 0.6rem;
+                padding: 8px 10px;
+                min-height: 34px;
             }
 
             .modal-card,
@@ -2166,6 +2423,16 @@
             .drawer {
                 width: 240px;
                 left: -240px;
+            }
+
+            .orders-filter-bar button {
+                padding: 6px 10px;
+                font-size: 0.65rem;
+                min-height: 32px;
+            }
+            .orders-filter-bar button .badge-count {
+                font-size: 0.45rem;
+                padding: 1px 6px;
             }
         }
 
@@ -2208,6 +2475,15 @@
 
             .top-bar {
                 border-radius: 1.5rem;
+            }
+
+            .orders-filter-bar {
+                gap: 8px;
+            }
+            .orders-filter-bar button {
+                padding: 10px 16px;
+                font-size: 0.75rem;
+                min-height: 44px;
             }
         }
 
@@ -2286,6 +2562,12 @@
             .bottom-nav .nav-item i {
                 font-size: 1.4rem;
             }
+
+            .orders-filter-bar button {
+                padding: 12px 20px;
+                font-size: 0.85rem;
+                min-height: 48px;
+            }
         }
 
         /* ============================================================
@@ -2307,8 +2589,6 @@
 <body>
 
     <div id="app">
-        <!-- ===== NOTIFICATION OVERLAY (REMOVED - No Bell) ===== -->
-
         <!-- ===== ADMIN CONTENT ===== -->
         <div class="container" id="adminContent" style="display: none;">
 
@@ -2544,6 +2824,18 @@
 
             <!-- ===== ORDERS TAB ===== -->
             <div id="ordersTab" class="tab-content">
+                <!-- ===== FILTER BAR: New Orders / Approved Orders ===== -->
+                <div class="orders-filter-bar">
+                    <button id="filterNewOrders" class="active" onclick="window.setOrderFilter('pending')">
+                        <i class="fas fa-clock"></i> New Orders
+                        <span class="badge-count pending-badge" id="pendingCount">0</span>
+                    </button>
+                    <button id="filterApprovedOrders" onclick="window.setOrderFilter('approved')">
+                        <i class="fas fa-check-circle"></i> Approved
+                        <span class="badge-count approved-badge" id="approvedCount">0</span>
+                    </button>
+                </div>
+
                 <div class="search-bar">
                     <input type="text" id="searchInput" class="search-input" placeholder="🔍 ဖုန်းနံပါတ်၊ အသုံးပြုသူ ID သို့မဟုတ် အမည်ဖြင့် ရှာဖွေရန်">
                     <button class="search-btn" onclick="window.searchByPhoneOrId()"><i class="fas fa-search"></i> ရှာဖွေရန်</button>
@@ -2764,6 +3056,7 @@
             let sessionTimer = null;
             const SESSION_TIMEOUT = 30 * 60 * 1000;
             let currentLang = localStorage.getItem('adminLang') || 'en';
+            let currentOrderFilter = 'all';
 
             const costPriceMap = {
                 "VIP LEVEL - 1": 14500,
@@ -2921,6 +3214,20 @@
                     adTitle.innerHTML = isEn ?
                         '<i class="fas fa-ad"></i> Ad Display Settings' :
                         '<i class="fas fa-ad"></i> ကြော်ငြာ ပြပုံအပြင်အဆင်';
+                }
+
+                // Orders Filter Bar
+                const newOrdersBtn = document.getElementById('filterNewOrders');
+                const approvedBtn = document.getElementById('filterApprovedOrders');
+                if (newOrdersBtn) {
+                    newOrdersBtn.innerHTML = isEn ?
+                        '<i class="fas fa-clock"></i> New Orders <span class="badge-count pending-badge" id="pendingCount">0</span>' :
+                        '<i class="fas fa-clock"></i> အသစ် <span class="badge-count pending-badge" id="pendingCount">0</span>';
+                }
+                if (approvedBtn) {
+                    approvedBtn.innerHTML = isEn ?
+                        '<i class="fas fa-check-circle"></i> Approved <span class="badge-count approved-badge" id="approvedCount">0</span>' :
+                        '<i class="fas fa-check-circle"></i> အတည်ပြု <span class="badge-count approved-badge" id="approvedCount">0</span>';
                 }
 
                 // Login Box
@@ -3198,6 +3505,13 @@
                 const avgEl = document.getElementById('avgProfit');
                 if (avgEl) avgEl.textContent = (approved ? Math.round(profit / approved) : 0).toLocaleString() + 'K';
 
+                // Update filter bar counts
+                const pendingCountEl = document.getElementById('pendingCount');
+                if (pendingCountEl) pendingCountEl.textContent = pending;
+                const approvedCountEl = document.getElementById('approvedCount');
+                if (approvedCountEl) approvedCountEl.textContent = approved;
+
+                // Drawer stats
                 const drawerMap = {
                     'drawerTotalOrders': total,
                     'drawerTotalUsers': userStats ? userStats.length : 0,
@@ -3232,10 +3546,19 @@
                 document.querySelectorAll('.nav-item').forEach(item => {
                     item.classList.toggle('active', item.dataset.tab === tab);
                 });
-                if (tab === 'orders') applyFiltersAndSearch();
-                else if (tab === 'users') renderUsersTab();
-                else if (tab === 'market') loadProducts();
-                else if (tab === 'ads') loadAds();
+                if (tab === 'orders') {
+                    // Reset filter when switching to orders tab
+                    currentOrderFilter = 'all';
+                    document.getElementById('filterNewOrders').classList.add('active');
+                    document.getElementById('filterApprovedOrders').classList.remove('active');
+                    applyFiltersAndSearch();
+                } else if (tab === 'users') {
+                    renderUsersTab();
+                } else if (tab === 'market') {
+                    loadProducts();
+                } else if (tab === 'ads') {
+                    loadAds();
+                }
                 closeDrawer();
             };
 
@@ -3248,6 +3571,25 @@
                     }
                 });
             });
+
+            // ===== ORDER FILTER (New Orders / Approved Orders) =====
+            window.setOrderFilter = function(filter) {
+                currentOrderFilter = filter;
+                const newBtn = document.getElementById('filterNewOrders');
+                const approvedBtn = document.getElementById('filterApprovedOrders');
+
+                if (filter === 'pending') {
+                    newBtn.classList.add('active');
+                    approvedBtn.classList.remove('active');
+                } else if (filter === 'approved') {
+                    newBtn.classList.remove('active');
+                    approvedBtn.classList.add('active');
+                } else {
+                    newBtn.classList.add('active');
+                    approvedBtn.classList.remove('active');
+                }
+                applyFiltersAndSearch();
+            };
 
             // ===== LOGIN / LOGOUT =====
             window.login = async function() {
@@ -3959,6 +4301,14 @@
             // ===== ORDERS =====
             function applyFiltersAndSearch() {
                 let filtered = [...allOrders];
+
+                // Apply order filter (New Orders / Approved Orders)
+                if (currentOrderFilter === 'pending') {
+                    filtered = filtered.filter(o => o.status === 'Pending');
+                } else if (currentOrderFilter === 'approved') {
+                    filtered = filtered.filter(o => o.status === 'Approved');
+                }
+
                 if (currentSearchPhone) filtered = filtered.filter(o => o.phone === currentSearchPhone);
                 const status = document.getElementById('statusFilter')?.value;
                 if (status && status !== 'all') filtered = filtered.filter(o => o.status === status);
@@ -4063,46 +4413,80 @@
                     const statusBg = o.status === 'Pending' ? 'rgba(245,158,11,0.2)' :
                         (o.status === 'Approved' ? 'rgba(16,185,129,0.2)' : 'rgba(244,63,94,0.2)');
 
-                    let countdownHtml = '';
-                    if (o.status === 'Approved' && o.activated_at) {
-                        const initialCountdown = formatCountdown(o.activated_at);
-                        countdownHtml = `
-                                <div class="order-countdown" id="countdown-${o.id}">
-                                    <i class="fas fa-hourglass-half"></i>
-                                    <span class="countdown-timer">${initialCountdown || (isEn ? 'Calculating...' : 'တွက်နေသည်...')}</span>
-                                </div>
-                            `;
-                    }
+                    // Build proof items
+                    let senderNameItem = '';
+                    let last5Item = '';
+                    let paymentMethodItem = '';
 
-                    let proofItems = '';
                     if (o.sender_name) {
-                        proofItems +=
-                            `<span class="order-proof-item"><span style="color:var(--text-secondary);">${isEn ? '👤 Sender:' : '👤 ပေးပို့သူ:'}</span> <strong class="sender-name">${escapeHtml(o.sender_name)}</strong></span>`;
+                        senderNameItem = `
+                            <span class="order-proof-item">
+                                <span style="color:var(--text-secondary);">👤 ${isEn ? 'Sender:' : 'ပေးပို့သူ:'}</span>
+                                <strong class="sender-name">${escapeHtml(o.sender_name)}</strong>
+                            </span>
+                        `;
                     }
                     if (o.last5_digits) {
-                        proofItems +=
-                            `<span class="order-proof-item"><span style="color:var(--text-secondary);">${isEn ? '🧾 Last 5:' : '🧾 နောက်ဆုံး ၅လုံး:'}</span> <strong class="last5">${escapeHtml(o.last5_digits)}</strong></span>`;
+                        last5Item = `
+                            <span class="order-proof-item">
+                                <span style="color:var(--text-secondary);">🧾 ${isEn ? 'Last 5:' : 'နောက်ဆုံး ၅လုံး:'}</span>
+                                <strong class="last5">${escapeHtml(o.last5_digits)}</strong>
+                            </span>
+                        `;
                     }
                     if (o.payment_method) {
-                        proofItems +=
-                            `<span class="order-proof-item"><span style="color:var(--text-secondary);">${isEn ? '💳 Payment:' : '💳 ငွေပေးချေမှု:'}</span> <strong class="payment-method">${getPaymentIcon(o.payment_method)}</strong></span>`;
+                        paymentMethodItem = `
+                            <span class="order-proof-item" style="border:none; padding:0;">
+                                <span style="color:var(--text-secondary); font-size:0.55rem;">💳</span>
+                                <strong class="payment-method" style="font-size:0.6rem;">${getPaymentIcon(o.payment_method)}</strong>
+                            </span>
+                        `;
                     }
 
+                    // Countdown
+                    let countdownHtml = '';
+                    let countdownExpired = false;
+                    if (o.status === 'Approved' && o.activated_at) {
+                        const time = getRemainingTime(o.activated_at);
+                        if (time === 'Expired') {
+                            countdownExpired = true;
+                            countdownHtml = `
+                                <i class="fas fa-calendar-times"></i>
+                                <span class="countdown-timer" style="color:var(--rose);">${isEn ? 'Expired' : 'သက်တမ်းကုန်'}</span>
+                            `;
+                        } else if (time) {
+                            const formatted = isEn ?
+                                `${time.days}d ${time.hours}h ${time.minutes}m` :
+                                `${time.days}ရက် ${time.hours}နာရီ ${time.minutes}မိနစ်`;
+                            countdownHtml = `
+                                <i class="fas fa-hourglass-half"></i>
+                                <span class="countdown-timer">${formatted}</span>
+                            `;
+                        }
+                    }
+
+                    // Check if we have any proof items
+                    const hasProof = senderNameItem || last5Item;
+                    const hasPaymentCountdown = paymentMethodItem || countdownHtml;
+
                     html += `
-                            <div class="order-card" data-order-id="${o.id}">
+                        <div class="order-card" data-order-id="${o.id}">
+                            <!-- Row 1: Order ID + Status (50%+50%) -->
+                            <div class="order-header">
+                                <input type="checkbox" class="order-checkbox" onchange="window.toggleSelectOrder(${o.id})">
+                                <span class="order-id"><i class="fas fa-hashtag"></i> ${o.id}</span>
+                                <span class="order-status" style="background:${statusBg}; color:${statusColor};">${statusText}</span>
+                            </div>
+
+                            <!-- Row 2: Order Info + Prices (50%+50%) -->
+                            <div class="order-left-and-right">
                                 <div class="order-left">
-                                    <div class="order-header">
-                                        <span class="order-id"><i class="fas fa-hashtag"></i> ${o.id}</span>
-                                        <input type="checkbox" class="order-checkbox" onchange="window.toggleSelectOrder(${o.id})" style="accent-color:var(--cyan);">
-                                        <span class="order-status" style="background:${statusBg}; color:${statusColor};">${statusText}</span>
-                                    </div>
                                     <div class="order-plan"><i class="fas fa-tag"></i> ${escapeHtml(o.plan)}</div>
                                     <div class="order-phone" onclick="window.copyToClipboard('${escapeHtml(o.phone)}')">
                                         <i class="fas fa-phone-alt"></i> ${escapeHtml(maskPhone(o.phone))} 📋
                                     </div>
                                     <div class="order-date"><i class="fas fa-calendar-alt"></i> ${new Date(o.created_at).toLocaleString()}</div>
                                 </div>
-                                
                                 <div class="order-right">
                                     <div class="order-prices">
                                         <div class="order-price">${o.price.toLocaleString()} <small>K</small></div>
@@ -4110,47 +4494,71 @@
                                         <div class="order-profit"><i class="fas fa-chart-line"></i> ${getProfit(o.price, o.plan).toLocaleString()}K</div>
                                     </div>
                                 </div>
-                                
-                                <div class="order-actions-wrapper">
-                                    <!-- Row 1: Detail + Screenshot (50% + 50%) -->
-                                    <div class="order-actions-row-1">
-                                        <button class="btn-detail" onclick="window.viewOrderDetail(${o.id})">
-                                            <i class="fas fa-info-circle"></i> ${btnText.detail}
-                                        </button>
-                                        ${o.slip_url ? `<button class="btn-screenshot" onclick="window.openScreenshot('${escapeHtml(o.slip_url)}')">
-                                            <i class="fas fa-image"></i> ${btnText.screenshot}
-                                        </button>` : `<button class="btn-screenshot" style="opacity:0.3; cursor:default;" disabled>
-                                            <i class="fas fa-image"></i> ${isEn ? 'No Image' : 'မရှိပါ'}
-                                        </button>`}
-                                    </div>
-                                    
-                                    <!-- Row 2: Approve + Reject (50% + 50%) - only if Pending -->
-                                    ${o.status === 'Pending' ? `
-                                    <div class="order-actions-row-2">
-                                        <button class="btn-approve" onclick="window.approveOrder(${o.id})">
-                                            <i class="fas fa-check"></i> ${btnText.approve}
-                                        </button>
-                                        <button class="btn-reject" onclick="window.rejectOrder(${o.id})">
-                                            <i class="fas fa-times"></i> ${btnText.reject}
-                                        </button>
-                                    </div>
-                                    ` : ''}
-                                    
-                                    <!-- Row 3: Delete (100%) -->
-                                    <div class="order-actions-row-3">
-                                        <button class="btn-delete" onclick="window.deleteOrder(${o.id})">
-                                            <i class="fas fa-trash"></i> ${btnText.delete}
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                ${proofItems ? `<div class="order-proof">${proofItems}</div>` : ''}
-                                ${countdownHtml}
                             </div>
-                        `;
+
+                            ${hasProof ? `
+                            <!-- Row 3: Proof - Sender + Last5 (50%+50%) -->
+                            <div class="order-proof">
+                                <div class="proof-row-1">
+                                    ${senderNameItem ? `<div class="proof-item">${senderNameItem}</div>` : `<div class="proof-item"></div>`}
+                                    ${last5Item ? `<div class="proof-item" style="text-align:right;">${last5Item}</div>` : `<div class="proof-item"></div>`}
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            ${hasPaymentCountdown ? `
+                            <!-- Row 4: Payment + Countdown (50%+50%) -->
+                            <div class="order-payment-countdown">
+                                <div class="payment-section">
+                                    ${paymentMethodItem ? paymentMethodItem : '<span style="font-size:0.55rem; color:var(--text-secondary);">-</span>'}
+                                </div>
+                                <div class="countdown-section ${countdownExpired ? 'expired' : ''}">
+                                    ${countdownHtml ? countdownHtml : '<span style="font-size:0.55rem; color:var(--text-secondary);">-</span>'}
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            <!-- ===== ACTIONS (မူလအတိုင်း) ===== -->
+                            <div class="order-actions-wrapper">
+                                <!-- Row 5: Detail + Screenshot (50%+50%) -->
+                                <div class="order-actions-row-1">
+                                    <button class="btn-detail" onclick="window.viewOrderDetail(${o.id})">
+                                        <i class="fas fa-info-circle"></i> ${btnText.detail}
+                                    </button>
+                                    ${o.slip_url ? `
+                                    <button class="btn-screenshot" onclick="window.openScreenshot('${escapeHtml(o.slip_url)}')">
+                                        <i class="fas fa-image"></i> ${btnText.screenshot}
+                                    </button>` : `
+                                    <button class="btn-screenshot" style="opacity:0.3; cursor:default;" disabled>
+                                        <i class="fas fa-image"></i> ${isEn ? 'No Image' : 'မရှိပါ'}
+                                    </button>`}
+                                </div>
+
+                                <!-- Row 6: Approve + Reject (50%+50%) - only if Pending -->
+                                ${o.status === 'Pending' ? `
+                                <div class="order-actions-row-2">
+                                    <button class="btn-approve" onclick="window.approveOrder(${o.id})">
+                                        <i class="fas fa-check"></i> ${btnText.approve}
+                                    </button>
+                                    <button class="btn-reject" onclick="window.rejectOrder(${o.id})">
+                                        <i class="fas fa-times"></i> ${btnText.reject}
+                                    </button>
+                                </div>
+                                ` : ''}
+
+                                <!-- Row 7: Delete (100%) -->
+                                <div class="order-actions-row-3">
+                                    <button class="btn-delete" onclick="window.deleteOrder(${o.id})">
+                                        <i class="fas fa-trash"></i> ${btnText.delete}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 }
                 container.innerHTML = html;
 
+                // Start countdowns for approved orders
                 for (const o of orders) {
                     if (o.status === 'Approved' && o.activated_at) {
                         startCountdownForOrder(o.id, o.activated_at);
@@ -4670,23 +5078,16 @@
 
             window.openPaymentModalFromPlan = function(planName, planPrice) {
                 const isEn = currentLang === 'en';
-                
+
                 // Show toast notification
                 showToast(
-                    isEn ? 
+                    isEn ?
                     `🛒 ${planName} - ${planPrice.toLocaleString()} MMK - Please go to Orders tab to purchase` :
                     `🛒 ${planName} - ${planPrice.toLocaleString()} MMK - ဝယ်ယူရန် Orders Tab ကိုသွားပါ`
                 );
-                
+
                 // Switch to orders tab
                 window.switchTab('orders');
-                
-                // Auto-fill search with plan name (optional)
-                // const searchInput = document.getElementById('searchInput');
-                // if (searchInput) {
-                //     searchInput.value = planName;
-                //     window.searchByPhoneOrId();
-                // }
             };
 
             // ================================================================
