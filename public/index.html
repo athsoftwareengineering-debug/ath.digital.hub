@@ -30,6 +30,37 @@
         }
         .container { max-width: 600px; margin: 0 auto; padding: 0 16px; }
         
+        /* ===== SHOP STATUS - MODERN ===== */
+        .shop-status-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 24px;
+            margin: 6px auto 12px;
+            border-radius: 1.2rem;
+            width: fit-content;
+            background: rgba(16,185,129,0.06);
+            border: 1px solid rgba(16,185,129,0.12);
+            transition: all 0.3s ease;
+        }
+        .shop-status-card.closed {
+            background: rgba(244,63,94,0.06);
+            border-color: rgba(244,63,94,0.12);
+        }
+        .shop-status-card .row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .shop-status-card .status-text.open { color: #34d399; }
+        .shop-status-card .status-text.closed { color: #fb7185; }
+        .shop-status-card .sub { font-size: 0.6rem; color: #94a3b8; }
+        .shop-status-card .time-range { font-size: 0.75rem; color: #e2e8f0; font-weight: 500; }
+        .shop-status-card .time-label { font-size: 0.5rem; color: #64748b; }
+        .shop-status-card .sep { color: #475569; margin: 0 4px; }
+        
         .app-bar {
             display: flex;
             align-items: center;
@@ -580,30 +611,6 @@
             margin-top: 6px;
         }
         
-        /* Sales Status Banner */
-        .sales-status-banner {
-            background: rgba(0,212,255,0.08);
-            border-radius: 1rem;
-            padding: 12px;
-            margin-bottom: 16px;
-            text-align: center;
-            font-size: 0.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .sales-status-banner.open {
-            background: rgba(16,185,129,0.12);
-            border: 1px solid rgba(16,185,129,0.3);
-            color: #34d399;
-        }
-        .sales-status-banner.closed {
-            background: rgba(244,63,94,0.12);
-            border: 1px solid rgba(244,63,94,0.3);
-            color: #fb7185;
-        }
-        
         /* Market Close Button */
         .market-close-btn {
             background: rgba(244,63,94,0.15);
@@ -624,9 +631,6 @@
             border-color: #f43f5e;
             transform: scale(0.98);
         }
-        
-        /* Ad Container - REMOVED */
-        /* #adContainer:empty { display: none; } */
     </style>
 </head>
 <body>
@@ -724,11 +728,23 @@
     </div>
 
     <div class="container">
-        <!-- Home Tab with Sales Status Banner -->
+        <!-- Home Tab with Sales Status Card -->
         <div id="homeTab" class="tab-content active">
-            <!-- Sales Status Banner -->
-            <div id="salesStatusBanner" class="sales-status-banner">
-                <i class="fas fa-spinner fa-pulse"></i> Loading...
+            <!-- SHOP STATUS CARD -->
+            <div class="shop-status-card" id="shopStatusCard">
+                <div class="row">
+                    <span id="statusIcon">🟢</span>
+                    <span class="status-text open" id="statusText">We're Open!</span>
+                    <span class="sub" id="statusSub">(ဆိုင်ဖွင့်ထားပါသည်)</span>
+                </div>
+                <div class="row">
+                    <span>🕐</span>
+                    <span class="time-range" id="timeStart">9:00 AM</span>
+                    <span class="time-label" id="labelAm">(မနက်)</span>
+                    <span class="sep">–</span>
+                    <span class="time-range" id="timeEnd">7:00 PM</span>
+                    <span class="time-label" id="labelPm">(ညနေ)</span>
+                </div>
             </div>
             
             <!-- AD CONTAINER - REMOVED -->
@@ -1010,15 +1026,42 @@
             
             isShopOpen = data.isOpen;
             
-            const banner = document.getElementById('salesStatusBanner');
-            if (banner) {
-                const icon = data.isOpen ? '<i class="fas fa-store"></i>' : '<i class="fas fa-clock"></i>';
-                banner.innerHTML = `${icon} ${data.message}`;
-                banner.className = `sales-status-banner ${data.isOpen ? 'open' : 'closed'}`;
+            const card = document.getElementById('shopStatusCard');
+            const icon = document.getElementById('statusIcon');
+            const text = document.getElementById('statusText');
+            const sub = document.getElementById('statusSub');
+            const start = document.getElementById('timeStart');
+            const end = document.getElementById('timeEnd');
+            const la = document.getElementById('labelAm');
+            const lp = document.getElementById('labelPm');
+            
+            if (card && icon && text && sub && start && end && la && lp) {
+                if (data.isOpen) {
+                    card.className = 'shop-status-card';
+                    icon.textContent = '🟢';
+                    text.className = 'status-text open';
+                    text.textContent = "We're Open!";
+                    sub.textContent = '(ဆိုင်ဖွင့်ထားပါသည်)';
+                    const s = data.startHour || 9;
+                    const e = data.endHour || 19;
+                    start.textContent = s >= 12 ? `${s-12}:00 PM` : `${s}:00 AM`;
+                    la.textContent = s >= 12 ? '(ညနေ)' : '(မနက်)';
+                    end.textContent = e >= 12 ? `${e-12}:00 PM` : `${e}:00 AM`;
+                    lp.textContent = e >= 12 ? '(ညနေ)' : '(မနက်)';
+                } else {
+                    card.className = 'shop-status-card closed';
+                    icon.textContent = '🔴';
+                    text.className = 'status-text closed';
+                    text.textContent = "We're Closed!";
+                    sub.textContent = '(ဆိုင်ပိတ်ထားပါသည်)';
+                    start.textContent = '—';
+                    la.textContent = '';
+                    end.textContent = '—';
+                    lp.textContent = '';
+                }
             }
             
             updateBuyButtonsBasedOnShopStatus(data.isOpen);
-            
             return data.isOpen;
         } catch(e) {
             console.error('Error loading sales status:', e);
@@ -1780,9 +1823,6 @@
     window.closeMarketTab = closeMarketTab;
     window.loadSalesStatus = loadSalesStatus;
 </script>
-
-<!-- ========== AD WIDGET SCRIPT - REMOVED ========== -->
-<!-- <script src="/js/ad-widget.js"></script> -->
 
 </body>
 </html>
