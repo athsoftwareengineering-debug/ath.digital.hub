@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         /* ============================================================
-           ATH ADMIN PANEL - BUTTONS 50/50 LAYOUT (Mobile Optimized)
+           ATH ADMIN PANEL - FULLY RESPONSIVE
            ============================================================ */
 
         /* ===== BASE STYLES ===== */
@@ -88,7 +88,9 @@
             background: var(--cyan);
         }
 
-        /* ===== TOP BAR ===== */
+        /* ============================================================
+           TOP BAR
+           ============================================================ */
         .top-bar {
             backdrop-filter: blur(20px) saturate(1.2);
             background: var(--bg-card);
@@ -122,6 +124,7 @@
             align-items: center;
             gap: 4px;
             position: relative;
+            flex-wrap: wrap;
         }
 
         .logo {
@@ -177,7 +180,63 @@
             transform: scale(0.95);
         }
 
-        /* ===== STATS GRID ===== */
+        /* ============================================================
+           LANGUAGE SWITCHER - GLOBE WITH DROPDOWN
+           ============================================================ */
+        .lang-switcher-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .lang-dropdown {
+            position: absolute;
+            top: 48px;
+            right: 0;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 6px;
+            min-width: 150px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 10000;
+            animation: fadeIn 0.2s ease;
+        }
+        .lang-dropdown.show {
+            display: block;
+        }
+
+        .lang-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 14px;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            border-radius: 0.6rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+        .lang-option:hover {
+            background: rgba(0,212,255,0.1);
+        }
+        .lang-option .lang-flag {
+            font-size: 1.2rem;
+        }
+        .lang-option.active-lang {
+            background: rgba(0,212,255,0.15);
+            color: var(--cyan);
+        }
+
+        /* ============================================================
+           STATS GRID
+           ============================================================ */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -251,7 +310,9 @@
             text-transform: uppercase;
         }
 
-        /* ===== BOTTOM NAV ===== */
+        /* ============================================================
+           BOTTOM NAV
+           ============================================================ */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -298,7 +359,9 @@
             transform: scale(0.95);
         }
 
-        /* ===== DRAWER ===== */
+        /* ============================================================
+           DRAWER
+           ============================================================ */
         .drawer-overlay {
             position: fixed;
             top: 0;
@@ -426,7 +489,9 @@
             margin: 12px 0;
         }
 
-        /* ===== TABS ===== */
+        /* ============================================================
+           TABS
+           ============================================================ */
         .tab-content {
             display: none;
         }
@@ -446,7 +511,9 @@
             }
         }
 
-        /* ===== SEARCH & FILTER ===== */
+        /* ============================================================
+           SEARCH & FILTER
+           ============================================================ */
         .search-bar,
         .filter-bar {
             background: var(--bg-card);
@@ -547,7 +614,9 @@
             min-width: 80px;
         }
 
-        /* ===== BULK ACTIONS ===== */
+        /* ============================================================
+           BULK ACTIONS
+           ============================================================ */
         #bulkActions {
             display: none;
             background: var(--bg-card);
@@ -602,7 +671,7 @@
         }
 
         /* ============================================================
-           ORDER CARD - 50/50 BUTTON LAYOUT (Desktop)
+           ORDER CARD - 50/50 BUTTON LAYOUT
            ============================================================ */
 
         .orders-list {
@@ -1019,7 +1088,9 @@
             margin-top: 4px;
         }
 
-        /* ===== USER, AD, PRODUCT CARDS ===== */
+        /* ============================================================
+           USER, AD, PRODUCT CARDS
+           ============================================================ */
         .user-card,
         .ad-card,
         .product-card {
@@ -1119,7 +1190,9 @@
             color: #fb7185;
         }
 
-        /* ===== SALES HOURS ===== */
+        /* ============================================================
+           SALES HOURS
+           ============================================================ */
         .sales-hours-card {
             background: var(--bg-card);
             backdrop-filter: blur(10px);
@@ -1247,167 +1320,9 @@
             transform: translateY(-2px);
         }
 
-        /* ===== NOTIFICATIONS ===== */
-        .notification-bell {
-            position: relative;
-            display: inline-block;
-        }
-        .notification-badge {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: linear-gradient(135deg, var(--rose), #e11d48);
-            color: white;
-            font-size: 0.5rem;
-            font-weight: bold;
-            min-width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 0 4px;
-            box-shadow: 0 0 0 2px var(--bg-deep);
-            z-index: 10;
-        }
-
-        .notification-dropdown {
-            position: absolute;
-            top: 50px;
-            right: 0;
-            width: 380px;
-            max-width: calc(100vw - 20px);
-            background: var(--bg-card);
-            border-radius: 1rem;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 20px 35px -10px var(--shadow-color);
-            z-index: 10000;
-            overflow: hidden;
-            display: none;
-            backdrop-filter: blur(10px);
-            transition: background 0.3s;
-        }
-        .notification-dropdown.show {
-            display: block;
-        }
-
-        .notification-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0,212,255,0.03);
-        }
-        .notification-header h4 {
-            font-size: 0.8rem;
-            color: var(--cyan);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin: 0;
-        }
-        .notification-clear {
-            font-size: 0.6rem;
-            background: rgba(0,212,255,0.12);
-            border: 1px solid rgba(0,212,255,0.3);
-            padding: 4px 12px;
-            border-radius: 40px;
-            color: var(--cyan);
-            cursor: pointer;
-            touch-action: manipulation;
-        }
-        .notification-clear:hover {
-            background: rgba(0,212,255,0.2);
-        }
-
-        .notification-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .notification-item {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .notification-item:hover {
-            background: rgba(0,212,255,0.05);
-        }
-        .notification-item.unread {
-            background: rgba(0,212,255,0.08);
-            border-left: 3px solid var(--cyan);
-        }
-        .notification-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.05));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            color: var(--cyan);
-            flex-shrink: 0;
-        }
-        .notification-content {
-            flex: 1;
-        }
-        .notification-title {
-            font-size: 0.8rem;
-            font-weight: 700;
-            margin-bottom: 3px;
-        }
-        .notification-message {
-            font-size: 0.65rem;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-        }
-        .notification-time {
-            font-size: 0.55rem;
-            color: #5b6e8c;
-        }
-        .notification-delete {
-            opacity: 0;
-            background: rgba(244,63,94,0.15);
-            border: none;
-            color: #fb7185;
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-            touch-action: manipulation;
-        }
-        .notification-item:hover .notification-delete {
-            opacity: 1;
-        }
-        .notification-empty {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-secondary);
-        }
-
-        .notification-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(3px);
-            z-index: 9999;
-            display: none;
-            pointer-events: none;
-        }
-        .notification-overlay.show {
-            display: block;
-        }
-
-        /* ===== LOGIN ===== */
+        /* ============================================================
+           LOGIN
+           ============================================================ */
         .login-box {
             max-width: 350px;
             margin: 60px auto;
@@ -1458,7 +1373,9 @@
             margin-bottom: 1rem;
         }
 
-        /* ===== MODALS ===== */
+        /* ============================================================
+           MODALS & ALERTS
+           ============================================================ */
         .modal,
         .custom-alert,
         .image-modal {
@@ -1699,7 +1616,9 @@
             color: white;
         }
 
-        /* ===== TOAST ===== */
+        /* ============================================================
+           TOAST
+           ============================================================ */
         .toast {
             position: fixed;
             bottom: 80px;
@@ -1728,7 +1647,9 @@
             border-color: var(--amber);
         }
 
-        /* ===== LOADING ===== */
+        /* ============================================================
+           LOADING
+           ============================================================ */
         .loading {
             text-align: center;
             padding: 2rem;
@@ -1746,7 +1667,9 @@
             padding: 10px;
         }
 
-        /* ===== UTILITY ===== */
+        /* ============================================================
+           UTILITY
+           ============================================================ */
         .hidden {
             display: none !important;
         }
@@ -1786,7 +1709,9 @@
             font-family: monospace;
         }
 
-        /* ===== GLOBAL TOUCH OPTIMIZATION ===== */
+        /* ============================================================
+           GLOBAL TOUCH OPTIMIZATION
+           ============================================================ */
         * {
             -webkit-tap-highlight-color: transparent;
         }
@@ -1808,9 +1733,8 @@
         }
 
         /* ============================================================
-           MOBILE RESPONSIVE - BUTTONS 50/50 ON ALL DEVICES
+           RESPONSIVE - MOBILE (max-width: 480px)
            ============================================================ */
-
         @media (max-width: 480px) {
             body {
                 padding: 10px;
@@ -1853,7 +1777,7 @@
                 min-width: 100px;
             }
 
-            /* ===== FIX: Buttons 50/50 on Mobile ===== */
+            /* ===== 50/50 Buttons on Mobile ===== */
             .order-card .order-actions-row-1,
             .order-card .order-actions-row-2 {
                 flex-direction: row !important;
@@ -1976,35 +1900,6 @@
 
             .bottom-nav .nav-item i {
                 font-size: 1rem;
-            }
-
-            .notification-dropdown {
-                position: fixed;
-                top: 55px;
-                left: 8px;
-                right: 8px;
-                width: auto;
-                max-height: 70vh;
-                border-radius: 1rem;
-            }
-
-            .notification-item {
-                padding: 12px 14px;
-            }
-
-            .notification-title {
-                font-size: 0.8rem;
-            }
-
-            .notification-message {
-                font-size: 0.65rem;
-            }
-
-            .notification-delete {
-                width: 32px;
-                height: 32px;
-                border-radius: 50%;
-                opacity: 1;
             }
 
             .modal-card,
@@ -2204,9 +2099,21 @@
                 min-height: 40px;
                 border-radius: 12px;
             }
+
+            /* Language Switcher Mobile */
+            .lang-dropdown {
+                min-width: 130px;
+                right: -10px;
+            }
+            .lang-option {
+                padding: 8px 12px;
+                font-size: 0.75rem;
+            }
         }
 
-        /* ===== EXTRA SMALL PHONES ===== */
+        /* ============================================================
+           RESPONSIVE - EXTRA SMALL (max-width: 380px)
+           ============================================================ */
         @media (max-width: 380px) {
             .stats-grid {
                 grid-template-columns: 1fr 1fr;
@@ -2262,7 +2169,9 @@
             }
         }
 
-        /* ===== TABLET ===== */
+        /* ============================================================
+           RESPONSIVE - TABLET (481px - 768px)
+           ============================================================ */
         @media (min-width: 481px) and (max-width: 768px) {
             .stats-grid {
                 grid-template-columns: repeat(4, 1fr);
@@ -2302,7 +2211,86 @@
             }
         }
 
-        /* ===== SAFE AREA ===== */
+        /* ============================================================
+           RESPONSIVE - DESKTOP & LAPTOP (769px and above)
+           ============================================================ */
+        @media (min-width: 769px) {
+            body {
+                padding: 20px;
+                padding-bottom: 80px;
+            }
+
+            .container {
+                max-width: 800px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 16px;
+            }
+
+            .order-card .order-actions-wrapper button {
+                min-height: 48px;
+                padding: 12px 20px;
+                font-size: 0.8rem;
+            }
+
+            .top-bar {
+                padding: 14px 24px;
+                border-radius: 1.5rem;
+            }
+
+            .logo {
+                font-size: 1.4rem;
+            }
+
+            .menu-btn,
+            .top-icon-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 1.2rem;
+            }
+
+            .search-bar,
+            .filter-bar {
+                padding: 14px 18px;
+                border-radius: 1.2rem;
+            }
+
+            .search-input,
+            .filter-input {
+                padding: 12px 18px;
+                font-size: 0.85rem;
+            }
+
+            .search-btn,
+            .filter-btn {
+                padding: 12px 24px;
+                font-size: 0.8rem;
+                min-height: 48px;
+            }
+
+            .modal-card,
+            .alert-card {
+                max-width: 480px;
+                padding: 2rem;
+                border-radius: 2rem;
+            }
+
+            .bottom-nav .nav-item {
+                padding: 6px 14px;
+                font-size: 0.7rem;
+                min-width: 56px;
+            }
+
+            .bottom-nav .nav-item i {
+                font-size: 1.4rem;
+            }
+        }
+
+        /* ============================================================
+           SAFE AREA
+           ============================================================ */
         @supports (padding: max(0px)) {
             .bottom-nav {
                 padding-bottom: max(env(safe-area-inset-bottom), 10px);
@@ -2319,8 +2307,7 @@
 <body>
 
     <div id="app">
-        <!-- ===== NOTIFICATION OVERLAY ===== -->
-        <div id="notificationOverlay" class="notification-overlay"></div>
+        <!-- ===== NOTIFICATION OVERLAY (REMOVED - No Bell) ===== -->
 
         <!-- ===== ADMIN CONTENT ===== -->
         <div class="container" id="adminContent" style="display: none;">
@@ -2344,21 +2331,18 @@
                         <i class="fas fa-moon" id="themeIcon"></i>
                     </button>
 
-                    <div class="notification-bell">
-                        <button class="top-icon-btn" id="notificationBellBtn" title="Notifications">
-                            <i class="fas fa-bell"></i>
-                            <span id="notificationBadge" class="notification-badge">0</span>
+                    <!-- ===== LANGUAGE SWITCHER - GLOBE WITH DROPDOWN ===== -->
+                    <div class="lang-switcher-wrapper">
+                        <button class="top-icon-btn" id="langToggleBtn" title="Switch Language">
+                            🌐
                         </button>
-                        <div id="notificationDropdown" class="notification-dropdown">
-                            <div class="notification-header">
-                                <h4><i class="fas fa-bell"></i> အကြောင်းကြားချက်များ</h4>
-                                <button class="notification-clear" id="clearNotificationsBtn">
-                                    <i class="fas fa-trash-alt"></i> အားလုံးရှင်း
-                                </button>
-                            </div>
-                            <div id="notificationList" class="notification-list">
-                                <div class="notification-empty"><i class="fas fa-spinner fa-pulse"></i> ဖွင့်နေသည်...</div>
-                            </div>
+                        <div class="lang-dropdown" id="langDropdown">
+                            <button class="lang-option" data-lang="en">
+                                <span class="lang-flag">🇬🇧</span> English
+                            </button>
+                            <button class="lang-option" data-lang="my">
+                                <span class="lang-flag">🇲🇲</span> မြန်မာ
+                            </button>
                         </div>
                     </div>
 
@@ -2778,15 +2762,305 @@
             let editingAdId = null;
             let selectedOrders = new Set();
             let sessionTimer = null;
-            const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+            const SESSION_TIMEOUT = 30 * 60 * 1000;
+            let currentLang = localStorage.getItem('adminLang') || 'en';
 
-            // Cost price map
             const costPriceMap = {
                 "VIP LEVEL - 1": 14500,
                 "VIP LEVEL - 2": 19500,
                 "VIP LEVEL - 3": 24500,
                 "VIP LEVEL - 4 (ULTRA)": 29000
             };
+
+            // ================================================================
+            //  LANGUAGE SWITCHER
+            // ================================================================
+
+            function applyLanguageToAllTexts() {
+                const isEn = currentLang === 'en';
+
+                // Logo
+                const logo = document.querySelector('.logo');
+                if (logo) {
+                    logo.innerHTML = isEn ? '<i class="fas fa-crown"></i> ATH Admin' :
+                        '<i class="fas fa-crown"></i> ATH အဒ်မင်';
+                }
+
+                // Drawer Title
+                const drawerTitle = document.querySelector('.drawer-title');
+                if (drawerTitle) {
+                    drawerTitle.textContent = isEn ? 'Admin Panel' : 'အဒ်မင် အကန့်';
+                }
+
+                // Drawer Stats Title
+                const drawerStatsTitle = document.querySelector('.drawer-stats-title');
+                if (drawerStatsTitle) {
+                    drawerStatsTitle.innerHTML = isEn ?
+                        '<i class="fas fa-database"></i> Database Statistics' :
+                        '<i class="fas fa-database"></i> ဒေတာဘေ့စ် စာရင်းအင်း';
+                }
+
+                // Drawer Stat Labels
+                const drawerLabels = document.querySelectorAll('.drawer-stat-item .drawer-stat-label');
+                const statMap = {
+                    en: ['Total Orders', 'Total Users', 'Pending', 'Approved', 'Rejected', 'Total Revenue',
+                        'Total Profit'
+                    ],
+                    my: ['စုစုပေါင်း အမိန့်စာ', 'စုစုပေါင်း အသုံးပြုသူ', 'ဆိုင်းငံ့ထားသော', 'အတည်ပြုပြီး', 'ပယ်ချထားသော',
+                        'စုစုပေါင်း ဝင်ငွေ', 'စုစုပေါင်း အမြတ်'
+                    ]
+                };
+                drawerLabels.forEach((label, i) => {
+                    if (i < statMap.en.length) {
+                        const icon = label.querySelector('i')?.outerHTML || '';
+                        label.innerHTML = icon + ' ' + (isEn ? statMap.en[i] : statMap.my[i]);
+                    }
+                });
+
+                // Drawer Menu
+                const menuItems = document.querySelectorAll('.drawer-menu a');
+                const menuMap = {
+                    en: ['Dashboard', 'Orders', 'Users', 'Store', 'Ads', 'Chat', 'Export Users CSV',
+                        'Export Orders CSV', 'Clean Old Orders', 'System Reset', 'Logout'
+                    ],
+                    my: ['မီနူး', 'အမိန့်စာများ', 'အသုံးပြုသူများ', 'စတိုးဆိုင်', 'ကြော်ငြာများ', 'စကားဝိုင်း',
+                        'အသုံးပြုသူများ CSV', 'အမိန့်စာများ CSV', 'အမိန့်စာဟောင်းများရှင်း', 'စနစ်ပြန်လည်သတ်မှတ်ခြင်း',
+                        'ထွက်ရန်'
+                    ]
+                };
+                menuItems.forEach((item, i) => {
+                    if (i < menuMap.en.length) {
+                        const icon = item.querySelector('i')?.outerHTML || '';
+                        item.innerHTML = icon + ' ' + (isEn ? menuMap.en[i] : menuMap.my[i]);
+                    }
+                });
+
+                // Bottom Nav
+                const navItems = document.querySelectorAll('.nav-item');
+                const navMap = {
+                    en: ['Dashboard', 'Orders', 'Users', 'Store', 'Ads', 'Chat'],
+                    my: ['မီနူး', 'အမိန့်စာ', 'အသုံးပြုသူ', 'စတိုး', 'ကြော်ငြာ', 'စကားဝိုင်း']
+                };
+                navItems.forEach((item, i) => {
+                    if (i < navMap.en.length) {
+                        const icon = item.querySelector('i')?.outerHTML || '';
+                        item.innerHTML = icon + '<span>' + (isEn ? navMap.en[i] : navMap.my[i]) + '</span>';
+                    }
+                });
+
+                // Stats Labels
+                const statLabels = document.querySelectorAll('.stat-label');
+                const statsMap = {
+                    en: ['Total Orders', 'Pending', 'Approved', 'Rejected', 'Revenue', 'Cost', 'Profit',
+                        'Avg Profit'
+                    ],
+                    my: ['စုစုပေါင်း အမိန့်စာ', 'ဆိုင်းငံ့ထားသော', 'အတည်ပြုပြီး', 'ပယ်ချထားသော', 'ဝင်ငွေ', 'ကုန်ကျစရိတ်',
+                        'အမြတ်', 'ပျမ်းမျှအမြတ်'
+                    ]
+                };
+                statLabels.forEach((label, i) => {
+                    if (i < statsMap.en.length) {
+                        const icon = label.querySelector('i')?.outerHTML || '';
+                        label.innerHTML = icon + ' ' + (isEn ? statsMap.en[i] : statsMap.my[i]);
+                    }
+                });
+
+                // Search Input
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.placeholder = isEn ?
+                        '🔍 Search by phone, user ID or name' :
+                        '🔍 ဖုန်းနံပါတ်၊ အသုံးပြုသူ ID သို့မဟုတ် အမည်ဖြင့် ရှာဖွေရန်';
+                }
+
+                // Search & Clear Buttons
+                const searchBtn = document.querySelector('.search-btn');
+                if (searchBtn) {
+                    searchBtn.innerHTML = isEn ? '<i class="fas fa-search"></i> Search' :
+                        '<i class="fas fa-search"></i> ရှာဖွေရန်';
+                }
+                const clearBtn = document.querySelector('.clear-search');
+                if (clearBtn) {
+                    clearBtn.innerHTML = isEn ? '<i class="fas fa-times"></i> Clear' :
+                        '<i class="fas fa-times"></i> ရှင်းလင်းရန်';
+                }
+
+                // Filter Button
+                const filterBtn = document.querySelector('.filter-btn');
+                if (filterBtn) {
+                    filterBtn.innerHTML = isEn ? '<i class="fas fa-filter"></i> Filter' :
+                        '<i class="fas fa-filter"></i> စစ်ထုတ်ရန်';
+                }
+
+                // Status Filter
+                const statusFilter = document.getElementById('statusFilter');
+                if (statusFilter) {
+                    const options = statusFilter.querySelectorAll('option');
+                    const optMap = {
+                        en: ['All', 'Pending', 'Approved', 'Rejected'],
+                        my: ['အားလုံး', 'ဆိုင်းငံ့ထားသော', 'အတည်ပြုပြီး', 'ပယ်ချထားသော']
+                    };
+                    options.forEach((opt, i) => {
+                        if (i < optMap.en.length) {
+                            opt.textContent = isEn ? optMap.en[i] : optMap.my[i];
+                        }
+                    });
+                }
+
+                // Sales Hours Title
+                const salesTitle = document.querySelector('.sales-hours-title');
+                if (salesTitle) {
+                    salesTitle.innerHTML = isEn ?
+                        '<i class="fas fa-clock"></i> Sales Hours Settings' :
+                        '<i class="fas fa-clock"></i> ရောင်းချချိန် သတ်မှတ်ချက်';
+                }
+
+                // Ad Settings Title
+                const adTitle = document.querySelector('.sales-hours-card:last-child .sales-hours-title');
+                if (adTitle) {
+                    adTitle.innerHTML = isEn ?
+                        '<i class="fas fa-ad"></i> Ad Display Settings' :
+                        '<i class="fas fa-ad"></i> ကြော်ငြာ ပြပုံအပြင်အဆင်';
+                }
+
+                // Login Box
+                const loginTitle = document.querySelector('.login-box h2');
+                if (loginTitle) {
+                    loginTitle.textContent = isEn ? 'Admin Login' : 'အဒ်မင် ဝင်ရောက်ရန်';
+                }
+                const loginSub = document.querySelector('.login-box p');
+                if (loginSub) {
+                    loginSub.textContent = isEn ? 'Access the management system' :
+                        'စီမံခန့်ခွဲမှုစနစ်သို့ ဝင်ရောက်ပါ';
+                }
+                const loginInput = document.getElementById('adminPassword');
+                if (loginInput) {
+                    loginInput.placeholder = isEn ? 'Enter password' : 'စကားဝှက် ထည့်သွင်းပါ';
+                }
+                const loginBtn = document.querySelector('.login-btn');
+                if (loginBtn) {
+                    loginBtn.innerHTML = isEn ? '<i class="fas fa-unlock-alt"></i> Login' :
+                        '<i class="fas fa-unlock-alt"></i> ဝင်ရောက်ရန်';
+                }
+
+                // Modal Buttons
+                document.querySelectorAll('.modal-btn.save').forEach(btn => {
+                    btn.textContent = isEn ? 'Save' : 'သိမ်းရန်';
+                });
+                document.querySelectorAll('.modal-btn.cancel').forEach(btn => {
+                    btn.textContent = isEn ? 'Cancel' : 'မလုပ်တော့ပါ';
+                });
+                document.querySelectorAll('.modal-btn.danger').forEach(btn => {
+                    btn.textContent = isEn ? 'Delete' : 'ဖျက်မယ်';
+                });
+
+                // Product/Ad Buttons
+                const addProductBtn = document.querySelector('.add-product-btn');
+                if (addProductBtn) {
+                    addProductBtn.innerHTML = isEn ? '<i class="fas fa-plus"></i> Add Product' :
+                        '<i class="fas fa-plus"></i> ထုတ်ကုန်ထည့်ရန်';
+                }
+                const addAdBtn = document.querySelector('.add-product-btn[onclick*="openAddAdModal"]');
+                if (addAdBtn) {
+                    addAdBtn.innerHTML = isEn ? '<i class="fas fa-plus"></i> New Ad' :
+                        '<i class="fas fa-plus"></i> ကြော်ငြာအသစ်';
+                }
+
+                // Product Modal Title
+                const productModalTitle = document.getElementById('productModalTitle');
+                if (productModalTitle) {
+                    productModalTitle.textContent = editingProductId ?
+                        (isEn ? 'Edit Product' : 'ထုတ်ကုန်တည်းဖြတ်ရန်') :
+                        (isEn ? 'Add Product' : 'ထုတ်ကုန်ထည့်ရန်');
+                }
+
+                // Ad Modal Title
+                const adModalTitle = document.getElementById('adModalTitle');
+                if (adModalTitle) {
+                    adModalTitle.textContent = editingAdId ?
+                        (isEn ? 'Edit Ad' : 'ကြော်ငြာတည်းဖြတ်ရန်') :
+                        (isEn ? 'New Ad' : 'ကြော်ငြာအသစ်ထည့်ရန်');
+                }
+
+                // Alert Titles
+                document.querySelectorAll('.alert-title.warning').forEach(el => {
+                    if (el.textContent.includes('အမိန့်စာဟောင်း')) {
+                        el.textContent = isEn ? '⚠️ Old Orders Cleanup' : '⚠️ အမိန့်စာဟောင်းများ ရှင်းလင်းခြင်း';
+                    }
+                });
+                document.querySelectorAll('.alert-title.danger').forEach(el => {
+                    if (el.textContent.includes('စနစ်ပြန်လည်')) {
+                        el.textContent = isEn ? '⚠️ System Reset' : '⚠️ စနစ်ပြန်လည်သတ်မှတ်ခြင်း';
+                    }
+                });
+
+                // Document Title
+                document.title = isEn ? 'Admin Panel | ATH DIGITAL HUB' : 'အဒ်မင် အကန့် | ATH DIGITAL HUB';
+
+                // Refresh orders list if visible
+                if (currentTab === 'orders') {
+                    applyFiltersAndSearch();
+                }
+                if (currentTab === 'users') {
+                    renderUsersTab();
+                }
+                if (currentTab === 'market') {
+                    renderProducts();
+                }
+                if (currentTab === 'ads') {
+                    renderAds();
+                }
+            }
+
+            function updateActiveLang() {
+                document.querySelectorAll('.lang-option').forEach(btn => {
+                    const lang = btn.getAttribute('data-lang');
+                    btn.classList.toggle('active-lang', lang === currentLang);
+                });
+            }
+
+            // ===== LANGUAGE TOGGLE =====
+            document.addEventListener('DOMContentLoaded', function() {
+                const toggleBtn = document.getElementById('langToggleBtn');
+                const dropdown = document.getElementById('langDropdown');
+
+                if (toggleBtn && dropdown) {
+                    toggleBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        dropdown.classList.toggle('show');
+                    });
+
+                    document.addEventListener('click', function(e) {
+                        if (!toggleBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                            dropdown.classList.remove('show');
+                        }
+                    });
+
+                    document.querySelectorAll('.lang-option').forEach(function(btn) {
+                        btn.addEventListener('click', function(e) {
+                            const lang = this.getAttribute('data-lang');
+                            if (lang && lang !== currentLang) {
+                                currentLang = lang;
+                                localStorage.setItem('adminLang', currentLang);
+                                updateActiveLang();
+                                applyLanguageToAllTexts();
+                                showToast(currentLang === 'en' ?
+                                    '✅ Language switched to English' :
+                                    '✅ ဘာသာစကား မြန်မာသို့ ပြောင်းပြီးပါပြီ');
+                            }
+                            dropdown.classList.remove('show');
+                        });
+                    });
+                }
+
+                // Set initial language
+                updateActiveLang();
+                applyLanguageToAllTexts();
+            });
+
+            // ================================================================
+            //  END LANGUAGE SWITCHER
+            // ================================================================
 
             function getCostPrice(plan) { return costPriceMap[plan] || 0; }
 
@@ -2819,16 +3093,15 @@
 
             window.copyToClipboard = function(text) {
                 navigator.clipboard.writeText(text).then(() => {
-                    showToast('📋 ' + text + ' ကူးယူပြီးပါပြီ');
+                    showToast('📋 ' + text + ' copied');
                 }).catch(() => {
-                    // Fallback
                     const input = document.createElement('input');
                     input.value = text;
                     document.body.appendChild(input);
                     input.select();
                     document.execCommand('copy');
                     document.body.removeChild(input);
-                    showToast('📋 ကူးယူပြီးပါပြီ');
+                    showToast('📋 Copied');
                 });
             };
 
@@ -2852,12 +3125,13 @@
                 }
             }
 
-            // ===== RESET SESSION TIMER =====
             function resetSessionTimer() {
                 if (sessionTimer) clearTimeout(sessionTimer);
                 if (token !== 'logged_in') return;
                 sessionTimer = setTimeout(() => {
-                    if (confirm('သင်၏ session သက်တမ်းကုန်ဆုံးတော့မည်။ ဆက်လက်လုပ်ဆောင်လိုပါသလား?')) {
+                    if (confirm(currentLang === 'en' ?
+                            'Your session is about to expire. Continue?' :
+                            'သင်၏ session သက်တမ်းကုန်ဆုံးတော့မည်။ ဆက်လက်လုပ်ဆောင်လိုပါသလား?')) {
                         fetch(`${API_BASE}/api/admin/refresh`, { method: 'POST', credentials: 'include' })
                             .then(() => resetSessionTimer())
                             .catch(() => window.logout());
@@ -2867,7 +3141,6 @@
                 }, SESSION_TIMEOUT);
             }
 
-            // Reset on user interaction
             document.addEventListener('click', resetSessionTimer);
             document.addEventListener('keydown', resetSessionTimer);
 
@@ -2886,7 +3159,6 @@
                 }
             };
 
-            // Load saved theme
             (function() {
                 const theme = localStorage.getItem('theme');
                 if (theme === 'light') {
@@ -2926,7 +3198,6 @@
                 const avgEl = document.getElementById('avgProfit');
                 if (avgEl) avgEl.textContent = (approved ? Math.round(profit / approved) : 0).toLocaleString() + 'K';
 
-                // Drawer stats
                 const drawerMap = {
                     'drawerTotalOrders': total,
                     'drawerTotalUsers': userStats ? userStats.length : 0,
@@ -2968,7 +3239,6 @@
                 closeDrawer();
             };
 
-            // Nav click
             document.querySelectorAll('.nav-item').forEach(btn => {
                 btn.addEventListener('click', function() {
                     if (this.dataset.tab === 'chat') {
@@ -2983,7 +3253,7 @@
             window.login = async function() {
                 const password = document.getElementById('adminPassword')?.value || '';
                 if (!password) {
-                    showToast('စကားဝှက် ထည့်သွင်းပါ', true);
+                    showToast(currentLang === 'en' ? 'Please enter password' : 'စကားဝှက် ထည့်သွင်းပါ', true);
                     return;
                 }
                 try {
@@ -3006,12 +3276,13 @@
                         loadAds();
                         startAutoSync();
                         resetSessionTimer();
-                        showToast('✅ ဝင်ရောက်မှု အောင်မြင်ပါပြီ');
+                        showToast(currentLang === 'en' ? '✅ Login successful' : '✅ ဝင်ရောက်မှု အောင်မြင်ပါပြီ');
                     } else {
-                        showToast('စကားဝှက် မှားယွင်းနေသည်', true);
+                        showToast(currentLang === 'en' ? 'Invalid password' : 'စကားဝှက် မှားယွင်းနေသည်', true);
                     }
                 } catch (e) {
-                    showToast('ချိတ်ဆက်မှု အမှား: ' + e.message, true);
+                    showToast(currentLang === 'en' ? 'Connection error: ' + e.message : 'ချိတ်ဆက်မှု အမှား: ' + e.message,
+                        true);
                 }
             };
 
@@ -3025,10 +3296,9 @@
                 document.getElementById('loginBox').style.display = 'block';
                 document.getElementById('adminContent').style.display = 'none';
                 document.getElementById('bottomNav').style.display = 'none';
-                showToast('👋 ထွက်ခွာသွားပါပြီ');
+                showToast(currentLang === 'en' ? '👋 Logged out' : '👋 ထွက်ခွာသွားပါပြီ');
             };
 
-            // Enter key for login
             document.getElementById('adminPassword')?.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') window.login();
             });
@@ -3050,7 +3320,7 @@
                 loadAllData();
                 loadSalesHours();
                 loadAdSettings();
-                showToast('🔄 ဒေတာ စင့်ခ်လုပ်ပြီးပါပြီ');
+                showToast(currentLang === 'en' ? '🔄 Data synced' : '🔄 ဒေတာ စင့်ခ်လုပ်ပြီးပါပြီ');
             };
 
             // ===== LOAD DATA =====
@@ -3074,7 +3344,7 @@
                         if (currentTab === 'orders') applyFiltersAndSearch();
                         const el = document.getElementById('lastUpdate');
                         if (el) el.innerHTML =
-                            `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | စုစုပေါင်း: ${allOrders.length}`;
+                            `<i class="fas fa-clock"></i> ${new Date().toLocaleString()} | Total: ${allOrders.length}`;
                         updateAllStats();
                     } else {
                         allOrders = [];
@@ -3082,7 +3352,7 @@
                     }
                 } catch (e) {
                     console.error('Error loading orders:', e);
-                    document.getElementById('ordersList').innerHTML = '<div class="loading">ချိတ်ဆက်မှု အမှား</div>';
+                    document.getElementById('ordersList').innerHTML = '<div class="loading">Connection error</div>';
                     allOrders = [];
                     updateAllStats();
                 }
@@ -3127,9 +3397,10 @@
             function renderProducts() {
                 const container = document.getElementById('productList');
                 if (!container) return;
+                const isEn = currentLang === 'en';
                 if (!products.length) {
                     container.innerHTML =
-                        '<div class="loading">ထုတ်ကုန်မရှိပါ။ "ထုတ်ကုန်ထည့်ရန်" ကိုနှိပ်၍ ဖန်တီးပါ။</div>';
+                        `<div class="loading">${isEn ? 'No products. Click "Add Product" to create.' : 'ထုတ်ကုန်မရှိပါ။ "ထုတ်ကုန်ထည့်ရန်" ကိုနှိပ်၍ ဖန်တီးပါ။'}</div>`;
                     return;
                 }
                 let html = '';
@@ -3148,15 +3419,15 @@
                                             <span style="font-size:0.65rem; margin-left:8px; color:${stockColor};">📦 ${p.stock || 999}</span>
                                         </div>
                                     </div>
-                                    <span style="font-size:0.6rem; background:rgba(0,212,255,0.15); padding:2px 10px; border-radius:40px;">${escapeHtml(p.category || 'အမျိုးအစားမရှိ')}</span>
+                                    <span style="font-size:0.6rem; background:rgba(0,212,255,0.15); padding:2px 10px; border-radius:40px;">${escapeHtml(p.category || 'Uncategorized')}</span>
                                 </div>
                                 <div style="margin-bottom:8px;">
-                                    ${p.discount ? `<span style="background:rgba(245,158,11,0.2); color:#fbbf24; font-size:0.6rem; display:inline-block; padding:2px 8px; border-radius:40px;">-${p.discount}% လျှော့စျေး</span>` : ''}
-                                    ${(p.stock !== undefined && p.stock <= 10) ? `<span style="background:rgba(244,63,94,0.2); color:#fb7185; font-size:0.6rem; display:inline-block; padding:2px 8px; border-radius:40px; margin-left:8px;">⚠️ အနည်းငယ်ကျန်</span>` : ''}
+                                    ${p.discount ? `<span style="background:rgba(245,158,11,0.2); color:#fbbf24; font-size:0.6rem; display:inline-block; padding:2px 8px; border-radius:40px;">-${p.discount}%</span>` : ''}
+                                    ${(p.stock !== undefined && p.stock <= 10) ? `<span style="background:rgba(244,63,94,0.2); color:#fb7185; font-size:0.6rem; display:inline-block; padding:2px 8px; border-radius:40px; margin-left:8px;">⚠️ ${isEn ? 'Low stock' : 'အနည်းငယ်ကျန်'}</span>` : ''}
                                 </div>
                                 <div class="product-card-actions">
-                                    <button class="edit-btn" onclick="window.openEditProductModal(${p.id})"><i class="fas fa-edit"></i> တည်းဖြတ်</button>
-                                    <button class="delete-btn" onclick="window.deleteProduct(${p.id})"><i class="fas fa-trash"></i> ဖျက်မယ်</button>
+                                    <button class="edit-btn" onclick="window.openEditProductModal(${p.id})"><i class="fas fa-edit"></i> ${isEn ? 'Edit' : 'တည်းဖြတ်'}</button>
+                                    <button class="delete-btn" onclick="window.deleteProduct(${p.id})"><i class="fas fa-trash"></i> ${isEn ? 'Delete' : 'ဖျက်မယ်'}</button>
                                 </div>
                             </div>
                         `;
@@ -3167,7 +3438,8 @@
             // ===== PRODUCT CRUD =====
             window.openAddProductModal = function() {
                 editingProductId = null;
-                document.getElementById('productModalTitle').textContent = 'ထုတ်ကုန်ထည့်ရန်';
+                const isEn = currentLang === 'en';
+                document.getElementById('productModalTitle').textContent = isEn ? 'Add Product' : 'ထုတ်ကုန်ထည့်ရန်';
                 document.getElementById('productName').value = '';
                 document.getElementById('productPrice').value = '';
                 document.getElementById('productImage').value = '';
@@ -3182,7 +3454,8 @@
                 const p = products.find(x => x.id === id);
                 if (!p) return;
                 editingProductId = id;
-                document.getElementById('productModalTitle').textContent = 'ထုတ်ကုန်တည်းဖြတ်ရန်';
+                const isEn = currentLang === 'en';
+                document.getElementById('productModalTitle').textContent = isEn ? 'Edit Product' : 'ထုတ်ကုန်တည်းဖြတ်ရန်';
                 document.getElementById('productName').value = p.name;
                 document.getElementById('productPrice').value = p.price;
                 document.getElementById('productImage').value = p.image || '';
@@ -3206,8 +3479,10 @@
                 const discount = parseInt(document.getElementById('productDiscount').value || '0') || 0;
                 const stock = parseInt(document.getElementById('productStock').value || '999') || 999;
 
+                const isEn = currentLang === 'en';
                 if (!name || !price) {
-                    showToast('ကျေးဇူးပြု၍ ထုတ်ကုန်အမည်နှင့် စျေးနှုန်းကို ဖြည့်သွင်းပါ', true);
+                    showToast(isEn ? 'Please fill in name and price' :
+                        'ကျေးဇူးပြု၍ ထုတ်ကုန်အမည်နှင့် စျေးနှုန်းကို ဖြည့်သွင်းပါ', true);
                     return;
                 }
 
@@ -3222,30 +3497,32 @@
                         body: JSON.stringify({ name, price, image, category, icon, discount, stock })
                     });
                     if (res && res.ok) {
-                        showToast(editingProductId ? '✅ ထုတ်ကုန် အပ်ဒိတ်လုပ်ပြီးပါပြီ' :
-                            '✅ ထုတ်ကုန် ထည့်သွင်းပြီးပါပြီ');
+                        showToast(editingProductId ?
+                            (isEn ? '✅ Product updated' : '✅ ထုတ်ကုန် အပ်ဒိတ်လုပ်ပြီးပါပြီ') :
+                            (isEn ? '✅ Product added' : '✅ ထုတ်ကုန် ထည့်သွင်းပြီးပါပြီ'));
                         closeProductModal();
                         loadProducts();
                     } else {
-                        showToast('ထုတ်ကုန်သိမ်းဆည်းရာတွင် အမှားရှိသည်', true);
+                        showToast(isEn ? 'Error saving product' : 'ထုတ်ကုန်သိမ်းဆည်းရာတွင် အမှားရှိသည်', true);
                     }
                 } catch (e) {
-                    showToast('ထုတ်ကုန်သိမ်းဆည်းရာတွင် အမှားရှိသည်', true);
+                    showToast(isEn ? 'Error saving product' : 'ထုတ်ကုန်သိမ်းဆည်းရာတွင် အမှားရှိသည်', true);
                 }
             };
 
             window.deleteProduct = async function(id) {
-                if (!confirm('ဤထုတ်ကုန်ကို ဖျက်မည်လား။')) return;
+                const isEn = currentLang === 'en';
+                if (!confirm(isEn ? 'Delete this product?' : 'ဤထုတ်ကုန်ကို ဖျက်မည်လား။')) return;
                 try {
                     const res = await fetchWithRetry(`${API_BASE}/api/market/products/${id}`, { method: 'DELETE' });
                     if (res && res.ok) {
-                        showToast('🗑 ထုတ်ကုန် ဖျက်ပြီးပါပြီ');
+                        showToast(isEn ? '🗑 Product deleted' : '🗑 ထုတ်ကုန် ဖျက်ပြီးပါပြီ');
                         loadProducts();
                     } else {
-                        showToast('ထုတ်ကုန်ဖျက်ရာတွင် အမှားရှိသည်', true);
+                        showToast(isEn ? 'Error deleting product' : 'ထုတ်ကုန်ဖျက်ရာတွင် အမှားရှိသည်', true);
                     }
                 } catch (e) {
-                    showToast('ထုတ်ကုန်ဖျက်ရာတွင် အမှားရှိသည်', true);
+                    showToast(isEn ? 'Error deleting product' : 'ထုတ်ကုန်ဖျက်ရာတွင် အမှားရှိသည်', true);
                 }
             };
 
@@ -3284,6 +3561,7 @@
                 const auto_cycle_seconds = parseInt(document.getElementById('adAutoCycle')?.value || '0');
                 const show_navigation = document.getElementById('adShowNavigation')?.checked || false;
 
+                const isEn = currentLang === 'en';
                 try {
                     const res = await fetch(`${API_BASE}/api/admin/ad-settings`, {
                         method: 'PUT',
@@ -3293,9 +3571,9 @@
                     });
                     const data = await res.json();
                     if (data.success) {
-                        showToast('✅ ကြော်ငြာဆက်တင်များ သိမ်းပြီးပါပြီ');
+                        showToast(isEn ? '✅ Ad settings saved' : '✅ ကြော်ငြာဆက်တင်များ သိမ်းပြီးပါပြီ');
                     } else {
-                        showToast('❌ သိမ်းဆည်းရန် မအောင်မြင်ပါ', true);
+                        showToast(isEn ? '❌ Failed to save' : '❌ သိမ်းဆည်းရန် မအောင်မြင်ပါ', true);
                     }
                 } catch (e) {
                     showToast('Error: ' + e.message, true);
@@ -3305,9 +3583,10 @@
             function renderAds() {
                 const container = document.getElementById('adsList');
                 if (!container) return;
+                const isEn = currentLang === 'en';
                 if (!allAds.length) {
                     container.innerHTML =
-                        '<div class="loading">ကြော်ငြာမရှိသေးပါ။ "ကြော်ငြာအသစ်" ကိုနှိပ်၍ ဖန်တီးပါ။</div>';
+                        `<div class="loading">${isEn ? 'No ads. Click "New Ad" to create.' : 'ကြော်ငြာမရှိသေးပါ။ "ကြော်ငြာအသစ်" ကိုနှိပ်၍ ဖန်တီးပါ။'}</div>`;
                     return;
                 }
                 const today = new Date().toISOString().slice(0, 10);
@@ -3315,13 +3594,13 @@
                 for (const ad of allAds) {
                     const isExpired = ad.expiry_date && ad.expiry_date < today;
                     let statusClass = 'ad-status-active';
-                    let statusText = '✅ ဖွင့်ထား';
+                    let statusText = isEn ? '✅ Active' : '✅ ဖွင့်ထား';
                     if (!ad.active) {
                         statusClass = 'ad-status-inactive';
-                        statusText = '❌ ပိတ်ထား';
+                        statusText = isEn ? '❌ Inactive' : '❌ ပိတ်ထား';
                     } else if (isExpired) {
                         statusClass = 'ad-status-expired';
-                        statusText = '⏰ သက်တမ်းကုန်';
+                        statusText = isEn ? '⏰ Expired' : '⏰ သက်တမ်းကုန်';
                     }
                     html += `
                             <div class="ad-card">
@@ -3331,15 +3610,15 @@
                                 <div style="font-size:0.65rem; color:var(--text-secondary); margin-top:4px;">🔗 ${escapeHtml(ad.destination_url.substring(0, 50))}</div>
                                 ${ad.alt_text ? `<div style="font-size:0.6rem; color:var(--text-secondary); margin-top:6px;">📝 ${escapeHtml(ad.alt_text)}</div>` : ''}
                                 <div style="font-size:0.6rem; color:var(--text-secondary); margin-top:8px;">
-                                    <i class="fas fa-weight-hanging"></i> အလေးချိန်: ${ad.display_weight || 5} | 
-                                    <i class="fas fa-calendar"></i> ${ad.expiry_date || 'သက်တမ်းမသတ်မှတ်ရ'} |
+                                    <i class="fas fa-weight-hanging"></i> ${isEn ? 'Weight' : 'အလေးချိန်'}: ${ad.display_weight || 5} | 
+                                    <i class="fas fa-calendar"></i> ${ad.expiry_date || (isEn ? 'No expiry' : 'သက်တမ်းမသတ်မှတ်ရ')} |
                                     <i class="fas fa-eye"></i> ${ad.views || 0} | 
                                     <i class="fas fa-mouse-pointer"></i> ${ad.clicks || 0}
                                 </div>
                                 <div class="ad-card-actions">
-                                    <button class="ad-edit-btn" onclick="window.editAd(${ad.id})"><i class="fas fa-edit"></i> တည်းဖြတ်</button>
-                                    <button class="ad-toggle-btn" onclick="window.toggleAd(${ad.id}, ${!ad.active})"><i class="fas ${ad.active ? 'fa-ban' : 'fa-play'}"></i> ${ad.active ? 'ပိတ်မယ်' : 'ဖွင့်မယ်'}</button>
-                                    <button class="ad-delete-btn" onclick="window.deleteAd(${ad.id})"><i class="fas fa-trash"></i> ဖျက်မယ်</button>
+                                    <button class="ad-edit-btn" onclick="window.editAd(${ad.id})"><i class="fas fa-edit"></i> ${isEn ? 'Edit' : 'တည်းဖြတ်'}</button>
+                                    <button class="ad-toggle-btn" onclick="window.toggleAd(${ad.id}, ${!ad.active})"><i class="fas ${ad.active ? 'fa-ban' : 'fa-play'}"></i> ${ad.active ? (isEn ? 'Disable' : 'ပိတ်မယ်') : (isEn ? 'Enable' : 'ဖွင့်မယ်')}</button>
+                                    <button class="ad-delete-btn" onclick="window.deleteAd(${ad.id})"><i class="fas fa-trash"></i> ${isEn ? 'Delete' : 'ဖျက်မယ်'}</button>
                                 </div>
                             </div>
                         `;
@@ -3349,7 +3628,8 @@
 
             window.openAddAdModal = function() {
                 editingAdId = null;
-                document.getElementById('adModalTitle').textContent = 'ကြော်ငြာအသစ်ထည့်ရန်';
+                const isEn = currentLang === 'en';
+                document.getElementById('adModalTitle').textContent = isEn ? 'New Ad' : 'ကြော်ငြာအသစ်ထည့်ရန်';
                 document.getElementById('adName').value = '';
                 document.getElementById('adImageUrl').value = '';
                 document.getElementById('adDestinationUrl').value = '';
@@ -3367,7 +3647,8 @@
                 const ad = allAds.find(a => a.id === id);
                 if (!ad) return;
                 editingAdId = id;
-                document.getElementById('adModalTitle').textContent = 'ကြော်ငြာတည်းဖြတ်ရန်';
+                const isEn = currentLang === 'en';
+                document.getElementById('adModalTitle').textContent = isEn ? 'Edit Ad' : 'ကြော်ငြာတည်းဖြတ်ရန်';
                 document.getElementById('adName').value = ad.name;
                 document.getElementById('adImageUrl').value = ad.image_url;
                 document.getElementById('adDestinationUrl').value = ad.destination_url;
@@ -3385,8 +3666,10 @@
                 const display_weight = parseInt(document.getElementById('adDisplayWeight')?.value || '5');
                 const expiry_date = document.getElementById('adExpiryDate')?.value || null;
 
+                const isEn = currentLang === 'en';
                 if (!name || !image_url || !destination_url) {
-                    showToast('ကျေးဇူးပြု၍ အမည်၊ ပုံ URL နှင့် Website Link ကို ဖြည့်ပါ', true);
+                    showToast(isEn ? 'Please fill in name, image URL and destination link' :
+                        'ကျေးဇူးပြု၍ အမည်၊ ပုံ URL နှင့် Website Link ကို ဖြည့်ပါ', true);
                     return;
                 }
 
@@ -3404,12 +3687,13 @@
                     });
                     const data = await res.json();
                     if (data.success) {
-                        showToast(editingAdId ? '✅ ကြော်ငြာ တည်းဖြတ်ပြီးပါပြီ' :
-                        '✅ ကြော်ငြာအသစ် ထည့်ပြီးပါပြီ');
+                        showToast(editingAdId ?
+                            (isEn ? '✅ Ad updated' : '✅ ကြော်ငြာ တည်းဖြတ်ပြီးပါပြီ') :
+                            (isEn ? '✅ Ad added' : '✅ ကြော်ငြာအသစ် ထည့်ပြီးပါပြီ'));
                         closeAdModal();
                         loadAds();
                     } else {
-                        showToast('❌ သိမ်းဆည်းရန် မအောင်မြင်ပါ', true);
+                        showToast(isEn ? '❌ Failed to save' : '❌ သိမ်းဆည်းရန် မအောင်မြင်ပါ', true);
                     }
                 } catch (e) {
                     showToast('Error: ' + e.message, true);
@@ -3417,6 +3701,7 @@
             };
 
             window.toggleAd = async function(id, newActiveStatus) {
+                const isEn = currentLang === 'en';
                 try {
                     const res = await fetch(`${API_BASE}/api/admin/ads/${id}`, {
                         method: 'PUT',
@@ -3426,10 +3711,12 @@
                     });
                     const data = await res.json();
                     if (data.success) {
-                        showToast(newActiveStatus ? '✅ ကြော်ငြာ ဖွင့်ပြီးပါပြီ' : '❌ ကြော်ငြာ ပိတ်ပြီးပါပြီ');
+                        showToast(newActiveStatus ?
+                            (isEn ? '✅ Ad enabled' : '✅ ကြော်ငြာ ဖွင့်ပြီးပါပြီ') :
+                            (isEn ? '❌ Ad disabled' : '❌ ကြော်ငြာ ပိတ်ပြီးပါပြီ'));
                         loadAds();
                     } else {
-                        showToast('❌ မအောင်မြင်ပါ', true);
+                        showToast(isEn ? '❌ Failed' : '❌ မအောင်မြင်ပါ', true);
                     }
                 } catch (e) {
                     showToast('Error: ' + e.message, true);
@@ -3437,7 +3724,9 @@
             };
 
             window.deleteAd = async function(id) {
-                if (!confirm('ဒီကြော်ငြာကို ဖျက်မှာလား။ ပြန်လည်ရယူလို့မရပါ။')) return;
+                const isEn = currentLang === 'en';
+                if (!confirm(isEn ? 'Delete this ad? Cannot be undone.' :
+                        'ဒီကြော်ငြာကို ဖျက်မှာလား။ ပြန်လည်ရယူလို့မရပါ။')) return;
                 try {
                     const res = await fetch(`${API_BASE}/api/admin/ads/${id}`, {
                         method: 'DELETE',
@@ -3445,10 +3734,10 @@
                     });
                     const data = await res.json();
                     if (data.success) {
-                        showToast('🗑 ကြော်ငြာ ဖျက်ပြီးပါပြီ');
+                        showToast(isEn ? '🗑 Ad deleted' : '🗑 ကြော်ငြာ ဖျက်ပြီးပါပြီ');
                         loadAds();
                     } else {
-                        showToast('❌ ဖျက်ရန် မအောင်မြင်ပါ', true);
+                        showToast(isEn ? '❌ Failed to delete' : '❌ ဖျက်ရန် မအောင်မြင်ပါ', true);
                     }
                 } catch (e) {
                     showToast('Error: ' + e.message, true);
@@ -3459,8 +3748,9 @@
             function renderUsersTab() {
                 const container = document.getElementById('usersList');
                 if (!container) return;
+                const isEn = currentLang === 'en';
                 if (!userStats.length) {
-                    container.innerHTML = '<div class="loading">အသုံးပြုသူဒေတာ မရှိပါ</div>';
+                    container.innerHTML = `<div class="loading">${isEn ? 'No user data' : 'အသုံးပြုသူဒေတာ မရှိပါ'}</div>`;
                     return;
                 }
                 let filtered = [...userStats];
@@ -3474,21 +3764,25 @@
                 }
                 if (!filtered.length && currentUserSearchPhone) {
                     container.innerHTML =
-                        `<div class="loading">"${escapeHtml(currentUserSearchPhone)}" အတွက် အသုံးပြုသူ မတွေ့ပါ</div>`;
+                        `<div class="loading">"${escapeHtml(currentUserSearchPhone)}" ${isEn ? 'not found' : 'အတွက် အသုံးပြုသူ မတွေ့ပါ'}</div>`;
                     return;
                 }
                 let html = '';
                 for (const user of filtered) {
                     const rejectRate = user.order_count > 0 ? ((user.reject_count / user.order_count) * 100).toFixed(
                     0) : 0;
-                    let statusClass = '',
-                        statusText = '🟢 ပုံမှန်';
-                    if (user.blocked) { statusClass = 'blocked';
-                        statusText = '🔴 ပိတ်ဆို့ထား'; } else if (user.suspect_flag) { statusClass = 'suspect';
-                        statusText = '🟡 သံသယရှိ'; }
-                    const statusColor = user.blocked ? '#fb7185' : user.suspect_flag ? '#fbbf24' : '#34d399';
-                    const statusBg = user.blocked ? 'rgba(244,63,94,0.2)' : user.suspect_flag ?
-                        'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)';
+                    let statusText = isEn ? '🟢 Normal' : '🟢 ပုံမှန်';
+                    let statusColor = '#34d399';
+                    let statusBg = 'rgba(16,185,129,0.2)';
+                    if (user.blocked) {
+                        statusText = isEn ? '🔴 Blocked' : '🔴 ပိတ်ဆို့ထား';
+                        statusColor = '#fb7185';
+                        statusBg = 'rgba(244,63,94,0.2)';
+                    } else if (user.suspect_flag) {
+                        statusText = isEn ? '🟡 Suspicious' : '🟡 သံသယရှိ';
+                        statusColor = '#fbbf24';
+                        statusBg = 'rgba(245,158,11,0.2)';
+                    }
 
                     html += `
                             <div class="user-card">
@@ -3500,15 +3794,15 @@
                                     <span style="font-size:0.55rem; padding:2px 8px; border-radius:40px; background:${statusBg}; color:${statusColor};">${escapeHtml(statusText)}</span>
                                 </div>
                                 <div style="display:flex; justify-content:space-around; margin-bottom:10px;">
-                                    <div style="text-align:center;"><div style="font-size:1rem; font-weight:700;">${user.order_count || 0}</div><div style="font-size:0.5rem; color:var(--text-secondary);">အမိန့်စာ</div></div>
-                                    <div style="text-align:center;"><div style="font-size:1rem; font-weight:700;">${user.reject_count || 0}</div><div style="font-size:0.5rem; color:var(--text-secondary);">ပယ်ချခံရ</div></div>
-                                    <div style="text-align:center;"><div style="font-size:1rem; font-weight:700;">${rejectRate}%</div><div style="font-size:0.5rem; color:var(--text-secondary);">ပယ်ချမှုနှုန်း</div></div>
+                                    <div style="text-align:center;"><div style="font-size:1rem; font-weight:700;">${user.order_count || 0}</div><div style="font-size:0.5rem; color:var(--text-secondary);">${isEn ? 'Orders' : 'အမိန့်စာ'}</div></div>
+                                    <div style="text-align:center;"><div style="font-size:1rem; font-weight:700;">${user.reject_count || 0}</div><div style="font-size:0.5rem; color:var(--text-secondary);">${isEn ? 'Rejected' : 'ပယ်ချခံရ'}</div></div>
+                                    <div style="text-align:center;"><div style="font-size:1rem; font-weight:700;">${rejectRate}%</div><div style="font-size:0.5rem; color:var(--text-secondary);">${isEn ? 'Reject Rate' : 'ပယ်ချမှုနှုန်း'}</div></div>
                                 </div>
                                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                                    ${!user.blocked ? `<button onclick="window.blockUser('${escapeHtml(user.phone)}', true)" style="flex:1; border:none; padding:6px 10px; border-radius:40px; font-size:0.6rem; cursor:pointer; font-weight:600; background:rgba(244,63,94,0.2); color:#fb7185;">🔴 ပိတ်ဆို့</button>` : `<button onclick="window.blockUser('${escapeHtml(user.phone)}', false)" style="flex:1; border:none; padding:6px 10px; border-radius:40px; font-size:0.6rem; cursor:pointer; font-weight:600; background:rgba(16,185,129,0.2); color:#34d399;">🟢 ဖွင့်ပေး</button>`}
-                                    <button onclick="window.deleteUser('${escapeHtml(user.phone)}')" style="flex:1; border:none; padding:6px 10px; border-radius:40px; font-size:0.6rem; cursor:pointer; font-weight:600; background:rgba(244,63,94,0.2); color:#fb7185;">❌ ဖျက်မယ်</button>
-                                    <button onclick="window.deleteAllOrders('${escapeHtml(user.phone)}')" style="flex:1; border:none; padding:6px 10px; border-radius:40px; font-size:0.6rem; cursor:pointer; font-weight:600; background:rgba(245,158,11,0.2); color:#fbbf24;">🗑 အမိန့်စာဖျက်</button>
-                                    ${user.suspect_flag ? `<button onclick="window.clearSuspectFlag('${escapeHtml(user.phone)}')" style="flex:1; border:none; padding:6px 10px; border-radius:40px; font-size:0.6rem; cursor:pointer; font-weight:600; background:rgba(0,212,255,0.15); color:var(--cyan);">✓ အလံရှင်း</button>` : ''}
+                                    ${!user.blocked ? `<button onclick="window.blockUser('${escapeHtml(user.phone)}', true)" style="flex:1; border:none; padding:6px 10px; border-radius:40px; font-size:0.6rem; cursor:pointer; font-weight:600; background:rgba(244,63,94,0.2); color:#fb7185;">${isEn ? '🔴 Block' : '🔴 ပိတ်ဆို့'}</button>` : `<button onclick="window.blockUser('${escapeHtml(user.phone)}', false)" style="flex:1; border:none; padding:6px 10px; border-radius:40px; font-size:0.6rem; cursor:pointer; font-weight:600; background:rgba(16,185,129,0.2); color:#34d399;">${isEn ? '🟢 Unblock' : '🟢 ဖွင့်ပေး'}</button>`}
+                                    <button onclick="window.deleteUser('${escapeHtml(user.phone)}')" style="flex:1; border:none; padding:6px 10px; border-radius:40px; font-size:0.6rem; cursor:pointer; font-weight:600; background:rgba(244,63,94,0.2); color:#fb7185;">${isEn ? '❌ Delete' : '❌ ဖျက်မယ်'}</button>
+                                    <button onclick="window.deleteAllOrders('${escapeHtml(user.phone)}')" style="flex:1; border:none; padding:6px 10px; border-radius:40px; font-size:0.6rem; cursor:pointer; font-weight:600; background:rgba(245,158,11,0.2); color:#fbbf24;">${isEn ? '🗑 Clear Orders' : '🗑 အမိန့်စာဖျက်'}</button>
+                                    ${user.suspect_flag ? `<button onclick="window.clearSuspectFlag('${escapeHtml(user.phone)}')" style="flex:1; border:none; padding:6px 10px; border-radius:40px; font-size:0.6rem; cursor:pointer; font-weight:600; background:rgba(0,212,255,0.15); color:var(--cyan);">${isEn ? '✓ Clear Flag' : '✓ အလံရှင်း'}</button>` : ''}
                                 </div>
                             </div>
                         `;
@@ -3527,10 +3821,11 @@
                 currentUserSearchPhone = '';
                 document.getElementById('userSearchInput').value = '';
                 renderUsersTab();
-                showToast('🔍 ရှာဖွေမှု ရှင်းလင်းပြီးပါပြီ');
+                showToast(currentLang === 'en' ? '🔍 Search cleared' : '🔍 ရှာဖွေမှု ရှင်းလင်းပြီးပါပြီ');
             };
 
             window.blockUser = async function(phone, block) {
+                const isEn = currentLang === 'en';
                 try {
                     const res = await fetchWithRetry(`${API_BASE}/api/admin/user-block`, {
                         method: 'POST',
@@ -3539,17 +3834,19 @@
                     });
                     if (res && res.ok) {
                         loadUserStats();
-                        showToast(block ? '✅ အသုံးပြုသူအား ပိတ်ဆို့ထားပါသည်' :
-                            '✅ အသုံးပြုသူအား ဖွင့်ပေးထားပါသည်');
+                        showToast(block ?
+                            (isEn ? '✅ User blocked' : '✅ အသုံးပြုသူအား ပိတ်ဆို့ထားပါသည်') :
+                            (isEn ? '✅ User unblocked' : '✅ အသုံးပြုသူအား ဖွင့်ပေးထားပါသည်'));
                     } else {
-                        showToast('အမှားရှိသည်', true);
+                        showToast(isEn ? 'Error' : 'အမှားရှိသည်', true);
                     }
                 } catch (e) {
-                    showToast('အမှားရှိသည်', true);
+                    showToast(isEn ? 'Error' : 'အမှားရှိသည်', true);
                 }
             };
 
             window.clearSuspectFlag = async function(phone) {
+                const isEn = currentLang === 'en';
                 try {
                     const res = await fetchWithRetry(`${API_BASE}/api/admin/clear-suspect`, {
                         method: 'POST',
@@ -3558,17 +3855,20 @@
                     });
                     if (res && res.ok) {
                         loadUserStats();
-                        showToast('✅ သံသယအလံ ရှင်းလင်းပြီးပါပြီ');
+                        showToast(isEn ? '✅ Suspect flag cleared' : '✅ သံသယအလံ ရှင်းလင်းပြီးပါပြီ');
                     } else {
-                        showToast('အမှားရှိသည်', true);
+                        showToast(isEn ? 'Error' : 'အမှားရှိသည်', true);
                     }
                 } catch (e) {
-                    showToast('အမှားရှိသည်', true);
+                    showToast(isEn ? 'Error' : 'အမှားရှိသည်', true);
                 }
             };
 
             window.deleteUser = async function(phone) {
-                if (!confirm(`⚠️ အသုံးပြုသူ ${maskPhone(phone)} ကို ဖျက်မည်မှာ သေချာပါသလား။`)) return;
+                const isEn = currentLang === 'en';
+                if (!confirm(isEn ?
+                        `⚠️ Delete user ${maskPhone(phone)}? This cannot be undone.` :
+                        `⚠️ အသုံးပြုသူ ${maskPhone(phone)} ကို ဖျက်မည်မှာ သေချာပါသလား။`)) return;
                 try {
                     const res = await fetchWithRetry(`${API_BASE}/api/admin/user-delete`, {
                         method: 'POST',
@@ -3577,17 +3877,20 @@
                     });
                     if (res && res.ok) {
                         loadUserStats();
-                        showToast('✅ အသုံးပြုသူအား စာရင်းမှ ဖျက်ပြီးပါပြီ');
+                        showToast(isEn ? '✅ User deleted' : '✅ အသုံးပြုသူအား စာရင်းမှ ဖျက်ပြီးပါပြီ');
                     } else {
-                        showToast('အမှားရှိသည်', true);
+                        showToast(isEn ? 'Error' : 'အမှားရှိသည်', true);
                     }
                 } catch (e) {
-                    showToast('အမှားရှိသည်', true);
+                    showToast(isEn ? 'Error' : 'အမှားရှိသည်', true);
                 }
             };
 
             window.deleteAllOrders = async function(phone) {
-                if (!confirm(`⚠️ ${maskPhone(phone)} အတွက် အမိန့်စာအားလုံးကို ဖျက်မည်လား။`)) return;
+                const isEn = currentLang === 'en';
+                if (!confirm(isEn ?
+                        `⚠️ Delete all orders for ${maskPhone(phone)}?` :
+                        `⚠️ ${maskPhone(phone)} အတွက် အမိန့်စာအားလုံးကို ဖျက်မည်လား။`)) return;
                 try {
                     const res = await fetchWithRetry(`${API_BASE}/api/admin/user-delete-orders`, {
                         method: 'POST',
@@ -3596,46 +3899,50 @@
                     });
                     if (res && res.ok) {
                         loadAllData();
-                        showToast('✅ အမိန့်စာအားလုံး ဖျက်ပြီးပါပြီ');
+                        showToast(isEn ? '✅ All orders deleted' : '✅ အမိန့်စာအားလုံး ဖျက်ပြီးပါပြီ');
                     } else {
-                        showToast('အမှားရှိသည်', true);
+                        showToast(isEn ? 'Error' : 'အမှားရှိသည်', true);
                     }
                 } catch (e) {
-                    showToast('အမှားရှိသည်', true);
+                    showToast(isEn ? 'Error' : 'အမှားရှိသည်', true);
                 }
             };
 
             // ===== EXPORTS =====
             window.exportUsersToCSV = function() {
+                const isEn = currentLang === 'en';
                 if (!userStats.length) {
-                    showToast('တင်ပို့ရန် အသုံးပြုသူမရှိပါ', true);
+                    showToast(isEn ? 'No users to export' : 'တင်ပို့ရန် အသုံးပြုသူမရှိပါ', true);
                     return;
                 }
-                let csv =
+                let csv = isEn ?
+                    "User ID,Phone,Username,Order Count,Reject Count,Reject Rate,Suspicious,Blocked,Registered\n" :
                     "အသုံးပြုသူ ID,ဖုန်းနံပါတ်,အသုံးပြုသူအမည်,အမိန့်စာအရေအတွက်,ပယ်ချခံရအရေအတွက်,ပယ်ချမှုနှုန်း,သံသယရှိ,ပိတ်ဆို့ထား,စာရင်းသွင်းရက်\n";
                 userStats.forEach(u => {
                     const rejectRate = u.order_count > 0 ? ((u.reject_count / u.order_count) * 100).toFixed(1) :
                         0;
                     csv +=
-                        `"${u.user_id || 'N/A'}","${u.phone}","${u.username || ''}",${u.order_count},${u.reject_count},${rejectRate}%,${u.suspect_flag ? 'ဟုတ်ကဲ့' : 'မဟုတ်ပါ'},${u.blocked ? 'ဟုတ်ကဲ့' : 'မဟုတ်ပါ'},"${new Date(u.created_at).toLocaleDateString()}"\n`;
+                        `"${u.user_id || 'N/A'}","${u.phone}","${u.username || ''}",${u.order_count},${u.reject_count},${rejectRate}%,${u.suspect_flag ? (isEn ? 'Yes' : 'ဟုတ်ကဲ့') : (isEn ? 'No' : 'မဟုတ်ပါ')},${u.blocked ? (isEn ? 'Yes' : 'ဟုတ်ကဲ့') : (isEn ? 'No' : 'မဟုတ်ပါ')},"${new Date(u.created_at).toLocaleDateString()}"\n`;
                 });
                 downloadCSV(csv, `users_${new Date().toISOString().slice(0, 19)}.csv`);
-                showToast('📁 အသုံးပြုသူများအား CSV သို့ တင်ပို့ပြီးပါပြီ');
+                showToast(isEn ? '📁 Users exported to CSV' : '📁 အသုံးပြုသူများအား CSV သို့ တင်ပို့ပြီးပါပြီ');
             };
 
             window.exportOrdersToCSV = function() {
+                const isEn = currentLang === 'en';
                 if (!allOrders.length) {
-                    showToast('တင်ပို့ရန် အမိန့်စာမရှိပါ', true);
+                    showToast(isEn ? 'No orders to export' : 'တင်ပို့ရန် အမိန့်စာမရှိပါ', true);
                     return;
                 }
-                let csv =
+                let csv = isEn ?
+                    "Order ID,Phone,Plan,Price,Status,Payment Method,Sender Name,Last 5 Digits,Order Date,Activated Date\n" :
                     "အမိန့်စာ ID,ဖုန်းနံပါတ်,အစီအစဉ်,စျေးနှုန်း,အခြေအနေ,ငွေပေးချေမှုနည်းလမ်း,ပေးပို့သူအမည်,နောက်ဆုံးဂဏန်း ၅လုံး,အမိန့်စာရက်စွဲ,အသက်သွင်းရက်စွဲ\n";
                 allOrders.forEach(o => {
                     csv +=
                         `"${o.id}","${o.phone}","${o.plan}",${o.price},"${o.status}","${o.payment_method || 'kpay'}","${o.sender_name || ''}","${o.last5_digits || ''}","${new Date(o.created_at).toLocaleString()}","${o.activated_at ? new Date(o.activated_at).toLocaleString() : ''}"\n`;
                 });
                 downloadCSV(csv, `orders_${new Date().toISOString().slice(0, 19)}.csv`);
-                showToast('📁 အမိန့်စာများအား CSV သို့ တင်ပို့ပြီးပါပြီ');
+                showToast(isEn ? '📁 Orders exported to CSV' : '📁 အမိန့်စာများအား CSV သို့ တင်ပို့ပြီးပါပြီ');
             };
 
             function downloadCSV(csv, filename) {
@@ -3682,7 +3989,7 @@
                 currentSearchPhone = '';
                 document.getElementById('searchInput').value = '';
                 applyFiltersAndSearch();
-                showToast('🔍 ရှာဖွေမှု ရှင်းလင်းပြီးပါပြီ');
+                showToast(currentLang === 'en' ? '🔍 Search cleared' : '🔍 ရှာဖွေမှု ရှင်းလင်းပြီးပါပြီ');
             };
 
             window.applyFilters = function() { applyFiltersAndSearch(); };
@@ -3692,7 +3999,7 @@
                 document.getElementById('endDate').value = '';
                 document.getElementById('statusFilter').value = 'all';
                 applyFiltersAndSearch();
-                showToast('✅ စစ်ထုတ်မှုများ ရှင်းလင်းပြီးပါပြီ');
+                showToast(currentLang === 'en' ? '✅ Filters cleared' : '✅ စစ်ထုတ်မှုများ ရှင်းလင်းပြီးပါပြီ');
             };
 
             // ===== FILTER PRESETS =====
@@ -3703,12 +4010,16 @@
                     endDate: document.getElementById('endDate')?.value || ''
                 };
                 localStorage.setItem('orderFilterPreset', JSON.stringify(preset));
-                showToast('✅ Filter သိမ်းဆည်းပြီးပါပြီ');
+                showToast(currentLang === 'en' ? '✅ Filter saved' : '✅ Filter သိမ်းဆည်းပြီးပါပြီ');
             };
 
             window.loadFilterPreset = function() {
                 const saved = localStorage.getItem('orderFilterPreset');
-                if (!saved) { showToast('သိမ်းထားတဲ့ Filter မရှိပါ', true); return; }
+                const isEn = currentLang === 'en';
+                if (!saved) {
+                    showToast(isEn ? 'No saved filter found' : 'သိမ်းထားတဲ့ Filter မရှိပါ', true);
+                    return;
+                }
                 try {
                     const preset = JSON.parse(saved);
                     if (document.getElementById('statusFilter')) document.getElementById('statusFilter').value = preset
@@ -3718,9 +4029,9 @@
                     if (document.getElementById('endDate')) document.getElementById('endDate').value = preset
                         .endDate || '';
                     applyFilters();
-                    showToast('✅ Filter ပြန်ဖွင့်ပြီးပါပြီ');
+                    showToast(isEn ? '✅ Filter loaded' : '✅ Filter ပြန်ဖွင့်ပြီးပါပြီ');
                 } catch (e) {
-                    showToast('Filter ပြန်ဖွင့်ရန် မအောင်မြင်ပါ', true);
+                    showToast(isEn ? 'Failed to load filter' : 'Filter ပြန်ဖွင့်ရန် မအောင်မြင်ပါ', true);
                 }
             };
 
@@ -3728,19 +4039,29 @@
             function renderOrders(orders) {
                 const container = document.getElementById('ordersList');
                 if (!container) return;
+                const isEn = currentLang === 'en';
                 if (!orders || !orders.length) {
-                    container.innerHTML = '<div class="loading">အမိန့်စာ မတွေ့ပါ</div>';
+                    container.innerHTML = `<div class="loading">${isEn ? 'No orders found' : 'အမိန့်စာ မတွေ့ပါ'}</div>`;
                     return;
                 }
 
+                const btnText = {
+                    detail: isEn ? 'Details' : 'အသေးစိတ်',
+                    screenshot: isEn ? 'Screenshot' : 'ဖန်သားပြင်',
+                    approve: isEn ? 'Approve' : 'အတည်ပြု',
+                    reject: isEn ? 'Reject' : 'ပယ်ချ',
+                    delete: isEn ? 'Delete' : 'ဖျက်မယ်'
+                };
+
                 let html = '';
                 for (const o of orders) {
-                    let statusText = o.status === 'Pending' ? '⏳ ဆိုင်းငံ့' : (o.status === 'Approved' ?
-                        '✅ အတည်ပြု' : '❌ ပယ်ချ');
-                    const statusColor = o.status === 'Pending' ? '#fbbf24' : (o.status === 'Approved' ? '#34d399' :
-                        '#fb7185');
-                    const statusBg = o.status === 'Pending' ? 'rgba(245,158,11,0.2)' : (o.status === 'Approved' ?
-                        'rgba(16,185,129,0.2)' : 'rgba(244,63,94,0.2)');
+                    let statusText = o.status === 'Pending' ? (isEn ? '⏳ Pending' : '⏳ ဆိုင်းငံ့') :
+                        (o.status === 'Approved' ? (isEn ? '✅ Approved' : '✅ အတည်ပြု') :
+                            (isEn ? '❌ Rejected' : '❌ ပယ်ချ'));
+                    const statusColor = o.status === 'Pending' ? '#fbbf24' :
+                        (o.status === 'Approved' ? '#34d399' : '#fb7185');
+                    const statusBg = o.status === 'Pending' ? 'rgba(245,158,11,0.2)' :
+                        (o.status === 'Approved' ? 'rgba(16,185,129,0.2)' : 'rgba(244,63,94,0.2)');
 
                     let countdownHtml = '';
                     if (o.status === 'Approved' && o.activated_at) {
@@ -3748,29 +4069,27 @@
                         countdownHtml = `
                                 <div class="order-countdown" id="countdown-${o.id}">
                                     <i class="fas fa-hourglass-half"></i>
-                                    <span class="countdown-timer">${initialCountdown || 'တွက်နေသည်...'}</span>
+                                    <span class="countdown-timer">${initialCountdown || (isEn ? 'Calculating...' : 'တွက်နေသည်...')}</span>
                                 </div>
                             `;
                     }
 
-                    // Build proof items
                     let proofItems = '';
                     if (o.sender_name) {
                         proofItems +=
-                            `<span class="order-proof-item"><span style="color:var(--text-secondary);">👤 ပေးပို့သူ:</span> <strong class="sender-name">${escapeHtml(o.sender_name)}</strong></span>`;
+                            `<span class="order-proof-item"><span style="color:var(--text-secondary);">${isEn ? '👤 Sender:' : '👤 ပေးပို့သူ:'}</span> <strong class="sender-name">${escapeHtml(o.sender_name)}</strong></span>`;
                     }
                     if (o.last5_digits) {
                         proofItems +=
-                            `<span class="order-proof-item"><span style="color:var(--text-secondary);">🧾 နောက်ဆုံး ၅လုံး:</span> <strong class="last5">${escapeHtml(o.last5_digits)}</strong></span>`;
+                            `<span class="order-proof-item"><span style="color:var(--text-secondary);">${isEn ? '🧾 Last 5:' : '🧾 နောက်ဆုံး ၅လုံး:'}</span> <strong class="last5">${escapeHtml(o.last5_digits)}</strong></span>`;
                     }
                     if (o.payment_method) {
                         proofItems +=
-                            `<span class="order-proof-item"><span style="color:var(--text-secondary);">💳 ငွေပေးချေမှု:</span> <strong class="payment-method">${getPaymentIcon(o.payment_method)}</strong></span>`;
+                            `<span class="order-proof-item"><span style="color:var(--text-secondary);">${isEn ? '💳 Payment:' : '💳 ငွေပေးချေမှု:'}</span> <strong class="payment-method">${getPaymentIcon(o.payment_method)}</strong></span>`;
                     }
 
                     html += `
                             <div class="order-card" data-order-id="${o.id}">
-                                <!-- LEFT SECTION -->
                                 <div class="order-left">
                                     <div class="order-header">
                                         <span class="order-id"><i class="fas fa-hashtag"></i> ${o.id}</span>
@@ -3784,7 +4103,6 @@
                                     <div class="order-date"><i class="fas fa-calendar-alt"></i> ${new Date(o.created_at).toLocaleString()}</div>
                                 </div>
                                 
-                                <!-- RIGHT SECTION -->
                                 <div class="order-right">
                                     <div class="order-prices">
                                         <div class="order-price">${o.price.toLocaleString()} <small>K</small></div>
@@ -3793,26 +4111,27 @@
                                     </div>
                                 </div>
                                 
-                                <!-- ===== ORDER ACTIONS - 50/50 LAYOUT ===== -->
                                 <div class="order-actions-wrapper">
                                     <!-- Row 1: Detail + Screenshot (50% + 50%) -->
                                     <div class="order-actions-row-1">
                                         <button class="btn-detail" onclick="window.viewOrderDetail(${o.id})">
-                                            <i class="fas fa-info-circle"></i> အသေးစိတ်
+                                            <i class="fas fa-info-circle"></i> ${btnText.detail}
                                         </button>
                                         ${o.slip_url ? `<button class="btn-screenshot" onclick="window.openScreenshot('${escapeHtml(o.slip_url)}')">
-                                            <i class="fas fa-image"></i> ဖန်သားပြင်
-                                        </button>` : ''}
+                                            <i class="fas fa-image"></i> ${btnText.screenshot}
+                                        </button>` : `<button class="btn-screenshot" style="opacity:0.3; cursor:default;" disabled>
+                                            <i class="fas fa-image"></i> ${isEn ? 'No Image' : 'မရှိပါ'}
+                                        </button>`}
                                     </div>
                                     
                                     <!-- Row 2: Approve + Reject (50% + 50%) - only if Pending -->
                                     ${o.status === 'Pending' ? `
                                     <div class="order-actions-row-2">
                                         <button class="btn-approve" onclick="window.approveOrder(${o.id})">
-                                            <i class="fas fa-check"></i> အတည်ပြု
+                                            <i class="fas fa-check"></i> ${btnText.approve}
                                         </button>
                                         <button class="btn-reject" onclick="window.rejectOrder(${o.id})">
-                                            <i class="fas fa-times"></i> ပယ်ချ
+                                            <i class="fas fa-times"></i> ${btnText.reject}
                                         </button>
                                     </div>
                                     ` : ''}
@@ -3820,22 +4139,18 @@
                                     <!-- Row 3: Delete (100%) -->
                                     <div class="order-actions-row-3">
                                         <button class="btn-delete" onclick="window.deleteOrder(${o.id})">
-                                            <i class="fas fa-trash"></i> ဖျက်မယ်
+                                            <i class="fas fa-trash"></i> ${btnText.delete}
                                         </button>
                                     </div>
                                 </div>
                                 
-                                <!-- PROOF SECTION (full width) -->
                                 ${proofItems ? `<div class="order-proof">${proofItems}</div>` : ''}
-                                
-                                <!-- COUNTDOWN (full width) -->
                                 ${countdownHtml}
                             </div>
                         `;
                 }
                 container.innerHTML = html;
 
-                // Start countdowns
                 for (const o of orders) {
                     if (o.status === 'Approved' && o.activated_at) {
                         startCountdownForOrder(o.id, o.activated_at);
@@ -3847,66 +4162,67 @@
             window.viewOrderDetail = function(orderId) {
                 const order = allOrders.find(o => o.id === orderId);
                 if (!order) return;
+                const isEn = currentLang === 'en';
 
                 const modal = document.createElement('div');
                 modal.className = 'modal active';
                 modal.id = 'orderDetailModal';
                 modal.innerHTML = `
                         <div class="modal-card" style="max-width: 480px;">
-                            <h3 style="font-size:1.1rem;"><i class="fas fa-file-invoice"></i> အမိန့်စာ အသေးစိတ်</h3>
+                            <h3 style="font-size:1.1rem;"><i class="fas fa-file-invoice"></i> ${isEn ? 'Order Details' : 'အမိန့်စာ အသေးစိတ်'}</h3>
                             <div style="margin: 14px 0; font-size:0.8rem;">
                                 <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
-                                    <span style="color:var(--text-secondary);">အမိန့်စာ ID</span>
+                                    <span style="color:var(--text-secondary);">${isEn ? 'Order ID' : 'အမိန့်စာ ID'}</span>
                                     <span style="font-weight:600;">#${order.id}</span>
                                 </div>
                                 <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
-                                    <span style="color:var(--text-secondary);">ဖုန်းနံပါတ်</span>
+                                    <span style="color:var(--text-secondary);">${isEn ? 'Phone' : 'ဖုန်းနံပါတ်'}</span>
                                     <span style="font-weight:600;">${maskPhone(order.phone)}</span>
                                 </div>
                                 <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
-                                    <span style="color:var(--text-secondary);">အစီအစဉ်</span>
+                                    <span style="color:var(--text-secondary);">${isEn ? 'Plan' : 'အစီအစဉ်'}</span>
                                     <span style="font-weight:600;">${order.plan}</span>
                                 </div>
                                 <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
-                                    <span style="color:var(--text-secondary);">ဈေးနှုန်း</span>
+                                    <span style="color:var(--text-secondary);">${isEn ? 'Price' : 'ဈေးနှုန်း'}</span>
                                     <span style="font-weight:600;color:var(--emerald);">${order.price.toLocaleString()}K</span>
                                 </div>
                                 <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
-                                    <span style="color:var(--text-secondary);">အခြေအနေ</span>
-                                    <span style="font-weight:600;">${order.status === 'Pending' ? '⏳ ဆိုင်းငံ့' : order.status === 'Approved' ? '✅ အတည်ပြု' : '❌ ပယ်ချ'}</span>
+                                    <span style="color:var(--text-secondary);">${isEn ? 'Status' : 'အခြေအနေ'}</span>
+                                    <span style="font-weight:600;">${order.status === 'Pending' ? (isEn ? '⏳ Pending' : '⏳ ဆိုင်းငံ့') : order.status === 'Approved' ? (isEn ? '✅ Approved' : '✅ အတည်ပြု') : (isEn ? '❌ Rejected' : '❌ ပယ်ချ')}</span>
                                 </div>
                                 <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
-                                    <span style="color:var(--text-secondary);">မှာယူသည့်ရက်</span>
+                                    <span style="color:var(--text-secondary);">${isEn ? 'Order Date' : 'မှာယူသည့်ရက်'}</span>
                                     <span style="font-weight:600;">${new Date(order.created_at).toLocaleString()}</span>
                                 </div>
                                 ${order.activated_at ? `
                                 <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
-                                    <span style="color:var(--text-secondary);">အသက်သွင်းရက်</span>
+                                    <span style="color:var(--text-secondary);">${isEn ? 'Activated Date' : 'အသက်သွင်းရက်'}</span>
                                     <span style="font-weight:600;color:var(--cyan);">${new Date(order.activated_at).toLocaleString()}</span>
                                 </div>
                                 <div style="display:flex; justify-content:space-between; padding:6px 0;">
-                                    <span style="color:var(--text-secondary);">သက်တမ်းကုန်ဆုံးမည့်ရက်</span>
+                                    <span style="color:var(--text-secondary);">${isEn ? 'Expiry Date' : 'သက်တမ်းကုန်ဆုံးမည့်ရက်'}</span>
                                     <span style="font-weight:600;color:var(--amber);">${new Date(new Date(order.activated_at).getTime() + 30*24*60*60*1000).toLocaleString()}</span>
                                 </div>
                                 ` : ''}
                                 ${order.sender_name ? `
                                 <div style="display:flex; justify-content:space-between; padding:6px 0; border-top:1px solid var(--border-color);">
-                                    <span style="color:var(--text-secondary);">ပေးပို့သူအမည်</span>
+                                    <span style="color:var(--text-secondary);">${isEn ? 'Sender Name' : 'ပေးပို့သူအမည်'}</span>
                                     <span style="font-weight:600;color:var(--emerald);">${escapeHtml(order.sender_name)}</span>
                                 </div>
                                 <div style="display:flex; justify-content:space-between; padding:6px 0;">
-                                    <span style="color:var(--text-secondary);">နောက်ဆုံး ၅လုံး</span>
+                                    <span style="color:var(--text-secondary);">${isEn ? 'Last 5 Digits' : 'နောက်ဆုံး ၅လုံး'}</span>
                                     <span style="font-weight:600;color:var(--amber); font-family:monospace;">${escapeHtml(order.last5_digits || '')}</span>
                                 </div>
                                 <div style="display:flex; justify-content:space-between; padding:6px 0;">
-                                    <span style="color:var(--text-secondary);">ငွေပေးချေမှုနည်းလမ်း</span>
+                                    <span style="color:var(--text-secondary);">${isEn ? 'Payment Method' : 'ငွေပေးချေမှုနည်းလမ်း'}</span>
                                     <span style="font-weight:600;color:var(--violet);">${getPaymentIcon(order.payment_method || 'kpay')}</span>
                                 </div>
                                 ` : ''}
                             </div>
                             <div style="display:flex; gap:10px;">
-                                <button class="modal-btn cancel" onclick="this.closest('.modal').remove()" style="flex:1;">ပိတ်ရန်</button>
-                                ${order.slip_url ? `<button class="modal-btn save" onclick="window.openScreenshot('${escapeHtml(order.slip_url)}'); this.closest('.modal').remove();" style="flex:1;"><i class="fas fa-image"></i> ဖန်သားပြင်ကြည့်</button>` : ''}
+                                <button class="modal-btn cancel" onclick="this.closest('.modal').remove()" style="flex:1;">${isEn ? 'Close' : 'ပိတ်ရန်'}</button>
+                                ${order.slip_url ? `<button class="modal-btn save" onclick="window.openScreenshot('${escapeHtml(order.slip_url)}'); this.closest('.modal').remove();" style="flex:1;"><i class="fas fa-image"></i> ${isEn ? 'View Screenshot' : 'ဖန်သားပြင်ကြည့်'}</button>` : ''}
                             </div>
                         </div>
                     `;
@@ -3931,9 +4247,12 @@
 
             function formatCountdown(activatedAt) {
                 const time = getRemainingTime(activatedAt);
+                const isEn = currentLang === 'en';
                 if (!time) return null;
-                if (time === 'Expired') return 'သက်တမ်းကုန်ဆုံးပြီ';
-                return `${time.days}ရက် ${time.hours}နာရီ ${time.minutes}မိနစ်`;
+                if (time === 'Expired') return isEn ? 'Expired' : 'သက်တမ်းကုန်ဆုံးပြီ';
+                return isEn ?
+                    `${time.days}d ${time.hours}h ${time.minutes}m` :
+                    `${time.days}ရက် ${time.hours}နာရီ ${time.minutes}မိနစ်`;
             }
 
             function startCountdownForOrder(orderId, activatedAt) {
@@ -3949,9 +4268,10 @@
                         return;
                     }
                     const formatted = formatCountdown(activatedAt);
-                    if (formatted === 'သက်တမ်းကုန်ဆုံးပြီ') {
+                    const isEn = currentLang === 'en';
+                    if (formatted === 'Expired' || formatted === 'သက်တမ်းကုန်ဆုံးပြီ') {
                         elem.innerHTML =
-                            `<i class="fas fa-calendar-times"></i> <span style="color:var(--rose);">သက်တမ်းကုန်ဆုံးပြီ</span>`;
+                            `<i class="fas fa-calendar-times"></i> <span style="color:var(--rose);">${isEn ? 'Expired' : 'သက်တမ်းကုန်ဆုံးပြီ'}</span>`;
                         clearInterval(interval);
                         delete activeCountdowns[orderId];
                     } else {
@@ -3971,46 +4291,49 @@
 
             // ===== ORDER ACTIONS =====
             window.approveOrder = async function(id) {
+                const isEn = currentLang === 'en';
                 try {
                     const res = await fetchWithRetry(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' });
                     if (res && res.ok) {
-                        showToast('✅ အတည်ပြုပြီးပါပြီ');
+                        showToast(isEn ? '✅ Order approved' : '✅ အတည်ပြုပြီးပါပြီ');
                         loadOrders();
                     } else {
-                        showToast('အမှားရှိသည်', true);
+                        showToast(isEn ? 'Error' : 'အမှားရှိသည်', true);
                     }
                 } catch (e) {
-                    showToast('အမှားရှိသည်', true);
+                    showToast(isEn ? 'Error' : 'အမှားရှိသည်', true);
                 }
             };
 
             window.rejectOrder = async function(id) {
+                const isEn = currentLang === 'en';
                 try {
                     const res = await fetchWithRetry(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' });
                     if (res && res.ok) {
-                        showToast('❌ ပယ်ချပြီးပါပြီ');
+                        showToast(isEn ? '❌ Order rejected' : '❌ ပယ်ချပြီးပါပြီ');
                         loadOrders();
                         loadUserStats();
                     } else {
-                        showToast('အမှားရှိသည်', true);
+                        showToast(isEn ? 'Error' : 'အမှားရှိသည်', true);
                     }
                 } catch (e) {
-                    showToast('အမှားရှိသည်', true);
+                    showToast(isEn ? 'Error' : 'အမှားရှိသည်', true);
                 }
             };
 
             window.deleteOrder = async function(id) {
-                if (!confirm('ဤအမိန့်စာကို ဖျက်မည်လား။')) return;
+                const isEn = currentLang === 'en';
+                if (!confirm(isEn ? 'Delete this order?' : 'ဤအမိန့်စာကို ဖျက်မည်လား။')) return;
                 try {
                     const res = await fetchWithRetry(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' });
                     if (res && res.ok) {
-                        showToast('🗑 ဖျက်ပြီးပါပြီ');
+                        showToast(isEn ? '🗑 Order deleted' : '🗑 ဖျက်ပြီးပါပြီ');
                         loadOrders();
                     } else {
-                        showToast('အမှားရှိသည်', true);
+                        showToast(isEn ? 'Error' : 'အမှားရှိသည်', true);
                     }
                 } catch (e) {
-                    showToast('အမှားရှိသည်', true);
+                    showToast(isEn ? 'Error' : 'အမှားရှိသည်', true);
                 }
             };
 
@@ -4034,13 +4357,14 @@
                 const el = document.getElementById('bulkActions');
                 if (!el) return;
                 const count = selectedOrders.size;
+                const isEn = currentLang === 'en';
                 if (count > 0) {
                     el.style.display = 'flex';
                     el.innerHTML = `
-                            <span style="font-size:0.7rem; color:var(--cyan);">${count} ခု ရွေးထားသည်</span>
-                            <button class="bulk-approve" onclick="window.bulkApprove()"><i class="fas fa-check"></i> အတည်ပြု</button>
-                            <button class="bulk-reject" onclick="window.bulkReject()"><i class="fas fa-times"></i> ပယ်ချ</button>
-                            <button class="bulk-delete" onclick="window.bulkDelete()"><i class="fas fa-trash"></i> ဖျက်မယ်</button>
+                            <span style="font-size:0.7rem; color:var(--cyan);">${count} ${isEn ? 'selected' : 'ခု ရွေးထားသည်'}</span>
+                            <button class="bulk-approve" onclick="window.bulkApprove()"><i class="fas fa-check"></i> ${isEn ? 'Approve' : 'အတည်ပြု'}</button>
+                            <button class="bulk-reject" onclick="window.bulkReject()"><i class="fas fa-times"></i> ${isEn ? 'Reject' : 'ပယ်ချ'}</button>
+                            <button class="bulk-delete" onclick="window.bulkDelete()"><i class="fas fa-trash"></i> ${isEn ? 'Delete' : 'ဖျက်မယ်'}</button>
                             <button class="bulk-cancel" onclick="window.deselectAllOrders()">✕</button>
                         `;
                 } else {
@@ -4049,42 +4373,51 @@
             }
 
             window.bulkApprove = async function() {
+                const isEn = currentLang === 'en';
                 if (!selectedOrders.size) return;
-                if (!confirm(`${selectedOrders.size} ခုကို အတည်ပြုမှာလား?`)) return;
+                if (!confirm(isEn ?
+                        `Approve ${selectedOrders.size} order(s)?` :
+                        `${selectedOrders.size} ခုကို အတည်ပြုမှာလား?`)) return;
                 for (const id of selectedOrders) {
                     try { await fetchWithRetry(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' }); } catch (
                     e) {}
                 }
                 const count = selectedOrders.size;
                 selectedOrders.clear();
-                showToast(`✅ ${count} ခု အတည်ပြုပြီးပါပြီ`);
+                showToast(isEn ? `✅ ${count} order(s) approved` : `✅ ${count} ခု အတည်ပြုပြီးပါပြီ`);
                 loadOrders();
                 updateBulkActionsUI();
             };
 
             window.bulkReject = async function() {
+                const isEn = currentLang === 'en';
                 if (!selectedOrders.size) return;
-                if (!confirm(`${selectedOrders.size} ခုကို ပယ်ချမှာလား?`)) return;
+                if (!confirm(isEn ?
+                        `Reject ${selectedOrders.size} order(s)?` :
+                        `${selectedOrders.size} ခုကို ပယ်ချမှာလား?`)) return;
                 for (const id of selectedOrders) {
                     try { await fetchWithRetry(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' }); } catch (
                     e) {}
                 }
                 const count = selectedOrders.size;
                 selectedOrders.clear();
-                showToast(`❌ ${count} ခု ပယ်ချပြီးပါပြီ`);
+                showToast(isEn ? `❌ ${count} order(s) rejected` : `❌ ${count} ခု ပယ်ချပြီးပါပြီ`);
                 loadOrders();
                 updateBulkActionsUI();
             };
 
             window.bulkDelete = async function() {
+                const isEn = currentLang === 'en';
                 if (!selectedOrders.size) return;
-                if (!confirm(`${selectedOrders.size} ခုကို ဖျက်မှာလား? ပြန်ရယူလို့မရပါ။`)) return;
+                if (!confirm(isEn ?
+                        `Delete ${selectedOrders.size} order(s)? This cannot be undone.` :
+                        `${selectedOrders.size} ခုကို ဖျက်မှာလား? ပြန်ရယူလို့မရပါ။`)) return;
                 for (const id of selectedOrders) {
                     try { await fetchWithRetry(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' }); } catch (e) {}
                 }
                 const count = selectedOrders.size;
                 selectedOrders.clear();
-                showToast(`🗑 ${count} ခု ဖျက်ပြီးပါပြီ`);
+                showToast(isEn ? `🗑 ${count} order(s) deleted` : `🗑 ${count} ခု ဖျက်ပြီးပါပြီ`);
                 loadOrders();
                 updateBulkActionsUI();
             };
@@ -4095,7 +4428,7 @@
                 const img = document.getElementById('modalImage');
                 if (modal && img) {
                     img.src = url && url !== 'null' ? (url.startsWith('/') ? API_BASE + url : url) :
-                        'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3Eပုံမရှိပါ%3C/text%3E%3C/svg%3E';
+                        'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a1a2e"/%3E%3Ctext x="200" y="150" text-anchor="middle" fill="%2364748b" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E';
                     modal.classList.add('active');
                 }
             };
@@ -4114,8 +4447,9 @@
             };
 
             window.executeCleanup = async function() {
+                const isEn = currentLang === 'en';
                 closeCleanupAlert();
-                showToast('🔄 အမိန့်စာဟောင်းများ ရှင်းလင်းနေသည်...');
+                showToast(isEn ? '🔄 Cleaning old orders...' : '🔄 အမိန့်စာဟောင်းများ ရှင်းလင်းနေသည်...');
                 try {
                     const res = await fetchWithRetry(`${API_BASE}/api/admin/cleanup-old`, { method: 'POST' });
                     if (!res) return;
@@ -4124,7 +4458,8 @@
                         showToast('✅ ' + data.message);
                         loadAllData();
                     } else {
-                        showToast('❌ ရှင်းလင်းခြင်း မအောင်မြင်ပါ: ' + data.error, true);
+                        showToast(isEn ? '❌ Cleanup failed: ' + data.error : '❌ ရှင်းလင်းခြင်း မအောင်မြင်ပါ: ' + data
+                            .error, true);
                     }
                 } catch (e) {
                     showToast('Error: ' + e.message, true);
@@ -4143,12 +4478,16 @@
             window.executeSystemResetFromAlert = async function() {
                 const confirmText = document.getElementById('resetConfirmInput')?.value.trim() || '';
                 const keepProducts = document.getElementById('keepProductsCheckbox')?.checked || true;
+                const isEn = currentLang === 'en';
                 if (confirmText !== 'RESET_ALL_DATA') {
-                    showToast('အတည်ပြုရန် "RESET_ALL_DATA" ဟု ရိုက်ထည့်ပါ', true);
+                    showToast(isEn ?
+                        'Please type "RESET_ALL_DATA" to confirm' :
+                        'အတည်ပြုရန် "RESET_ALL_DATA" ဟု ရိုက်ထည့်ပါ', true);
                     return;
                 }
                 closeSystemResetAlert();
-                showToast('🔄 စနစ်ပြန်လည်သတ်မှတ်နေသည်... ကျေးဇူးပြု၍ စောင့်ပါ...');
+                showToast(isEn ? '🔄 Resetting system... Please wait...' :
+                    '🔄 စနစ်ပြန်လည်သတ်မှတ်နေသည်... ကျေးဇူးပြု၍ စောင့်ပါ...');
                 try {
                     const res = await fetchWithRetry(`${API_BASE}/api/admin/system-reset`, {
                         method: 'POST',
@@ -4158,10 +4497,12 @@
                     if (!res) return;
                     const data = await res.json();
                     if (data.success) {
-                        showToast('✅ စနစ်ပြန်လည်သတ်မှတ်ခြင်း ပြီးစီးပါပြီ။');
+                        showToast(isEn ? '✅ System reset completed' :
+                            '✅ စနစ်ပြန်လည်သတ်မှတ်ခြင်း ပြီးစီးပါပြီ။');
                         setTimeout(() => loadAllData(), 1000);
                     } else {
-                        showToast('❌ ပြန်လည်သတ်မှတ်ခြင်း မအောင်မြင်ပါ: ' + data.error, true);
+                        showToast(isEn ? '❌ Reset failed: ' + data.error :
+                            '❌ ပြန်လည်သတ်မှတ်ခြင်း မအောင်မြင်ပါ: ' + data.error, true);
                     }
                 } catch (e) {
                     showToast('Error: ' + e.message, true);
@@ -4214,9 +4555,11 @@
 
             function updateManualStatusText(isOpen) {
                 const el = document.getElementById('manualStatusText');
+                const isEn = currentLang === 'en';
                 if (el) {
-                    el.innerHTML = isOpen ? '<span style="color:#34d399;">🟢 ဖွင့်ထား</span>' :
-                        '<span style="color:#fb7185;">🔴 ပိတ်ထား</span>';
+                    el.innerHTML = isOpen ?
+                        `<span style="color:#34d399;">${isEn ? '🟢 Open' : '🟢 ဖွင့်ထား'}</span>` :
+                        `<span style="color:#fb7185;">${isEn ? '🔴 Closed' : '🔴 ပိတ်ထား'}</span>`;
                 }
             }
 
@@ -4255,6 +4598,7 @@
                 const startHour = parseInt(document.getElementById('startHour').value);
                 const endHour = parseInt(document.getElementById('endHour').value);
                 const manualStatus = document.getElementById('manualToggle')?.checked || false;
+                const isEn = currentLang === 'en';
 
                 try {
                     const res = await fetch(`${API_BASE}/api/admin/sales-hours`, {
@@ -4265,10 +4609,11 @@
                     });
                     const data = await res.json();
                     if (data.success) {
-                        showToast('✅ ရောင်းချချိန် သတ်မှတ်ချက်ကို ပြင်ဆင်ပြီးပါပြီ။');
+                        showToast(isEn ? '✅ Sales hours updated' :
+                            '✅ ရောင်းချချိန် သတ်မှတ်ချက်ကို ပြင်ဆင်ပြီးပါပြီ။');
                         updateSalesStatusDisplay();
                     } else {
-                        showToast('❌ သတ်မှတ်ချက် မအောင်မြင်ပါ။', true);
+                        showToast(isEn ? '❌ Failed to update' : '❌ သတ်မှတ်ချက် မအောင်မြင်ပါ။', true);
                     }
                 } catch (e) {
                     showToast('Connection error', true);
@@ -4319,6 +4664,35 @@
                 }
             };
 
+            // ================================================================
+            //  PAYMENT MODAL FROM PLANS WIDGET
+            // ================================================================
+
+            window.openPaymentModalFromPlan = function(planName, planPrice) {
+                const isEn = currentLang === 'en';
+                
+                // Show toast notification
+                showToast(
+                    isEn ? 
+                    `🛒 ${planName} - ${planPrice.toLocaleString()} MMK - Please go to Orders tab to purchase` :
+                    `🛒 ${planName} - ${planPrice.toLocaleString()} MMK - ဝယ်ယူရန် Orders Tab ကိုသွားပါ`
+                );
+                
+                // Switch to orders tab
+                window.switchTab('orders');
+                
+                // Auto-fill search with plan name (optional)
+                // const searchInput = document.getElementById('searchInput');
+                // if (searchInput) {
+                //     searchInput.value = planName;
+                //     window.searchByPhoneOrId();
+                // }
+            };
+
+            // ================================================================
+            //  END PAYMENT MODAL FROM PLANS WIDGET
+            // ================================================================
+
             // ===== KEYBOARD SHORTCUTS =====
             document.addEventListener('keydown', function(e) {
                 if (e.ctrlKey && e.key >= '1' && e.key <= '5') {
@@ -4352,203 +4726,6 @@
                 setInterval(updateSalesStatusDisplay, 60000);
             }
 
-        })();
-
-        // ================================================================
-        //  NOTIFICATION MANAGER
-        // ================================================================
-        (function() {
-            'use strict';
-
-            class NotificationManager {
-                constructor(apiBase) {
-                    this.API_BASE = apiBase;
-                    this.notifications = [];
-                    this.unreadCount = 0;
-                    this.autoRefreshInterval = null;
-                }
-
-                async loadNotifications() {
-                    try {
-                        const res = await fetch(`${this.API_BASE}/api/admin/notifications`, {
-                            credentials: 'include'
-                        });
-                        if (res.status === 401) return;
-                        if (!res.ok) throw new Error('Failed to load');
-                        const data = await res.json();
-                        if (data.success && data.notifications) {
-                            this.notifications = data.notifications;
-                            this.updateUnreadCount();
-                            this.render();
-                        }
-                    } catch (e) {
-                        console.error('Error loading notifications:', e);
-                    }
-                }
-
-                updateUnreadCount() {
-                    this.unreadCount = this.notifications.filter(n => !n.is_read).length;
-                    const badge = document.getElementById('notificationBadge');
-                    if (badge) {
-                        if (this.unreadCount > 0) {
-                            badge.style.display = 'flex';
-                            badge.textContent = this.unreadCount > 99 ? '99+' : this.unreadCount;
-                        } else {
-                            badge.style.display = 'none';
-                        }
-                    }
-                }
-
-                render() {
-                    const container = document.getElementById('notificationList');
-                    if (!container) return;
-
-                    if (!this.notifications.length) {
-                        container.innerHTML = '<div class="notification-empty">📭 အကြောင်းကြားချက်မရှိပါ</div>';
-                        return;
-                    }
-
-                    let html = '';
-                    for (const n of this.notifications) {
-                        const date = new Date(n.created_at);
-                        html += `
-                                <div class="notification-item ${!n.is_read ? 'unread' : ''}">
-                                    <div class="notification-icon"><i class="fas fa-shopping-cart"></i></div>
-                                    <div class="notification-content">
-                                        <div class="notification-title">${this.escapeHtml(n.title)}</div>
-                                        <div class="notification-message">${this.escapeHtml(n.message)}</div>
-                                        <div class="notification-time"><i class="fas fa-clock"></i> ${date.toLocaleString()}</div>
-                                    </div>
-                                    <button class="notification-delete" data-id="${n.id}">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            `;
-                    }
-                    container.innerHTML = html;
-
-                    document.querySelectorAll('.notification-delete').forEach(btn => {
-                        btn.onclick = (e) => {
-                            e.stopPropagation();
-                            const id = parseInt(btn.getAttribute('data-id'));
-                            if (id) this.deleteNotification(id);
-                        };
-                    });
-                }
-
-                async clearAll() {
-                    try {
-                        const res = await fetch(`${this.API_BASE}/api/admin/notifications/clear`, {
-                            method: 'POST',
-                            credentials: 'include'
-                        });
-                        const data = await res.json();
-                        if (data.success) {
-                            this.notifications = [];
-                            this.updateUnreadCount();
-                            this.render();
-                            this.showToast('✅ အကြောင်းကြားချက်များအားလုံး ရှင်းလင်းပြီးပါပြီ');
-                            document.getElementById('notificationDropdown').classList.remove('show');
-                            document.getElementById('notificationOverlay').classList.remove('show');
-                        } else {
-                            this.showToast('❌ အကြောင်းကြားချက်များ ရှင်းလင်းရန် မအောင်မြင်ပါ', true);
-                        }
-                    } catch (e) {
-                        console.error('Error clearing:', e);
-                    }
-                }
-
-                async deleteNotification(id) {
-                    try {
-                        const res = await fetch(`${this.API_BASE}/api/admin/notifications/${id}`, {
-                            method: 'DELETE',
-                            credentials: 'include'
-                        });
-                        const data = await res.json();
-                        if (data.success) {
-                            this.notifications = this.notifications.filter(n => n.id !== id);
-                            this.updateUnreadCount();
-                            this.render();
-                            this.showToast('အကြောင်းကြားချက် ဖျက်ပြီးပါပြီ');
-                        }
-                    } catch (e) {
-                        console.error('Error deleting:', e);
-                    }
-                }
-
-                showToast(msg, isError = false) {
-                    const toast = document.getElementById('toast');
-                    if (toast) {
-                        toast.textContent = msg;
-                        toast.className = 'toast' + (isError ? ' error' : '');
-                        toast.style.display = 'block';
-                        setTimeout(() => { toast.style.display = 'none'; }, 2500);
-                    }
-                }
-
-                escapeHtml(str) {
-                    if (!str) return '';
-                    return str.replace(/[&<>]/g, function(m) {
-                        if (m === '&') return '&amp;';
-                        if (m === '<') return '&lt;';
-                        if (m === '>') return '&gt;';
-                        return m;
-                    });
-                }
-
-                async init() {
-                    if (localStorage.getItem('adminToken') === 'logged_in') {
-                        await this.loadNotifications();
-                        this.autoRefreshInterval = setInterval(() => {
-                            if (localStorage.getItem('adminToken') === 'logged_in') {
-                                this.loadNotifications();
-                            }
-                        }, 15000);
-                    }
-                }
-            }
-
-            document.addEventListener('DOMContentLoaded', function() {
-                const bellBtn = document.getElementById('notificationBellBtn');
-                if (!bellBtn) return;
-
-                window.notificationManager = new NotificationManager(window.location.origin);
-                window.notificationManager.init();
-
-                bellBtn.onclick = function(e) {
-                    e.stopPropagation();
-                    const dropdown = document.getElementById('notificationDropdown');
-                    const overlay = document.getElementById('notificationOverlay');
-                    if (dropdown) {
-                        if (dropdown.classList.contains('show')) {
-                            dropdown.classList.remove('show');
-                            if (overlay) overlay.classList.remove('show');
-                        } else {
-                            dropdown.classList.add('show');
-                            if (overlay) overlay.classList.add('show');
-                            window.notificationManager.loadNotifications();
-                        }
-                    }
-                };
-
-                document.getElementById('clearNotificationsBtn')?.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    if (window.notificationManager) {
-                        window.notificationManager.clearAll();
-                    }
-                });
-
-                document.addEventListener('click', function(e) {
-                    const dropdown = document.getElementById('notificationDropdown');
-                    const bell = document.getElementById('notificationBellBtn');
-                    if (dropdown && dropdown.classList.contains('show')) {
-                        if (!dropdown.contains(e.target) && !bell?.contains(e.target)) {
-                            dropdown.classList.remove('show');
-                            document.getElementById('notificationOverlay')?.classList.remove('show');
-                        }
-                    }
-                });
-            });
         })();
     </script>
 
