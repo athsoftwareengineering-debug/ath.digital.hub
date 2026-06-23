@@ -6,7 +6,6 @@
     <title>Plans Widget - ATH DIGITAL HUB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Your existing styles here */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: transparent;
@@ -145,6 +144,15 @@
             align-items: center;
             gap: 8px;
         }
+        .loading-text {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+        .loading-text i {
+            margin-right: 8px;
+        }
         @media (max-width: 480px) {
             .plan-card { padding: 1rem; }
             .plan-icon { font-size: 1.5rem; }
@@ -157,7 +165,9 @@
     </style>
 </head>
 <body>
-    <div id="plansContainer"></div>
+    <div id="plansContainer">
+        <div class="loading-text"><i class="fas fa-spinner fa-pulse"></i> Loading plans...</div>
+    </div>
 
     <script>
         const plansData = [
@@ -167,8 +177,9 @@
             { id: 4, name: "VIP LEVEL - 4 (ULTRA)", price: 30000, icon: "👑", features: [{ text: "120 GB ဂိမ်းဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ Streaming", type: "streaming" }, { text: "ဦးစားပေး ပံ့ပိုးမှု", type: "support" }] }
         ];
         
-        let planSales = { 1: 45, 2: 28, 3: 120, 4: 67 };
+        let planSales = { 1: 0, 2: 0, 3: 0, 4: 0 };
         let isShopOpen = true;
+        let isLoading = false;
         
         const featureConfig = {
             data: { icon: "fa-database", class: "feature-data" },
@@ -178,82 +189,66 @@
             support: { icon: "fa-headset", class: "feature-data" }
         };
         
-        function highlightNumbers(text) {
-            text = text.replace(/(\d+\.?\d*\s*GB)/gi, '<span>$1</span>');
-            text = text.replace(/(\d+[\d,]*\s*မိနစ်)/g, '<span>$1</span>');
-            text = text.replace(/(\d+[\d,]*\s*SMS)/g, '<span>$1</span>');
-            return text;
-        }
+        const planNameToId = {
+            "VIP LEVEL - 1": 1,
+            "VIP LEVEL - 2": 2,
+            "VIP LEVEL - 3": 3,
+            "VIP LEVEL - 4 (ULTRA)": 4
+        };
         
-        function getShortName(name) {
-            if (name.includes("VIP LEVEL - 1")) return "VIP 1";
-            if (name.includes("VIP LEVEL - 2")) return "VIP 2";
-            if (name.includes("VIP LEVEL - 3")) return "VIP 3";
-            if (name.includes("ULTRA")) return "VIP 4 ULTRA";
-            return name;
-        }
-        
-        function getBestSellerId() {
-            let bestId = 1, maxSales = 0;
-            for (const [id, sales] of Object.entries(planSales)) {
-                if (sales > maxSales) { maxSales = sales; bestId = parseInt(id); }
-            }
-            return { bestId, maxSales };
-        }
-        
-        function getRanking(sales, allSales) {
-            const sorted = Object.values(allSales).sort((a,b) => b - a);
-            return sorted.indexOf(sales) + 1;
-        }
-        
-        function getBadgeHtml(planId, sales, rank) {
-            const { bestId } = getBestSellerId();
-            if (planId === bestId) return '<span class="badge badge-best-seller"><i class="fas fa-crown"></i> Best Seller</span>';
-            if (rank === 2) return '<span class="badge badge-popular"><i class="fas fa-chart-line"></i> Popular</span>';
-            if (rank === 3) return '<span class="badge badge-hot"><i class="fas fa-fire"></i> Hot</span>';
-            return '';
-        }
-        
-        function getDynamicWidth(sales, maxSales) {
-            if (maxSales === 0) return 0;
-            const percentage = (sales / maxSales) * 100;
-            return Math.max(8, Math.min(100, percentage));
-        }
-        
-        function getRankingText(rank, sales, maxSales) {
-            const percentage = ((sales / maxSales) * 100).toFixed(0);
-            switch(rank) {
-                case 1: return `🏆 အရောင်းရဆုံး (${percentage}%)`;
-                case 2: return `⭐ ဒုတိယအရောင်းရဆုံး (${percentage}%)`;
-                case 3: return `🔥 တတိယအရောင်းရဆုံး (${percentage}%)`;
-                default: return `📦 ဝယ်ယူမှုရှိ (${percentage}%)`;
-            }
-        }
-        
-        function getRankFillClass(rank) { return `rank-${rank}`; }
-        
-        // ============ UPDATE BUTTONS BASED ON SHOP STATUS ============
-        function updateButtonsStatus() {
-            const buyButtons = document.querySelectorAll('.product-buy-btn');
-            buyButtons.forEach(btn => {
-                if (isShopOpen) {
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                    btn.style.cursor = 'pointer';
-                    btn.style.pointerEvents = 'auto';
+        // ============ LOAD SALES DATA FROM SERVER ============
+        async function loadSalesDataFromServer() {
+            if (isLoading) return;
+            isLoading = true;
+            
+            try {
+                const response = await fetch('/api/orders/approved-counts', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.counts) {
+                        const counts = { 1: 0, 2: 0, 3: 0, 4: 0 };
+                        for (const [planName, count] of Object.entries(data.counts)) {
+                            const id = planNameToId[planName];
+                            if (id) counts[id] = count;
+                        }
+                        planSales = counts;
+                        localStorage.setItem('planSales', JSON.stringify(planSales));
+                    } else {
+                        loadFromLocalStorage();
+                    }
                 } else {
-                    btn.disabled = true;
-                    btn.style.opacity = '0.5';
-                    btn.style.cursor = 'not-allowed';
-                    btn.style.pointerEvents = 'none';
+                    loadFromLocalStorage();
                 }
-            });
+            } catch(e) {
+                console.error('Error loading sales data:', e);
+                loadFromLocalStorage();
+            }
+            
+            isLoading = false;
+            renderPlans();
         }
         
+        function loadFromLocalStorage() {
+            try {
+                const saved = localStorage.getItem('planSales');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    planSales = { 1: parsed[1] || 0, 2: parsed[2] || 0, 3: parsed[3] || 0, 4: parsed[4] || 0 };
+                }
+            } catch(e) {
+                console.error('Error loading from localStorage:', e);
+            }
+        }
+        
+        // ============ RENDER PLANS ============
         function renderPlans() {
             const container = document.getElementById('plansContainer');
-            let html = '';
-            const maxSales = Math.max(...Object.values(planSales));
+            
+            const hasData = Object.values(planSales).some(v => v > 0);
+            const maxSales = Math.max(...Object.values(planSales), 1);
             const plansWithRank = plansData.map(plan => {
                 const sales = planSales[plan.id] || 0;
                 const rank = getRanking(sales, planSales);
@@ -261,14 +256,15 @@
             });
             plansWithRank.sort((a, b) => b.sales - a.sales);
             
+            let html = '';
             for (const p of plansWithRank) {
                 const priceFormatted = p.price.toLocaleString();
                 const shortName = getShortName(p.name);
                 const rank = p.rank;
                 const sales = p.sales;
-                const badgeHtml = getBadgeHtml(p.id, sales, rank);
+                const badgeHtml = getBadgeHtml(p.id, sales, rank, hasData);
                 const dynamicWidth = getDynamicWidth(sales, maxSales);
-                const rankingText = getRankingText(rank, sales, maxSales);
+                const rankingText = getRankingText(rank, sales, maxSales, hasData);
                 const fillClass = getRankFillClass(rank);
                 
                 let featuresHtml = '';
@@ -304,17 +300,88 @@
             updateButtonsStatus();
         }
         
+        // ============ HELPER FUNCTIONS ============
+        function highlightNumbers(text) {
+            text = text.replace(/(\d+\.?\d*\s*GB)/gi, '<span>$1</span>');
+            text = text.replace(/(\d+[\d,]*\s*မိနစ်)/g, '<span>$1</span>');
+            text = text.replace(/(\d+[\d,]*\s*SMS)/g, '<span>$1</span>');
+            return text;
+        }
+        
+        function getShortName(name) {
+            if (name.includes("VIP LEVEL - 1")) return "VIP 1";
+            if (name.includes("VIP LEVEL - 2")) return "VIP 2";
+            if (name.includes("VIP LEVEL - 3")) return "VIP 3";
+            if (name.includes("ULTRA")) return "VIP 4 ULTRA";
+            return name;
+        }
+        
+        function getBestSellerId() {
+            let bestId = 1, maxSales = 0;
+            for (const [id, sales] of Object.entries(planSales)) {
+                if (sales > maxSales) { maxSales = sales; bestId = parseInt(id); }
+            }
+            return { bestId, maxSales };
+        }
+        
+        function getRanking(sales, allSales) {
+            const sorted = Object.values(allSales).sort((a,b) => b - a);
+            return sorted.indexOf(sales) + 1;
+        }
+        
+        function getBadgeHtml(planId, sales, rank, hasData) {
+            if (!hasData || sales === 0) return '';
+            const { bestId } = getBestSellerId();
+            if (planId === bestId) return '<span class="badge badge-best-seller"><i class="fas fa-crown"></i> Best Seller</span>';
+            if (rank === 2) return '<span class="badge badge-popular"><i class="fas fa-chart-line"></i> Popular</span>';
+            if (rank === 3) return '<span class="badge badge-hot"><i class="fas fa-fire"></i> Hot</span>';
+            return '';
+        }
+        
+        function getDynamicWidth(sales, maxSales) {
+            if (maxSales === 0 || sales === 0) return 0;
+            const percentage = (sales / maxSales) * 100;
+            return Math.max(8, Math.min(100, percentage));
+        }
+        
+        function getRankingText(rank, sales, maxSales, hasData) {
+            if (!hasData || sales === 0) {
+                return '📊 စာရင်းမရှိသေးပါ';
+            }
+            const percentage = ((sales / maxSales) * 100).toFixed(0);
+            switch(rank) {
+                case 1: return `🏆 အရောင်းရဆုံး (${percentage}%)`;
+                case 2: return `⭐ ဒုတိယအရောင်းရဆုံး (${percentage}%)`;
+                case 3: return `🔥 တတိယအရောင်းရဆုံး (${percentage}%)`;
+                default: return `📦 ဝယ်ယူမှုရှိ (${percentage}%)`;
+            }
+        }
+        
+        function getRankFillClass(rank) { return `rank-${rank}`; }
+        
+        // ============ UPDATE BUTTONS ============
+        function updateButtonsStatus() {
+            const buyButtons = document.querySelectorAll('.product-buy-btn');
+            buyButtons.forEach(btn => {
+                if (isShopOpen) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                    btn.style.pointerEvents = 'auto';
+                } else {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                    btn.style.pointerEvents = 'none';
+                }
+            });
+        }
+        
+        // ============ HANDLE BUY ============
         function handleBuy(planName, planPrice) {
             if (!isShopOpen) {
                 showNotification("ဆိုင်ပိတ်ချိန်ဖြစ်ပါသည်။ ကျေးဇူးပြု၍ နံနက် ၉ နာရီမှ ညနေ ၇ နာရီအတွင်းမှသာ ဝယ်ယူနိုင်ပါသည်။", true);
                 return;
-            }
-            
-            const plan = plansData.find(p => p.name === planName);
-            if (plan) {
-                planSales[plan.id] = (planSales[plan.id] || 0) + 1;
-                renderPlans();
-                localStorage.setItem('planSales', JSON.stringify(planSales));
             }
             
             if (window.parent && window.parent.openPaymentModalFromPlan) {
@@ -344,7 +411,7 @@
             }
         }
         
-        // Listen for messages from parent window
+        // ============ LISTEN FOR PARENT MESSAGES ============
         window.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'shopStatus') {
                 isShopOpen = event.data.isOpen;
@@ -352,20 +419,26 @@
             }
         });
         
-        function loadSalesData() {
-            try {
-                const saved = localStorage.getItem('planSales');
-                if (saved) planSales = JSON.parse(saved);
-                renderPlans();
-                checkShopStatus();
-            } catch(e) { renderPlans(); }
+        // ============ INIT ============
+        async function init() {
+            const container = document.getElementById('plansContainer');
+            container.innerHTML = '<div class="loading-text"><i class="fas fa-spinner fa-pulse"></i> Loading sales data...</div>';
+            
+            await loadSalesDataFromServer();
+            await checkShopStatus();
+            
+            setInterval(async () => {
+                await loadSalesDataFromServer();
+                await checkShopStatus();
+            }, 30000);
         }
         
-        loadSalesData();
-        setInterval(checkShopStatus, 60000);
+        init();
         
         window.handleBuy = handleBuy;
         window.updateButtonsStatus = updateButtonsStatus;
+        window.renderPlans = renderPlans;
+        window.loadSalesDataFromServer = loadSalesDataFromServer;
     </script>
 </body>
 </html>
