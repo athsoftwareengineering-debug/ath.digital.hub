@@ -930,6 +930,7 @@
     let currentTab = "home";
     let userChatWidgetOpen = false;
     let isShopOpen = true;
+    let salesStatusInterval = null;
 
     function maskPhone(phone) {
         if (!phone || phone.length < 8) return phone || '';
@@ -1019,6 +1020,7 @@
         }
     }
     
+    // ============ REAL-TIME SALES STATUS (Polling - 5 seconds) ============
     async function loadSalesStatus() {
         try {
             const response = await fetch('/api/sales/status');
@@ -1067,6 +1069,21 @@
             console.error('Error loading sales status:', e);
             return true;
         }
+    }
+    
+    // ============ START POLLING ============
+    function startSalesStatusPolling() {
+        if (salesStatusInterval) {
+            clearInterval(salesStatusInterval);
+            salesStatusInterval = null;
+        }
+        
+        // Check immediately
+        loadSalesStatus();
+        
+        // Then every 5 seconds
+        salesStatusInterval = setInterval(loadSalesStatus, 5000);
+        console.log('🔄 Sales status polling started (every 5 seconds)');
     }
     
     function closeMarketTab() {
@@ -1179,7 +1196,7 @@
             
             await loadUserOrders();
             await renderProfile();
-            await loadSalesStatus();
+            startSalesStatusPolling();
             
         } catch(e) {
             showToast("Connection error", true);
@@ -1579,6 +1596,10 @@
     }
     
     function logout() {
+        if (salesStatusInterval) {
+            clearInterval(salesStatusInterval);
+            salesStatusInterval = null;
+        }
         closeUserChatWidget();
         localStorage.clear();
         currentUser = null;
@@ -1784,14 +1805,12 @@
         
         loadUserOrders();
         renderProfile();
-        loadSalesStatus();
+        startSalesStatusPolling();
         
         if (!savedId) {
             fetchUserData(savedPhone);
         }
     }
-    
-    setInterval(loadSalesStatus, 60000);
     
     window.login = login;
     window.logout = logout;
@@ -1822,6 +1841,7 @@
     window.closeUserChatWidget = closeUserChatWidget;
     window.closeMarketTab = closeMarketTab;
     window.loadSalesStatus = loadSalesStatus;
+    window.startSalesStatusPolling = startSalesStatusPolling;
 </script>
 
 </body>
