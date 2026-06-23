@@ -4932,8 +4932,9 @@
                 try {
                     const res = await fetch(`${API_BASE}/api/admin/sales-hours`, { credentials: 'include' });
                     const data = await res.json();
-                    if (data.success) {
-                        const mode = data.salesHours.mode || 'auto';
+                    if (data.success && data.salesHours) {
+                        const salesData = data.salesHours;
+                        const mode = salesData.mode || 'auto';
                         const autoBtn = document.getElementById('autoModeBtn');
                         const manualBtn = document.getElementById('manualModeBtn');
 
@@ -4949,11 +4950,11 @@
                             document.getElementById('manualModeControls').style.display = 'block';
                         }
 
-                        document.getElementById('salesEnabled').checked = data.salesHours.enabled;
-                        document.getElementById('startHour').value = data.salesHours.startHour;
-                        document.getElementById('endHour').value = data.salesHours.endHour;
-                        document.getElementById('manualToggle').checked = data.salesHours.manualStatus !== false;
-                        updateManualStatusText(data.salesHours.manualStatus !== false);
+                        document.getElementById('salesEnabled').checked = salesData.enabled !== undefined ? salesData.enabled : true;
+                        document.getElementById('startHour').value = salesData.startHour || 9;
+                        document.getElementById('endHour').value = salesData.endHour || 19;
+                        document.getElementById('manualToggle').checked = salesData.manualStatus !== false;
+                        updateManualStatusText(salesData.manualStatus !== false);
                     }
                     updateSalesStatusDisplay();
                 } catch (e) {
