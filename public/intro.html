@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ATH DIGITAL HUB</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ============================================================
+                   RESET & BASE
+                   ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #060b18;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* ============================================================
+                   BACKGROUND
+                   ============================================================ */
+        .bg-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: radial-gradient(ellipse at 40% 30%, #0d1b2a, #060b18 75%);
+            animation: morphBg 18s ease-in-out infinite alternate;
+        }
+
+        @keyframes morphBg {
+            0% {
+                background: radial-gradient(ellipse at 40% 30%, #0d1b2a, #060b18 75%);
+            }
+            33% {
+                background: radial-gradient(ellipse at 70% 50%, #0d1b2a, #060b18 75%);
+            }
+            66% {
+                background: radial-gradient(ellipse at 30% 70%, #0d1b2a, #060b18 75%);
+            }
+            100% {
+                background: radial-gradient(ellipse at 60% 40%, #0d1b2a, #060b18 75%);
+            }
+        }
+
+        .bg-orbs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.06;
+            animation: orbFloat 20s ease-in-out infinite alternate;
+        }
+
+        .bg-orb:nth-child(1) {
+            width: 500px;
+            height: 500px;
+            background: #64ffda;
+            top: -150px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+
+        .bg-orb:nth-child(2) {
+            width: 400px;
+            height: 400px;
+            background: #4a9eff;
+            bottom: -120px;
+            left: -80px;
+            animation-delay: -7s;
+        }
+
+        .bg-orb:nth-child(3) {
+            width: 350px;
+            height: 350px;
+            background: #fbbf24;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -14s;
+        }
+
+        @keyframes orbFloat {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(80px, -60px) scale(1.2);
+            }
+            66% {
+                transform: translate(-60px, 80px) scale(0.8);
+            }
+            100% {
+                transform: translate(50px, 40px) scale(1.1);
+            }
+        }
+
+        /* ============================================================
+                   INTRO OVERLAY
+                   ============================================================ */
+        #introOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(10, 15, 30, 0.85);
+            backdrop-filter: blur(20px);
+            transition: opacity 1.2s cubic-bezier(0.65, 0, 0.35, 1),
+                        transform 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+            will-change: transform, opacity;
+        }
+
+        #introOverlay.hidden {
+            opacity: 0;
+            transform: scale(1.03);
+            pointer-events: none;
+        }
+
+        /* ---- Intro Card ---- */
+        .intro-card {
+            position: relative;
+            padding: 3rem 4rem 2.8rem;
+            border-radius: 48px;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: 0 60px 120px rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(24px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: cardEntrance 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            transform: scale(0.92) translateY(30px);
+            opacity: 0;
+            min-width: 340px;
+        }
+
+        @keyframes cardEntrance {
+            0% {
+                transform: scale(0.92) translateY(30px);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .intro-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, #64ffda, transparent, #4a9eff, transparent, #fbbf24, transparent);
+            animation: cardShine 12s linear infinite;
+        }
+
+        @keyframes cardShine {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .intro-card>* {
+            position: relative;
+            z-index: 2;
+        }
+
+        .intro-card .orb-1,
+        .intro-card .orb-2 {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            pointer-events: none;
+        }
+
+        .intro-card .orb-1 {
+            width: 140px;
+            height: 140px;
+            background: rgba(100, 255, 218, 0.05);
+            top: -40px;
+            right: -40px;
+            animation: innerOrb 6s ease-in-out infinite alternate;
+        }
+
+        .intro-card .orb-2 {
+            width: 160px;
+            height: 160px;
+            background: rgba(74, 158, 255, 0.03);
+            bottom: -50px;
+            left: -50px;
+            animation: innerOrb 8s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes innerOrb {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                transform: translate(30px, -30px) scale(1.2);
+            }
+        }
+
+        /* ---- Logo ---- */
+        .intro-logo {
+            width: 72px;
+            height: 72px;
+            margin-bottom: 0.1rem;
+        }
+
+        .intro-logo svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 40px rgba(100, 255, 218, 0.05));
+        }
+
+        .intro-logo .main-path {
+            fill: none;
+            stroke: url(#logoGrad);
+            stroke-width: 2.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 400;
+            stroke-dashoffset: 400;
+            animation: drawLogo 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .intro-logo .deco-path {
+            fill: none;
+            stroke: rgba(100, 255, 218, 0.06);
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            animation: decoPulse 2.8s ease-in-out infinite;
+        }
+
+        @keyframes drawLogo {
+            0% {
+                stroke-dashoffset: 400;
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                stroke-dashoffset: 0;
+                opacity: 1;
+            }
+        }
+
+        @keyframes decoPulse {
+            0%,
+            100% {
+                opacity: 0.1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* ---- Brand Name ---- */
+        .intro-brand-wrap {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .intro-brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            background: linear-gradient(135deg, #f0f4ff 0%, #64ffda 35%, #4a9eff 70%, #fbbf24 100%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmerGrad 4s ease-in-out infinite;
+            transform: translateY(120%);
+            animation: slideUpBrand 0.7s 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+                       shimmerGrad 4s 0.7s ease-in-out infinite;
+        }
+
+        @keyframes slideUpBrand {
+            0% {
+                transform: translateY(120%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shimmerGrad {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* ---- Subtitle ---- */
+        .intro-sub-wrap {
+            margin-top: 0.05rem;
+            overflow: hidden;
+        }
+
+        .intro-sub {
+            font-size: 0.6rem;
+            font-weight: 400;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.1);
+            transform: translateY(100%);
+            animation: slideUpSub 0.6s 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .intro-sub .highlight {
+            color: #64ffda;
+            font-weight: 600;
+            letter-spacing: 0.25em;
+        }
+
+        .intro-sub .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: #64ffda;
+            margin-left: 3px;
+            animation: blink 0.7s step-end infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes slideUpSub {
+            0% {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes blink {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* ---- Loading ---- */
+        .loading-container {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0;
+            animation: fadeIn 0.5s 0.8s forwards;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-track {
+            width: 200px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #4a9eff, #64ffda, #fbbf24);
+            background-size: 200% 100%;
+            transition: width 0.2s ease;
+        }
+
+        .percentage-text {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: rgba(255, 255, 255, 0.06);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .percentage-text .num {
+            color: #64ffda;
+            font-weight: 800;
+        }
+
+        .percentage-text .percent-sign {
+            color: rgba(255, 255, 255, 0.04);
+            font-weight: 300;
+        }
+
+        /* ---- Status Dots ---- */
+        .intro-dots {
+            display: flex;
+            gap: 8px;
+            margin-top: 1.2rem;
+            opacity: 0;
+            animation: fadeIn 0.5s 1s forwards;
+        }
+
+        .intro-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.02);
+            animation: dotBounce 1.6s ease-in-out infinite;
+        }
+
+        .intro-dot:nth-child(1) {
+            animation-delay: 0s;
+            background: #64ffda;
+        }
+        .intro-dot:nth-child(2) {
+            animation-delay: 0.2s;
+            background: #4a9eff;
+        }
+        .intro-dot:nth-child(3) {
+            animation-delay: 0.4s;
+            background: #fbbf24;
+        }
+        .intro-dot:nth-child(4) {
+            animation-delay: 0.6s;
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .intro-dot:nth-child(5) {
+            animation-delay: 0.8s;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        @keyframes dotBounce {
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-6px) scale(1.2);
+            }
+        }
+
+        /* ============================================================
+                   COPYRIGHT
+                   ============================================================ */
+        .intro-copyright {
+            position: fixed;
+            bottom: 2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 101;
+            font-size: 0.6rem;
+            font-weight: 400;
+            letter-spacing: 0.15em;
+            color: rgba(255, 255, 255, 0.15);
+            text-align: center;
+            line-height: 1.6;
+            animation: copyrightFadeIn 1.2s 1.8s ease forwards,
+                       copyrightGlow 3s 2.5s ease-in-out infinite;
+            transition: color 0.4s ease;
+            pointer-events: none;
+            width: 90%;
+            max-width: 500px;
+            text-shadow: 0 0 20px rgba(100, 255, 218, 0.05);
+        }
+
+        .intro-copyright .accent {
+            color: rgba(100, 255, 218, 0.25);
+            font-weight: 500;
+            transition: color 0.4s ease;
+        }
+
+        #introOverlay.hidden ~ .intro-copyright {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+        }
+
+        @keyframes copyrightFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(15px) scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0) scale(1);
+            }
+        }
+
+        @keyframes copyrightGlow {
+            0%,
+            100% {
+                color: rgba(255, 255, 255, 0.15);
+                text-shadow: 0 0 20px rgba(100, 255, 218, 0.05);
+            }
+            50% {
+                color: rgba(255, 255, 255, 0.25);
+                text-shadow: 0 0 40px rgba(100, 255, 218, 0.08);
+            }
+        }
+
+        /* ============================================================
+                   RESPONSIVE
+                   ============================================================ */
+        @media (max-width: 480px) {
+            .intro-card {
+                padding: 2rem 1.8rem 2rem;
+                border-radius: 32px;
+                margin: 0 1.2rem;
+                min-width: unset;
+                width: 90%;
+            }
+            .intro-brand {
+                font-size: 1.4rem;
+            }
+            .intro-logo {
+                width: 56px;
+                height: 56px;
+            }
+            .intro-sub {
+                font-size: 0.5rem;
+                letter-spacing: 0.25em;
+            }
+            .percentage-text {
+                font-size: 1.8rem;
+            }
+            .progress-track {
+                width: 160px;
+            }
+            .intro-dots {
+                gap: 5px;
+            }
+            .intro-dot {
+                width: 5px;
+                height: 5px;
+            }
+            .intro-copyright {
+                font-size: 0.45rem;
+                bottom: 1.5rem;
+                letter-spacing: 0.1em;
+                line-height: 1.4;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .intro-card {
+                padding: 1.6rem 1.2rem 1.6rem;
+                border-radius: 24px;
+            }
+            .intro-brand {
+                font-size: 1.1rem;
+            }
+            .intro-logo {
+                width: 44px;
+                height: 44px;
+            }
+            .percentage-text {
+                font-size: 1.4rem;
+            }
+            .progress-track {
+                width: 130px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+    BACKGROUND
+    ============================================================ -->
+    <div class="bg-layer"></div>
+    <div class="bg-orbs">
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+    </div>
+
+    <!-- ============================================================
+    INTRO OVERLAY
+    ============================================================ -->
+    <div id="introOverlay">
+        <div class="intro-card">
+            <div class="orb-1"></div>
+            <div class="orb-2"></div>
+
+            <!-- Logo -->
+            <div class="intro-logo">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#64ffda" />
+                            <stop offset="50%" stop-color="#4a9eff" />
+                            <stop offset="100%" stop-color="#fbbf24" />
+                        </linearGradient>
+                    </defs>
+                    <path class="main-path" d="M26 84 L50 14 L74 84 L56 56 L44 56 L26 84 Z" />
+                    <path class="main-path" d="M38 56 L62 56" />
+                    <path class="main-path" d="M50 14 L50 4" />
+                    <path class="deco-path" d="M16 90 L26 84" />
+                    <path class="deco-path" d="M84 90 L74 84" />
+                    <path class="deco-path" d="M36 96 L50 84 L64 96" />
+                </svg>
+            </div>
+
+            <!-- Brand Name -->
+            <div class="intro-brand-wrap">
+                <div class="intro-brand">ATH DIGITAL HUB</div>
+            </div>
+
+            <!-- Subtitle -->
+            <div class="intro-sub-wrap">
+                <div class="intro-sub">
+                    built by <span class="highlight">AUNG THU HTWE</span>
+                    <span class="cursor"></span>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div class="loading-container">
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="percentage-text">
+                    <span class="num" id="percentNum">0</span><span class="percent-sign">%</span>
+                </div>
+            </div>
+
+            <!-- Status Dots -->
+            <div class="intro-dots">
+                <span class="intro-dot"></span>
+                <span class="intro-dot"></span>
+                <span class="intro-dot"></span>
+                <span class="intro-dot"></span>
+                <span class="intro-dot"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    COPYRIGHT
+    ============================================================ -->
+    <div class="intro-copyright">
+        Copyright © <span class="accent">2026</span> AUNG THU HTWE.<br />All Rights Reserved.
+    </div>
+
+    <!-- ============================================================
+    SCRIPT
+    ============================================================ -->
+    <script>
+        // ============================================================
+        // INTRO → REDIRECT TO index.html
+        // ============================================================
+        (function() {
+            const overlay = document.getElementById('introOverlay');
+            const percentNum = document.getElementById('percentNum');
+            const progressFill = document.getElementById('progressFill');
+
+            let currentPercent = 0;
+            const INTERVAL_MS = 35;
+            const INTRO_DURATION = 3800; // 3.8 seconds
+
+            percentNum.textContent = '0';
+            progressFill.style.width = '0%';
+
+            const timer = setInterval(function() {
+                currentPercent = currentPercent + 1;
+                if (currentPercent > 100) {
+                    currentPercent = 100;
+                }
+
+                percentNum.textContent = currentPercent;
+                progressFill.style.width = currentPercent + '%';
+
+                if (currentPercent === 100) {
+                    clearInterval(timer);
+                    setTimeout(function() {
+                        overlay.classList.add('hidden');
+                        // Redirect to original index.html (VIP Plans System)
+                        window.location.href = 'index.html';
+                    }, 500);
+                }
+            }, INTERVAL_MS);
+
+            // Click to skip and go directly
+            overlay.addEventListener('click', function() {
+                if (!overlay.classList.contains('hidden')) {
+                    clearInterval(timer);
+                    percentNum.textContent = '100';
+                    progressFill.style.width = '100%';
+                    overlay.classList.add('hidden');
+                    window.location.href = 'index.html';
+                }
+            });
+        })();
+    </script>
+
+</body>
+</html>
