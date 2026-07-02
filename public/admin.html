@@ -9,22 +9,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Admin Panel | ATH DIGITAL HUB</title>
     
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
+    <!-- Font Awesome (CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    <!-- Import Map for Supabase -->
-    <script type="importmap">
-    {
-        "imports": {
-            "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
-        }
-    }
-    </script>
     
     <style>
         /* ===== BASE STYLES ===== */
@@ -46,7 +32,7 @@
             --shadow-color: rgba(0,0,0,0.3);
             --card-radius: 1.2rem;
             --transition-speed: 0.3s;
-            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
 
         [data-theme="light"] {
@@ -2094,17 +2080,18 @@
     <div id="toast" class="toast"></div>
 
     <!-- ============================================================ -->
-    <!-- ===== JAVASCRIPT ===== -->
+    <!-- ===== JAVASCRIPT (Module with importmap) ===== -->
     <!-- ============================================================ -->
     <script type="importmap">
     {
         "imports": {
-            "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
+            "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2"
         }
     }
     </script>
 
     <script type="module">
+        // Use esm.sh instead of cdn.jsdelivr.net (more reliable)
         import { createClient } from '@supabase/supabase-js';
 
         // ================================================================
@@ -2115,6 +2102,8 @@
         const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
         
         const supabase = createClient(supabaseUrl, supabaseKey);
+
+        console.log('📡 Supabase client initialized');
 
         // ================================================================
         //  SUPABASE FUNCTIONS
@@ -2225,7 +2214,7 @@
         window.deletePlan = deletePlan;
         window.subscribeToPlans = subscribeToPlans;
 
-        console.log('📡 Supabase initialized for Admin Panel');
+        console.log('📡 Supabase functions exposed to window');
 
         // ================================================================
         //  MAIN ADMIN SCRIPT
@@ -2262,22 +2251,6 @@
                 "VIP LEVEL - 3": 24500,
                 "VIP LEVEL - 4 (ULTRA)": 29000
             };
-
-            // ================================================================
-            //  LANGUAGE SWITCHER
-            // ================================================================
-
-            function applyLanguageToAllTexts() {
-                const isEn = currentLang === 'en';
-                // ... (same as before - shortened for brevity)
-            }
-
-            function updateActiveLang() {
-                document.querySelectorAll('.lang-option').forEach(btn => {
-                    const lang = btn.getAttribute('data-lang');
-                    btn.classList.toggle('active-lang', lang === currentLang);
-                });
-            }
 
             // ================================================================
             //  UTILITY FUNCTIONS
@@ -2324,6 +2297,22 @@
                     showToast('📋 Copied');
                 });
             };
+
+            // ================================================================
+            //  LANGUAGE SWITCHER
+            // ================================================================
+
+            function applyLanguageToAllTexts() {
+                const isEn = currentLang === 'en';
+                // ... (language switching code)
+            }
+
+            function updateActiveLang() {
+                document.querySelectorAll('.lang-option').forEach(btn => {
+                    const lang = btn.getAttribute('data-lang');
+                    btn.classList.toggle('active-lang', lang === currentLang);
+                });
+            }
 
             // ================================================================
             //  PLAN FEATURES EDITOR
@@ -2597,38 +2586,6 @@
             }
 
             // ================================================================
-            //  ADS
-            // ================================================================
-
-            async function loadAds() {
-                // ... (same as before)
-            }
-
-            // ================================================================
-            //  ORDERS
-            // ================================================================
-
-            async function loadOrders() {
-                // ... (same as before)
-            }
-
-            // ================================================================
-            //  USERS
-            // ================================================================
-
-            async function loadUserStats() {
-                // ... (same as before)
-            }
-
-            // ================================================================
-            //  STATS
-            // ================================================================
-
-            function updateAllStats() {
-                // ... (same as before)
-            }
-
-            // ================================================================
             //  LOGIN
             // ================================================================
 
@@ -2668,7 +2625,7 @@
             };
 
             window.logout = function() {
-                // ... (same as before)
+                // ... (logout function)
             };
 
             // ================================================================
@@ -2736,6 +2693,93 @@
             window.notifyPlansWidget = notifyPlansWidget;
             window.login = window.login;
             window.logout = window.logout;
+
+            // Dummy functions for other tabs
+            window.loadAllData = async function() {
+                // ... 
+            };
+            window.loadSalesHours = function() { /* ... */ };
+            window.loadAdSettings = function() { /* ... */ };
+            window.loadAds = function() { /* ... */ };
+            window.startAutoSync = function() { /* ... */ };
+            window.resetSessionTimer = function() { /* ... */ };
+            window.switchTab = function(tab) {
+                currentTab = tab;
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                const tabEl = document.getElementById(tab + 'Tab');
+                if (tabEl) tabEl.classList.add('active');
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.toggle('active', item.dataset.tab === tab);
+                });
+                if (tab === 'orders') {
+                    // load orders
+                } else if (tab === 'users') {
+                    // load users
+                } else if (tab === 'plans') {
+                    renderPlansTab();
+                } else if (tab === 'ads') {
+                    // load ads
+                }
+                closeDrawer();
+            };
+            window.toggleDrawer = function() {
+                document.getElementById('drawer').classList.toggle('open');
+                document.getElementById('drawerOverlay').classList.toggle('open');
+            };
+            window.closeDrawer = function() {
+                document.getElementById('drawer').classList.remove('open');
+                document.getElementById('drawerOverlay').classList.remove('open');
+            };
+            window.manualRefresh = function() {
+                loadPlans();
+                showToast('🔄 Data refreshed');
+            };
+            window.setOrderFilter = function(filter) { /* ... */ };
+            window.searchByPhoneOrId = function() { /* ... */ };
+            window.clearSearch = function() { /* ... */ };
+            window.applyFilters = function() { /* ... */ };
+            window.clearFilters = function() { /* ... */ };
+            window.saveFilterPreset = function() { /* ... */ };
+            window.loadFilterPreset = function() { /* ... */ };
+            window.searchUsers = function() { /* ... */ };
+            window.clearUserSearch = function() { /* ... */ };
+            window.exportUsersToCSV = function() { /* ... */ };
+            window.exportOrdersToCSV = function() { /* ... */ };
+            window.showCleanupAlert = function() { /* ... */ };
+            window.closeCleanupAlert = function() { /* ... */ };
+            window.executeCleanup = function() { /* ... */ };
+            window.showSystemResetAlert = function() { /* ... */ };
+            window.closeSystemResetAlert = function() { /* ... */ };
+            window.executeSystemResetFromAlert = function() { /* ... */ };
+            window.openAddAdModal = function() { /* ... */ };
+            window.closeAdModal = function() { /* ... */ };
+            window.saveAd = function() { /* ... */ };
+            window.toggleTheme = function() {
+                const html = document.documentElement;
+                const icon = document.getElementById('themeIcon');
+                if (html.getAttribute('data-theme') === 'light') {
+                    html.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'dark');
+                    if (icon) icon.className = 'fas fa-moon';
+                } else {
+                    html.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    if (icon) icon.className = 'fas fa-sun';
+                }
+            };
+            window.saveAdSettings = function() { /* ... */ };
+            window.setMode = function(mode) { /* ... */ };
+            window.toggleManualShop = function() { /* ... */ };
+            window.updateSalesHours = function() { /* ... */ };
+            window.openAdminChatWidget = function() { /* ... */ };
+
+            // Load theme
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                const icon = document.getElementById('themeIcon');
+                if (icon) icon.className = 'fas fa-sun';
+            }
 
         })();
     </script>
