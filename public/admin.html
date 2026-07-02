@@ -5,10 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#0a0c15">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Admin Panel | ATH DIGITAL HUB</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Import Map for Supabase -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
+        }
+    }
+    </script>
+    
     <style>
         /* ===== BASE STYLES ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1954,8 +1971,8 @@
             <div class="logo-icon"><i class="fas fa-lock"></i></div>
             <h2 style="font-size: 1.2rem; margin-bottom: 0.5rem;">အဒ်မင် ဝင်ရောက်ရန်</h2>
             <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 1rem;">စီမံခန့်ခွဲမှုစနစ်သို့ ဝင်ရောက်ပါ</p>
-            <input type="password" id="adminPassword" placeholder="စကားဝှက် ထည့်သွင်းပါ" onkeypress="if(event.key==='Enter') window.login()">
-            <button class="login-btn" onclick="window.login()"><i class="fas fa-unlock-alt"></i> ဝင်ရောက်ရန်</button>
+            <input type="password" id="adminPassword" placeholder="စကားဝှက် ထည့်သွင်းပါ">
+            <button class="login-btn" id="loginBtn"><i class="fas fa-unlock-alt"></i> ဝင်ရောက်ရန်</button>
         </div>
     </div>
 
@@ -2079,14 +2096,21 @@
     <!-- ============================================================ -->
     <!-- ===== JAVASCRIPT ===== -->
     <!-- ============================================================ -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
+        }
+    }
+    </script>
+
     <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        import { createClient } from '@supabase/supabase-js';
 
         // ================================================================
         //  SUPABASE CONFIG
         // ================================================================
 
-        // သင့်ရဲ့ Supabase URL နဲ့ Anon Key ကို ဒီမှာထည့်ပါ
         const supabaseUrl = 'YOUR_SUPABASE_URL';
         const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
         
@@ -2245,7 +2269,7 @@
 
             function applyLanguageToAllTexts() {
                 const isEn = currentLang === 'en';
-                // ... (same as before)
+                // ... (same as before - shortened for brevity)
             }
 
             function updateActiveLang() {
@@ -2605,6 +2629,49 @@
             }
 
             // ================================================================
+            //  LOGIN
+            // ================================================================
+
+            window.login = async function() {
+                const password = document.getElementById('adminPassword')?.value || '';
+                if (!password) {
+                    showToast(currentLang === 'en' ? 'Please enter password' : 'စကားဝှက် ထည့်သွင်းပါ', true);
+                    return;
+                }
+                try {
+                    const res = await fetch(`${API_BASE}/api/admin/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password }),
+                        credentials: 'include'
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        localStorage.setItem('adminToken', 'logged_in');
+                        token = 'logged_in';
+                        document.getElementById('loginBox').style.display = 'none';
+                        document.getElementById('adminContent').style.display = 'block';
+                        document.getElementById('bottomNav').style.display = 'flex';
+                        loadAllData();
+                        loadSalesHours();
+                        loadAdSettings();
+                        loadAds();
+                        startAutoSync();
+                        resetSessionTimer();
+                        showToast(currentLang === 'en' ? '✅ Login successful' : '✅ ဝင်ရောက်မှု အောင်မြင်ပါပြီ');
+                    } else {
+                        showToast(currentLang === 'en' ? 'Invalid password' : 'စကားဝှက် မှားယွင်းနေသည်', true);
+                    }
+                } catch (e) {
+                    showToast(currentLang === 'en' ? 'Connection error: ' + e.message : 'ချိတ်ဆက်မှု အမှား: ' + e.message, true);
+                }
+            };
+
+            window.logout = function() {
+                // ... (same as before)
+            };
+
+            // ================================================================
             //  INIT
             // ================================================================
 
@@ -2623,6 +2690,24 @@
                 });
 
                 console.log('📡 Admin Panel initialized with Supabase real-time sync');
+                
+                // Check if already logged in
+                if (token === 'logged_in') {
+                    document.getElementById('loginBox').style.display = 'none';
+                    document.getElementById('adminContent').style.display = 'block';
+                    document.getElementById('bottomNav').style.display = 'flex';
+                    loadAllData();
+                    loadSalesHours();
+                    loadAdSettings();
+                    startAutoSync();
+                    resetSessionTimer();
+                }
+                
+                // Login button
+                document.getElementById('loginBtn')?.addEventListener('click', window.login);
+                document.getElementById('adminPassword')?.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') window.login();
+                });
             }
 
             // Call init when document is ready
@@ -2649,8 +2734,11 @@
             window.removeFeature = window.removeFeature;
             window.renderFeatureList = renderFeatureList;
             window.notifyPlansWidget = notifyPlansWidget;
+            window.login = window.login;
+            window.logout = window.logout;
 
         })();
     </script>
+
 </body>
 </html>
