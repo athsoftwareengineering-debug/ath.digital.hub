@@ -304,10 +304,9 @@ function isAuthenticated(req, res, next) {
     else res.status(401).json({ success: false, error: 'Unauthorized' });
 }
 
-// ==================== ADD NOTIFICATION (FIXED - RLS bypass) ====================
+// ==================== ADD NOTIFICATION ====================
 async function addNotificationToDatabase(order) {
     try {
-        // Using supabaseAdmin to bypass RLS
         const { error } = await supabaseAdmin.from('admin_notifications').insert([{
             order_id: order.id,
             title: `🆕 New Order #${order.id}`,
@@ -1034,7 +1033,229 @@ app.get('/api/chat/get-language/:userId', async (req, res) => {
     }
 });
 
-// ==================== START SERVER ====================
+// ================================================================
+//  PLANS API (Supabase)
+// ================================================================
+
+// Get all plans (Public - for plans widget)
+app.get('/api/plans', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('plans')
+            .select('*')
+            .order('id', { ascending: true });
+        
+        if (error) throw error;
+        res.json({ success: true, plans: data || [] });
+    } catch (error) {
+        console.error('Error fetching plans:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get all plans (Admin)
+app.get('/api/admin/plans', isAuthenticated, async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('plans')
+            .select('*')
+            .order('id', { ascending: true });
+        
+        if (error) throw error;
+        res.json({ success: true, plans: data || [] });
+    } catch (error) {
+        console.error('Error fetching plans:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get plans by operator (Public)
+app.get('/api/plans/operator/:operator', async (req, res) => {
+    try {
+        const { operator } = req.params;
+        const { data, error } = await supabase
+            .from('plans')
+            .select('*')
+            .eq('operator', operator)
+            .order('id', { ascending: true });
+        
+        if (error) throw error;
+        res.json({ success: true, plans: data || [] });
+    } catch (error) {
+        console.error('Error fetching plans by operator:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get single plan by ID (Admin)
+app.get('/api/admin/plans/:id', isAuthenticated, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { data, error } = await supabaseAdmin
+            .from('plans')
+            .select('*')
+            .eq('id', parseInt(id))
+            .single();
+        
+        if (error) throw error;
+        res.json({ success: true, plan: data });
+    } catch (error) {
+        console.error('Error fetching plan:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Add new plan (Admin)
+app.post('/api/admin/plans', isAuthenticated, async (req, res) => {
+    try {
+        const { name, price, icon, operator, features } = req.body;
+        
+        if (!name || !price || !operator) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Name, price and operator are required' 
+            });
+        }
+        
+        const { data, error } = await supabaseAdmin
+            .from('plans')
+            .insert([{
+                name: name.trim(),
+                price: parseInt(price),
+                icon: icon || '📦',
+                operator: operator,
+                features: features || [],
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            }])
+            .select();
+        
+        if (error) throw error;
+        
+        res.json({ success: true, plan: data[0] });
+    } catch (error) {
+        console.error('Error adding plan:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Update plan (Admin)
+app.put('/api/admin/plans/:id', isAuthenticated, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, price, icon, operator, features } = req.body;
+        
+        if (!name || !price || !operator) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Name, price and operator are required' 
+            });
+        }
+        
+        const { data, error } = await supabaseAdmin
+            .from('plans')
+            .update({
+                name: name.trim(),
+                price: parseInt(price),
+                icon: icon || '📦',
+                operator: operator,
+                features: features || [],
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', parseInt(id))
+            .select();
+        
+        if (error) throw error;
+        
+        res.json({ success: true, plan: data[0] });
+    } catch (error) {
+        console.error('Error updating plan:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete plan (Admin)
+app.delete('/api/admin/plans/:id', isAuthenticated, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { error } = await supabaseAdmin
+            .from('plans')
+            .delete()
+            .eq('id', parseInt(id));
+        
+        if (error) throw error;
+        
+        res.json({ success: true, message: 'Plan deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting plan:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Sync default plans to Supabase (Admin)
+app.post('/api/admin/plans/sync-default', isAuthenticated, async (req, res) => {
+    try {
+        const defaultPlans = [
+            { name: "Atom Basic", price: 6000, icon: "📱", operator: "atom", features: [{ text: "6 GB ဒေတာ", type: "data" }, { text: "150 မိနစ်", type: "voice" }, { text: "600 SMS", type: "sms" }] },
+            { name: "Atom Standard", price: 12000, icon: "📱", operator: "atom", features: [{ text: "20 GB ဒေတာ", type: "data" }, { text: "600 မိနစ်", type: "voice" }, { text: "2,500 SMS", type: "sms" }] },
+            { name: "Atom Premium", price: 22000, icon: "📱", operator: "atom", features: [{ text: "50 GB ဒေတာ", type: "data" }, { text: "2,000 မိနစ်", type: "voice" }, { text: "6,000 SMS", type: "sms" }] },
+            { name: "Atom Ultra", price: 38000, icon: "📱", operator: "atom", features: [{ text: "120 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "12,000 SMS", type: "sms" }] },
+            { name: "Mytel Basic", price: 5000, icon: "📶", operator: "mytel", features: [{ text: "5 GB ဒေတာ", type: "data" }, { text: "100 မိနစ်", type: "voice" }, { text: "500 SMS", type: "sms" }] },
+            { name: "Mytel Standard", price: 10000, icon: "📶", operator: "mytel", features: [{ text: "15 GB ဒေတာ", type: "data" }, { text: "500 မိနစ်", type: "voice" }, { text: "2,000 SMS", type: "sms" }] },
+            { name: "Mytel Premium", price: 20000, icon: "📶", operator: "mytel", features: [{ text: "40 GB ဒေတာ", type: "data" }, { text: "1,500 မိနစ်", type: "voice" }, { text: "5,000 SMS", type: "sms" }] },
+            { name: "Mytel Ultra", price: 35000, icon: "📶", operator: "mytel", features: [{ text: "100 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "10,000 SMS", type: "sms" }] },
+            { name: "Ooredoo Basic", price: 5500, icon: "📳", operator: "ooredoo", features: [{ text: "5 GB ဒေတာ", type: "data" }, { text: "120 မိနစ်", type: "voice" }, { text: "550 SMS", type: "sms" }] },
+            { name: "Ooredoo Standard", price: 11000, icon: "📳", operator: "ooredoo", features: [{ text: "18 GB ဒေတာ", type: "data" }, { text: "550 မိနစ်", type: "voice" }, { text: "2,200 SMS", type: "sms" }] },
+            { name: "Ooredoo Premium", price: 21000, icon: "📳", operator: "ooredoo", features: [{ text: "45 GB ဒေတာ", type: "data" }, { text: "1,800 မိနစ်", type: "voice" }, { text: "5,500 SMS", type: "sms" }] },
+            { name: "Ooredoo Ultra", price: 36000, icon: "📳", operator: "ooredoo", features: [{ text: "110 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "10,000 SMS", type: "sms" }] },
+            { name: "MPT Basic", price: 4500, icon: "📞", operator: "mpt", features: [{ text: "4 GB ဒေတာ", type: "data" }, { text: "80 မိနစ်", type: "voice" }, { text: "400 SMS", type: "sms" }] },
+            { name: "MPT Standard", price: 9000, icon: "📞", operator: "mpt", features: [{ text: "12 GB ဒေတာ", type: "data" }, { text: "400 မိနစ်", type: "voice" }, { text: "1,800 SMS", type: "sms" }] },
+            { name: "MPT Premium", price: 18000, icon: "📞", operator: "mpt", features: [{ text: "35 GB ဒေတာ", type: "data" }, { text: "1,200 မိနစ်", type: "voice" }, { text: "4,500 SMS", type: "sms" }] },
+            { name: "MPT Ultra", price: 32000, icon: "📞", operator: "mpt", features: [{ text: "90 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "8,000 SMS", type: "sms" }] }
+        ];
+
+        let inserted = 0;
+        let errors = [];
+        for (const plan of defaultPlans) {
+            try {
+                const { data, error } = await supabaseAdmin
+                    .from('plans')
+                    .insert([{
+                        name: plan.name,
+                        price: plan.price,
+                        icon: plan.icon,
+                        operator: plan.operator,
+                        features: plan.features,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    }])
+                    .select();
+                
+                if (error) {
+                    errors.push({ plan: plan.name, error: error.message });
+                } else if (data) {
+                    inserted++;
+                }
+            } catch (err) {
+                errors.push({ plan: plan.name, error: err.message });
+            }
+        }
+
+        res.json({ 
+            success: true, 
+            message: `Synced ${inserted} default plans to database`,
+            inserted: inserted,
+            errors: errors.length > 0 ? errors : undefined
+        });
+    } catch (error) {
+        console.error('Error syncing default plans:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ================================================================
+//  START SERVER
+// ================================================================
 
 setInterval(() => {
     cleanupOldGlobalMessages();
@@ -1053,6 +1274,8 @@ app.listen(PORT, () => {
 ║     💬 Global Chat:     http://localhost:${PORT}/chat.html                ║
 ║     💬 Admin Chat:      http://localhost:${PORT}/admin-chat.html          ║
 ║     💬 Private 1-on-1 Chat: WORKING ✅                                   ║
+║     📋 Plan Management API: WORKING ✅                                   ║
+║     🔄 Real-time Plan Sync: WORKING ✅                                   ║
 ║     🌍 Multi-Language Auto Reply: WORKING ✅                             ║
 ║     🧹 Global Chat Auto Cleanup (3 min): WORKING ✅                      ║
 ║     🚫 Bad Words Filter: WORKING ✅                                     ║
@@ -1075,7 +1298,8 @@ app.listen(PORT, () => {
 ║        ✅ Global Chat Auto Cleanup (every 3 minutes)                    ║
 ║        ✅ Bad Words Filter                                              ║
 ║        ✅ Ad Management System (ads table, rotation, tracking)          ║
-║        ✅ RLS Policy Bypass for Notifications                           ║
+║        ✅ Plan Management API (CRUD)                                    ║
+║        ✅ Real-time Plan Sync via Supabase                              ║
 ║                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════╝
     `);
