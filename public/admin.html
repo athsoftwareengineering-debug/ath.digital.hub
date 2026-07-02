@@ -460,7 +460,7 @@
             margin-bottom: 0;
         }
 
-        /* Feature List in Modal */
+        /* ===== FEATURE LIST EDITOR - IMPROVED ===== */
         .feature-list-editor {
             background: rgba(0,0,0,0.2);
             border-radius: 12px;
@@ -492,6 +492,7 @@
             border-radius: 40px;
             color: var(--cyan);
             font-weight: 600;
+            white-space: nowrap;
         }
         .feature-list-editor .feature-item .feature-remove {
             background: none;
@@ -506,39 +507,56 @@
         .feature-list-editor .feature-item .feature-remove:hover {
             background: rgba(244,63,94,0.15);
         }
+
+        /* ===== FEATURE ADD ROW - IMPROVED ===== */
         .feature-add-row {
             display: flex;
             gap: 8px;
             margin-top: 8px;
         }
-        .feature-add-row input {
-            flex: 1;
+        /* Feature Text Input - ပိုကျယ်အောင် */
+        .feature-add-row .feature-text-input {
+            flex: 3;
+            min-width: 0;
             padding: 8px 12px;
             background: rgba(0,0,0,0.3);
             border: 1px solid #2d3a5e;
             border-radius: 8px;
             color: var(--text-primary);
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             outline: none;
+            transition: all var(--transition-speed);
         }
-        .feature-add-row input:focus {
+        .feature-add-row .feature-text-input:focus {
             border-color: var(--cyan);
+            box-shadow: 0 0 0 4px rgba(0,212,255,0.08);
         }
-        .feature-add-row select {
-            padding: 8px 12px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #2d3a5e;
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-size: 0.7rem;
-            outline: none;
+        /* Feature Type Select - ပိုသေးအောင် */
+        .feature-add-row .feature-type-select {
+            flex: 1.2;
             min-width: 80px;
+            padding: 8px 10px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #2d3a5e;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.7rem;
+            outline: none;
+            cursor: pointer;
+            transition: all var(--transition-speed);
         }
-        .feature-add-row select:focus {
+        .feature-add-row .feature-type-select:focus {
             border-color: var(--cyan);
+            box-shadow: 0 0 0 4px rgba(0,212,255,0.08);
         }
-        .feature-add-row button {
-            padding: 8px 16px;
+        .feature-add-row .feature-type-select option {
+            background: #1a1d2e;
+            color: var(--text-primary);
+        }
+        /* Add Button - ပိုသေးအောင် */
+        .feature-add-row .feature-add-btn {
+            flex: 0.8;
+            padding: 8px 12px;
             border-radius: 8px;
             border: none;
             background: linear-gradient(135deg, var(--cyan), #0891b2);
@@ -548,9 +566,11 @@
             cursor: pointer;
             transition: all 0.2s;
             white-space: nowrap;
+            min-width: 50px;
         }
-        .feature-add-row button:hover {
+        .feature-add-row .feature-add-btn:hover {
             transform: scale(0.97);
+            box-shadow: 0 4px 15px rgba(0,212,255,0.2);
         }
 
         .modal-btn {
@@ -1363,6 +1383,23 @@
             .plan-modal-card .form-row { grid-template-columns: 1fr; gap: 0; }
             .plan-modal-card .form-row .form-group { margin-bottom: 14px; }
 
+            /* Feature add row - mobile */
+            .feature-add-row {
+                flex-wrap: wrap;
+            }
+            .feature-add-row .feature-text-input {
+                flex: 1 1 100%;
+                min-width: 0;
+            }
+            .feature-add-row .feature-type-select {
+                flex: 1;
+                min-width: 60px;
+            }
+            .feature-add-row .feature-add-btn {
+                flex: 0 1 auto;
+                min-width: 60px;
+            }
+
             .order-card { flex-direction: column; padding: 12px; gap: 8px; }
             .order-card .order-header {
                 display: flex;
@@ -1548,6 +1585,17 @@
             .plan-card-admin .plan-actions button { padding: 10px 18px; font-size: 0.7rem; min-height: 40px; }
 
             .plan-modal-card .form-row { grid-template-columns: 1fr 1fr; gap: 16px; }
+
+            /* Feature add row - desktop */
+            .feature-add-row .feature-text-input {
+                flex: 3;
+            }
+            .feature-add-row .feature-type-select {
+                flex: 1.2;
+            }
+            .feature-add-row .feature-add-btn {
+                flex: 0.8;
+            }
 
             .order-card { flex-direction: row; flex-wrap: wrap; padding: 20px 24px; gap: 20px; align-items: stretch; }
             .order-card .order-header {
@@ -1975,15 +2023,15 @@
                     <!-- Features will be rendered here -->
                 </div>
                 <div class="feature-add-row">
-                    <input type="text" id="featureTextInput" placeholder="Feature description">
-                    <select id="featureTypeSelect">
-                        <option value="data">Data</option>
-                        <option value="voice">Voice</option>
-                        <option value="sms">SMS</option>
-                        <option value="streaming">Streaming</option>
-                        <option value="support">Support</option>
+                    <input type="text" id="featureTextInput" class="feature-text-input" placeholder="Feature description...">
+                    <select id="featureTypeSelect" class="feature-type-select">
+                        <option value="data">📊 Data</option>
+                        <option value="voice">📞 Voice</option>
+                        <option value="sms">✉️ SMS</option>
+                        <option value="streaming">🎬 Streaming</option>
+                        <option value="support">🛟 Support</option>
                     </select>
-                    <button onclick="window.addFeatureToList()"><i class="fas fa-plus"></i> Add</button>
+                    <button class="feature-add-btn" onclick="window.addFeatureToList()"><i class="fas fa-plus"></i> Add</button>
                 </div>
             </div>
 
@@ -2783,7 +2831,6 @@
                 try {
                     const res = await fetchWithRetry(`${API_BASE}/api/admin/plans`);
                     if (!res) {
-                        // If API fails, use default plans
                         allPlans = JSON.parse(JSON.stringify(defaultPlans));
                         if (currentTab === 'plans') renderPlansTab();
                         return;
@@ -2792,9 +2839,7 @@
                     if (data.success && data.plans && Array.isArray(data.plans) && data.plans.length > 0) {
                         allPlans = data.plans;
                     } else {
-                        // If no plans in DB, use default
                         allPlans = JSON.parse(JSON.stringify(defaultPlans));
-                        // Save to server
                         await syncPlansToServer(allPlans);
                     }
                     if (currentTab === 'plans') renderPlansTab();
