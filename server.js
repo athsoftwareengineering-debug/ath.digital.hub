@@ -151,16 +151,18 @@ function maskPhone(phone) {
 app.use(compression());
 app.use(morgan('combined'));
 
+// ==================== UPDATED CSP ====================
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "cdnjs.cloudflare.com", "blob:"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "cdnjs.cloudflare.com", "cdn.jsdelivr.net", "blob:"],
             scriptSrcAttr: ["'unsafe-inline'"],
-            scriptSrcElem: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
-            styleSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
-            styleSrcElem: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com"],
-            imgSrc: ["'self'", "data:", "https:", "http:", "i.ibb.co", "blob:"],
+            scriptSrcElem: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "cdn.jsdelivr.net"],
+            styleSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "fonts.googleapis.com"],
+            styleSrcElem: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "fonts.googleapis.com"],
+            fontSrc: ["'self'", "fonts.gstatic.com", "cdnjs.cloudflare.com", "data:"],
+            imgSrc: ["'self'", "data:", "https:", "http:", "i.ibb.co", "blob:", "imgur.com", "i.imgur.com"],
             connectSrc: ["'self'", process.env.SUPABASE_URL, "https://*.supabase.co", "wss://*.supabase.co"],
             frameSrc: ["'self'"],
             frameAncestors: ["'self'"],
@@ -1286,7 +1288,9 @@ app.listen(PORT, () => {
 ║                                                                          ║
 ║     🔒 SECURITY FEATURES ENABLED:                                        ║
 ║        ✅ Helmet.js (Security Headers)                                   ║
-║        ✅ CSP with iframe support                                        ║
+║        ✅ CSP with iframe support (UPDATED)                              ║
+║        ✅ Google Fonts allowed                                           ║
+║        ✅ CDN.jsdelivr allowed (Supabase)                                ║
 ║        ✅ Rate Limiting                                                  ║
 ║        ✅ Sales Hours Control (Auto/Manual Mode)                        ║
 ║        ✅ Session-based Admin Auth                                       ║
