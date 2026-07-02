@@ -19,7 +19,6 @@
             gap: 16px;
         }
 
-        /* ===== OPERATOR GRID ===== */
         .operator-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -71,7 +70,6 @@
             color: #00d4ff;
         }
 
-        /* ===== PLAN CARDS ===== */
         .plan-card {
             background: linear-gradient(145deg, #0f111a, #0a0c15);
             border-radius: 1.5rem;
@@ -208,7 +206,6 @@
             margin-right: 8px;
         }
 
-        /* ===== OPERATOR SELECTOR ===== */
         .operator-selector {
             display: flex;
             gap: 8px;
@@ -264,7 +261,6 @@
 </head>
 <body>
     <div id="plansContainer">
-        <!-- OPERATOR GRID -->
         <div class="operator-grid">
             <div class="operator-item active" data-op="atom">
                 <img class="op-logo" src="https://i.imgur.com/I5iRYm8.png" alt="Atom" onerror="this.style.display='none'">
@@ -288,7 +284,6 @@
             </div>
         </div>
 
-        <!-- SELECTOR -->
         <div class="operator-selector">
             <span class="op-chip active" data-op="all"><span class="chip-icon">🔷</span> အားလုံး</span>
             <span class="op-chip" data-op="atom"><img class="chip-icon" src="https://i.imgur.com/I5iRYm8.png" alt="Atom" onerror="this.style.display='none'"> Atom</span>
@@ -300,39 +295,23 @@
         <div class="loading-text"><i class="fas fa-spinner fa-pulse"></i> Loading plans...</div>
     </div>
 
-    <script>
-        // ===== PLANS DATA (4 plans per operator = 16 plans) =====
-        const plansData = [
-            // Atom (4 plans)
-            { id: 1, name: "Atom Basic", price: 6000, icon: "📱", operator: "atom", features: [{ text: "6 GB ဒေတာ", type: "data" }, { text: "150 မိနစ်", type: "voice" }, { text: "600 SMS", type: "sms" }] },
-            { id: 2, name: "Atom Standard", price: 12000, icon: "📱", operator: "atom", features: [{ text: "20 GB ဒေတာ", type: "data" }, { text: "600 မိနစ်", type: "voice" }, { text: "2,500 SMS", type: "sms" }] },
-            { id: 3, name: "Atom Premium", price: 22000, icon: "📱", operator: "atom", features: [{ text: "50 GB ဒေတာ", type: "data" }, { text: "2,000 မိနစ်", type: "voice" }, { text: "6,000 SMS", type: "sms" }] },
-            { id: 4, name: "Atom Ultra", price: 38000, icon: "📱", operator: "atom", features: [{ text: "120 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "12,000 SMS", type: "sms" }] },
-            
-            // Mytel (4 plans)
-            { id: 5, name: "Mytel Basic", price: 5000, icon: "📶", operator: "mytel", features: [{ text: "5 GB ဒေတာ", type: "data" }, { text: "100 မိနစ်", type: "voice" }, { text: "500 SMS", type: "sms" }] },
-            { id: 6, name: "Mytel Standard", price: 10000, icon: "📶", operator: "mytel", features: [{ text: "15 GB ဒေတာ", type: "data" }, { text: "500 မိနစ်", type: "voice" }, { text: "2,000 SMS", type: "sms" }] },
-            { id: 7, name: "Mytel Premium", price: 20000, icon: "📶", operator: "mytel", features: [{ text: "40 GB ဒေတာ", type: "data" }, { text: "1,500 မိနစ်", type: "voice" }, { text: "5,000 SMS", type: "sms" }] },
-            { id: 8, name: "Mytel Ultra", price: 35000, icon: "📶", operator: "mytel", features: [{ text: "100 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "10,000 SMS", type: "sms" }] },
-            
-            // Ooredoo (4 plans)
-            { id: 9, name: "Ooredoo Basic", price: 5500, icon: "📳", operator: "ooredoo", features: [{ text: "5 GB ဒေတာ", type: "data" }, { text: "120 မိနစ်", type: "voice" }, { text: "550 SMS", type: "sms" }] },
-            { id: 10, name: "Ooredoo Standard", price: 11000, icon: "📳", operator: "ooredoo", features: [{ text: "18 GB ဒေတာ", type: "data" }, { text: "550 မိနစ်", type: "voice" }, { text: "2,200 SMS", type: "sms" }] },
-            { id: 11, name: "Ooredoo Premium", price: 21000, icon: "📳", operator: "ooredoo", features: [{ text: "45 GB ဒေတာ", type: "data" }, { text: "1,800 မိနစ်", type: "voice" }, { text: "5,500 SMS", type: "sms" }] },
-            { id: 12, name: "Ooredoo Ultra", price: 36000, icon: "📳", operator: "ooredoo", features: [{ text: "110 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "10,000 SMS", type: "sms" }] },
-            
-            // MPT (4 plans)
-            { id: 13, name: "MPT Basic", price: 4500, icon: "📞", operator: "mpt", features: [{ text: "4 GB ဒေတာ", type: "data" }, { text: "80 မိနစ်", type: "voice" }, { text: "400 SMS", type: "sms" }] },
-            { id: 14, name: "MPT Standard", price: 9000, icon: "📞", operator: "mpt", features: [{ text: "12 GB ဒေတာ", type: "data" }, { text: "400 မိနစ်", type: "voice" }, { text: "1,800 SMS", type: "sms" }] },
-            { id: 15, name: "MPT Premium", price: 18000, icon: "📞", operator: "mpt", features: [{ text: "35 GB ဒေတာ", type: "data" }, { text: "1,200 မိနစ်", type: "voice" }, { text: "4,500 SMS", type: "sms" }] },
-            { id: 16, name: "MPT Ultra", price: 32000, icon: "📞", operator: "mpt", features: [{ text: "90 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "8,000 SMS", type: "sms" }] }
-        ];
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        // ===== SUPABASE CONFIG (Render Environment Variables) =====
+        const supabaseUrl = 'YOUR_SUPABASE_URL';
+        const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+        
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
         // ===== STATE =====
+        let plansData = [];
         let planSales = {};
         let isShopOpen = true;
         let shopStatusInterval = null;
         let currentOperator = 'all';
+        let subscription = null;
+        let isLoading = false;
 
         const featureConfig = {
             data: { icon: "fa-database", class: "feature-data" },
@@ -349,8 +328,106 @@
             mpt: '#10b981'
         };
 
-        // ===== LOAD SALES =====
-        async function loadSalesDataFromServer() {
+        const operatorNames = {
+            atom: 'Atom',
+            mytel: 'Mytel',
+            ooredoo: 'Ooredoo',
+            mpt: 'MPT'
+        };
+
+        // ================================================================
+        //  SUPABASE CRUD OPERATIONS
+        // ================================================================
+
+        async function getPlans() {
+            try {
+                const { data, error } = await supabase
+                    .from('plans')
+                    .select('*')
+                    .order('id', { ascending: true });
+                
+                if (error) {
+                    console.error('Error fetching plans:', error);
+                    return [];
+                }
+                return data || [];
+            } catch (e) {
+                console.error('Error fetching plans:', e);
+                return [];
+            }
+        }
+
+        function subscribeToPlans(callback) {
+            const channel = supabase
+                .channel('plans_channel')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'plans'
+                    },
+                    (payload) => {
+                        console.log('🔄 Plan changed:', payload);
+                        callback(payload);
+                    }
+                )
+                .subscribe((status) => {
+                    console.log('📡 Subscription status:', status);
+                });
+            return channel;
+        }
+
+        // ================================================================
+        //  LOAD PLANS
+        // ================================================================
+
+        async function loadPlans() {
+            if (isLoading) return;
+            isLoading = true;
+            try {
+                const data = await getPlans();
+                if (data && data.length > 0) {
+                    plansData = data;
+                } else {
+                    // Fallback to default if no data
+                    plansData = getDefaultPlans();
+                }
+                renderPlans();
+            } catch (e) {
+                console.error('Error loading plans:', e);
+                plansData = getDefaultPlans();
+                renderPlans();
+            }
+            isLoading = false;
+        }
+
+        function getDefaultPlans() {
+            return [
+                { id: 1, name: "Atom Basic", price: 6000, icon: "📱", operator: "atom", features: [{ text: "6 GB ဒေတာ", type: "data" }, { text: "150 မိနစ်", type: "voice" }, { text: "600 SMS", type: "sms" }] },
+                { id: 2, name: "Atom Standard", price: 12000, icon: "📱", operator: "atom", features: [{ text: "20 GB ဒေတာ", type: "data" }, { text: "600 မိနစ်", type: "voice" }, { text: "2,500 SMS", type: "sms" }] },
+                { id: 3, name: "Atom Premium", price: 22000, icon: "📱", operator: "atom", features: [{ text: "50 GB ဒေတာ", type: "data" }, { text: "2,000 မိနစ်", type: "voice" }, { text: "6,000 SMS", type: "sms" }] },
+                { id: 4, name: "Atom Ultra", price: 38000, icon: "📱", operator: "atom", features: [{ text: "120 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "12,000 SMS", type: "sms" }] },
+                { id: 5, name: "Mytel Basic", price: 5000, icon: "📶", operator: "mytel", features: [{ text: "5 GB ဒေတာ", type: "data" }, { text: "100 မိနစ်", type: "voice" }, { text: "500 SMS", type: "sms" }] },
+                { id: 6, name: "Mytel Standard", price: 10000, icon: "📶", operator: "mytel", features: [{ text: "15 GB ဒေတာ", type: "data" }, { text: "500 မိနစ်", type: "voice" }, { text: "2,000 SMS", type: "sms" }] },
+                { id: 7, name: "Mytel Premium", price: 20000, icon: "📶", operator: "mytel", features: [{ text: "40 GB ဒေတာ", type: "data" }, { text: "1,500 မိနစ်", type: "voice" }, { text: "5,000 SMS", type: "sms" }] },
+                { id: 8, name: "Mytel Ultra", price: 35000, icon: "📶", operator: "mytel", features: [{ text: "100 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "10,000 SMS", type: "sms" }] },
+                { id: 9, name: "Ooredoo Basic", price: 5500, icon: "📳", operator: "ooredoo", features: [{ text: "5 GB ဒေတာ", type: "data" }, { text: "120 မိနစ်", type: "voice" }, { text: "550 SMS", type: "sms" }] },
+                { id: 10, name: "Ooredoo Standard", price: 11000, icon: "📳", operator: "ooredoo", features: [{ text: "18 GB ဒေတာ", type: "data" }, { text: "550 မိနစ်", type: "voice" }, { text: "2,200 SMS", type: "sms" }] },
+                { id: 11, name: "Ooredoo Premium", price: 21000, icon: "📳", operator: "ooredoo", features: [{ text: "45 GB ဒေတာ", type: "data" }, { text: "1,800 မိနစ်", type: "voice" }, { text: "5,500 SMS", type: "sms" }] },
+                { id: 12, name: "Ooredoo Ultra", price: 36000, icon: "📳", operator: "ooredoo", features: [{ text: "110 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "10,000 SMS", type: "sms" }] },
+                { id: 13, name: "MPT Basic", price: 4500, icon: "📞", operator: "mpt", features: [{ text: "4 GB ဒေတာ", type: "data" }, { text: "80 မိနစ်", type: "voice" }, { text: "400 SMS", type: "sms" }] },
+                { id: 14, name: "MPT Standard", price: 9000, icon: "📞", operator: "mpt", features: [{ text: "12 GB ဒေတာ", type: "data" }, { text: "400 မိနစ်", type: "voice" }, { text: "1,800 SMS", type: "sms" }] },
+                { id: 15, name: "MPT Premium", price: 18000, icon: "📞", operator: "mpt", features: [{ text: "35 GB ဒေတာ", type: "data" }, { text: "1,200 မိနစ်", type: "voice" }, { text: "4,500 SMS", type: "sms" }] },
+                { id: 16, name: "MPT Ultra", price: 32000, icon: "📞", operator: "mpt", features: [{ text: "90 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "8,000 SMS", type: "sms" }] }
+            ];
+        }
+
+        // ================================================================
+        //  LOAD SALES DATA
+        // ================================================================
+
+        async function loadSalesData() {
             try {
                 const response = await fetch('/api/orders/approved-counts', {
                     credentials: 'include'
@@ -364,7 +441,7 @@
                             const plan = plansData.find(p => p.name === planName);
                             if (plan) counts[plan.id] = count;
                         }
-                        planSales = { ...planSales, ...counts };
+                        planSales = counts;
                         localStorage.setItem('planSales', JSON.stringify(planSales));
                     } else {
                         loadSalesFromLocalStorage();
@@ -376,7 +453,6 @@
                 console.error('Error loading sales data:', e);
                 loadSalesFromLocalStorage();
             }
-            
             renderPlans();
         }
 
@@ -387,10 +463,15 @@
                     const parsed = JSON.parse(saved);
                     planSales = { ...planSales, ...parsed };
                 }
-            } catch(e) { console.error('Error loading sales:', e); }
+            } catch(e) {
+                console.error('Error loading sales from localStorage:', e);
+            }
         }
 
-        // ===== RENDER PLANS =====
+        // ================================================================
+        //  RENDER PLANS
+        // ================================================================
+
         function renderPlans() {
             const container = document.getElementById('plansContainer');
             
@@ -409,7 +490,6 @@
             });
             plansWithRank.sort((a, b) => b.sales - a.sales);
             
-            // Keep header elements
             const grid = document.querySelector('.operator-grid');
             const selector = document.querySelector('.operator-selector');
             
@@ -430,21 +510,23 @@
                     const dynamicWidth = getDynamicWidth(sales, maxSales);
                     const rankingText = getRankingText(rank, sales, maxSales, hasData);
                     const fillClass = getRankFillClass(rank);
-                    const opName = p.operator.charAt(0).toUpperCase() + p.operator.slice(1);
+                    const opName = operatorNames[p.operator] || p.operator;
                     const opColor = operatorColors[p.operator] || '#00d4ff';
                     
                     let featuresHtml = '';
-                    for (const f of p.features) {
-                        const config = featureConfig[f.type] || featureConfig.data;
-                        const highlightedText = highlightNumbers(f.text);
-                        featuresHtml += `<li class="${config.class}"><i class="fas ${config.icon}"></i> ${highlightedText}</li>`;
+                    if (p.features && Array.isArray(p.features)) {
+                        for (const f of p.features) {
+                            const config = featureConfig[f.type] || featureConfig.data;
+                            const highlightedText = highlightNumbers(f.text);
+                            featuresHtml += `<li class="${config.class}"><i class="fas ${config.icon}"></i> ${highlightedText}</li>`;
+                        }
                     }
                     
                     html += `
                         <div class="plan-card">
                             <div class="plan-header">
                                 <div class="plan-title">
-                                    <span class="plan-icon">${p.icon}</span>
+                                    <span class="plan-icon">${p.icon || '📦'}</span>
                                     <span class="plan-name">${shortName}</span>
                                     ${badgeHtml}
                                     <span style="font-size:0.55rem;background:rgba(255,255,255,0.06);padding:2px 10px;border-radius:20px;color:${opColor};border:1px solid ${opColor}33;">
@@ -472,8 +554,12 @@
             attachOperatorEvents();
         }
 
-        // ===== HELPER FUNCTIONS =====
+        // ================================================================
+        //  HELPER FUNCTIONS
+        // ================================================================
+
         function highlightNumbers(text) {
+            if (!text) return '';
             text = text.replace(/(\d+\.?\d*\s*GB)/gi, '<span>$1</span>');
             text = text.replace(/(\d+[\d,]*\s*မိနစ်)/g, '<span>$1</span>');
             text = text.replace(/(\d+[\d,]*\s*SMS)/g, '<span>$1</span>');
@@ -481,6 +567,7 @@
         }
 
         function getShortName(name) {
+            if (!name) return '';
             if (name.length > 20) return name.substring(0, 18) + '...';
             return name;
         }
@@ -528,7 +615,10 @@
 
         function getRankFillClass(rank) { return `rank-${Math.min(rank, 4)}`; }
 
-        // ===== OPERATOR EVENTS =====
+        // ================================================================
+        //  OPERATOR EVENTS
+        // ================================================================
+
         function attachOperatorEvents() {
             document.querySelectorAll('.operator-item').forEach(el => {
                 el.addEventListener('click', function() {
@@ -559,7 +649,10 @@
             });
         }
 
-        // ===== BUTTONS =====
+        // ================================================================
+        //  BUTTONS
+        // ================================================================
+
         function updateButtonsStatus() {
             const buyButtons = document.querySelectorAll('.product-buy-btn');
             buyButtons.forEach(btn => {
@@ -577,7 +670,10 @@
             });
         }
 
-        // ===== HANDLE BUY =====
+        // ================================================================
+        //  HANDLE BUY
+        // ================================================================
+
         function handleBuy(planName, planPrice) {
             if (!isShopOpen) {
                 showNotification("ဆိုင်ပိတ်ချိန်ဖြစ်ပါသည်။ ကျေးဇူးပြု၍ နံနက် ၉ နာရီမှ ညနေ ၇ နာရီအတွင်းမှသာ ဝယ်ယူနိုင်ပါသည်။", true);
@@ -599,7 +695,10 @@
             }
         }
 
-        // ===== SHOP STATUS =====
+        // ================================================================
+        //  SHOP STATUS
+        // ================================================================
+
         async function checkShopStatus() {
             try {
                 const response = await fetch('/api/sales/status');
@@ -621,15 +720,26 @@
             console.log('🔄 Shop status polling started (every 5 seconds)');
         }
 
-        // ===== LISTEN FOR PARENT MESSAGES =====
+        // ================================================================
+        //  LISTEN FOR PARENT MESSAGES
+        // ================================================================
+
         window.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'shopStatus') {
                 isShopOpen = event.data.isOpen;
                 updateButtonsStatus();
             }
+            if (event.data && event.data.type === 'reloadPlans') {
+                console.log('🔄 Reloading plans from admin...');
+                loadPlans();
+                loadSalesData();
+            }
         });
 
-        // ===== INIT =====
+        // ================================================================
+        //  INIT
+        // ================================================================
+
         async function init() {
             const container = document.getElementById('plansContainer');
             const tempDiv = document.createElement('div');
@@ -648,24 +758,41 @@
             loadingDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Loading plans...';
             container.appendChild(loadingDiv);
             
-            await loadSalesDataFromServer();
+            await loadPlans();
+            await loadSalesData();
             startShopStatusPolling();
             
+            if (subscription) {
+                subscription.unsubscribe();
+                subscription = null;
+            }
+            subscription = subscribeToPlans(() => {
+                console.log('🔄 Plan changed, reloading...');
+                loadPlans();
+                loadSalesData();
+            });
+            
             setInterval(async () => {
-                await loadSalesDataFromServer();
+                await loadSalesData();
             }, 30000);
         }
 
         init();
 
-        // Expose functions
+        // ================================================================
+        //  EXPOSE GLOBALS
+        // ================================================================
+
         window.handleBuy = handleBuy;
         window.updateButtonsStatus = updateButtonsStatus;
         window.renderPlans = renderPlans;
-        window.loadSalesDataFromServer = loadSalesDataFromServer;
         window.checkShopStatus = checkShopStatus;
         window.startShopStatusPolling = startShopStatusPolling;
         window.currentOperator = currentOperator;
+        window.loadPlans = loadPlans;
+        window.loadSalesData = loadSalesData;
+
+        console.log('📡 Plans Widget initialized with Supabase real-time sync');
     </script>
 </body>
 </html>
