@@ -18,6 +18,60 @@
             flex-direction: column;
             gap: 16px;
         }
+
+        /* ===== OPERATOR GRID ===== */
+        .operator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .operator-item {
+            background: linear-gradient(145deg, #13162a, #0d0f1e);
+            border-radius: 12px;
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid rgba(0,212,255,0.12);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .operator-item:hover {
+            border-color: rgba(0,212,255,0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .operator-item .op-logo {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 4px auto;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            padding: 4px;
+        }
+        .operator-item .op-name {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            letter-spacing: 0.3px;
+        }
+        .operator-item .op-badge {
+            font-size: 0.5rem;
+            color: #94a3b8;
+            margin-top: 2px;
+            display: block;
+        }
+        .operator-item.active {
+            border-color: #00d4ff;
+            background: linear-gradient(145deg, #1a1f3a, #0f1225);
+            box-shadow: 0 0 20px rgba(0,212,255,0.08);
+        }
+        .operator-item.active .op-name {
+            color: #00d4ff;
+        }
+
+        /* ===== PLAN CARDS ===== */
         .plan-card {
             background: linear-gradient(145deg, #0f111a, #0a0c15);
             border-radius: 1.5rem;
@@ -153,6 +207,46 @@
         .loading-text i {
             margin-right: 8px;
         }
+
+        /* ===== OPERATOR SELECTOR ===== */
+        .operator-selector {
+            display: flex;
+            gap: 8px;
+            padding: 6px 0 12px 0;
+            flex-wrap: wrap;
+        }
+        .op-chip {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 40px;
+            padding: 6px 16px;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+        .op-chip:hover {
+            background: rgba(0,212,255,0.1);
+            border-color: rgba(0,212,255,0.3);
+            color: #e2e8f0;
+        }
+        .op-chip.active {
+            background: rgba(0,212,255,0.15);
+            border-color: #00d4ff;
+            color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0,212,255,0.05);
+        }
+        .op-chip .chip-icon {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
         @media (max-width: 480px) {
             .plan-card { padding: 1rem; }
             .plan-icon { font-size: 1.5rem; }
@@ -161,27 +255,85 @@
             .feature-list li { font-size: 0.7rem; padding: 6px 0; }
             .product-buy-btn { padding: 10px; font-size: 0.75rem; }
             .badge { padding: 2px 8px; font-size: 0.55rem; }
+            .operator-item .op-logo { width: 36px; height: 36px; }
+            .operator-item .op-name { font-size: 0.6rem; }
+            .op-chip { padding: 4px 12px; font-size: 0.6rem; }
+            .op-chip .chip-icon { width: 16px; height: 16px; }
         }
     </style>
 </head>
 <body>
     <div id="plansContainer">
+        <!-- OPERATOR GRID -->
+        <div class="operator-grid">
+            <div class="operator-item active" data-op="atom">
+                <img class="op-logo" src="https://i.imgur.com/I5iRYm8.png" alt="Atom" onerror="this.style.display='none'">
+                <span class="op-name">Atom</span>
+                <span class="op-badge">● အွန်လိုင်း</span>
+            </div>
+            <div class="operator-item" data-op="mytel">
+                <img class="op-logo" src="https://i.imgur.com/Xl3B5xF.jpeg" alt="Mytel" onerror="this.style.display='none'">
+                <span class="op-name">Mytel</span>
+                <span class="op-badge">● အွန်လိုင်း</span>
+            </div>
+            <div class="operator-item" data-op="ooredoo">
+                <img class="op-logo" src="https://i.imgur.com/eNdLhsk.png" alt="Ooredoo" onerror="this.style.display='none'">
+                <span class="op-name">Ooredoo</span>
+                <span class="op-badge">● အွန်လိုင်း</span>
+            </div>
+            <div class="operator-item" data-op="mpt">
+                <img class="op-logo" src="https://i.imgur.com/BNUZimj.png" alt="MPT" onerror="this.style.display='none'">
+                <span class="op-name">MPT</span>
+                <span class="op-badge">● အွန်လိုင်း</span>
+            </div>
+        </div>
+
+        <!-- SELECTOR -->
+        <div class="operator-selector">
+            <span class="op-chip active" data-op="all"><span class="chip-icon">🔷</span> အားလုံး</span>
+            <span class="op-chip" data-op="atom"><img class="chip-icon" src="https://i.imgur.com/I5iRYm8.png" alt="Atom" onerror="this.style.display='none'"> Atom</span>
+            <span class="op-chip" data-op="mytel"><img class="chip-icon" src="https://i.imgur.com/Xl3B5xF.jpeg" alt="Mytel" onerror="this.style.display='none'"> Mytel</span>
+            <span class="op-chip" data-op="ooredoo"><img class="chip-icon" src="https://i.imgur.com/eNdLhsk.png" alt="Ooredoo" onerror="this.style.display='none'"> Ooredoo</span>
+            <span class="op-chip" data-op="mpt"><img class="chip-icon" src="https://i.imgur.com/BNUZimj.png" alt="MPT" onerror="this.style.display='none'"> MPT</span>
+        </div>
+
         <div class="loading-text"><i class="fas fa-spinner fa-pulse"></i> Loading plans...</div>
     </div>
 
     <script>
+        // ===== PLANS DATA (4 plans per operator = 16 plans) =====
         const plansData = [
-            { id: 1, name: "VIP LEVEL - 1", price: 15000, icon: "🔥", features: [{ text: "22 GB အမြန်နှုန်းမြင့်", type: "data" }, { text: "8,000 မိနစ် (ကွန်ရက်တွင်း)", type: "voice" }, { text: "5,000 SMS", type: "sms" }] },
-            { id: 2, name: "VIP LEVEL - 2", price: 20000, icon: "⭐", features: [{ text: "40 GB အာထရာဒေတာ", type: "data" }, { text: "250 မိနစ် (ကွန်ရက်တွင်း)", type: "voice" }, { text: "25 မိနစ် (အခြားကွန်ရက်)", type: "voice" }] },
-            { id: 3, name: "VIP LEVEL - 3", price: 25000, icon: "💎", features: [{ text: "40 GB အမြန်နှုန်း + အပို", type: "data" }, { text: "1,400 မိနစ် (ကွန်ရက်တွင်း)", type: "voice" }, { text: "8,000 SMS", type: "sms" }] },
-            { id: 4, name: "VIP LEVEL - 4 (ULTRA)", price: 30000, icon: "👑", features: [{ text: "120 GB ဂိမ်းဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ Streaming", type: "streaming" }, { text: "ဦးစားပေး ပံ့ပိုးမှု", type: "support" }] }
+            // Atom (4 plans)
+            { id: 1, name: "Atom Basic", price: 6000, icon: "📱", operator: "atom", features: [{ text: "6 GB ဒေတာ", type: "data" }, { text: "150 မိနစ်", type: "voice" }, { text: "600 SMS", type: "sms" }] },
+            { id: 2, name: "Atom Standard", price: 12000, icon: "📱", operator: "atom", features: [{ text: "20 GB ဒေတာ", type: "data" }, { text: "600 မိနစ်", type: "voice" }, { text: "2,500 SMS", type: "sms" }] },
+            { id: 3, name: "Atom Premium", price: 22000, icon: "📱", operator: "atom", features: [{ text: "50 GB ဒေတာ", type: "data" }, { text: "2,000 မိနစ်", type: "voice" }, { text: "6,000 SMS", type: "sms" }] },
+            { id: 4, name: "Atom Ultra", price: 38000, icon: "📱", operator: "atom", features: [{ text: "120 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "12,000 SMS", type: "sms" }] },
+            
+            // Mytel (4 plans)
+            { id: 5, name: "Mytel Basic", price: 5000, icon: "📶", operator: "mytel", features: [{ text: "5 GB ဒေတာ", type: "data" }, { text: "100 မိနစ်", type: "voice" }, { text: "500 SMS", type: "sms" }] },
+            { id: 6, name: "Mytel Standard", price: 10000, icon: "📶", operator: "mytel", features: [{ text: "15 GB ဒေတာ", type: "data" }, { text: "500 မိနစ်", type: "voice" }, { text: "2,000 SMS", type: "sms" }] },
+            { id: 7, name: "Mytel Premium", price: 20000, icon: "📶", operator: "mytel", features: [{ text: "40 GB ဒေတာ", type: "data" }, { text: "1,500 မိနစ်", type: "voice" }, { text: "5,000 SMS", type: "sms" }] },
+            { id: 8, name: "Mytel Ultra", price: 35000, icon: "📶", operator: "mytel", features: [{ text: "100 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "10,000 SMS", type: "sms" }] },
+            
+            // Ooredoo (4 plans)
+            { id: 9, name: "Ooredoo Basic", price: 5500, icon: "📳", operator: "ooredoo", features: [{ text: "5 GB ဒေတာ", type: "data" }, { text: "120 မိနစ်", type: "voice" }, { text: "550 SMS", type: "sms" }] },
+            { id: 10, name: "Ooredoo Standard", price: 11000, icon: "📳", operator: "ooredoo", features: [{ text: "18 GB ဒေတာ", type: "data" }, { text: "550 မိနစ်", type: "voice" }, { text: "2,200 SMS", type: "sms" }] },
+            { id: 11, name: "Ooredoo Premium", price: 21000, icon: "📳", operator: "ooredoo", features: [{ text: "45 GB ဒေတာ", type: "data" }, { text: "1,800 မိနစ်", type: "voice" }, { text: "5,500 SMS", type: "sms" }] },
+            { id: 12, name: "Ooredoo Ultra", price: 36000, icon: "📳", operator: "ooredoo", features: [{ text: "110 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "10,000 SMS", type: "sms" }] },
+            
+            // MPT (4 plans)
+            { id: 13, name: "MPT Basic", price: 4500, icon: "📞", operator: "mpt", features: [{ text: "4 GB ဒေတာ", type: "data" }, { text: "80 မိနစ်", type: "voice" }, { text: "400 SMS", type: "sms" }] },
+            { id: 14, name: "MPT Standard", price: 9000, icon: "📞", operator: "mpt", features: [{ text: "12 GB ဒေတာ", type: "data" }, { text: "400 မိနစ်", type: "voice" }, { text: "1,800 SMS", type: "sms" }] },
+            { id: 15, name: "MPT Premium", price: 18000, icon: "📞", operator: "mpt", features: [{ text: "35 GB ဒေတာ", type: "data" }, { text: "1,200 မိနစ်", type: "voice" }, { text: "4,500 SMS", type: "sms" }] },
+            { id: 16, name: "MPT Ultra", price: 32000, icon: "📞", operator: "mpt", features: [{ text: "90 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "8,000 SMS", type: "sms" }] }
         ];
-        
-        let planSales = { 1: 0, 2: 0, 3: 0, 4: 0 };
+
+        // ===== STATE =====
+        let planSales = {};
         let isShopOpen = true;
-        let isLoading = false;
         let shopStatusInterval = null;
-        
+        let currentOperator = 'all';
+
         const featureConfig = {
             data: { icon: "fa-database", class: "feature-data" },
             voice: { icon: "fa-phone-volume", class: "feature-voice" },
@@ -189,19 +341,16 @@
             streaming: { icon: "fa-film", class: "feature-data" },
             support: { icon: "fa-headset", class: "feature-data" }
         };
-        
-        const planNameToId = {
-            "VIP LEVEL - 1": 1,
-            "VIP LEVEL - 2": 2,
-            "VIP LEVEL - 3": 3,
-            "VIP LEVEL - 4 (ULTRA)": 4
+
+        const operatorColors = {
+            atom: '#f59e0b',
+            mytel: '#00d4ff',
+            ooredoo: '#ef4444',
+            mpt: '#10b981'
         };
-        
-        // ============ LOAD SALES DATA FROM SERVER ============
+
+        // ===== LOAD SALES =====
         async function loadSalesDataFromServer() {
-            if (isLoading) return;
-            isLoading = true;
-            
             try {
                 const response = await fetch('/api/orders/approved-counts', {
                     credentials: 'include'
@@ -210,126 +359,145 @@
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success && data.counts) {
-                        const counts = { 1: 0, 2: 0, 3: 0, 4: 0 };
+                        const counts = {};
                         for (const [planName, count] of Object.entries(data.counts)) {
-                            const id = planNameToId[planName];
-                            if (id) counts[id] = count;
+                            const plan = plansData.find(p => p.name === planName);
+                            if (plan) counts[plan.id] = count;
                         }
-                        planSales = counts;
+                        planSales = { ...planSales, ...counts };
                         localStorage.setItem('planSales', JSON.stringify(planSales));
                     } else {
-                        loadFromLocalStorage();
+                        loadSalesFromLocalStorage();
                     }
                 } else {
-                    loadFromLocalStorage();
+                    loadSalesFromLocalStorage();
                 }
             } catch(e) {
                 console.error('Error loading sales data:', e);
-                loadFromLocalStorage();
+                loadSalesFromLocalStorage();
             }
             
-            isLoading = false;
             renderPlans();
         }
-        
-        function loadFromLocalStorage() {
+
+        function loadSalesFromLocalStorage() {
             try {
                 const saved = localStorage.getItem('planSales');
                 if (saved) {
                     const parsed = JSON.parse(saved);
-                    planSales = { 1: parsed[1] || 0, 2: parsed[2] || 0, 3: parsed[3] || 0, 4: parsed[4] || 0 };
+                    planSales = { ...planSales, ...parsed };
                 }
-            } catch(e) {
-                console.error('Error loading from localStorage:', e);
-            }
+            } catch(e) { console.error('Error loading sales:', e); }
         }
-        
-        // ============ RENDER PLANS ============
+
+        // ===== RENDER PLANS =====
         function renderPlans() {
             const container = document.getElementById('plansContainer');
             
+            let filtered = plansData;
+            if (currentOperator !== 'all') {
+                filtered = plansData.filter(p => p.operator === currentOperator);
+            }
+            
             const hasData = Object.values(planSales).some(v => v > 0);
             const maxSales = Math.max(...Object.values(planSales), 1);
-            const plansWithRank = plansData.map(plan => {
+            
+            const plansWithRank = filtered.map(plan => {
                 const sales = planSales[plan.id] || 0;
                 const rank = getRanking(sales, planSales);
                 return { ...plan, sales, rank };
             });
             plansWithRank.sort((a, b) => b.sales - a.sales);
             
-            let html = '';
-            for (const p of plansWithRank) {
-                const priceFormatted = p.price.toLocaleString();
-                const shortName = getShortName(p.name);
-                const rank = p.rank;
-                const sales = p.sales;
-                const badgeHtml = getBadgeHtml(p.id, sales, rank, hasData);
-                const dynamicWidth = getDynamicWidth(sales, maxSales);
-                const rankingText = getRankingText(rank, sales, maxSales, hasData);
-                const fillClass = getRankFillClass(rank);
-                
-                let featuresHtml = '';
-                for (const f of p.features) {
-                    const config = featureConfig[f.type] || featureConfig.data;
-                    const highlightedText = highlightNumbers(f.text);
-                    featuresHtml += `<li class="${config.class}"><i class="fas ${config.icon}"></i> ${highlightedText}</li>`;
-                }
-                
-                html += `
-                    <div class="plan-card">
-                        <div class="plan-header">
-                            <div class="plan-title">
-                                <span class="plan-icon">${p.icon}</span>
-                                <span class="plan-name">${shortName}</span>
-                                ${badgeHtml}
+            // Keep header elements
+            const grid = document.querySelector('.operator-grid');
+            const selector = document.querySelector('.operator-selector');
+            
+            let html = grid.outerHTML + selector.outerHTML;
+            
+            if (plansWithRank.length === 0) {
+                html += `<div style="text-align:center;padding:30px;color:#94a3b8;font-size:0.85rem;">
+                    <i class="fas fa-search" style="font-size:1.5rem;display:block;margin-bottom:10px;"></i>
+                    ဤအော်ပရေတာအတွက် ပက်ကေ့ချ်မရှိသေးပါ
+                </div>`;
+            } else {
+                for (const p of plansWithRank) {
+                    const priceFormatted = p.price.toLocaleString();
+                    const shortName = getShortName(p.name);
+                    const rank = p.rank;
+                    const sales = p.sales;
+                    const badgeHtml = getBadgeHtml(p.id, sales, rank, hasData);
+                    const dynamicWidth = getDynamicWidth(sales, maxSales);
+                    const rankingText = getRankingText(rank, sales, maxSales, hasData);
+                    const fillClass = getRankFillClass(rank);
+                    const opName = p.operator.charAt(0).toUpperCase() + p.operator.slice(1);
+                    const opColor = operatorColors[p.operator] || '#00d4ff';
+                    
+                    let featuresHtml = '';
+                    for (const f of p.features) {
+                        const config = featureConfig[f.type] || featureConfig.data;
+                        const highlightedText = highlightNumbers(f.text);
+                        featuresHtml += `<li class="${config.class}"><i class="fas ${config.icon}"></i> ${highlightedText}</li>`;
+                    }
+                    
+                    html += `
+                        <div class="plan-card">
+                            <div class="plan-header">
+                                <div class="plan-title">
+                                    <span class="plan-icon">${p.icon}</span>
+                                    <span class="plan-name">${shortName}</span>
+                                    ${badgeHtml}
+                                    <span style="font-size:0.55rem;background:rgba(255,255,255,0.06);padding:2px 10px;border-radius:20px;color:${opColor};border:1px solid ${opColor}33;">
+                                        ${opName}
+                                    </span>
+                                </div>
+                                <div class="plan-price-box">
+                                    <div class="plan-price">${priceFormatted} <small>MMK</small></div>
+                                    <div class="price-note">/ 30 days</div>
+                                </div>
                             </div>
-                            <div class="plan-price-box">
-                                <div class="plan-price">${priceFormatted} <small>MMK</small></div>
-                                <div class="price-note">/ 30 days</div>
-                            </div>
+                            <ul class="feature-list">${featuresHtml}</ul>
+                            <div class="ranking-bar"><div class="ranking-fill ${fillClass}" style="width: ${dynamicWidth}%;"></div></div>
+                            <div class="ranking-text"><span><i class="fas fa-chart-simple"></i> ${rankingText}</span></div>
+                            <button class="product-buy-btn" onclick="handleBuy('${p.name}', ${p.price})" ${!isShopOpen ? 'disabled' : ''}>
+                                <i class="fas fa-shopping-cart"></i> ဝယ်ယူမည် <i class="fas fa-arrow-right"></i>
+                            </button>
                         </div>
-                        <ul class="feature-list">${featuresHtml}</ul>
-                        <div class="ranking-bar"><div class="ranking-fill ${fillClass}" style="width: ${dynamicWidth}%;"></div></div>
-                        <div class="ranking-text"><span><i class="fas fa-chart-simple"></i> ${rankingText}</span></div>
-                        <button class="product-buy-btn" onclick="handleBuy('${p.name}', ${p.price})" ${!isShopOpen ? 'disabled' : ''}>
-                            <i class="fas fa-shopping-cart"></i> ဝယ်ယူမည် <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
-                `;
+                    `;
+                }
             }
+            
             container.innerHTML = html;
             updateButtonsStatus();
+            attachOperatorEvents();
         }
-        
-        // ============ HELPER FUNCTIONS ============
+
+        // ===== HELPER FUNCTIONS =====
         function highlightNumbers(text) {
             text = text.replace(/(\d+\.?\d*\s*GB)/gi, '<span>$1</span>');
             text = text.replace(/(\d+[\d,]*\s*မိနစ်)/g, '<span>$1</span>');
             text = text.replace(/(\d+[\d,]*\s*SMS)/g, '<span>$1</span>');
             return text;
         }
-        
+
         function getShortName(name) {
-            if (name.includes("VIP LEVEL - 1")) return "VIP 1";
-            if (name.includes("VIP LEVEL - 2")) return "VIP 2";
-            if (name.includes("VIP LEVEL - 3")) return "VIP 3";
-            if (name.includes("ULTRA")) return "VIP 4 ULTRA";
+            if (name.length > 20) return name.substring(0, 18) + '...';
             return name;
         }
-        
+
         function getBestSellerId() {
-            let bestId = 1, maxSales = 0;
+            let bestId = null, maxSales = 0;
             for (const [id, sales] of Object.entries(planSales)) {
                 if (sales > maxSales) { maxSales = sales; bestId = parseInt(id); }
             }
             return { bestId, maxSales };
         }
-        
+
         function getRanking(sales, allSales) {
             const sorted = Object.values(allSales).sort((a,b) => b - a);
             return sorted.indexOf(sales) + 1;
         }
-        
+
         function getBadgeHtml(planId, sales, rank, hasData) {
             if (!hasData || sales === 0) return '';
             const { bestId } = getBestSellerId();
@@ -338,13 +506,13 @@
             if (rank === 3) return '<span class="badge badge-hot"><i class="fas fa-fire"></i> Hot</span>';
             return '';
         }
-        
+
         function getDynamicWidth(sales, maxSales) {
             if (maxSales === 0 || sales === 0) return 0;
             const percentage = (sales / maxSales) * 100;
             return Math.max(8, Math.min(100, percentage));
         }
-        
+
         function getRankingText(rank, sales, maxSales, hasData) {
             if (!hasData || sales === 0) {
                 return '📊 စာရင်းမရှိသေးပါ';
@@ -357,10 +525,41 @@
                 default: return `📦 ဝယ်ယူမှုရှိ (${percentage}%)`;
             }
         }
-        
-        function getRankFillClass(rank) { return `rank-${rank}`; }
-        
-        // ============ UPDATE BUTTONS ============
+
+        function getRankFillClass(rank) { return `rank-${Math.min(rank, 4)}`; }
+
+        // ===== OPERATOR EVENTS =====
+        function attachOperatorEvents() {
+            document.querySelectorAll('.operator-item').forEach(el => {
+                el.addEventListener('click', function() {
+                    const op = this.dataset.op;
+                    currentOperator = op;
+                    document.querySelectorAll('.operator-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.op-chip').forEach(c => c.classList.remove('active'));
+                    document.querySelector(`.op-chip[data-op="${op}"]`)?.classList.add('active');
+                    renderPlans();
+                });
+            });
+            
+            document.querySelectorAll('.op-chip').forEach(el => {
+                el.addEventListener('click', function() {
+                    const op = this.dataset.op;
+                    currentOperator = op;
+                    document.querySelectorAll('.op-chip').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.operator-item').forEach(i => i.classList.remove('active'));
+                    if (op !== 'all') {
+                        document.querySelector(`.operator-item[data-op="${op}"]`)?.classList.add('active');
+                    } else {
+                        document.querySelector('.operator-item[data-op="atom"]')?.classList.add('active');
+                    }
+                    renderPlans();
+                });
+            });
+        }
+
+        // ===== BUTTONS =====
         function updateButtonsStatus() {
             const buyButtons = document.querySelectorAll('.product-buy-btn');
             buyButtons.forEach(btn => {
@@ -377,8 +576,8 @@
                 }
             });
         }
-        
-        // ============ HANDLE BUY ============
+
+        // ===== HANDLE BUY =====
         function handleBuy(planName, planPrice) {
             if (!isShopOpen) {
                 showNotification("ဆိုင်ပိတ်ချိန်ဖြစ်ပါသည်။ ကျေးဇူးပြု၍ နံနက် ၉ နာရီမှ ညနေ ၇ နာရီအတွင်းမှသာ ဝယ်ယူနိုင်ပါသည်။", true);
@@ -391,7 +590,7 @@
                 alert(`🛒 ${planName} - ${planPrice.toLocaleString()} MMK ဝယ်ယူရန်`);
             }
         }
-        
+
         function showNotification(message, isError = false) {
             if (window.parent && window.parent.showToast) {
                 window.parent.showToast(message, isError);
@@ -399,72 +598,74 @@
                 alert(message);
             }
         }
-        
-        // ============ CHECK SHOP STATUS (Polling - 5 seconds) ============
+
+        // ===== SHOP STATUS =====
         async function checkShopStatus() {
             try {
                 const response = await fetch('/api/sales/status');
                 const data = await response.json();
                 isShopOpen = data.isOpen;
                 updateButtonsStatus();
-                // Also update any status display if exists
-                const statusEl = document.getElementById('salesStatus');
-                if (statusEl) {
-                    statusEl.textContent = data.message;
-                    statusEl.className = `sales-status ${data.isOpen ? 'open' : 'closed'}`;
-                }
             } catch(e) {
                 console.error('Error checking shop status:', e);
             }
         }
-        
-        // ============ START POLLING ============
+
         function startShopStatusPolling() {
             if (shopStatusInterval) {
                 clearInterval(shopStatusInterval);
                 shopStatusInterval = null;
             }
-            
-            // Check immediately
             checkShopStatus();
-            
-            // Then every 5 seconds
             shopStatusInterval = setInterval(checkShopStatus, 5000);
             console.log('🔄 Shop status polling started (every 5 seconds)');
         }
-        
-        // ============ LISTEN FOR PARENT MESSAGES ============
+
+        // ===== LISTEN FOR PARENT MESSAGES =====
         window.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'shopStatus') {
                 isShopOpen = event.data.isOpen;
                 updateButtonsStatus();
             }
         });
-        
-        // ============ INIT ============
+
+        // ===== INIT =====
         async function init() {
             const container = document.getElementById('plansContainer');
-            container.innerHTML = '<div class="loading-text"><i class="fas fa-spinner fa-pulse"></i> Loading sales data...</div>';
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = container.innerHTML;
+            
+            container.innerHTML = '';
+            
+            const grid = tempDiv.querySelector('.operator-grid');
+            if (grid) container.appendChild(grid.cloneNode(true));
+            
+            const selector = tempDiv.querySelector('.operator-selector');
+            if (selector) container.appendChild(selector.cloneNode(true));
+            
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading-text';
+            loadingDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Loading plans...';
+            container.appendChild(loadingDiv);
             
             await loadSalesDataFromServer();
-            
-            // Start polling for shop status (5 seconds)
             startShopStatusPolling();
             
-            // Sales data refresh every 30 seconds
             setInterval(async () => {
                 await loadSalesDataFromServer();
             }, 30000);
         }
-        
+
         init();
-        
+
+        // Expose functions
         window.handleBuy = handleBuy;
         window.updateButtonsStatus = updateButtonsStatus;
         window.renderPlans = renderPlans;
         window.loadSalesDataFromServer = loadSalesDataFromServer;
         window.checkShopStatus = checkShopStatus;
         window.startShopStatusPolling = startShopStatusPolling;
+        window.currentOperator = currentOperator;
     </script>
 </body>
 </html>
