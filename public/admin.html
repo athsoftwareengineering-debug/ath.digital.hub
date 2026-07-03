@@ -12,6 +12,9 @@
     <!-- Font Awesome (CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
+    <!-- Supabase UMD (CDN) - CSP မှာ cdn.jsdelivr.net ခွင့်ပြုထားပြီးသား -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    
     <style>
         /* ===== BASE STYLES ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -2080,28 +2083,19 @@
     <div id="toast" class="toast"></div>
 
     <!-- ============================================================ -->
-    <!-- ===== JAVASCRIPT (Module with importmap) ===== -->
+    <!-- ===== JAVASCRIPT - Supabase UMD ===== -->
     <!-- ============================================================ -->
-    <script type="importmap">
-    {
-        "imports": {
-            "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2"
-        }
-    }
-    </script>
-
-    <script type="module">
-        // Use esm.sh instead of cdn.jsdelivr.net (more reliable)
-        import { createClient } from '@supabase/supabase-js';
-
+    <script>
         // ================================================================
-        //  SUPABASE CONFIG
+        //  SUPABASE CONFIG (Using UMD version loaded from CDN)
         // ================================================================
 
+        // သင့်ရဲ့ Supabase URL နဲ့ Anon Key ကို ဒီမှာထည့်ပါ
         const supabaseUrl = 'YOUR_SUPABASE_URL';
         const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
         
-        const supabase = createClient(supabaseUrl, supabaseKey);
+        // Create client using global supabase object (from UMD script)
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         console.log('📡 Supabase client initialized');
 
