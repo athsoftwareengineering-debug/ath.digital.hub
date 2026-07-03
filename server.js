@@ -156,9 +156,9 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "cdnjs.cloudflare.com", "cdn.jsdelivr.net", "blob:"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "cdnjs.cloudflare.com", "cdn.jsdelivr.net", "esm.sh", "blob:"],
             scriptSrcAttr: ["'unsafe-inline'"],
-            scriptSrcElem: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "cdn.jsdelivr.net"],
+            scriptSrcElem: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "cdn.jsdelivr.net", "esm.sh"],
             styleSrc: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "fonts.googleapis.com"],
             styleSrcElem: ["'self'", "'unsafe-inline'", "cdnjs.cloudflare.com", "fonts.googleapis.com"],
             fontSrc: ["'self'", "fonts.gstatic.com", "cdnjs.cloudflare.com", "data:"],
@@ -1036,29 +1036,13 @@ app.get('/api/chat/get-language/:userId', async (req, res) => {
 });
 
 // ================================================================
-//  PLANS API (Supabase)
+//  PLANS API (Supabase) - Public
 // ================================================================
 
 // Get all plans (Public - for plans widget)
 app.get('/api/plans', async (req, res) => {
     try {
         const { data, error } = await supabase
-            .from('plans')
-            .select('*')
-            .order('id', { ascending: true });
-        
-        if (error) throw error;
-        res.json({ success: true, plans: data || [] });
-    } catch (error) {
-        console.error('Error fetching plans:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// Get all plans (Admin)
-app.get('/api/admin/plans', isAuthenticated, async (req, res) => {
-    try {
-        const { data, error } = await supabaseAdmin
             .from('plans')
             .select('*')
             .order('id', { ascending: true });
@@ -1085,6 +1069,26 @@ app.get('/api/plans/operator/:operator', async (req, res) => {
         res.json({ success: true, plans: data || [] });
     } catch (error) {
         console.error('Error fetching plans by operator:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ================================================================
+//  PLANS API (Supabase) - Admin
+// ================================================================
+
+// Get all plans (Admin)
+app.get('/api/admin/plans', isAuthenticated, async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('plans')
+            .select('*')
+            .order('id', { ascending: true });
+        
+        if (error) throw error;
+        res.json({ success: true, plans: data || [] });
+    } catch (error) {
+        console.error('Error fetching plans:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -1290,7 +1294,7 @@ app.listen(PORT, () => {
 ║        ✅ Helmet.js (Security Headers)                                   ║
 ║        ✅ CSP with iframe support (UPDATED)                              ║
 ║        ✅ Google Fonts allowed                                           ║
-║        ✅ CDN.jsdelivr allowed (Supabase)                                ║
+║        ✅ CDN.jsdelivr + esm.sh allowed                                  ║
 ║        ✅ Rate Limiting                                                  ║
 ║        ✅ Sales Hours Control (Auto/Manual Mode)                        ║
 ║        ✅ Session-based Admin Auth                                       ║
