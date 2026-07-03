@@ -12,9 +12,6 @@
     <!-- Font Awesome (CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <!-- Supabase UMD (CDN) - CSP မှာ cdn.jsdelivr.net ခွင့်ပြုထားပြီးသား -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    
     <style>
         /* ===== BASE STYLES ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -2083,132 +2080,218 @@
     <div id="toast" class="toast"></div>
 
     <!-- ============================================================ -->
-    <!-- ===== JAVASCRIPT - Supabase UMD ===== -->
+    <!-- ===== JAVASCRIPT - Supabase with Fallback ===== -->
     <!-- ============================================================ -->
+    
+    <!-- Try loading Supabase from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    
     <script>
         // ================================================================
-        //  SUPABASE CONFIG (Using UMD version loaded from CDN)
+        //  SUPABASE CONFIG with Fallback
         // ================================================================
 
         // သင့်ရဲ့ Supabase URL နဲ့ Anon Key ကို ဒီမှာထည့်ပါ
         const supabaseUrl = 'YOUR_SUPABASE_URL';
         const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
         
-        // Create client using global supabase object (from UMD script)
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-        console.log('📡 Supabase client initialized');
-
-        // ================================================================
-        //  SUPABASE FUNCTIONS
-        // ================================================================
-
-        async function getPlans() {
+        let supabase = null;
+        
+        // Try to initialize Supabase
+        function initSupabase() {
             try {
-                const { data, error } = await supabase
-                    .from('plans')
-                    .select('*')
-                    .order('id', { ascending: true });
-                if (error) {
-                    console.error('Error fetching plans:', error);
-                    return [];
+                if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    console.log('✅ Supabase initialized from CDN');
+                    return true;
+                } else {
+                    console.warn('⚠️ Supabase not loaded from CDN, using fallback');
+                    return false;
                 }
-                return data || [];
             } catch (e) {
-                console.error('Error fetching plans:', e);
+                console.warn('⚠️ Supabase initialization failed:', e);
+                return false;
+            }
+        }
+        
+        // Fallback: Use fetch to get plans from server API
+        async function getPlansFallback() {
+            try {
+                const response = await fetch('/api/plans');
+                if (!response.ok) throw new Error('Failed to fetch plans');
+                const data = await response.json();
+                return data.plans || [];
+            } catch (e) {
+                console.error('Fallback fetch failed:', e);
                 return [];
             }
         }
-
-        async function addPlan(plan) {
+        
+        async function addPlanFallback(plan) {
             try {
-                const { data, error } = await supabase
-                    .from('plans')
-                    .insert([{
-                        name: plan.name,
-                        price: plan.price,
-                        icon: plan.icon || '📦',
-                        operator: plan.operator,
-                        features: plan.features || []
-                    }])
-                    .select();
-                if (error) throw error;
-                return data[0];
+                const response = await fetch('/api/admin/plans', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(plan),
+                    credentials: 'include'
+                });
+                if (!response.ok) throw new Error('Failed to add plan');
+                const data = await response.json();
+                return data.plan;
             } catch (e) {
-                console.error('Error adding plan:', e);
+                console.error('Fallback add plan failed:', e);
                 throw e;
             }
         }
-
-        async function updatePlan(id, plan) {
+        
+        async function updatePlanFallback(id, plan) {
             try {
-                const { data, error } = await supabase
-                    .from('plans')
-                    .update({
-                        name: plan.name,
-                        price: plan.price,
-                        icon: plan.icon || '📦',
-                        operator: plan.operator,
-                        features: plan.features || [],
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', id)
-                    .select();
-                if (error) throw error;
-                return data[0];
+                const response = await fetch(`/api/admin/plans/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(plan),
+                    credentials: 'include'
+                });
+                if (!response.ok) throw new Error('Failed to update plan');
+                const data = await response.json();
+                return data.plan;
             } catch (e) {
-                console.error('Error updating plan:', e);
+                console.error('Fallback update plan failed:', e);
                 throw e;
             }
         }
-
-        async function deletePlan(id) {
+        
+        async function deletePlanFallback(id) {
             try {
-                const { error } = await supabase
-                    .from('plans')
-                    .delete()
-                    .eq('id', id);
-                if (error) throw error;
+                const response = await fetch(`/api/admin/plans/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                if (!response.ok) throw new Error('Failed to delete plan');
                 return true;
             } catch (e) {
-                console.error('Error deleting plan:', e);
+                console.error('Fallback delete plan failed:', e);
                 throw e;
             }
         }
+        
+        // ================================================================
+        //  EXPOSE SUPABASE FUNCTIONS
+        // ================================================================
 
-        function subscribeToPlans(callback) {
-            const channel = supabase
-                .channel('plans_channel')
-                .on(
-                    'postgres_changes',
-                    {
-                        event: '*',
-                        schema: 'public',
-                        table: 'plans'
-                    },
-                    (payload) => {
-                        console.log('🔄 Plan changed:', payload);
-                        callback(payload);
+        // Initialize
+        const useSupabase = initSupabase();
+        
+        // Export functions
+        window.getPlans = useSupabase ? 
+            async function() {
+                try {
+                    const { data, error } = await supabase
+                        .from('plans')
+                        .select('*')
+                        .order('id', { ascending: true });
+                    if (error) throw error;
+                    return data || [];
+                } catch (e) {
+                    console.warn('Supabase getPlans failed, using fallback:', e);
+                    return getPlansFallback();
+                }
+            } : getPlansFallback;
+        
+        window.addPlan = useSupabase ?
+            async function(plan) {
+                try {
+                    const { data, error } = await supabase
+                        .from('plans')
+                        .insert([{
+                            name: plan.name,
+                            price: plan.price,
+                            icon: plan.icon || '📦',
+                            operator: plan.operator,
+                            features: plan.features || []
+                        }])
+                        .select();
+                    if (error) throw error;
+                    return data[0];
+                } catch (e) {
+                    console.warn('Supabase addPlan failed, using fallback:', e);
+                    return addPlanFallback(plan);
+                }
+            } : addPlanFallback;
+        
+        window.updatePlan = useSupabase ?
+            async function(id, plan) {
+                try {
+                    const { data, error } = await supabase
+                        .from('plans')
+                        .update({
+                            name: plan.name,
+                            price: plan.price,
+                            icon: plan.icon || '📦',
+                            operator: plan.operator,
+                            features: plan.features || [],
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', id)
+                        .select();
+                    if (error) throw error;
+                    return data[0];
+                } catch (e) {
+                    console.warn('Supabase updatePlan failed, using fallback:', e);
+                    return updatePlanFallback(id, plan);
+                }
+            } : updatePlanFallback;
+        
+        window.deletePlan = useSupabase ?
+            async function(id) {
+                try {
+                    const { error } = await supabase
+                        .from('plans')
+                        .delete()
+                        .eq('id', id);
+                    if (error) throw error;
+                    return true;
+                } catch (e) {
+                    console.warn('Supabase deletePlan failed, using fallback:', e);
+                    return deletePlanFallback(id);
+                }
+            } : deletePlanFallback;
+        
+        window.subscribeToPlans = useSupabase ?
+            function(callback) {
+                const channel = supabase
+                    .channel('plans_channel')
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: '*',
+                            schema: 'public',
+                            table: 'plans'
+                        },
+                        (payload) => {
+                            console.log('🔄 Plan changed:', payload);
+                            callback(payload);
+                        }
+                    )
+                    .subscribe((status) => {
+                        console.log('📡 Subscription status:', status);
+                    });
+                return channel;
+            } : function(callback) {
+                // Fallback: poll every 10 seconds
+                console.log('📡 Using polling fallback for plan changes');
+                const interval = setInterval(async () => {
+                    try {
+                        const plans = await getPlansFallback();
+                        callback({ eventType: 'poll', plans: plans });
+                    } catch (e) {
+                        console.error('Polling failed:', e);
                     }
-                )
-                .subscribe((status) => {
-                    console.log('📡 Subscription status:', status);
-                });
-            return channel;
-        }
-
-        // ================================================================
-        //  EXPOSE TO GLOBAL
-        // ================================================================
-
-        window.supabase = supabase;
-        window.getPlans = getPlans;
-        window.addPlan = addPlan;
-        window.updatePlan = updatePlan;
-        window.deletePlan = deletePlan;
-        window.subscribeToPlans = subscribeToPlans;
-
-        console.log('📡 Supabase functions exposed to window');
+                }, 10000);
+                return { unsubscribe: () => clearInterval(interval) };
+            };
+        
+        console.log(`📡 Supabase ${useSupabase ? 'connected ✅' : 'fallback mode 🔄'}`);
 
         // ================================================================
         //  MAIN ADMIN SCRIPT
@@ -2376,7 +2459,7 @@
 
             async function loadPlans() {
                 try {
-                    const data = await getPlans();
+                    const data = await window.getPlans();
                     if (data && data.length > 0) {
                         allPlans = data;
                     } else {
@@ -2525,10 +2608,10 @@
 
                 try {
                     if (editingPlanId) {
-                        await updatePlan(editingPlanId, planData);
+                        await window.updatePlan(editingPlanId, planData);
                         showToast(isEn ? '✅ Plan updated' : '✅ Plan အပ်ဒိတ်လုပ်ပြီးပါပြီ');
                     } else {
-                        await addPlan(planData);
+                        await window.addPlan(planData);
                         showToast(isEn ? '✅ Plan added' : '✅ Plan အသစ်ထည့်သွင်းပြီးပါပြီ');
                     }
                     closePlanModal();
@@ -2544,7 +2627,7 @@
                 const isEn = currentLang === 'en';
                 if (!confirm(isEn ? 'Delete this plan?' : 'ဤ Plan ကို ဖျက်မည်လား။')) return;
                 try {
-                    await deletePlan(id);
+                    await window.deletePlan(id);
                     showToast(isEn ? '🗑 Plan deleted' : '🗑 Plan ဖျက်ပြီးပါပြီ');
                     loadPlans();
                     notifyPlansWidget();
@@ -2627,20 +2710,20 @@
             // ================================================================
 
             async function init() {
-                // Load plans from Supabase
+                // Load plans
                 await loadPlans();
 
                 // Subscribe to real-time changes
                 if (subscription) {
-                    subscription.unsubscribe();
+                    if (subscription.unsubscribe) subscription.unsubscribe();
                     subscription = null;
                 }
-                subscription = subscribeToPlans(() => {
+                subscription = window.subscribeToPlans(() => {
                     console.log('🔄 Plan changed, reloading...');
                     loadPlans();
                 });
 
-                console.log('📡 Admin Panel initialized with Supabase real-time sync');
+                console.log('📡 Admin Panel initialized');
                 
                 // Check if already logged in
                 if (token === 'logged_in') {
