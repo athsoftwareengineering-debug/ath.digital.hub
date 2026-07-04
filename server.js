@@ -19,7 +19,6 @@ const { supabase, supabaseAdmin, createNewUser, getUserByPhone, getUserStats, up
 const { getAutoReply, setUserLanguage, getUserLanguage } = require('./config/autoReply.js');
 
 // ============ ROUTES ============
-const adRoutes = require('./routes/ad-routes.js');
 const salesHoursRoutes = require('./routes/admin-sales-hours.js');
 
 require('dotenv').config();
@@ -196,7 +195,6 @@ app.use((req, res, next) => {
 const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 500, message: { error: 'Too many requests' }, keyGenerator: (req) => req.ip, skip: (req) => req.path === '/api/health' });
 const chatLimiter = rateLimit({ windowMs: 60 * 1000, max: 60, message: { error: 'Too many chat requests' }, keyGenerator: (req) => req.ip });
 const adminLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 300, message: { error: 'Too many admin requests' }, keyGenerator: (req) => req.session?.isAdmin ? req.ip : req.ip, skip: (req) => !req.session?.isAdmin });
-const marketLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200, message: { error: 'Too many requests' } });
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: { error: 'Too many login attempts' }, skipSuccessfulRequests: true });
 const orderLimiter = rateLimit({ windowMs: 60 * 1000, max: 3, message: { error: 'Too many orders' }, keyGenerator: (req) => req.body.phone || req.ip });
 
@@ -231,7 +229,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==================== API ROUTES ====================
-app.use('/api', adRoutes);
 app.use('/api', salesHoursRoutes);
 
 // ==================== FILE UPLOAD ====================
@@ -368,13 +365,11 @@ app.get('/admin.html', (req, res) => { res.sendFile(path.join(__dirname, 'public
 app.get('/admin-chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin-chat.html')); });
 app.get('/chat.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'chat.html')); });
 app.get('/dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'dashboard.html')); });
-app.get('/market.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'market.html')); });
 app.get('/plans-widget.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'plans-widget.html')); });
 app.get('/sw.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'sw.js')); });
 app.get('/css/notification.css', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'css', 'notification.css')); });
 app.get('/js/notifications.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'notifications.js')); });
 app.get('/js/sales-hours.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'sales-hours.js')); });
-app.get('/js/ad-widget.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'ad-widget.js')); });
 app.get('/js/user-chat.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'user-chat.js')); });
 app.get('/api/health', (req, res) => { res.json({ status: 'ok', timestamp: new Date().toISOString() }); });
 
@@ -406,57 +401,6 @@ app.get('/api/user/:phone', async (req, res) => {
         res.json({ success: true, user: { phone: user.phone, username: user.username, user_id: user.user_id, order_count: user.order_count, blocked: user.blocked } });
     } catch (error) {
         console.error('Error fetching user:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ==================== MARKET API ====================
-app.get('/api/market/products', marketLimiter, async (req, res) => {
-    try {
-        const { data, error } = await supabase.from('market_products').select('*').order('created_at', { ascending: false });
-        if (error) throw error;
-        res.json({ products: data || [] });
-    } catch (error) {
-        console.error('Error fetching products:', error);
-        res.status(500).json({ products: [], error: error.message });
-    }
-});
-
-app.post('/api/market/products', isAuthenticated, async (req, res) => {
-    try {
-        const { name, price, image, category, icon, discount } = req.body;
-        if (!name || !price) return res.status(400).json({ success: false, error: 'Name and price are required' });
-        const { data, error } = await supabase.from('market_products').insert([{ name, price: parseInt(price), image: image || null, category: category || 'Uncategorized', icon: icon || 'fas fa-box', discount: discount || 0, created_at: new Date().toISOString() }]).select();
-        if (error) throw error;
-        res.json({ success: true, product: data[0] });
-    } catch (error) {
-        console.error('Error adding product:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.put('/api/market/products/:id', isAuthenticated, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { name, price, image, category, icon, discount } = req.body;
-        if (!name || !price) return res.status(400).json({ success: false, error: 'Name and price are required' });
-        const { data, error } = await supabase.from('market_products').update({ name, price: parseInt(price), image: image || null, category: category || 'Uncategorized', icon: icon || 'fas fa-box', discount: discount || 0, updated_at: new Date().toISOString() }).eq('id', parseInt(id)).select();
-        if (error) throw error;
-        res.json({ success: true, product: data[0] });
-    } catch (error) {
-        console.error('Error updating product:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-app.delete('/api/market/products/:id', isAuthenticated, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { error } = await supabase.from('market_products').delete().eq('id', parseInt(id));
-        if (error) throw error;
-        res.json({ success: true, message: 'Product deleted' });
-    } catch (error) {
-        console.error('Error deleting product:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -744,7 +688,6 @@ app.post('/api/admin/system-reset', isAuthenticated, async (req, res) => {
         await supabaseAdmin.from('user_stats').delete().neq('phone', '');
         await supabaseAdmin.from('admin_notifications').delete().neq('id', 0);
         orderRateLimit.clear();
-        if (!keepProducts) await supabaseAdmin.from('market_products').delete().neq('id', 0);
         res.json({ success: true, message: 'System reset completed' });
     } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
@@ -1286,7 +1229,6 @@ app.listen(PORT, () => {
 ║     🧹 Global Chat Auto Cleanup (3 min): WORKING ✅                      ║
 ║     🚫 Bad Words Filter: WORKING ✅                                     ║
 ║     🔔 Unread Count (receiver only): WORKING ✅                          ║
-║     📢 AD MANAGEMENT SYSTEM: WORKING ✅                                  ║
 ║     📖 Mark Messages as Read: WORKING ✅                                 ║
 ║     🕐 12-HOUR TIME FORMAT: WORKING ✅                                   ║
 ║                                                                          ║
@@ -1305,7 +1247,6 @@ app.listen(PORT, () => {
 ║        ✅ Multi-Language Auto Reply (my/en/zh)                          ║
 ║        ✅ Global Chat Auto Cleanup (every 3 minutes)                    ║
 ║        ✅ Bad Words Filter                                              ║
-║        ✅ Ad Management System (ads table, rotation, tracking)          ║
 ║        ✅ Plan Management API (CRUD)                                    ║
 ║        ✅ Real-time Plan Sync via Supabase                              ║
 ║                                                                          ║
