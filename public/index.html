@@ -1300,6 +1300,7 @@
     let userChatWidgetOpen = false;
     let isShopOpen = true;
     let salesStatusInterval = null;
+    let orderRefreshInterval = null;
 
     // ===== UTILITY FUNCTIONS =====
     function maskPhone(phone) {
@@ -1452,6 +1453,21 @@
         console.log('🔄 Sales status polling started (every 5 seconds)');
     }
 
+    // ===== START ORDER REFRESH (every 10 seconds) =====
+    function startOrderRefresh() {
+        if (orderRefreshInterval) {
+            clearInterval(orderRefreshInterval);
+            orderRefreshInterval = null;
+        }
+        orderRefreshInterval = setInterval(async () => {
+            if (currentUser && document.getElementById('ordersTab').classList.contains('active')) {
+                await loadUserOrders();
+                renderMyOrders();
+            }
+        }, 10000);
+        console.log('🔄 Order refresh started (every 10 seconds)');
+    }
+
     // ===== CHAT WIDGET =====
     function openUserChatWidget() {
         if (userChatWidgetOpen) return;
@@ -1545,6 +1561,7 @@
             await loadUserOrders();
             await renderProfile();
             startSalesStatusPolling();
+            startOrderRefresh();
             
         } catch(e) {
             showToast("Connection error", true);
@@ -1557,6 +1574,10 @@
         if (salesStatusInterval) {
             clearInterval(salesStatusInterval);
             salesStatusInterval = null;
+        }
+        if (orderRefreshInterval) {
+            clearInterval(orderRefreshInterval);
+            orderRefreshInterval = null;
         }
         closeUserChatWidget();
         localStorage.clear();
@@ -1929,7 +1950,9 @@
             else item.classList.remove('active');
         });
         
-        if (tab === 'orders') renderMyOrders();
+        if (tab === 'orders') {
+            renderMyOrders();
+        }
         if (tab === 'profile') renderProfile();
         if (tab === 'live') loadLiveContent();
     }
@@ -2082,6 +2105,7 @@
         loadUserOrders();
         renderProfile();
         startSalesStatusPolling();
+        startOrderRefresh();
         
         if (!savedId) {
             fetch(`${API_BASE}/api/user/${savedPhone}`)
@@ -2129,6 +2153,9 @@
     window.closeUserChatWidget = closeUserChatWidget;
     window.loadSalesStatus = loadSalesStatus;
     window.startSalesStatusPolling = startSalesStatusPolling;
+    window.loadUserOrders = loadUserOrders;
+    window.renderMyOrders = renderMyOrders;
+    window.startOrderRefresh = startOrderRefresh;
 </script>
 
 </body>
