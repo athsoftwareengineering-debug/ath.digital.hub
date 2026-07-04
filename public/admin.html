@@ -12,7 +12,7 @@
     <!-- Font Awesome (CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <!-- Supabase UMD (CDN) -->
+    <!-- Supabase UMD (CDN) - with fallback -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     
     <style>
@@ -2210,6 +2210,8 @@
             let currentOrderFilter = 'all';
             let tempFeatures = [];
             let subscription = null;
+            let isLoadingPlans = false;
+            let reloadTimeout = null;
 
             const costPriceMap = {
                 "VIP LEVEL - 1": 14500,
@@ -2434,6 +2436,8 @@
             // ================================================================
 
             async function loadPlans() {
+                if (isLoadingPlans) return;
+                isLoadingPlans = true;
                 try {
                     const data = await getPlans();
                     if (data && data.length > 0) {
@@ -2447,6 +2451,8 @@
                     console.error('Error loading plans:', e);
                     allPlans = [];
                     renderPlansTab();
+                } finally {
+                    isLoadingPlans = false;
                 }
             }
 
@@ -2668,7 +2674,7 @@
             };
 
             // ================================================================
-            //  LOGIN
+            //  LOGIN - FIXED
             // ================================================================
 
             window.login = async function() {
@@ -2930,21 +2936,28 @@
             };
 
             // ================================================================
-            //  INIT
+            //  INIT - FIXED
             // ================================================================
 
             async function init() {
-                // Load plans
+                // Load plans only once
                 await loadPlans();
 
-                // Subscribe to real-time changes
+                // Subscribe to real-time changes with debounce
                 if (subscription) {
                     if (subscription.unsubscribe) subscription.unsubscribe();
                     subscription = null;
                 }
-                subscription = subscribeToPlans(() => {
-                    console.log('🔄 Plan changed, reloading...');
-                    loadPlans();
+                subscription = subscribeToPlans((payload) => {
+                    // Debounce reload to prevent infinite loop
+                    if (reloadTimeout) {
+                        clearTimeout(reloadTimeout);
+                    }
+                    reloadTimeout = setTimeout(() => {
+                        console.log('🔄 Plan changed, reloading...');
+                        loadPlans();
+                        reloadTimeout = null;
+                    }, 500);
                 });
 
                 console.log('📡 Admin Panel initialized');
