@@ -1712,7 +1712,6 @@
                     <li><a onclick="window.closeDrawer(); window.switchTab('orders')"><i class="fas fa-list-ul"></i> အမိန့်စာများ</a></li>
                     <li><a onclick="window.closeDrawer(); window.switchTab('users')"><i class="fas fa-users"></i> အသုံးပြုသူများ</a></li>
                     <li><a onclick="window.closeDrawer(); window.switchTab('plans')"><i class="fas fa-sim-card"></i> Plan များ</a></li>
-                    <li><a onclick="window.closeDrawer(); window.switchTab('ads')"><i class="fas fa-ad"></i> ကြော်ငြာများ</a></li>
                     <li><a onclick="window.closeDrawer(); openAdminChatWidget()"><i class="fas fa-comments"></i> စကားဝိုင်း</a></li>
                     <li><div class="drawer-divider"></div></li>
                     <li><a onclick="window.closeDrawer(); window.exportUsersToCSV()"><i class="fas fa-file-excel"></i> အသုံးပြုသူများ CSV</a></li>
@@ -1787,32 +1786,6 @@
                         </div>
                     </div>
                     <div id="salesStatus" class="sales-status">Loading...</div>
-                </div>
-
-                <div class="sales-hours-card">
-                    <div class="sales-hours-title"><i class="fas fa-ad"></i> ကြော်ငြာ ပြပုံအပြင်အဆင်</div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="font-size: 0.65rem;">ပြမယ့်ပုံစံ:</span>
-                            <select id="adRotationMode" class="hour-select" style="width: auto;">
-                                <option value="random">ကျပန်း</option>
-                                <option value="weighted">အလေးချိန်</option>
-                                <option value="roundrobin">အလှည့်ကျ</option>
-                            </select>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="font-size: 0.65rem;">Auto လှည့် (စက္ကန့်):</span>
-                            <input type="number" id="adAutoCycle" class="hour-select" style="width: 70px;" value="0" step="1" min="0">
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <label style="display: flex; align-items: center; gap: 4px; font-size: 0.65rem;">
-                                <input type="checkbox" id="adShowNavigation" checked> ခလုတ်ပြမယ်
-                            </label>
-                        </div>
-                        <button onclick="window.saveAdSettings()" style="background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.3); padding:6px 16px; border-radius:40px; cursor:pointer; font-size:0.65rem; color:var(--text-primary); touch-action:manipulation;">
-                            <i class="fas fa-save"></i> သိမ်းမယ်
-                        </button>
-                    </div>
                 </div>
 
                 <div class="stats-grid" id="statsGrid">
@@ -1896,19 +1869,6 @@
                 </div>
             </div>
 
-            <!-- ===== ADS TAB ===== -->
-            <div id="adsTab" class="tab-content">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                    <h3 style="font-size: 1rem;"><i class="fas fa-ad"></i> ကြော်ငြာများ</h3>
-                    <button class="add-plan-btn" onclick="window.openAddAdModal()" style="background:linear-gradient(135deg, #10b981, #059669);">
-                        <i class="fas fa-plus"></i> ကြော်ငြာအသစ်
-                    </button>
-                </div>
-                <div class="ads-list" id="adsList">
-                    <div class="loading"><i class="fas fa-spinner fa-pulse"></i> ကြော်ငြာများ ဖွင့်နေသည်...</div>
-                </div>
-            </div>
-
             <div class="last-update" id="lastUpdate"></div>
         </div>
 
@@ -1918,7 +1878,6 @@
             <button class="nav-item" data-tab="orders"><i class="fas fa-list-ul"></i><span>အမိန့်စာ</span></button>
             <button class="nav-item" data-tab="users"><i class="fas fa-users"></i><span>အသုံးပြုသူ</span></button>
             <button class="nav-item" data-tab="plans"><i class="fas fa-sim-card"></i><span>Plan</span></button>
-            <button class="nav-item" data-tab="ads"><i class="fas fa-ad"></i><span>ကြော်ငြာ</span></button>
             <button class="nav-item" data-tab="chat" onclick="openAdminChatWidget()"><i class="fas fa-comments"></i><span>စကားဝိုင်း</span></button>
         </div>
 
@@ -2009,28 +1968,11 @@
             <div class="alert-icon danger"><i class="fas fa-exclamation-triangle"></i></div>
             <div class="alert-title danger">⚠️ စနစ်ပြန်လည်သတ်မှတ်ခြင်း</div>
             <div class="alert-message">ဤလုပ်ဆောင်ချက်ကို <strong>ပြန်လည်ဖျက်လို့မရပါ!</strong> အတည်ပြုရန် <strong style="color:var(--rose);">"RESET_ALL_DATA"</strong> ဟု ရိုက်ထည့်ပါ။</div>
-            <div class="alert-items"><ul><li>❌ အသုံးပြုသူအားလုံး ဖျက်မည်</li><li>❌ အမိန့်စာအားလုံး ဖျက်မည်</li><li>✅ Plan များနှင့် ကြော်ငြာများကို ထိန်းသိမ်းမည်</li></ul></div>
+            <div class="alert-items"><ul><li>❌ အသုံးပြုသူအားလုံး ဖျက်မည်</li><li>❌ အမိန့်စာအားလုံး ဖျက်မည်</li><li>✅ Plan များကို ထိန်းသိမ်းမည်</li></ul></div>
             <input type="text" id="resetConfirmInput" class="alert-input" placeholder='"RESET_ALL_DATA" ဟု ရိုက်ထည့်ပါ'>
             <div class="alert-buttons">
                 <button class="alert-btn confirm" onclick="window.executeSystemResetFromAlert()">ဟုတ်ကဲ့၊ အားလုံးပြန်လည်သတ်မှတ်မည်</button>
                 <button class="alert-btn cancel" onclick="window.closeSystemResetAlert()">မလုပ်တော့ပါ</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== AD MODAL ===== -->
-    <div id="adModal" class="modal">
-        <div class="modal-card">
-            <h3 id="adModalTitle">ကြော်ငြာအသစ်ထည့်ရန်</h3>
-            <input type="text" id="adName" placeholder="ကြော်ငြာအမည် *">
-            <input type="text" id="adImageUrl" placeholder="ပုံ URL *">
-            <input type="text" id="adDestinationUrl" placeholder="Website Link *">
-            <textarea id="adAltText" placeholder="စာသား (ရွေးချယ်နိုင်သည်)" rows="2"></textarea>
-            <input type="number" id="adDisplayWeight" placeholder="အလေးချိန် (1-20)" value="5">
-            <input type="date" id="adExpiryDate" placeholder="သက်တမ်းကုန်ဆုံးရက်">
-            <div style="display: flex; gap: 10px; margin-top: 14px;">
-                <button class="modal-btn save" onclick="window.saveAd()">သိမ်းရန်</button>
-                <button class="modal-btn cancel" onclick="window.closeAdModal()">မလုပ်တော့ပါ</button>
             </div>
         </div>
     </div>
@@ -2254,7 +2196,6 @@
             let allOrders = [];
             let userStats = [];
             let allPlans = [];
-            let allAds = [];
             let autoSyncInterval = null;
             let activeCountdowns = {};
             let currentSearchPhone = '';
@@ -2262,7 +2203,6 @@
             let currentPlanSearch = '';
             let currentTab = 'menu';
             let editingPlanId = null;
-            let editingAdId = null;
             let selectedOrders = new Set();
             let sessionTimer = null;
             const SESSION_TIMEOUT = 30 * 60 * 1000;
@@ -2415,26 +2355,6 @@
             }
 
             // ================================================================
-            //  LOAD ADS
-            // ================================================================
-
-            async function loadAds() {
-                try {
-                    const response = await fetch(`${API_BASE}/api/admin/ads`, {
-                        credentials: 'include'
-                    });
-                    if (!response.ok) throw new Error('Failed to fetch ads');
-                    const data = await response.json();
-                    allAds = data.ads || [];
-                    return allAds;
-                } catch (e) {
-                    console.error('Error loading ads:', e);
-                    allAds = [];
-                    return [];
-                }
-            }
-
-            // ================================================================
             //  LOAD ALL DATA
             // ================================================================
 
@@ -2442,8 +2362,7 @@
                 await Promise.all([
                     loadOrders(),
                     loadUserStats(),
-                    loadPlans(),
-                    loadAds()
+                    loadPlans()
                 ]);
                 updateAllStats();
             }
@@ -2838,7 +2757,6 @@
                 if (tab === 'plans') renderPlansTab();
                 if (tab === 'orders') loadOrders();
                 if (tab === 'users') loadUserStats();
-                if (tab === 'ads') loadAds();
                 window.closeDrawer();
             };
 
@@ -2983,26 +2901,6 @@
                 }
             };
 
-            window.openAddAdModal = function() {
-                editingAdId = null;
-                document.getElementById('adModalTitle').textContent = 'New Ad';
-                document.getElementById('adName').value = '';
-                document.getElementById('adImageUrl').value = '';
-                document.getElementById('adDestinationUrl').value = '';
-                document.getElementById('adAltText').value = '';
-                document.getElementById('adDisplayWeight').value = '5';
-                document.getElementById('adExpiryDate').value = '';
-                document.getElementById('adModal').classList.add('active');
-            };
-            window.closeAdModal = function() {
-                document.getElementById('adModal').classList.remove('active');
-            };
-            window.saveAd = async function() {
-                // ... (ad save function)
-            };
-            window.saveAdSettings = function() {
-                showToast('💾 Ad settings saved');
-            };
             window.setMode = function(mode) {
                 // ... (mode function)
             };
@@ -3139,7 +3037,6 @@
             window.loadAllData = loadAllData;
             window.loadOrders = loadOrders;
             window.loadUserStats = loadUserStats;
-            window.loadAds = loadAds;
             window.startAutoSync = startAutoSync;
             window.resetSessionTimer = resetSessionTimer;
             window.updateAllStats = updateAllStats;
