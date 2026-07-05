@@ -554,11 +554,6 @@
             cursor: not-allowed;
             pointer-events: none;
         }
-        .orders-renew-buttons {
-            display: flex;
-            gap: 10px;
-            margin: 12px 0;
-        }
         
         /* ===== MODAL - PREMIUM ===== */
         .modal-overlay {
@@ -911,6 +906,26 @@
             border: 1px solid rgba(0,212,255,0.06);
         }
         
+        /* ===== MARKET CLOSE ===== */
+        .market-close-btn {
+            background: rgba(244,63,94,0.1);
+            border: 1px solid rgba(244,63,94,0.15);
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            color: #fb7185;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        .market-close-btn:hover {
+            background: rgba(244,63,94,0.2);
+            transform: scale(0.97);
+        }
+        
         /* ===== MARQUEE ===== */
         .marquee-container {
             background: rgba(245,158,11,0.04);
@@ -945,7 +960,6 @@
             .modal-card { padding: 1rem; width: 95%; }
             .payment-tab-btn { padding: 8px 12px; font-size: 0.7rem; min-height: 38px; }
             .orders-renew-btn { padding: 12px 16px; font-size: 0.7rem; }
-            .orders-renew-buttons { flex-direction: column; gap: 8px; }
             .profile-stats { gap: 8px; }
             .profile-stat { padding: 8px; }
             .profile-stat .num { font-size: 1rem; }
@@ -1016,6 +1030,9 @@
             <button class="icon-btn" onclick="showNotifications()">
                 <i class="fas fa-bell"></i>
             </button>
+            <button class="icon-btn" onclick="switchTab('market')" title="Market">
+                <i class="fas fa-store"></i>
+            </button>
         </div>
     </div>
 
@@ -1033,6 +1050,7 @@
             <li><a onclick="closeDrawer(); switchTab('plans')"><i class="fas fa-sim-card"></i> <span>Plan များ</span></a></li>
             <li><a onclick="closeDrawer(); switchTab('orders')"><i class="fas fa-list-ul"></i> <span>My Orders</span></a></li>
             <li><a onclick="closeDrawer(); switchTab('live')"><i class="fas fa-broadcast-tower"></i> <span>LIVE</span></a></li>
+            <li><a onclick="closeDrawer(); switchTab('market')"><i class="fas fa-store"></i> <span>စျေးကွက်</span></a></li>
             <li><a onclick="closeDrawer(); switchTab('profile')"><i class="fas fa-user-circle"></i> <span>My Profile</span></a></li>
             <li><div class="drawer-divider"></div></li>
             <li>
@@ -1119,6 +1137,20 @@
             <div id="liveContainer">
                 <div style="text-align:center; padding:40px;">
                     <i class="fas fa-spinner fa-pulse"></i> Loading live orders...
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Tab -->
+        <div id="marketTab" class="tab-content">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+                <button class="market-close-btn" onclick="closeMarketTab()">
+                    <i class="fas fa-times-circle"></i> Close Market
+                </button>
+            </div>
+            <div id="marketContainer">
+                <div style="text-align:center; padding:40px;">
+                    <i class="fas fa-spinner fa-pulse"></i> Loading market...
                 </div>
             </div>
         </div>
@@ -1295,12 +1327,12 @@
     let allOrders = [];
     let selectedPayment = "kpay";
     let currentRenewMode = 'other';
+    let marketLoaded = false;
     let liveLoaded = false;
     let currentTab = "home";
     let userChatWidgetOpen = false;
     let isShopOpen = true;
     let salesStatusInterval = null;
-    let orderRefreshInterval = null;
 
     // ===== UTILITY FUNCTIONS =====
     function maskPhone(phone) {
@@ -1453,21 +1485,6 @@
         console.log('🔄 Sales status polling started (every 5 seconds)');
     }
 
-    // ===== START ORDER REFRESH (every 10 seconds) =====
-    function startOrderRefresh() {
-        if (orderRefreshInterval) {
-            clearInterval(orderRefreshInterval);
-            orderRefreshInterval = null;
-        }
-        orderRefreshInterval = setInterval(async () => {
-            if (currentUser && document.getElementById('ordersTab').classList.contains('active')) {
-                await loadUserOrders();
-                renderMyOrders();
-            }
-        }, 10000);
-        console.log('🔄 Order refresh started (every 10 seconds)');
-    }
-
     // ===== CHAT WIDGET =====
     function openUserChatWidget() {
         if (userChatWidgetOpen) return;
@@ -1561,7 +1578,6 @@
             await loadUserOrders();
             await renderProfile();
             startSalesStatusPolling();
-            startOrderRefresh();
             
         } catch(e) {
             showToast("Connection error", true);
@@ -1575,15 +1591,12 @@
             clearInterval(salesStatusInterval);
             salesStatusInterval = null;
         }
-        if (orderRefreshInterval) {
-            clearInterval(orderRefreshInterval);
-            orderRefreshInterval = null;
-        }
         closeUserChatWidget();
         localStorage.clear();
         currentUser = null;
         currentUsername = null;
         currentUserId = null;
+        marketLoaded = false;
         liveLoaded = false;
         
         document.getElementById('loginScreen').style.display = 'flex';
@@ -1605,6 +1618,10 @@
         
         if (liveLoaded && typeof window.fetchLiveOrders === 'function') {
             window.fetchLiveOrders();
+        }
+        
+        if (marketLoaded && typeof window.loadMarketProducts === 'function') {
+            window.loadMarketProducts();
         }
         
         setTimeout(() => {
@@ -1640,7 +1657,37 @@
         showToast('📁 Orders exported to CSV');
     }
 
-    // ===== LOAD LIVE CONTENT =====
+    // ===== LOAD MARKET & LIVE =====
+    async function loadMarketContent() {
+        const container = document.getElementById('marketContainer');
+        if (!container) return;
+        if (marketLoaded) return;
+        
+        try {
+            const response = await fetch('/market.html');
+            if (!response.ok) throw new Error('Failed to load market');
+            const html = await response.text();
+            container.innerHTML = html;
+            marketLoaded = true;
+            
+            const scripts = container.querySelectorAll('script');
+            scripts.forEach(script => {
+                const newScript = document.createElement('script');
+                if (script.src) {
+                    newScript.src = script.src;
+                } else {
+                    newScript.textContent = script.textContent;
+                }
+                document.body.appendChild(newScript);
+            });
+        } catch (error) {
+            console.error('Error loading market:', error);
+            container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--rose);">
+                <i class="fas fa-exclamation-triangle"></i> Failed to load market
+            </div>`;
+        }
+    }
+    
     async function loadLiveContent() {
         const container = document.getElementById('liveContainer');
         if (!container) return;
@@ -1950,11 +1997,10 @@
             else item.classList.remove('active');
         });
         
-        if (tab === 'orders') {
-            renderMyOrders();
-        }
+        if (tab === 'orders') renderMyOrders();
         if (tab === 'profile') renderProfile();
         if (tab === 'live') loadLiveContent();
+        if (tab === 'market') loadMarketContent();
     }
 
     // ===== DRAWER =====
@@ -1977,6 +2023,10 @@
     }
     function showSupport() { showSupportModal(); }
     function showNotifications() { showToast("No new notifications"); }
+    function closeMarketTab() {
+        switchTab('home');
+        showToast('🛒 Market closed');
+    }
 
     // ===== LANGUAGE SWITCHER =====
     function changeLanguage(lang) {
@@ -1989,13 +2039,15 @@
                 orders: "My Orders",
                 live: "LIVE",
                 chat: "စကားဝိုင်း",
+                market: "စျေးကွက်",
                 profile: "My Profile",
                 logout: "ထွက်ရန်",
                 support: "Customer Support",
                 exportOrders: "Export Orders (CSV)",
                 buyForSelf: "ကိုယ်တိုင်ထပ်ဝယ်ရန်",
                 buyForOther: "အခြားသူအတွက် ထပ်ဝယ်ပေးရန်",
-                welcome: "မင်္ဂလာပါ"
+                welcome: "မင်္ဂလာပါ",
+                closeMarket: "Close Market"
             },
             en: {
                 home: "Home",
@@ -2003,13 +2055,15 @@
                 orders: "My Orders",
                 live: "LIVE",
                 chat: "Chat",
+                market: "Market",
                 profile: "My Profile",
                 logout: "Logout",
                 support: "Customer Support",
                 exportOrders: "Export Orders (CSV)",
                 buyForSelf: "Buy for Myself",
                 buyForOther: "Buy for Others",
-                welcome: "Welcome"
+                welcome: "Welcome",
+                closeMarket: "Close Market"
             },
             zh: {
                 home: "主页",
@@ -2017,13 +2071,15 @@
                 orders: "我的订单",
                 live: "直播",
                 chat: "聊天",
+                market: "市场",
                 profile: "我的资料",
                 logout: "退出",
                 support: "客户支持",
                 exportOrders: "导出订单 (CSV)",
                 buyForSelf: "为自己购买",
                 buyForOther: "为他人购买",
-                welcome: "欢迎"
+                welcome: "欢迎",
+                closeMarket: "关闭市场"
             }
         };
         
@@ -2031,7 +2087,7 @@
         
         // Update Drawer Menu
         const drawerLinks = document.querySelectorAll('.drawer-menu li a');
-        const drawerTextKeys = ['home', 'plans', 'orders', 'live', 'profile', 'exportOrders', 'support', 'logout'];
+        const drawerTextKeys = ['home', 'plans', 'orders', 'live', 'market', 'profile', 'exportOrders', 'support', 'logout'];
         drawerLinks.forEach((link, index) => {
             if (index < drawerTextKeys.length) {
                 const span = link.querySelector('span');
@@ -2058,6 +2114,10 @@
         // Update Welcome Text
         const welcomeSpan = document.getElementById('welcomeText');
         if (welcomeSpan) welcomeSpan.textContent = t.welcome;
+        
+        // Update Market Close Button
+        const marketCloseBtn = document.querySelector('.market-close-btn');
+        if (marketCloseBtn) marketCloseBtn.innerHTML = `<i class="fas fa-times-circle"></i> ${t.closeMarket}`;
         
         showToast(`Language changed to ${lang === 'my' ? 'မြန်မာ' : (lang === 'en' ? 'English' : '中文')}`);
         closeDrawer();
@@ -2105,7 +2165,6 @@
         loadUserOrders();
         renderProfile();
         startSalesStatusPolling();
-        startOrderRefresh();
         
         if (!savedId) {
             fetch(`${API_BASE}/api/user/${savedPhone}`)
@@ -2151,11 +2210,9 @@
     window.exportMyOrders = exportMyOrders;
     window.openUserChatWidget = openUserChatWidget;
     window.closeUserChatWidget = closeUserChatWidget;
+    window.closeMarketTab = closeMarketTab;
     window.loadSalesStatus = loadSalesStatus;
     window.startSalesStatusPolling = startSalesStatusPolling;
-    window.loadUserOrders = loadUserOrders;
-    window.renderMyOrders = renderMyOrders;
-    window.startOrderRefresh = startOrderRefresh;
 </script>
 
 </body>
