@@ -615,6 +615,306 @@
         }
 
         /* ============================================================
+           PLAN MANAGEMENT - ADDED
+           ============================================================ */
+        .plan-management-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .plan-management-header h3 {
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .plan-management-header h3 i {
+            color: var(--cyan);
+        }
+
+        .add-plan-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            touch-action: manipulation;
+            min-height: 44px;
+            transition: all 0.25s ease;
+        }
+        .add-plan-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16,185,129,0.3);
+        }
+
+        .plan-card-admin {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            transition: all var(--transition-speed);
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+        }
+        .plan-card-admin:hover {
+            border-color: rgba(0,212,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+        .plan-card-admin .plan-info {
+            flex: 2;
+            min-width: 150px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .plan-card-admin .plan-info .plan-name {
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .plan-card-admin .plan-info .plan-name .plan-icon {
+            font-size: 1.2rem;
+        }
+        .plan-card-admin .plan-info .plan-details {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .plan-card-admin .plan-info .plan-details span {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .plan-card-admin .plan-info .plan-features {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+        }
+        .plan-card-admin .plan-info .plan-features .feature-tag {
+            background: rgba(0,212,255,0.08);
+            padding: 2px 10px;
+            border-radius: 40px;
+            border: 1px solid rgba(0,212,255,0.1);
+        }
+        .plan-card-admin .plan-actions {
+            flex: 1;
+            min-width: 100px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .plan-card-admin .plan-actions button {
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            touch-action: manipulation;
+            min-height: 36px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .plan-card-admin .plan-actions button:hover {
+            transform: scale(0.97);
+        }
+        .plan-edit-btn {
+            background: rgba(0,212,255,0.2);
+            color: var(--cyan);
+        }
+        .plan-delete-btn {
+            background: rgba(244,63,94,0.2);
+            color: #fb7185;
+        }
+
+        /* ===== PLAN MODAL ===== */
+        .plan-modal-card {
+            max-width: 520px !important;
+        }
+        .plan-modal-card .form-group {
+            margin-bottom: 14px;
+        }
+        .plan-modal-card .form-group label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        .plan-modal-card .form-group label .required {
+            color: var(--rose);
+        }
+        .plan-modal-card .form-group input,
+        .plan-modal-card .form-group select,
+        .plan-modal-card .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #2d3a5e;
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            transition: all var(--transition-speed);
+            outline: none;
+            font-family: var(--font-family);
+        }
+        .plan-modal-card .form-group input:focus,
+        .plan-modal-card .form-group select:focus,
+        .plan-modal-card .form-group textarea:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 4px rgba(0,212,255,0.1);
+        }
+        .plan-modal-card .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Inter', monospace;
+            font-size: 0.75rem;
+        }
+        .plan-modal-card .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .plan-modal-card .form-row .form-group {
+            margin-bottom: 0;
+        }
+
+        /* ===== FEATURE LIST EDITOR ===== */
+        .feature-list-editor {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid var(--border-color);
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .feature-list-editor .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 4px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .feature-list-editor .feature-item .feature-text {
+            flex: 1;
+            font-size: 0.7rem;
+            color: var(--text-primary);
+        }
+        .feature-list-editor .feature-item .feature-type {
+            font-size: 0.55rem;
+            background: rgba(0,212,255,0.1);
+            padding: 2px 10px;
+            border-radius: 40px;
+            color: var(--cyan);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .feature-list-editor .feature-item .feature-remove {
+            background: none;
+            border: none;
+            color: var(--rose);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+        }
+        .feature-list-editor .feature-item .feature-remove:hover {
+            background: rgba(244,63,94,0.15);
+        }
+
+        .feature-add-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .feature-add-row .feature-text-input {
+            flex: 3;
+            min-width: 0;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #2d3a5e;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            outline: none;
+            transition: all var(--transition-speed);
+        }
+        .feature-add-row .feature-text-input:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 4px rgba(0,212,255,0.08);
+        }
+        .feature-add-row .feature-type-select {
+            flex: 1.2;
+            min-width: 80px;
+            padding: 8px 10px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #2d3a5e;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.7rem;
+            outline: none;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+        .feature-add-row .feature-type-select:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 4px rgba(0,212,255,0.08);
+        }
+        .feature-add-row .feature-type-select option {
+            background: #1a1d2e;
+            color: var(--text-primary);
+        }
+        .feature-add-row .feature-add-btn {
+            flex: 0.8;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(135deg, var(--cyan), #0891b2);
+            color: #030712;
+            font-weight: 600;
+            font-size: 0.65rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            min-width: 50px;
+        }
+        .feature-add-row .feature-add-btn:hover {
+            transform: scale(0.97);
+            box-shadow: 0 4px 15px rgba(0,212,255,0.2);
+        }
+
+        /* ============================================================
            ORDERS TAB - FILTER BAR (New Orders / Approved Orders)
            ============================================================ */
         .orders-filter-bar {
@@ -2055,6 +2355,57 @@
                 min-width: 60px;
             }
 
+            /* ===== PLAN CARD MOBILE ===== */
+            .plan-card-admin {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 12px;
+                gap: 10px;
+            }
+            .plan-card-admin .plan-info .plan-details {
+                flex-direction: column;
+                gap: 4px;
+            }
+            .plan-card-admin .plan-actions {
+                justify-content: stretch;
+            }
+            .plan-card-admin .plan-actions button {
+                flex: 1;
+                justify-content: center;
+                padding: 8px 10px;
+                font-size: 0.6rem;
+                min-height: 34px;
+            }
+            .plan-management-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .add-plan-btn {
+                justify-content: center;
+            }
+            .plan-modal-card .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            .plan-modal-card .form-row .form-group {
+                margin-bottom: 14px;
+            }
+            .feature-add-row {
+                flex-wrap: wrap;
+            }
+            .feature-add-row .feature-text-input {
+                flex: 1 1 100%;
+                min-width: 0;
+            }
+            .feature-add-row .feature-type-select {
+                flex: 1;
+                min-width: 60px;
+            }
+            .feature-add-row .feature-add-btn {
+                flex: 0 1 auto;
+                min-width: 60px;
+            }
+
             /* ===== BOTTOM NAV ===== */
             .bottom-nav .nav-item {
                 padding: 4px 6px;
@@ -2325,6 +2676,17 @@
                 font-size: 0.45rem;
                 padding: 1px 6px;
             }
+
+            .plan-card-admin .plan-actions button {
+                padding: 6px 8px;
+                font-size: 0.55rem;
+                min-height: 30px;
+            }
+            .plan-modal-card .form-group input,
+            .plan-modal-card .form-group select {
+                padding: 8px 12px;
+                font-size: 0.75rem;
+            }
         }
 
         /* ============================================================
@@ -2375,6 +2737,14 @@
                 padding: 10px 16px;
                 font-size: 0.75rem;
                 min-height: 44px;
+            }
+
+            .plan-card-admin {
+                padding: 14px 16px;
+            }
+            .plan-modal-card .form-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
             }
         }
 
@@ -2645,6 +3015,40 @@
                 min-height: 48px;
             }
 
+            /* ===== PLAN CARDS ===== */
+            .plan-card-admin {
+                padding: 18px 24px;
+                gap: 20px;
+            }
+            .plan-card-admin .plan-info .plan-name {
+                font-size: 1rem;
+            }
+            .plan-card-admin .plan-info .plan-details {
+                font-size: 0.7rem;
+                gap: 16px;
+            }
+            .plan-card-admin .plan-info .plan-features {
+                font-size: 0.65rem;
+            }
+            .plan-card-admin .plan-actions button {
+                padding: 10px 18px;
+                font-size: 0.7rem;
+                min-height: 40px;
+            }
+            .plan-modal-card .form-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+            .feature-add-row .feature-text-input {
+                flex: 3;
+            }
+            .feature-add-row .feature-type-select {
+                flex: 1.2;
+            }
+            .feature-add-row .feature-add-btn {
+                flex: 0.8;
+            }
+
             /* ===== MODALS ===== */
             .modal-card,
             .alert-card {
@@ -2775,6 +3179,7 @@
                     <li><a onclick="window.closeDrawer(); window.switchTab('menu')"><i class="fas fa-chart-line"></i> မီနူး</a></li>
                     <li><a onclick="window.closeDrawer(); window.switchTab('orders')"><i class="fas fa-list-ul"></i> အမိန့်စာများ</a></li>
                     <li><a onclick="window.closeDrawer(); window.switchTab('users')"><i class="fas fa-users"></i> အသုံးပြုသူများ</a></li>
+                    <li><a onclick="window.closeDrawer(); window.switchTab('plans')"><i class="fas fa-sim-card"></i> Plan များ</a></li>
                     <li><a onclick="window.closeDrawer(); openAdminChatWidget()"><i class="fas fa-comments"></i> စကားဝိုင်း</a></li>
                     <li>
                         <div class="drawer-divider"></div>
@@ -2965,6 +3370,24 @@
                 </div>
             </div>
 
+            <!-- ===== PLANS TAB ===== -->
+            <div id="plansTab" class="tab-content">
+                <div class="plan-management-header">
+                    <h3><i class="fas fa-sim-card"></i> Plan Management</h3>
+                    <button class="add-plan-btn" onclick="window.openAddPlanModal()">
+                        <i class="fas fa-plus"></i> Plan အသစ်ထည့်ရန်
+                    </button>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="planSearchInput" class="search-input" placeholder="🔍 Plan အမည် သို့မဟုတ် Operator ဖြင့် ရှာဖွေရန်">
+                    <button class="search-btn" onclick="window.searchPlans()"><i class="fas fa-search"></i> ရှာဖွေရန်</button>
+                    <button class="clear-search" onclick="window.clearPlanSearch()"><i class="fas fa-times"></i> ရှင်းလင်းရန်</button>
+                </div>
+                <div id="plansList">
+                    <div class="loading"><i class="fas fa-spinner fa-pulse"></i> Plan များ ဖွင့်နေသည်...</div>
+                </div>
+            </div>
+
             <div class="last-update" id="lastUpdate"></div>
         </div>
 
@@ -2973,6 +3396,7 @@
             <button class="nav-item active" data-tab="menu"><i class="fas fa-chart-line"></i><span>မီနူး</span></button>
             <button class="nav-item" data-tab="orders"><i class="fas fa-list-ul"></i><span>အမိန့်စာ</span></button>
             <button class="nav-item" data-tab="users"><i class="fas fa-users"></i><span>အသုံးပြုသူ</span></button>
+            <button class="nav-item" data-tab="plans"><i class="fas fa-sim-card"></i><span>Plan</span></button>
             <button class="nav-item" data-tab="chat" onclick="openAdminChatWidget()"><i class="fas fa-comments"></i><span>စကားဝိုင်း</span></button>
         </div>
 
@@ -2987,6 +3411,71 @@
     </div>
 
     <!-- ===== MODALS ===== -->
+
+    <!-- PLAN MODAL -->
+    <div id="planModal" class="modal">
+        <div class="modal-card plan-modal-card">
+            <h3 id="planModalTitle" style="font-size:1.1rem; margin-bottom:16px;">
+                <i class="fas fa-edit" style="color:var(--cyan);"></i> Plan အသစ်ထည့်ရန်
+            </h3>
+
+            <div class="form-group">
+                <label>Plan အမည် <span class="required">*</span></label>
+                <input type="text" id="planName" placeholder="ဥပမာ - VIP LEVEL - 1">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>စျေးနှုန်း (MMK) <span class="required">*</span></label>
+                    <input type="number" id="planPrice" placeholder="15000">
+                </div>
+                <div class="form-group">
+                    <label>အိုင်ကွန်</label>
+                    <input type="text" id="planIcon" placeholder="🔥" maxlength="2">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>အော်ပရေတာ <span class="required">*</span></label>
+                <select id="planOperator">
+                    <option value="atom">Atom</option>
+                    <option value="mytel">Mytel</option>
+                    <option value="ooredoo">Ooredoo</option>
+                    <option value="mpt">MPT</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Features <span class="required">*</span></label>
+                <div style="font-size:0.6rem; color:var(--text-secondary); margin-bottom:4px;">
+                    <i class="fas fa-info-circle"></i> တစ်ခုချင်းစီ ထည့်ပါ။ Type: data, voice, sms, streaming, support
+                </div>
+                <div class="feature-list-editor" id="featureListEditor"></div>
+                <div class="feature-add-row">
+                    <input type="text" id="featureTextInput" class="feature-text-input" placeholder="Feature description...">
+                    <select id="featureTypeSelect" class="feature-type-select">
+                        <option value="data">📊 Data</option>
+                        <option value="voice">📞 Voice</option>
+                        <option value="sms">✉️ SMS</option>
+                        <option value="streaming">🎬 Streaming</option>
+                        <option value="support">🛟 Support</option>
+                    </select>
+                    <button class="feature-add-btn" onclick="window.addFeatureToList()">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 16px;">
+                <button class="modal-btn save" onclick="window.savePlan()">
+                    <i class="fas fa-save"></i> သိမ်းရန်
+                </button>
+                <button class="modal-btn cancel" onclick="window.closePlanModal()">
+                    <i class="fas fa-times"></i> မလုပ်တော့ပါ
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Cleanup Alert -->
     <div id="cleanupAlert" class="custom-alert">
@@ -3020,12 +3509,12 @@
                     <li>❌ အမိန့်စာအားလုံး ဖျက်မည်</li>
                     <li>❌ အသုံးပြုသူစာရင်းအင်းအားလုံး ဖျက်မည်</li>
                     <li>❌ တင်ထားသော ဖန်သားပြင်ဓာတ်ပုံများအားလုံး ဖျက်မည်</li>
-                    <li>✅ ထုတ်ကုန်များကို ထိန်းသိမ်းမည် (အောက်တွင် ရွေးချယ်နိုင်သည်)</li>
+                    <li>✅ Plan များကို ထိန်းသိမ်းမည် (အောက်တွင် ရွေးချယ်နိုင်သည်)</li>
                 </ul>
             </div>
             <input type="text" id="resetConfirmInput" class="alert-input" placeholder='"RESET_ALL_DATA" ဟု ရိုက်ထည့်ပါ'>
             <label class="checkbox-label">
-                <input type="checkbox" id="keepProductsCheckbox" checked> ထုတ်ကုန်များကို ထိန်းသိမ်းမည် (မဖျက်ရန်)
+                <input type="checkbox" id="keepProductsCheckbox" checked> Plan များကို ထိန်းသိမ်းမည် (မဖျက်ရန်)
             </label>
             <div class="alert-buttons">
                 <button class="alert-btn confirm" onclick="window.executeSystemResetFromAlert()">ဟုတ်ကဲ့၊ အားလုံးပြန်လည်သတ်မှတ်မည်</button>
@@ -3053,7 +3542,7 @@
     <!-- ============================================================ -->
     <script>
         // ================================================================
-        //  MAIN ADMIN SCRIPT (Market & Ads Removed)
+        //  MAIN ADMIN SCRIPT - WITH PLAN MANAGEMENT
         // ================================================================
 
         (function() {
@@ -3063,16 +3552,21 @@
             let token = localStorage.getItem('adminToken');
             let allOrders = [];
             let userStats = [];
+            let allPlans = [];
             let autoSyncInterval = null;
             let activeCountdowns = {};
             let currentSearchPhone = '';
             let currentUserSearchPhone = '';
+            let currentPlanSearch = '';
             let currentTab = 'menu';
+            let editingPlanId = null;
             let selectedOrders = new Set();
             let sessionTimer = null;
             const SESSION_TIMEOUT = 30 * 60 * 1000;
             let currentLang = localStorage.getItem('adminLang') || 'en';
             let currentOrderFilter = 'all';
+            let tempFeatures = [];
+            let isLoadingPlans = false;
 
             const costPriceMap = {
                 "VIP LEVEL - 1": 14500,
@@ -3080,6 +3574,29 @@
                 "VIP LEVEL - 3": 24500,
                 "VIP LEVEL - 4 (ULTRA)": 29000
             };
+
+            // ================================================================
+            //  DEFAULT PLANS DATA
+            // ================================================================
+
+            const defaultPlans = [
+                { id: 1, name: "Atom Basic", price: 6000, icon: "📱", operator: "atom", features: [{ text: "6 GB ဒေတာ", type: "data" }, { text: "150 မိနစ်", type: "voice" }, { text: "600 SMS", type: "sms" }] },
+                { id: 2, name: "Atom Standard", price: 12000, icon: "📱", operator: "atom", features: [{ text: "20 GB ဒေတာ", type: "data" }, { text: "600 မိနစ်", type: "voice" }, { text: "2,500 SMS", type: "sms" }] },
+                { id: 3, name: "Atom Premium", price: 22000, icon: "📱", operator: "atom", features: [{ text: "50 GB ဒေတာ", type: "data" }, { text: "2,000 မိနစ်", type: "voice" }, { text: "6,000 SMS", type: "sms" }] },
+                { id: 4, name: "Atom Ultra", price: 38000, icon: "📱", operator: "atom", features: [{ text: "120 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "12,000 SMS", type: "sms" }] },
+                { id: 5, name: "Mytel Basic", price: 5000, icon: "📶", operator: "mytel", features: [{ text: "5 GB ဒေတာ", type: "data" }, { text: "100 မိနစ်", type: "voice" }, { text: "500 SMS", type: "sms" }] },
+                { id: 6, name: "Mytel Standard", price: 10000, icon: "📶", operator: "mytel", features: [{ text: "15 GB ဒေတာ", type: "data" }, { text: "500 မိနစ်", type: "voice" }, { text: "2,000 SMS", type: "sms" }] },
+                { id: 7, name: "Mytel Premium", price: 20000, icon: "📶", operator: "mytel", features: [{ text: "40 GB ဒေတာ", type: "data" }, { text: "1,500 မိနစ်", type: "voice" }, { text: "5,000 SMS", type: "sms" }] },
+                { id: 8, name: "Mytel Ultra", price: 35000, icon: "📶", operator: "mytel", features: [{ text: "100 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "10,000 SMS", type: "sms" }] },
+                { id: 9, name: "Ooredoo Basic", price: 5500, icon: "📳", operator: "ooredoo", features: [{ text: "5 GB ဒေတာ", type: "data" }, { text: "120 မိနစ်", type: "voice" }, { text: "550 SMS", type: "sms" }] },
+                { id: 10, name: "Ooredoo Standard", price: 11000, icon: "📳", operator: "ooredoo", features: [{ text: "18 GB ဒေတာ", type: "data" }, { text: "550 မိနစ်", type: "voice" }, { text: "2,200 SMS", type: "sms" }] },
+                { id: 11, name: "Ooredoo Premium", price: 21000, icon: "📳", operator: "ooredoo", features: [{ text: "45 GB ဒေတာ", type: "data" }, { text: "1,800 မိနစ်", type: "voice" }, { text: "5,500 SMS", type: "sms" }] },
+                { id: 12, name: "Ooredoo Ultra", price: 36000, icon: "📳", operator: "ooredoo", features: [{ text: "110 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "10,000 SMS", type: "sms" }] },
+                { id: 13, name: "MPT Basic", price: 4500, icon: "📞", operator: "mpt", features: [{ text: "4 GB ဒေတာ", type: "data" }, { text: "80 မိနစ်", type: "voice" }, { text: "400 SMS", type: "sms" }] },
+                { id: 14, name: "MPT Standard", price: 9000, icon: "📞", operator: "mpt", features: [{ text: "12 GB ဒေတာ", type: "data" }, { text: "400 မိနစ်", type: "voice" }, { text: "1,800 SMS", type: "sms" }] },
+                { id: 15, name: "MPT Premium", price: 18000, icon: "📞", operator: "mpt", features: [{ text: "35 GB ဒေတာ", type: "data" }, { text: "1,200 မိနစ်", type: "voice" }, { text: "4,500 SMS", type: "sms" }] },
+                { id: 16, name: "MPT Ultra", price: 32000, icon: "📞", operator: "mpt", features: [{ text: "90 GB ဒေတာ", type: "data" }, { text: "အကန့်အသတ်မရှိ ခေါ်ဆိုမှု", type: "voice" }, { text: "8,000 SMS", type: "sms" }] }
+            ];
 
             // ================================================================
             //  LANGUAGE SWITCHER
@@ -3129,10 +3646,10 @@
                 // Drawer Menu
                 const menuItems = document.querySelectorAll('.drawer-menu a');
                 const menuMap = {
-                    en: ['Dashboard', 'Orders', 'Users', 'Chat', 'Export Users CSV',
+                    en: ['Dashboard', 'Orders', 'Users', 'Plans', 'Chat', 'Export Users CSV',
                         'Export Orders CSV', 'Clean Old Orders', 'System Reset', 'Logout'
                     ],
-                    my: ['မီနူး', 'အမိန့်စာများ', 'အသုံးပြုသူများ', 'စကားဝိုင်း',
+                    my: ['မီနူး', 'အမိန့်စာများ', 'အသုံးပြုသူများ', 'Plan များ', 'စကားဝိုင်း',
                         'အသုံးပြုသူများ CSV', 'အမိန့်စာများ CSV', 'အမိန့်စာဟောင်းများရှင်း', 'စနစ်ပြန်လည်သတ်မှတ်ခြင်း',
                         'ထွက်ရန်'
                     ]
@@ -3147,8 +3664,8 @@
                 // Bottom Nav
                 const navItems = document.querySelectorAll('.nav-item');
                 const navMap = {
-                    en: ['Dashboard', 'Orders', 'Users', 'Chat'],
-                    my: ['မီနူး', 'အမိန့်စာ', 'အသုံးပြုသူ', 'စကားဝိုင်း']
+                    en: ['Dashboard', 'Orders', 'Users', 'Plans', 'Chat'],
+                    my: ['မီနူး', 'အမိန့်စာ', 'အသုံးပြုသူ', 'Plan', 'စကားဝိုင်း']
                 };
                 navItems.forEach((item, i) => {
                     if (i < navMap.en.length) {
@@ -3238,6 +3755,40 @@
                         '<i class="fas fa-check-circle"></i> အတည်ပြု <span class="badge-count approved-badge" id="approvedCount">0</span>';
                 }
 
+                // Plan Management Header
+                const planHeader = document.querySelector('.plan-management-header h3');
+                if (planHeader) {
+                    planHeader.innerHTML = isEn ?
+                        '<i class="fas fa-sim-card"></i> Plan Management' :
+                        '<i class="fas fa-sim-card"></i> Plan စီမံခန့်ခွဲမှု';
+                }
+
+                // Add Plan Button
+                const addPlanBtn = document.querySelector('.add-plan-btn');
+                if (addPlanBtn) {
+                    addPlanBtn.innerHTML = isEn ?
+                        '<i class="fas fa-plus"></i> Add New Plan' :
+                        '<i class="fas fa-plus"></i> Plan အသစ်ထည့်ရန်';
+                }
+
+                // Plan Search Input
+                const planSearchInput = document.getElementById('planSearchInput');
+                if (planSearchInput) {
+                    planSearchInput.placeholder = isEn ?
+                        '🔍 Search by plan name or operator' :
+                        '🔍 Plan အမည် သို့မဟုတ် Operator ဖြင့် ရှာဖွေရန်';
+                }
+
+                // Plan Modal Title
+                const planModalTitle = document.getElementById('planModalTitle');
+                if (planModalTitle) {
+                    planModalTitle.innerHTML = editingPlanId ?
+                        (isEn ? '<i class="fas fa-edit" style="color:var(--cyan);"></i> Edit Plan' :
+                            '<i class="fas fa-edit" style="color:var(--cyan);"></i> Plan တည်းဖြတ်ရန်') :
+                        (isEn ? '<i class="fas fa-plus" style="color:var(--cyan);"></i> Add New Plan' :
+                            '<i class="fas fa-plus" style="color:var(--cyan);"></i> Plan အသစ်ထည့်ရန်');
+                }
+
                 // Login Box
                 const loginTitle = document.querySelector('.login-box h2');
                 if (loginTitle) {
@@ -3290,6 +3841,9 @@
                 }
                 if (currentTab === 'users') {
                     renderUsersTab();
+                }
+                if (currentTab === 'plans') {
+                    renderPlansTab();
                 }
             }
 
@@ -3521,13 +4075,14 @@
                     item.classList.toggle('active', item.dataset.tab === tab);
                 });
                 if (tab === 'orders') {
-                    // Reset filter when switching to orders tab
                     currentOrderFilter = 'all';
                     document.getElementById('filterNewOrders').classList.add('active');
                     document.getElementById('filterApprovedOrders').classList.remove('active');
                     applyFiltersAndSearch();
                 } else if (tab === 'users') {
                     renderUsersTab();
+                } else if (tab === 'plans') {
+                    loadPlans();
                 }
                 closeDrawer();
             };
@@ -3636,7 +4191,8 @@
             async function loadAllData() {
                 await Promise.all([
                     loadOrders(),
-                    loadUserStats()
+                    loadUserStats(),
+                    loadPlans()
                 ]);
                 updateAllStats();
             }
@@ -3687,7 +4243,298 @@
                 }
             }
 
-            // ===== USERS =====
+            // ================================================================
+            //  PLANS FUNCTIONS
+            // ================================================================
+
+            async function loadPlans() {
+                if (isLoadingPlans) return;
+                isLoadingPlans = true;
+                try {
+                    const response = await fetch(`${API_BASE}/api/admin/plans`, {
+                        credentials: 'include'
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.plans && data.plans.length > 0) {
+                            allPlans = data.plans;
+                            if (currentTab === 'plans') renderPlansTab();
+                            return;
+                        }
+                    }
+                    allPlans = JSON.parse(JSON.stringify(defaultPlans));
+                    if (currentTab === 'plans') renderPlansTab();
+                } catch (e) {
+                    console.error('Error loading plans:', e);
+                    allPlans = JSON.parse(JSON.stringify(defaultPlans));
+                    renderPlansTab();
+                } finally {
+                    isLoadingPlans = false;
+                }
+            }
+
+            function renderPlansTab() {
+                const container = document.getElementById('plansList');
+                if (!container) return;
+                const isEn = currentLang === 'en';
+
+                let filtered = allPlans;
+                if (currentPlanSearch) {
+                    const search = currentPlanSearch.toLowerCase();
+                    filtered = filtered.filter(p =>
+                        p.name.toLowerCase().includes(search) ||
+                        (p.operator && p.operator.toLowerCase().includes(search))
+                    );
+                }
+
+                if (!filtered.length) {
+                    container.innerHTML = `<div class="loading">${isEn ? 'No plans found' : 'Plan မတွေ့ပါ'}</div>`;
+                    return;
+                }
+
+                const operatorColors = {
+                    atom: '#f59e0b',
+                    mytel: '#00d4ff',
+                    ooredoo: '#ef4444',
+                    mpt: '#10b981'
+                };
+
+                const operatorNames = {
+                    atom: 'Atom',
+                    mytel: 'Mytel',
+                    ooredoo: 'Ooredoo',
+                    mpt: 'MPT'
+                };
+
+                let html = '';
+                for (const p of filtered) {
+                    const opColor = operatorColors[p.operator] || '#00d4ff';
+                    const opName = operatorNames[p.operator] || p.operator;
+                    const featuresText = p.features ? p.features.map(f => f.text).join(' | ') : '';
+
+                    html += `
+                        <div class="plan-card-admin">
+                            <div class="plan-info">
+                                <div class="plan-name">
+                                    <span class="plan-icon">${p.icon || '📦'}</span>
+                                    ${escapeHtml(p.name)}
+                                    <span style="font-size:0.55rem;background:rgba(0,0,0,0.2);padding:2px 12px;border-radius:40px;color:${opColor};border:1px solid ${opColor}33;">
+                                        ${opName}
+                                    </span>
+                                </div>
+                                <div class="plan-details">
+                                    <span>💰 ${p.price.toLocaleString()} MMK</span>
+                                    <span>📅 30 days</span>
+                                    <span>🔢 ID: ${p.id}</span>
+                                </div>
+                                ${featuresText ? `<div class="plan-features">${featuresText.split('|').map(f => `<span class="feature-tag">${f.trim()}</span>`).join('')}</div>` : ''}
+                            </div>
+                            <div class="plan-actions">
+                                <button class="plan-edit-btn" onclick="window.openEditPlanModal(${p.id})">
+                                    <i class="fas fa-edit"></i> ${isEn ? 'Edit' : 'တည်းဖြတ်'}
+                                </button>
+                                <button class="plan-delete-btn" onclick="window.deletePlan(${p.id})">
+                                    <i class="fas fa-trash"></i> ${isEn ? 'Delete' : 'ဖျက်မယ်'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+                container.innerHTML = html;
+            }
+
+            // ===== PLAN FEATURES EDITOR =====
+
+            function renderFeatureList() {
+                const container = document.getElementById('featureListEditor');
+                if (!container) return;
+                const isEn = currentLang === 'en';
+
+                if (!tempFeatures.length) {
+                    container.innerHTML = `<div style="color:var(--text-secondary);font-size:0.7rem;text-align:center;padding:8px;">${isEn ? 'No features added yet' : 'Features မရှိသေးပါ'}</div>`;
+                    return;
+                }
+
+                const typeLabels = {
+                    data: 'Data',
+                    voice: 'Voice',
+                    sms: 'SMS',
+                    streaming: 'Streaming',
+                    support: 'Support'
+                };
+
+                let html = '';
+                tempFeatures.forEach((f, index) => {
+                    html += `
+                        <div class="feature-item">
+                            <span class="feature-text">${escapeHtml(f.text)}</span>
+                            <span class="feature-type">${typeLabels[f.type] || f.type}</span>
+                            <button class="feature-remove" onclick="window.removeFeature(${index})" title="${isEn ? 'Remove' : 'ဖျက်မယ်'}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+
+            window.addFeatureToList = function() {
+                const textInput = document.getElementById('featureTextInput');
+                const typeSelect = document.getElementById('featureTypeSelect');
+                const text = textInput.value.trim();
+                const type = typeSelect.value;
+
+                if (!text) {
+                    showToast(currentLang === 'en' ? 'Please enter feature description' : 'Feature description ထည့်ပါ', true);
+                    return;
+                }
+
+                tempFeatures.push({ text, type });
+                textInput.value = '';
+                renderFeatureList();
+            };
+
+            window.removeFeature = function(index) {
+                tempFeatures.splice(index, 1);
+                renderFeatureList();
+            };
+
+            window.renderFeatureList = renderFeatureList;
+
+            // ===== PLAN MODAL FUNCTIONS =====
+
+            window.openAddPlanModal = function() {
+                editingPlanId = null;
+                tempFeatures = [];
+                const isEn = currentLang === 'en';
+                document.getElementById('planModalTitle').innerHTML = isEn ?
+                    '<i class="fas fa-plus" style="color:var(--cyan);"></i> Add New Plan' :
+                    '<i class="fas fa-plus" style="color:var(--cyan);"></i> Plan အသစ်ထည့်ရန်';
+                document.getElementById('planName').value = '';
+                document.getElementById('planPrice').value = '';
+                document.getElementById('planIcon').value = '🔥';
+                document.getElementById('planOperator').value = 'atom';
+                renderFeatureList();
+                document.getElementById('planModal').classList.add('active');
+            };
+
+            window.openEditPlanModal = function(id) {
+                const p = allPlans.find(x => x.id === id);
+                if (!p) return;
+                editingPlanId = id;
+                tempFeatures = JSON.parse(JSON.stringify(p.features || []));
+                const isEn = currentLang === 'en';
+                document.getElementById('planModalTitle').innerHTML = isEn ?
+                    '<i class="fas fa-edit" style="color:var(--cyan);"></i> Edit Plan' :
+                    '<i class="fas fa-edit" style="color:var(--cyan);"></i> Plan တည်းဖြတ်ရန်';
+                document.getElementById('planName').value = p.name;
+                document.getElementById('planPrice').value = p.price;
+                document.getElementById('planIcon').value = p.icon || '🔥';
+                document.getElementById('planOperator').value = p.operator || 'atom';
+                renderFeatureList();
+                document.getElementById('planModal').classList.add('active');
+            };
+
+            window.closePlanModal = function() {
+                document.getElementById('planModal').classList.remove('active');
+                editingPlanId = null;
+                tempFeatures = [];
+            };
+
+            window.savePlan = async function() {
+                const name = document.getElementById('planName').value.trim();
+                const price = parseInt(document.getElementById('planPrice').value || '0');
+                const icon = document.getElementById('planIcon').value.trim() || '📦';
+                const operator = document.getElementById('planOperator').value;
+
+                const isEn = currentLang === 'en';
+                if (!name || !price) {
+                    showToast(isEn ? 'Please fill in name and price' : 'Plan အမည်နှင့် စျေးနှုန်းကို ဖြည့်ပါ', true);
+                    return;
+                }
+
+                if (!tempFeatures.length) {
+                    showToast(isEn ? 'Please add at least one feature' : 'အနည်းဆုံး feature တစ်ခု ထည့်ပါ', true);
+                    return;
+                }
+
+                const features = tempFeatures.map(f => ({ text: f.text, type: f.type }));
+                const planData = { name, price, icon, operator, features };
+
+                try {
+                    const url = editingPlanId ?
+                        `${API_BASE}/api/admin/plans/${editingPlanId}` :
+                        `${API_BASE}/api/admin/plans`;
+                    const method = editingPlanId ? 'PUT' : 'POST';
+
+                    const response = await fetchWithRetry(url, {
+                        method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(planData)
+                    });
+
+                    if (!response) return;
+                    const data = await response.json();
+
+                    if (data.success && data.plan) {
+                        if (editingPlanId) {
+                            const index = allPlans.findIndex(p => p.id === editingPlanId);
+                            if (index !== -1) allPlans[index] = data.plan;
+                        } else {
+                            allPlans.push(data.plan);
+                        }
+                        showToast(isEn ? '✅ Plan saved' : '✅ Plan သိမ်းပြီးပါပြီ');
+                        closePlanModal();
+                        renderPlansTab();
+                    } else {
+                        showToast(isEn ? '❌ Failed to save plan' : '❌ Plan သိမ်းဆည်းရာတွင် အမှားရှိသည်', true);
+                    }
+                } catch (error) {
+                    showToast(isEn ? '❌ Error saving plan' : '❌ Plan သိမ်းဆည်းရာတွင် အမှားရှိသည်', true);
+                    console.error('Error saving plan:', error);
+                }
+            };
+
+            window.deletePlan = async function(id) {
+                const isEn = currentLang === 'en';
+                if (!confirm(isEn ? 'Delete this plan?' : 'ဤ Plan ကို ဖျက်မည်လား။')) return;
+                try {
+                    const response = await fetchWithRetry(`${API_BASE}/api/admin/plans/${id}`, {
+                        method: 'DELETE'
+                    });
+                    if (!response) return;
+                    const data = await response.json();
+                    if (data.success) {
+                        allPlans = allPlans.filter(p => p.id !== id);
+                        showToast(isEn ? '🗑 Plan deleted' : '🗑 Plan ဖျက်ပြီးပါပြီ');
+                        renderPlansTab();
+                    } else {
+                        showToast(isEn ? '❌ Failed to delete' : '❌ Plan ဖျက်ရာတွင် အမှားရှိသည်', true);
+                    }
+                } catch (error) {
+                    showToast(isEn ? '❌ Error deleting plan' : '❌ Plan ဖျက်ရာတွင် အမှားရှိသည်', true);
+                    console.error('Error deleting plan:', error);
+                }
+            };
+
+            window.searchPlans = function() {
+                const val = document.getElementById('planSearchInput')?.value.trim();
+                if (!val) return;
+                currentPlanSearch = val;
+                renderPlansTab();
+            };
+
+            window.clearPlanSearch = function() {
+                currentPlanSearch = '';
+                document.getElementById('planSearchInput').value = '';
+                renderPlansTab();
+                showToast(currentLang === 'en' ? '🔍 Search cleared' : '🔍 ရှာဖွေမှု ရှင်းလင်းပြီးပါပြီ');
+            };
+
+            // ================================================================
+            //  USERS
+            // ================================================================
+
             function renderUsersTab() {
                 const container = document.getElementById('usersList');
                 if (!container) return;
@@ -4698,9 +5545,9 @@
 
             // ===== KEYBOARD SHORTCUTS =====
             document.addEventListener('keydown', function(e) {
-                if (e.ctrlKey && e.key >= '1' && e.key <= '3') {
+                if (e.ctrlKey && e.key >= '1' && e.key <= '4') {
                     e.preventDefault();
-                    const tabs = ['menu', 'orders', 'users'];
+                    const tabs = ['menu', 'orders', 'users', 'plans'];
                     window.switchTab(tabs[parseInt(e.key) - 1]);
                 }
                 if (e.key === 'Escape') {
