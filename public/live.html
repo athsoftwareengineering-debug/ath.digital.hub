@@ -1,8 +1,16 @@
-<!-- live.html -->
 <!DOCTYPE html>
-<div id="liveApp">
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Live Orders - ATH DIGITAL HUB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* CSS Variables များ သတ်မှတ်ခြင်း */
+        /* ============================================================
+           LIVE ORDERS - COMPLETE STYLES
+           ============================================================ */
+        
+        /* CSS Variables */
         :root {
             --bg-dark: #0a0c15;
             --bg-card: #0f111a;
@@ -13,30 +21,79 @@
             --violet: #8b5cf6;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
+            --border-color: rgba(0,212,255,0.12);
+            --card-radius: 1.2rem;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-dark);
+            background-image: 
+                radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(0,212,255,0.05) 0%, transparent 50%);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans Myanmar', sans-serif;
+            min-height: 100vh;
+            padding: 16px;
+            padding-bottom: 70px;
+        }
+
         .live-container {
+            max-width: 600px;
+            margin: 0 auto;
             padding: 0;
         }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--cyan), var(--violet));
+            border-radius: 10px;
+        }
+
+        /* ===== SEARCH SECTION ===== */
         .live-search-section {
             background: rgba(0,212,255,0.05);
             backdrop-filter: blur(10px);
             border-radius: 1.2rem;
-            padding: 14px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(0,212,255,0.15);
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(0,212,255,0.12);
         }
+
         .live-search-title {
             font-size: 0.7rem;
             color: var(--text-secondary);
             margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
+
+        .live-search-title i {
+            color: var(--cyan);
+        }
+
         .live-search-box {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
+
         .live-search-input {
             flex: 1;
+            min-width: 120px;
             background: rgba(0,0,0,0.5);
             border: 1px solid #2d3a5e;
             border-radius: 60px;
@@ -44,19 +101,44 @@
             color: white;
             font-size: 0.85rem;
             outline: none;
+            transition: all var(--transition);
         }
+
         .live-search-input:focus {
             border-color: var(--cyan);
+            box-shadow: 0 0 0 4px rgba(0,212,255,0.08);
         }
+
+        .live-search-input::placeholder {
+            color: #64748b;
+        }
+
         .live-search-btn {
             background: linear-gradient(135deg, #06b6d4, #0891b2);
             border: none;
             padding: 8px 18px;
             border-radius: 60px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
             color: white;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            min-height: 42px;
         }
+
+        .live-search-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,212,255,0.25);
+        }
+
+        .live-search-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .live-clear-btn {
             background: #334155;
             border: none;
@@ -64,31 +146,56 @@
             border-radius: 60px;
             cursor: pointer;
             color: white;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            min-height: 42px;
         }
+
+        .live-clear-btn:hover {
+            background: #475569;
+            transform: translateY(-2px);
+        }
+
         .live-search-message {
             font-size: 0.65rem;
             margin-top: 10px;
             text-align: center;
-            padding: 8px;
+            padding: 8px 12px;
             border-radius: 40px;
             display: none;
         }
+
         .live-search-message.success {
             background: rgba(16,185,129,0.15);
             color: #34d399;
             display: block;
         }
+
         .live-search-message.error {
             background: rgba(244,63,94,0.15);
             color: #fb7185;
             display: block;
         }
+
+        .live-search-message.info {
+            background: rgba(0,212,255,0.1);
+            color: var(--cyan);
+            display: block;
+        }
+
+        /* ===== LIVE HEADER ===== */
         .live-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin: 12px 0 8px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
+
         .live-header h2 {
             font-size: 1rem;
             display: flex;
@@ -96,6 +203,11 @@
             gap: 8px;
             color: var(--text-primary);
         }
+
+        .live-header h2 i {
+            color: var(--cyan);
+        }
+
         .live-badge {
             font-size: 0.6rem;
             background: rgba(244,63,94,0.2);
@@ -103,48 +215,77 @@
             padding: 3px 10px;
             border-radius: 40px;
             animation: blinkRed 0.8s step-end infinite;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
+
         @keyframes blinkRed {
             0%, 100% { background: rgba(244,63,94,0.2); color: #f43f5e; }
-            50% { background: rgba(244,63,94,0.9); color: white; }
+            50% { background: rgba(244,63,94,0.8); color: white; }
         }
+
+        .live-badge i {
+            font-size: 0.4rem;
+        }
+
         .live-timer {
             background: #1e293b;
             padding: 4px 12px;
             border-radius: 40px;
             font-size: 0.6rem;
             color: var(--text-secondary);
+            font-family: monospace;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
+
+        .live-timer i {
+            font-size: 0.5rem;
+            color: var(--cyan);
+        }
+
+        /* ===== ORDERS SCROLLABLE ===== */
         .live-orders-scrollable {
             max-height: calc(100vh - 340px);
             overflow-y: auto;
             padding-right: 4px;
+            margin-top: 12px;
         }
+
         .live-orders-scrollable::-webkit-scrollbar {
-            width: 0px;
-            background: transparent;
+            width: 2px;
         }
-        
-        /* ========== BEAUTIFUL LIVE CARD DESIGN ========== */
+
+        .live-orders-scrollable::-webkit-scrollbar-thumb {
+            background: var(--cyan);
+            border-radius: 10px;
+        }
+
+        /* ===== LIVE CARD ===== */
         .live-card {
             background: linear-gradient(145deg, #0f111a, #0a0c15);
             border-radius: 1.2rem;
             margin-bottom: 14px;
-            border: 1px solid rgba(0,212,255,0.12);
+            border: 1px solid rgba(0,212,255,0.10);
             transition: all 0.3s ease;
             overflow: hidden;
             position: relative;
         }
+
         .live-card:hover {
-            border-color: rgba(0,212,255,0.35);
+            border-color: rgba(0,212,255,0.30);
             transform: translateY(-3px);
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
         }
+
+        /* New Order Animation */
         .live-card.new-order {
             animation: slideInNew 0.5s ease-out;
             border-left: 3px solid var(--cyan);
         }
+
         @keyframes slideInNew {
             from {
                 opacity: 0;
@@ -155,51 +296,55 @@
                 transform: translateX(0);
             }
         }
-        
-        /* Rotate Animation - အစိမ်းရောင် */
+
+        /* Rotate Animation - Green Flash */
         @keyframes blinkRotateGreen {
             0%, 100% { 
                 background: linear-gradient(145deg, #0f111a, #0a0c15); 
-                border-color: rgba(0,212,255,0.12);
+                border-color: rgba(0,212,255,0.10);
                 box-shadow: 0 0 0px rgba(16,185,129,0);
             }
             50% { 
-                background: rgba(16,185,129,0.2); 
+                background: rgba(16,185,129,0.20); 
                 border-color: #10b981; 
-                box-shadow: 0 0 20px #10b981;
+                box-shadow: 0 0 25px rgba(16,185,129,0.20);
             }
         }
+
         .blink-rotate {
             animation: blinkRotateGreen 0.5s ease-in-out 2;
         }
-        
-        /* Search Result Highlight - အဝါရောင် 3 စက္ကန့် */
+
+        /* Search Highlight - Yellow Flash */
         @keyframes blinkYellow {
             0%, 100% { 
                 background: linear-gradient(145deg, #0f111a, #0a0c15); 
-                border-color: rgba(245,158,11,0.3);
+                border-color: rgba(245,158,11,0.20);
                 box-shadow: 0 0 0px rgba(245,158,11,0);
             }
             30%, 70% { 
                 background: rgba(245,158,11,0.25); 
                 border-color: #f59e0b; 
-                box-shadow: 0 0 25px #f59e0b;
+                box-shadow: 0 0 30px rgba(245,158,11,0.20);
             }
         }
+
         .search-highlight {
             animation: blinkYellow 0.8s ease-in-out 3;
         }
-        
-        /* Card Header - First Row */
+
+        /* ===== CARD HEADER ===== */
         .live-card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 14px 16px 8px 16px;
-            border-bottom: 1px solid rgba(0,212,255,0.08);
+            border-bottom: 1px solid rgba(0,212,255,0.06);
+            flex-wrap: wrap;
+            gap: 6px;
         }
-        
-        /* Left side: Payment Method */
+
+        /* Payment Badge */
         .live-payment-badge {
             padding: 4px 10px;
             border-radius: 40px;
@@ -209,11 +354,12 @@
             align-items: center;
             gap: 6px;
         }
+
         .live-payment-badge.kpay { background: rgba(30,136,229,0.15); color: #64b5f6; }
         .live-payment-badge.wavepay { background: rgba(67,160,71,0.15); color: #81c784; }
         .live-payment-badge.ayapay { background: rgba(249,168,37,0.15); color: #ffb74d; }
-        
-        /* Right side: Status */
+
+        /* Status */
         .live-status {
             display: inline-block;
             padding: 4px 12px;
@@ -221,17 +367,21 @@
             font-size: 0.65rem;
             font-weight: 700;
         }
-        .live-status.pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
-        .live-status.approved { background: rgba(16,185,129,0.2); color: #34d399; }
-        .live-status.rejected { background: rgba(244,63,94,0.2); color: #fb7185; }
-        
-        /* Card Second Row - Plan and Price */
+
+        .live-status.pending { background: rgba(245,158,11,0.20); color: #fbbf24; }
+        .live-status.approved { background: rgba(16,185,129,0.20); color: #34d399; }
+        .live-status.rejected { background: rgba(244,63,94,0.20); color: #fb7185; }
+
+        /* ===== PLAN ROW ===== */
         .live-card-plan-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px 16px 0 16px;
+            flex-wrap: wrap;
+            gap: 6px;
         }
+
         .live-plan {
             font-weight: 800;
             font-size: 0.9rem;
@@ -243,12 +393,14 @@
             align-items: center;
             gap: 6px;
         }
+
         .live-plan i {
             color: var(--cyan);
             background: none;
             -webkit-background-clip: unset;
             font-size: 0.9rem;
         }
+
         .live-price {
             font-weight: 800;
             font-size: 0.9rem;
@@ -257,26 +409,27 @@
             align-items: baseline;
             gap: 2px;
         }
+
         .live-price small {
             font-size: 0.55rem;
             font-weight: 400;
             color: var(--text-secondary);
         }
-        
-        /* Card Body */
+
+        /* ===== CARD BODY ===== */
         .live-card-body {
-            padding: 12px 16px;
+            padding: 12px 16px 14px 16px;
         }
-        
-        /* Phone and Time Row - Same line */
+
+        /* Info Row - Phone + Time */
         .live-info-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 14px;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
         }
+
         .live-phone {
             display: flex;
             align-items: center;
@@ -288,11 +441,20 @@
             background: rgba(0,212,255,0.08);
             padding: 6px 14px;
             border-radius: 40px;
+            cursor: pointer;
+            transition: all var(--transition);
         }
+
+        .live-phone:hover {
+            background: rgba(0,212,255,0.18);
+            transform: translateX(3px);
+        }
+
         .live-phone i {
             font-size: 0.7rem;
             color: var(--cyan);
         }
+
         .live-time {
             display: flex;
             align-items: center;
@@ -303,48 +465,56 @@
             padding: 6px 12px;
             border-radius: 40px;
         }
+
         .live-time i {
             font-size: 0.6rem;
+            color: var(--text-secondary);
         }
-        
-        /* Date Range Row */
+
+        /* ===== DATE RANGE ===== */
         .live-daterange-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-top: 10px;
             font-size: 0.65rem;
             background: rgba(0,212,255,0.04);
             padding: 8px 12px;
             border-radius: 40px;
-            border: 1px solid rgba(0,212,255,0.08);
+            border: 1px solid rgba(0,212,255,0.06);
+            flex-wrap: wrap;
+            gap: 6px;
         }
+
         .date-range-item {
             display: flex;
             align-items: center;
             gap: 6px;
         }
+
         .date-range-label {
             color: var(--text-secondary);
         }
+
         .date-range-value {
             font-weight: 600;
             color: var(--cyan);
             font-family: monospace;
         }
-        
-        /* Remaining Time Row - Centered (Live Countdown) */
+
+        /* ===== REMAINING TIME ===== */
         .live-remaining-row {
             background: rgba(0,212,255,0.06);
             border-radius: 40px;
             padding: 8px 12px;
-            margin-top: 8px;
+            margin-top: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            border: 1px solid rgba(0,212,255,0.15);
+            border: 1px solid rgba(0,212,255,0.12);
         }
+
         .live-remaining {
             font-size: 0.7rem;
             font-weight: 600;
@@ -353,14 +523,33 @@
             align-items: center;
             gap: 8px;
             font-family: monospace;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
+
         .live-remaining i {
             font-size: 0.7rem;
             color: var(--cyan);
         }
-        
-        /* Expired Badge */
+
+        .live-remaining.expired {
+            color: #fb7185;
+        }
+
+        .live-remaining.expired i {
+            color: #fb7185;
+        }
+
+        /* Countdown Blink Update */
+        .countdown-updating {
+            animation: countdownBlink 0.3s ease-in-out;
+        }
+
+        @keyframes countdownBlink {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.02); color: #00ffaa; }
+        }
+
+        /* ===== EXPIRED BADGE ===== */
         .expired-badge {
             background: rgba(244,63,94,0.15);
             color: #fb7185;
@@ -372,28 +561,70 @@
             align-items: center;
             gap: 6px;
         }
-        
+
+        /* ===== EMPTY / LOADING STATES ===== */
         .live-empty {
             text-align: center;
             padding: 60px 20px;
             color: var(--text-secondary);
             background: rgba(0,212,255,0.03);
             border-radius: 1rem;
+            border: 1px dashed rgba(0,212,255,0.08);
         }
+
+        .live-empty i {
+            font-size: 2rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .live-empty .retry-btn {
+            background: var(--cyan);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            margin-top: 12px;
+            cursor: pointer;
+            color: #030712;
+            font-weight: 600;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .live-empty .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,212,255,0.25);
+        }
+
         .live-loading {
             text-align: center;
             padding: 60px 20px;
             color: var(--text-secondary);
         }
+
+        .live-loading i {
+            margin-right: 8px;
+            color: var(--cyan);
+        }
+
+        /* ===== STATUS BAR ===== */
         .live-status-bar {
             display: flex;
-            justify-content: flex-start;
-            margin-top: 12px;
-            padding-top: 8px;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.04);
             font-size: 0.6rem;
             color: #64748b;
+            flex-wrap: wrap;
+            gap: 6px;
         }
+
         .live-status-dot {
             width: 6px;
             height: 6px;
@@ -403,555 +634,975 @@
             display: inline-block;
             margin-right: 4px;
         }
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+            50% { opacity: 0.3; }
         }
-        
-        /* Countdown timer blink effect */
-        .countdown-updating {
-            animation: countdownBlink 0.3s ease-in-out;
+
+        .live-status-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        
-        @keyframes countdownBlink {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.02); color: #00ffaa; }
+
+        .live-status-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .live-status-count {
+            color: var(--text-secondary);
+        }
+
+        .live-status-count span {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+                padding-bottom: 70px;
+            }
+
+            .live-search-box {
+                flex-direction: column;
+            }
+
+            .live-search-input {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .live-search-btn,
+            .live-clear-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .live-card {
+                border-radius: 1rem;
+            }
+
+            .live-card-header {
+                padding: 12px 14px 6px 14px;
+            }
+
+            .live-card-plan-row {
+                padding: 8px 14px 0 14px;
+            }
+
+            .live-card-body {
+                padding: 10px 14px 12px 14px;
+            }
+
+            .live-plan {
+                font-size: 0.8rem;
+            }
+
+            .live-price {
+                font-size: 0.8rem;
+            }
+
+            .live-phone {
+                font-size: 0.75rem;
+                padding: 4px 10px;
+            }
+
+            .live-info-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+
+            .live-daterange-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .live-header h2 {
+                font-size: 0.9rem;
+            }
+
+            .live-timer {
+                font-size: 0.55rem;
+            }
+
+            .live-remaining {
+                font-size: 0.65rem;
+            }
+
+            .live-status-bar {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 4px;
+            }
+
+            .live-status-right {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .live-orders-scrollable {
+                max-height: calc(100vh - 380px);
+            }
+
+            .live-search-title {
+                font-size: 0.6rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .live-card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .live-payment-badge {
+                font-size: 0.6rem;
+            }
+
+            .live-status {
+                font-size: 0.55rem;
+            }
+
+            .live-plan {
+                font-size: 0.7rem;
+            }
+
+            .live-price {
+                font-size: 0.7rem;
+            }
+
+            .live-phone {
+                font-size: 0.65rem;
+            }
+
+            .live-remaining {
+                font-size: 0.6rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .live-orders-scrollable {
+                max-height: calc(100vh - 400px);
+            }
+        }
+
+        @media (min-width: 481px) and (max-width: 768px) {
+            .live-search-box {
+                flex-wrap: nowrap;
+            }
+
+            .live-search-input {
+                min-width: 150px;
+            }
+
+            .live-orders-scrollable {
+                max-height: calc(100vh - 350px);
+            }
+        }
+
+        @media (min-width: 769px) {
+            .live-container {
+                max-width: 700px;
+            }
+
+            .live-orders-scrollable {
+                max-height: calc(100vh - 320px);
+            }
+
+            .live-card {
+                border-radius: 1.5rem;
+            }
+
+            .live-card:hover {
+                transform: translateY(-4px);
+            }
+
+            .live-plan {
+                font-size: 1rem;
+            }
+
+            .live-price {
+                font-size: 1rem;
+            }
+
+            .live-phone {
+                font-size: 0.9rem;
+                padding: 8px 16px;
+            }
+
+            .live-remaining {
+                font-size: 0.75rem;
+            }
         }
     </style>
+</head>
+<body>
 
-    <div class="live-container">
-        <!-- Search Section -->
-        <div class="live-search-section">
-            <div class="live-search-title">
-                <i class="fas fa-search"></i> အခြားသူများ သက်တမ်းစစ်ရန်
+    <!-- ===== LIVE APP ===== -->
+    <div id="liveApp">
+        <div class="live-container">
+
+            <!-- Search Section -->
+            <div class="live-search-section">
+                <div class="live-search-title">
+                    <i class="fas fa-search"></i> အခြားသူများ သက်တမ်းစစ်ရန်
+                </div>
+                <div class="live-search-box">
+                    <input type="tel" id="liveSearchPhoneInput" class="live-search-input" placeholder="📱 09xxxxxxxxx" maxlength="11">
+                    <button class="live-search-btn" onclick="searchLiveOrder()">
+                        <i class="fas fa-search"></i> ရှာ
+                    </button>
+                    <button class="live-clear-btn" onclick="clearLiveSearch()">
+                        <i class="fas fa-times"></i> ရှင်း
+                    </button>
+                </div>
+                <div id="liveSearchMsg" class="live-search-message"></div>
             </div>
-            <div class="live-search-box">
-                <input type="tel" id="liveSearchPhoneInput" class="live-search-input" placeholder="📱 09xxxxxxxxx">
-                <button class="live-search-btn" onclick="searchLiveOrder()">
-                    <i class="fas fa-search"></i> ရှာ
-                </button>
-                <button class="live-clear-btn" onclick="clearLiveSearch()">
-                    <i class="fas fa-times"></i> ရှင်း
-                </button>
+
+            <!-- Live Orders Header -->
+            <div class="live-header">
+                <h2>
+                    <i class="fas fa-broadcast-tower"></i> LIVE အော်ဒါများ
+                    <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span>
+                </h2>
+                <span id="liveTimerDisplay" class="live-timer">
+                    <i class="fas fa-clock"></i> auto 30s
+                </span>
             </div>
-            <div id="liveSearchMsg" class="live-search-message"></div>
-        </div>
 
-        <!-- Live Orders Header -->
-        <div class="live-header">
-            <h2>
-                <i class="fas fa-broadcast-tower"></i> LIVE အော်ဒါများ
-                <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span>
-            </h2>
-            <span id="liveTimerDisplay" class="live-timer">auto 30s</span>
-        </div>
-
-        <!-- Live Orders Container -->
-        <div class="live-orders-scrollable" id="liveOrdersList">
-            <div class="live-loading">
-                <i class="fas fa-spinner fa-pulse"></i> စောင့်နေသည်...
+            <!-- Live Orders Container -->
+            <div class="live-orders-scrollable" id="liveOrdersList">
+                <div class="live-loading">
+                    <i class="fas fa-spinner fa-pulse"></i> စောင့်နေသည်...
+                </div>
             </div>
-        </div>
 
-        <!-- Status Bar -->
-        <div class="live-status-bar">
-            <span class="live-status-dot"></span>
-            <span id="liveUpdateStatus">အလိုအလျောက်: 30s</span>
+            <!-- Status Bar -->
+            <div class="live-status-bar">
+                <div class="live-status-left">
+                    <span class="live-status-dot"></span>
+                    <span id="liveUpdateStatus">အလိုအလျောက်: 30s</span>
+                </div>
+                <div class="live-status-right">
+                    <span class="live-status-count">အော်ဒါ: <span id="liveOrderCount">0</span></span>
+                    <span id="liveTimeDisplay" style="color:#64748b;"></span>
+                </div>
+            </div>
+
         </div>
     </div>
-</div>
 
-<script>
-    // Live Component JavaScript
-    (function() {
-        const LIVE_API = window.location.origin;
-        let liveOrdersData = [];
-        let liveCurrentSearchPhone = "";
-        let liveRefreshInterval = null;
-        let liveTimerInterval = null;
-        let rotateInterval = null;
-        let countdownInterval = null;  // ← စက္ကန့်တိုင်း update အတွက်
-        let liveRefreshSec = 30;
-        let lastOrderIds = [];
+    <!-- ============================================================ -->
+    <!-- ===== JAVASCRIPT ===== -->
+    <!-- ============================================================ -->
+    <script>
+        // ================================================================
+        //  LIVE ORDERS - COMPLETE JAVASCRIPT
+        // ================================================================
 
-        // Get current user phone from parent
-        function getCurrentUserPhone() {
-            if (typeof window.getCurrentUserPhone === 'function') {
-                return window.getCurrentUserPhone();
-            }
-            return localStorage.getItem('userPhone') || null;
-        }
+        (function() {
+            'use strict';
 
-        // Mask phone number
-        function maskPhone(phone) {
-            if (!phone || phone.length < 8) return phone || '';
-            return phone.substring(0,5) + '***' + phone.substring(phone.length-3);
-        }
+            const API_BASE = window.location.origin;
+            let liveOrdersData = [];
+            let liveCurrentSearchPhone = '';
+            let liveRefreshInterval = null;
+            let liveTimerInterval = null;
+            let rotateInterval = null;
+            let countdownInterval = null;
+            let liveRefreshSec = 30;
+            let lastOrderIds = [];
+            let isLoading = false;
+            let isSearching = false;
 
-        // Get remaining time (live calculation - စက္ကန့်တိုင်း တွက်မယ်)
-        function getRemainingTime(activatedAt) {
-            if (!activatedAt) return null;
-            const endDate = new Date(activatedAt).getTime() + 30 * 24 * 60 * 60 * 1000;
-            const remain = endDate - Date.now();
-            if (remain <= 0) return { expired: true };
-            const days = Math.floor(remain / (24 * 60 * 60 * 1000));
-            const hours = Math.floor((remain % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-            const minutes = Math.floor((remain % (60 * 60 * 1000)) / (60 * 1000));
-            const seconds = Math.floor((remain % (60 * 1000)) / 1000);
-            return { days: days, hours: hours, minutes: minutes, seconds: seconds, expired: false };
-        }
+            // ================================================================
+            //  UTILITY FUNCTIONS
+            // ================================================================
 
-        // Format remaining time string (စက္ကန့်ပါ)
-        function formatRemainingTime(activatedAt) {
-            const time = getRemainingTime(activatedAt);
-            if (!time) return null;
-            if (time.expired) return "သက်တမ်းကုန်ဆုံးပြီ";
-            return `${time.days}ရက် ${time.hours}နာရီ ${time.minutes}မိနစ် ${time.seconds}စက္ကန့်`;
-        }
-
-        // Get end date
-        function getEndDate(activatedAt) {
-            if (!activatedAt) return null;
-            return new Date(new Date(activatedAt).getTime() + 30 * 24 * 60 * 60 * 1000);
-        }
-
-        // Format date
-        function formatDate(date) {
-            if (!date) return '';
-            const d = new Date(date);
-            return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
-        }
-
-        // Get payment badge class and text
-        function getPaymentInfo(method) {
-            const payments = {
-                'kpay': { class: 'kpay', text: 'KBZ Pay', icon: 'fa-university' },
-                'wavepay': { class: 'wavepay', text: 'WavePay', icon: 'fa-waveform' },
-                'ayapay': { class: 'ayapay', text: 'AYA Pay', icon: 'fa-building' }
-            };
-            return payments[method] || payments['kpay'];
-        }
-
-        // Escape HTML
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-
-        // Get plan icon
-        function getPlanIcon(plan) {
-            if (plan.includes("VIP 1") || plan.includes("LEVEL - 1")) return '<i class="fas fa-fire"></i>';
-            if (plan.includes("VIP 2") || plan.includes("LEVEL - 2")) return '<i class="fas fa-star"></i>';
-            if (plan.includes("VIP 3") || plan.includes("LEVEL - 3")) return '<i class="fas fa-gem"></i>';
-            if (plan.includes("VIP 4") || plan.includes("ULTRA")) return '<i class="fas fa-crown"></i>';
-            return '<i class="fas fa-mobile-alt"></i>';
-        }
-
-        // ========== COUNTDOWN TIMER FUNCTION (စက္ကန့်တိုင်း Update) ==========
-        function startAllCountdowns() {
-            // Stop existing countdown interval
-            if (countdownInterval) clearInterval(countdownInterval);
-            
-            // Start new countdown interval (every 1 second)
-            countdownInterval = setInterval(() => {
-                updateAllCountdowns();
-            }, 1000);
-        }
-        
-        function stopAllCountdowns() {
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
-            }
-        }
-        
-        function updateAllCountdowns() {
-            // Update all countdown displays on the page
-            const countdownElements = document.querySelectorAll('.live-countdown-timer');
-            countdownElements.forEach(elem => {
-                const activatedAt = elem.getAttribute('data-activated-at');
-                if (activatedAt) {
-                    const remainStr = formatRemainingTime(activatedAt);
-                    const isExpired = getRemainingTime(activatedAt)?.expired;
-                    
-                    if (isExpired) {
-                        elem.innerHTML = '<i class="fas fa-calendar-times"></i> <span style="color:#fb7185;">သက်တမ်းကုန်ဆုံးပြီ</span>';
-                        elem.classList.add('expired');
-                    } else {
-                        elem.innerHTML = `<i class="fas fa-hourglass-half"></i> <span>ကျန်ရှိ: ${remainStr}</span>`;
-                        // Add blink effect every update
-                        elem.classList.add('countdown-updating');
-                        setTimeout(() => {
-                            elem.classList.remove('countdown-updating');
-                        }, 300);
-                    }
+            function getCurrentUserPhone() {
+                if (typeof window.getCurrentUserPhone === 'function') {
+                    return window.getCurrentUserPhone();
                 }
-            });
-        }
+                return localStorage.getItem('userPhone') || null;
+            }
 
-        // Fetch live orders from API
-        async function fetchLiveOrders() {
-            try {
-                const res = await fetch(`${LIVE_API}/api/live/orders`);
-                const data = await res.json();
-                
-                if (data.orders) {
-                    const currentPhone = getCurrentUserPhone();
-                    let filtered = data.orders.filter(o => o.phone !== currentPhone);
-                    if (liveCurrentSearchPhone) {
-                        filtered = filtered.filter(o => o.phone === liveCurrentSearchPhone);
-                    }
-                    filtered.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-                    
-                    const newIds = filtered.map(o => o.id);
-                    const hasNew = (lastOrderIds.length > 0 && newIds.length > 0 && newIds[0] !== lastOrderIds[0]);
-                    lastOrderIds = newIds;
-                    liveOrdersData = filtered.slice(0, 50);
-                    renderLiveOrders(hasNew);
-                    
-                    const updateSpan = document.getElementById('liveUpdateStatus');
-                    if (updateSpan) {
-                        const now = new Date();
-                        updateSpan.innerHTML = `နောက်ဆုံး: ${now.toLocaleTimeString()}`;
-                    }
+            function maskPhone(phone) {
+                if (!phone || phone.length < 8) return phone || '';
+                return phone.substring(0, 5) + '***' + phone.substring(phone.length - 3);
+            }
+
+            function getRemainingTime(activatedAt) {
+                if (!activatedAt) return null;
+                const endDate = new Date(activatedAt).getTime() + 30 * 24 * 60 * 60 * 1000;
+                const remain = endDate - Date.now();
+                if (remain <= 0) return { expired: true };
+                const days = Math.floor(remain / (24 * 60 * 60 * 1000));
+                const hours = Math.floor((remain % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+                const minutes = Math.floor((remain % (60 * 60 * 1000)) / (60 * 1000));
+                const seconds = Math.floor((remain % (60 * 1000)) / 1000);
+                return { days, hours, minutes, seconds, expired: false };
+            }
+
+            function formatRemainingTime(activatedAt) {
+                const time = getRemainingTime(activatedAt);
+                if (!time) return null;
+                if (time.expired) return 'သက်တမ်းကုန်ဆုံးပြီ';
+                return `${time.days}ရက် ${time.hours}နာရီ ${time.minutes}မိနစ် ${time.seconds}စက္ကန့်`;
+            }
+
+            function getEndDate(activatedAt) {
+                if (!activatedAt) return null;
+                return new Date(new Date(activatedAt).getTime() + 30 * 24 * 60 * 60 * 1000);
+            }
+
+            function formatDate(date) {
+                if (!date) return '';
+                const d = new Date(date);
+                return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+            }
+
+            function formatTime(date) {
+                if (!date) return '';
+                const d = new Date(date);
+                return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+            }
+
+            function getPaymentInfo(method) {
+                const payments = {
+                    'kpay': { class: 'kpay', text: 'KBZ Pay', icon: 'fa-university' },
+                    'wavepay': { class: 'wavepay', text: 'WavePay', icon: 'fa-waveform' },
+                    'ayapay': { class: 'ayapay', text: 'AYA Pay', icon: 'fa-building' }
+                };
+                return payments[method] || payments['kpay'];
+            }
+
+            function getPlanIcon(plan) {
+                const icons = {
+                    'VIP LEVEL - 1': '<i class="fas fa-fire"></i>',
+                    'VIP LEVEL - 2': '<i class="fas fa-star"></i>',
+                    'VIP LEVEL - 3': '<i class="fas fa-gem"></i>',
+                    'VIP LEVEL - 4 (ULTRA)': '<i class="fas fa-crown"></i>'
+                };
+                return icons[plan] || '<i class="fas fa-mobile-alt"></i>';
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str).replace(/[&<>]/g, function(m) {
+                    if (m === '&') return '&amp;';
+                    if (m === '<') return '&lt;';
+                    if (m === '>') return '&gt;';
+                    return m;
+                });
+            }
+
+            function showToast(msg, isError) {
+                if (typeof window.showToast === 'function') {
+                    window.showToast(msg, isError);
+                } else {
+                    console.log(msg);
                 }
-            } catch(e) {
-                console.error('Error fetching live orders:', e);
+            }
+
+            function copyToClipboard(text) {
+                if (typeof window.copyToClipboard === 'function') {
+                    window.copyToClipboard(text);
+                } else {
+                    navigator.clipboard.writeText(text).then(() => {
+                        showToast(`📞 ${text} copied!`);
+                    }).catch(() => {
+                        const input = document.createElement('input');
+                        input.value = text;
+                        document.body.appendChild(input);
+                        input.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(input);
+                        showToast(`📞 ${text} copied!`);
+                    });
+                }
+            }
+
+            // ================================================================
+            //  COUNTDOWN TIMER
+            // ================================================================
+
+            function updateAllCountdowns() {
+                const countdownElements = document.querySelectorAll('.live-countdown-timer');
+                countdownElements.forEach(elem => {
+                    const activatedAt = elem.getAttribute('data-activated-at');
+                    if (activatedAt) {
+                        const remainStr = formatRemainingTime(activatedAt);
+                        const time = getRemainingTime(activatedAt);
+                        const isExpired = time && time.expired;
+
+                        if (isExpired) {
+                            elem.innerHTML = '<i class="fas fa-calendar-times"></i> <span style="color:#fb7185;">သက်တမ်းကုန်ဆုံးပြီ</span>';
+                            elem.classList.add('expired');
+                        } else {
+                            elem.innerHTML = `<i class="fas fa-hourglass-half"></i> <span>ကျန်ရှိ: ${remainStr}</span>`;
+                            elem.classList.remove('expired');
+                            // Add blink effect
+                            elem.classList.add('countdown-updating');
+                            setTimeout(() => {
+                                elem.classList.remove('countdown-updating');
+                            }, 300);
+                        }
+                    }
+                });
+            }
+
+            function startAllCountdowns() {
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+
+                countdownInterval = setInterval(() => {
+                    // Only update if tab is visible
+                    if (!document.hidden) {
+                        updateAllCountdowns();
+                    }
+                }, 1000);
+            }
+
+            function stopAllCountdowns() {
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+            }
+
+            // ================================================================
+            //  RENDER LIVE ORDERS
+            // ================================================================
+
+            function renderLiveOrders(hasNew = false) {
                 const container = document.getElementById('liveOrdersList');
-                if (container) {
-                    container.innerHTML = '<div class="live-empty"><i class="fas fa-exclamation-triangle"></i> Connection error. Please refresh the page.</div>';
+                if (!container) return;
+
+                // Update order count
+                const countEl = document.getElementById('liveOrderCount');
+                if (countEl) countEl.textContent = liveOrdersData.length;
+
+                if (!liveOrdersData.length) {
+                    const searchMsg = liveCurrentSearchPhone ? 
+                        `ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။<br><small style="color:#64748b;">${maskPhone(liveCurrentSearchPhone)}</small>` :
+                        'လက်ရှိ LIVE အော်ဒါမရှိပါ';
+                    
+                    container.innerHTML = `
+                        <div class="live-empty">
+                            <i class="fas fa-eye-slash"></i>
+                            ${searchMsg}
+                            ${liveCurrentSearchPhone ? `<br><button class="retry-btn" onclick="clearLiveSearch()"><i class="fas fa-times"></i> ရှာဖွေမှုရှင်းရန်</button>` : ''}
+                        </div>
+                    `;
+                    return;
                 }
-            }
-        }
 
-        // Rotate live orders (move last to front)
-        function rotateLiveOrders() {
-            if (liveOrdersData.length <= 1) return;
-            
-            const lastItem = liveOrdersData.pop();
-            liveOrdersData.unshift(lastItem);
-            renderLiveOrders(false);
-            
-            const firstCard = document.querySelector('.live-card');
-            if (firstCard) {
-                firstCard.classList.add('blink-rotate');
-                setTimeout(() => {
-                    firstCard.classList.remove('blink-rotate');
-                }, 800);
-            }
-        }
+                let html = '';
+                for (let i = 0; i < liveOrdersData.length; i++) {
+                    const o = liveOrdersData[i];
+                    const isNew = (hasNew && i === 0);
+                    const statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
+                    const statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
+                    const planIcon = getPlanIcon(o.plan);
+                    const payment = getPaymentInfo(o.payment_method || 'kpay');
+                    const orderDate = new Date(o.created_at);
+                    const startDate = o.activated_at ? new Date(o.activated_at) : null;
+                    const endDate = startDate ? getEndDate(o.activated_at) : null;
+                    const remaining = (o.status === 'Approved' && o.activated_at) ? getRemainingTime(o.activated_at) : null;
+                    const isExpired = remaining && remaining.expired;
 
-        // Start rotate interval
-        function startLiveRotate() {
-            if (rotateInterval) clearInterval(rotateInterval);
-            rotateInterval = setInterval(() => {
-                if (liveOrdersData.length > 1) {
-                    rotateLiveOrders();
-                }
-            }, 10000);
-        }
-
-        // Render live orders
-        function renderLiveOrders(hasNew = false) {
-            const container = document.getElementById('liveOrdersList');
-            if (!container) return;
-            
-            if (!liveOrdersData.length) {
-                container.innerHTML = '<div class="live-empty"><i class="fas fa-eye-slash"></i> လက်ရှိ LIVE အော်ဒါမရှိ</div>';
-                return;
-            }
-            
-            let html = '';
-            for (let i = 0; i < liveOrdersData.length; i++) {
-                const o = liveOrdersData[i];
-                const isNew = (hasNew && i === 0);
-                const statusClass = o.status === 'Pending' ? 'pending' : (o.status === 'Approved' ? 'approved' : 'rejected');
-                const statusText = o.status === 'Pending' ? '⏳ Pending' : (o.status === 'Approved' ? '✅ Approved' : '❌ Rejected');
-                const planIcon = getPlanIcon(o.plan);
-                const payment = getPaymentInfo(o.payment_method || 'kpay');
-                const orderDate = new Date(o.created_at);
-                const startDate = o.activated_at ? new Date(o.activated_at) : null;
-                const endDate = startDate ? getEndDate(o.activated_at) : null;
-                const remaining = (o.status === 'Approved' && o.activated_at) ? getRemainingTime(o.activated_at) : null;
-                const isExpired = remaining && remaining.expired;
-                
-                // Initial remaining time string
-                let remainingTimeStr = '';
-                let remainingTimeAttr = '';
-                if (o.status === 'Approved' && o.activated_at) {
-                    remainingTimeAttr = `data-activated-at="${o.activated_at}"`;
-                    if (isExpired) {
-                        remainingTimeStr = '<i class="fas fa-calendar-times"></i> <span style="color:#fb7185;">သက်တမ်းကုန်ဆုံးပြီ</span>';
-                    } else {
-                        const remain = formatRemainingTime(o.activated_at);
-                        remainingTimeStr = `<i class="fas fa-hourglass-half"></i> <span>ကျန်ရှိ: ${remain}</span>`;
+                    // Remaining time
+                    let remainingTimeStr = '';
+                    let remainingTimeAttr = '';
+                    if (o.status === 'Approved' && o.activated_at) {
+                        remainingTimeAttr = `data-activated-at="${o.activated_at}"`;
+                        if (isExpired) {
+                            remainingTimeStr = '<i class="fas fa-calendar-times"></i> <span style="color:#fb7185;">သက်တမ်းကုန်ဆုံးပြီ</span>';
+                        } else {
+                            const remain = formatRemainingTime(o.activated_at);
+                            remainingTimeStr = `<i class="fas fa-hourglass-half"></i> <span>ကျန်ရှိ: ${remain}</span>`;
+                        }
                     }
-                }
-                
-                // Date Range HTML
-                let dateRangeHtml = '';
-                if (startDate && endDate && o.status === 'Approved') {
-                    dateRangeHtml = `
-                        <div class="live-daterange-row">
-                            <div class="date-range-item">
-                                <span class="date-range-label"><i class="fas fa-calendar-plus"></i> စတင်:</span>
-                                <span class="date-range-value">${formatDate(startDate)}</span>
-                            </div>
-                            <div class="date-range-item">
-                                <span class="date-range-label"><i class="fas fa-calendar-times"></i> ကုန်ဆုံး:</span>
-                                <span class="date-range-value">${formatDate(endDate)}</span>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                // Remaining time HTML (with countdown class)
-                let remainingHtml = '';
-                if (o.status === 'Approved' && o.activated_at) {
-                    remainingHtml = `
-                        <div class="live-remaining-row">
-                            <div class="live-remaining live-countdown-timer" ${remainingTimeAttr}>
-                                ${remainingTimeStr}
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                html += `
-                    <div class="live-card ${isNew ? 'new-order' : ''}" data-order-id="${o.id}" data-phone="${escapeHtml(o.phone)}">
-                        <div class="live-card-header">
-                            <div class="live-payment-badge ${payment.class}">
-                                <i class="fas ${payment.icon}"></i> ${payment.text}
-                            </div>
-                            <span class="live-status ${statusClass}">${statusText}</span>
-                        </div>
-                        
-                        <div class="live-card-plan-row">
-                            <div class="live-plan">
-                                ${planIcon} ${escapeHtml(o.plan)}
-                            </div>
-                            <div class="live-price">
-                                ${o.price.toLocaleString()} <small>MMK</small>
-                            </div>
-                        </div>
-                        
-                        <div class="live-card-body">
-                            <div class="live-info-row">
-                                <div class="live-phone">
-                                    <i class="fas fa-phone-alt"></i>
-                                    <span>${maskPhone(o.phone)}</span>
+
+                    // Date Range
+                    let dateRangeHtml = '';
+                    if (startDate && endDate && o.status === 'Approved') {
+                        dateRangeHtml = `
+                            <div class="live-daterange-row">
+                                <div class="date-range-item">
+                                    <span class="date-range-label"><i class="fas fa-calendar-plus"></i> စတင်:</span>
+                                    <span class="date-range-value">${formatDate(startDate)}</span>
                                 </div>
-                                <div class="live-time">
-                                    <i class="fas fa-clock"></i>
-                                    <span>${orderDate.toLocaleTimeString()}</span>
+                                <div class="date-range-item">
+                                    <span class="date-range-label"><i class="fas fa-calendar-times"></i> ကုန်ဆုံး:</span>
+                                    <span class="date-range-value">${formatDate(endDate)}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    // Remaining HTML
+                    let remainingHtml = '';
+                    if (o.status === 'Approved' && o.activated_at) {
+                        const expiredClass = isExpired ? ' expired' : '';
+                        remainingHtml = `
+                            <div class="live-remaining-row">
+                                <div class="live-remaining${expiredClass} live-countdown-timer" ${remainingTimeAttr}>
+                                    ${remainingTimeStr}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    html += `
+                        <div class="live-card ${isNew ? 'new-order' : ''}" data-order-id="${o.id}" data-phone="${escapeHtml(o.phone)}">
+                            <div class="live-card-header">
+                                <div class="live-payment-badge ${payment.class}">
+                                    <i class="fas ${payment.icon}"></i> ${payment.text}
+                                </div>
+                                <span class="live-status ${statusClass}">${statusText}</span>
+                            </div>
+                            
+                            <div class="live-card-plan-row">
+                                <div class="live-plan">
+                                    ${planIcon} ${escapeHtml(o.plan)}
+                                </div>
+                                <div class="live-price">
+                                    ${o.price.toLocaleString()} <small>MMK</small>
                                 </div>
                             </div>
                             
-                            ${dateRangeHtml}
-                            ${remainingHtml}
+                            <div class="live-card-body">
+                                <div class="live-info-row">
+                                    <div class="live-phone" onclick="copyToClipboard('${escapeHtml(o.phone)}')">
+                                        <i class="fas fa-phone-alt"></i>
+                                        <span>${maskPhone(o.phone)}</span>
+                                        <i class="fas fa-copy" style="font-size:0.5rem;opacity:0.5;"></i>
+                                    </div>
+                                    <div class="live-time">
+                                        <i class="fas fa-clock"></i>
+                                        <span>${formatTime(orderDate)}</span>
+                                    </div>
+                                </div>
+                                
+                                ${dateRangeHtml}
+                                ${remainingHtml}
+                            </div>
                         </div>
-                    </div>
-                `;
-            }
-            container.innerHTML = html;
-            
-            // Restart countdown timers after rendering
-            stopAllCountdowns();
-            startAllCountdowns();
-            
-            if (hasNew && liveOrdersData.length > 0) {
-                const firstCard = container.querySelector('.live-card');
-                if (firstCard) {
-                    firstCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    setTimeout(() => {
-                        firstCard.classList.remove('new-order');
-                    }, 2000);
+                    `;
                 }
-            }
-        }
+                container.innerHTML = html;
 
-        // Search live order by phone
-        async function searchLiveOrder() {
-            const phone = document.getElementById('liveSearchPhoneInput').value.trim();
-            const msgDiv = document.getElementById('liveSearchMsg');
-            
-            if (!phone || phone.length < 9) {
-                if (msgDiv) {
-                    msgDiv.className = 'live-search-message error';
-                    msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)';
-                    msgDiv.style.display = 'block';
-                    setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+                // Restart countdowns
+                stopAllCountdowns();
+                startAllCountdowns();
+
+                // Scroll to new order
+                if (hasNew && liveOrdersData.length > 0) {
+                    const firstCard = container.querySelector('.live-card');
+                    if (firstCard) {
+                        firstCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        setTimeout(() => {
+                            firstCard.classList.remove('new-order');
+                        }, 2000);
+                    }
                 }
-                return;
             }
-            
-            if (msgDiv) {
-                msgDiv.className = 'live-search-message';
-                msgDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ရှာဖွေနေသည်...';
-                msgDiv.style.display = 'block';
+
+            // ================================================================
+            //  FETCH LIVE ORDERS
+            // ================================================================
+
+            async function fetchLiveOrders(retryCount = 0) {
+                if (isLoading) return;
+                isLoading = true;
+
+                const container = document.getElementById('liveOrdersList');
+                if (container && !liveOrdersData.length && !liveCurrentSearchPhone) {
+                    container.innerHTML = `
+                        <div class="live-loading">
+                            <i class="fas fa-spinner fa-pulse"></i> စောင့်နေသည်...
+                        </div>
+                    `;
+                }
+
+                try {
+                    const res = await fetch(`${API_BASE}/api/live/orders`, {
+                        credentials: 'include'
+                    });
+
+                    if (!res.ok) {
+                        if (res.status === 401) {
+                            throw new Error('Unauthorized');
+                        }
+                        throw new Error(`HTTP ${res.status}`);
+                    }
+
+                    const data = await res.json();
+
+                    if (data.orders && Array.isArray(data.orders)) {
+                        const currentPhone = getCurrentUserPhone();
+                        let filtered = data.orders.filter(o => o.phone !== currentPhone);
+
+                        if (liveCurrentSearchPhone) {
+                            filtered = filtered.filter(o => o.phone === liveCurrentSearchPhone);
+                        }
+
+                        filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                        const newIds = filtered.map(o => o.id);
+                        const hasNew = (lastOrderIds.length > 0 && newIds.length > 0 && newIds[0] !== lastOrderIds[0]);
+                        lastOrderIds = newIds;
+                        liveOrdersData = filtered.slice(0, 50);
+
+                        renderLiveOrders(hasNew);
+
+                        // Update status
+                        const updateSpan = document.getElementById('liveUpdateStatus');
+                        if (updateSpan) {
+                            const now = new Date();
+                            updateSpan.innerHTML = `နောက်ဆုံး: ${now.toLocaleTimeString()}`;
+                        }
+                    } else {
+                        liveOrdersData = [];
+                        renderLiveOrders(false);
+                    }
+                } catch (e) {
+                    console.error('Error fetching live orders:', e);
+                    if (retryCount < 3) {
+                        setTimeout(() => fetchLiveOrders(retryCount + 1), 2000 * (retryCount + 1));
+                        return;
+                    }
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="live-empty">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Connection error. Please try again.
+                                <br>
+                                <button class="retry-btn" onclick="refreshLiveOrders()">
+                                    <i class="fas fa-sync-alt"></i> ပြန်ကြိုးစားမည်
+                                </button>
+                            </div>
+                        `;
+                    }
+                } finally {
+                    isLoading = false;
+                }
             }
-            
-            try {
-                const res = await fetch(`${LIVE_API}/api/live/order/${encodeURIComponent(phone)}`);
-                const data = await res.json();
-                const orders = data.orders || [];
-                
-                if (orders.length === 0) {
+
+            // ================================================================
+            //  REFRESH & ROTATE
+            // ================================================================
+
+            function refreshLiveOrders() {
+                liveRefreshSec = 30;
+                const timerSpan = document.getElementById('liveTimerDisplay');
+                if (timerSpan) timerSpan.innerHTML = '<i class="fas fa-clock"></i> auto 30s';
+                fetchLiveOrders();
+                showToast('🔄 Live orders refreshed');
+            }
+
+            function rotateLiveOrders() {
+                if (liveOrdersData.length <= 1) return;
+
+                const lastItem = liveOrdersData.pop();
+                liveOrdersData.unshift(lastItem);
+                renderLiveOrders(false);
+
+                const firstCard = document.querySelector('.live-card');
+                if (firstCard) {
+                    firstCard.classList.add('blink-rotate');
+                    setTimeout(() => {
+                        firstCard.classList.remove('blink-rotate');
+                    }, 800);
+                }
+            }
+
+            // ================================================================
+            //  SEARCH
+            // ================================================================
+
+            async function searchLiveOrder() {
+                if (isSearching) return;
+
+                const phone = document.getElementById('liveSearchPhoneInput').value.trim();
+                const msgDiv = document.getElementById('liveSearchMsg');
+                const searchBtn = document.querySelector('.live-search-btn');
+
+                // Validate phone
+                if (!phone || phone.length < 9) {
                     if (msgDiv) {
                         msgDiv.className = 'live-search-message error';
-                        msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
+                        msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ (09xxxxxxxxx)';
+                        msgDiv.style.display = 'block';
                         setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
                     }
-                    clearLiveSearch();
-                } else {
-                    if (msgDiv) {
-                        msgDiv.className = 'live-search-message success';
-                        msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။ 🟡 အဝါရောင် မှိတ်တုတ်ပြသပါမည်။';
-                        setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
-                    }
-                    
-                    removeAllHighlights();
-                    liveCurrentSearchPhone = phone;
-                    liveOrdersData = orders.slice(0, 50);
-                    renderLiveOrders(false);
-                    
-                    setTimeout(() => {
-                        const cards = document.querySelectorAll('.live-card');
-                        cards.forEach(card => {
-                            const cardPhone = card.getAttribute('data-phone');
-                            if (cardPhone === phone) {
-                                card.classList.add('search-highlight');
-                                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }
-                        });
-                        setTimeout(() => {
-                            removeAllHighlights();
-                        }, 3000);
-                    }, 100);
+                    return;
                 }
-            } catch(e) {
+
+                isSearching = true;
+                if (searchBtn) {
+                    searchBtn.disabled = true;
+                    searchBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
+                }
+
                 if (msgDiv) {
-                    msgDiv.className = 'live-search-message error';
-                    msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ရှာဖွေရာတွင် အမှားရှိပါသည်။';
-                    setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+                    msgDiv.className = 'live-search-message info';
+                    msgDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ရှာဖွေနေသည်...';
+                    msgDiv.style.display = 'block';
                 }
-            }
-        }
 
-        // Remove all highlights
-        function removeAllHighlights() {
-            document.querySelectorAll('.live-card').forEach(card => {
-                card.classList.remove('search-highlight');
-            });
-        }
+                try {
+                    const res = await fetch(`${API_BASE}/api/live/order/${encodeURIComponent(phone)}`, {
+                        credentials: 'include'
+                    });
 
-        // Clear live search
-        function clearLiveSearch() {
-            liveCurrentSearchPhone = '';
-            const searchInput = document.getElementById('liveSearchPhoneInput');
-            if (searchInput) searchInput.value = '';
-            const msgDiv = document.getElementById('liveSearchMsg');
-            if (msgDiv) msgDiv.style.display = 'none';
-            removeAllHighlights();
-            fetchLiveOrders();
-        }
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-        // Refresh live orders
-        function refreshLiveOrders() {
-            fetchLiveOrders();
-            liveRefreshSec = 30;
-            const timerSpan = document.getElementById('liveTimerDisplay');
-            if (timerSpan) timerSpan.innerText = 'auto 30s';
-        }
+                    const data = await res.json();
+                    const orders = data.orders || [];
 
-        // Start auto refresh
-        function startLiveAutoRefresh() {
-            if (liveRefreshInterval) clearInterval(liveRefreshInterval);
-            if (liveTimerInterval) clearInterval(liveTimerInterval);
-            if (rotateInterval) clearInterval(rotateInterval);
-            
-            liveRefreshSec = 30;
-            const timerSpan = document.getElementById('liveTimerDisplay');
-            const updateSpan = document.getElementById('liveUpdateStatus');
-            
-            const updateTimer = () => {
-                if (timerSpan) {
-                    timerSpan.innerText = `auto ${liveRefreshSec}s`;
-                    if (updateSpan && !updateSpan.innerHTML.includes('နောက်ဆုံး')) {
-                        updateSpan.innerHTML = `အလိုအလျောက်: ${liveRefreshSec}s`;
+                    if (orders.length === 0) {
+                        if (msgDiv) {
+                            msgDiv.className = 'live-search-message error';
+                            msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
+                            setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+                        }
+                        // Show empty state
+                        liveCurrentSearchPhone = phone;
+                        liveOrdersData = [];
+                        renderLiveOrders(false);
+                    } else {
+                        if (msgDiv) {
+                            msgDiv.className = 'live-search-message success';
+                            msgDiv.innerHTML = `<i class="fas fa-check-circle"></i> တွေ့ရှိပါသည်။ (${orders.length} ခု) 🟡 အဝါရောင် မှိတ်တုတ်ပြသပါမည်။`;
+                            setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+                        }
+
+                        // Remove previous highlights
+                        removeAllHighlights();
+
+                        // Update data
+                        liveCurrentSearchPhone = phone;
+                        liveOrdersData = orders.slice(0, 50);
+                        renderLiveOrders(false);
+
+                        // Highlight matching cards
+                        setTimeout(() => {
+                            const cards = document.querySelectorAll('.live-card');
+                            cards.forEach(card => {
+                                const cardPhone = card.getAttribute('data-phone');
+                                if (cardPhone === phone) {
+                                    card.classList.add('search-highlight');
+                                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                            });
+                            setTimeout(() => {
+                                removeAllHighlights();
+                            }, 3000);
+                        }, 100);
                     }
-                    liveRefreshSec--;
-                    if (liveRefreshSec < 0) liveRefreshSec = 30;
+                } catch (e) {
+                    console.error('Search error:', e);
+                    if (msgDiv) {
+                        msgDiv.className = 'live-search-message error';
+                        msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ရှာဖွေရာတွင် အမှားရှိပါသည်။';
+                        setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+                    }
+                } finally {
+                    isSearching = false;
+                    if (searchBtn) {
+                        searchBtn.disabled = false;
+                        searchBtn.innerHTML = '<i class="fas fa-search"></i> ရှာ';
+                    }
                 }
-            };
-            
-            liveTimerInterval = setInterval(updateTimer, 1000);
-            
-            liveRefreshInterval = setInterval(async () => {
-                await fetchLiveOrders();
+            }
+
+            function clearLiveSearch() {
+                liveCurrentSearchPhone = '';
+                const searchInput = document.getElementById('liveSearchPhoneInput');
+                if (searchInput) searchInput.value = '';
+                const msgDiv = document.getElementById('liveSearchMsg');
+                if (msgDiv) msgDiv.style.display = 'none';
+                removeAllHighlights();
+                fetchLiveOrders();
+                showToast('🔍 ရှာဖွေမှုရှင်းလင်းပြီးပါပြီ');
+            }
+
+            function removeAllHighlights() {
+                document.querySelectorAll('.live-card').forEach(card => {
+                    card.classList.remove('search-highlight');
+                });
+            }
+
+            // ================================================================
+            //  AUTO REFRESH
+            // ================================================================
+
+            function startLiveAutoRefresh() {
+                stopLiveAutoRefresh();
+
                 liveRefreshSec = 30;
-                if (timerSpan) timerSpan.innerText = 'auto 30s';
-            }, 30000);
-            
-            startLiveRotate();
-        }
+                const timerSpan = document.getElementById('liveTimerDisplay');
 
-        // Stop auto refresh
-        function stopLiveAutoRefresh() {
-            if (liveRefreshInterval) {
-                clearInterval(liveRefreshInterval);
-                liveRefreshInterval = null;
-            }
-            if (liveTimerInterval) {
-                clearInterval(liveTimerInterval);
-                liveTimerInterval = null;
-            }
-            if (rotateInterval) {
-                clearInterval(rotateInterval);
-                rotateInterval = null;
-            }
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
-            }
-        }
+                // Timer countdown
+                liveTimerInterval = setInterval(() => {
+                    if (timerSpan) {
+                        timerSpan.innerHTML = `<i class="fas fa-clock"></i> auto ${liveRefreshSec}s`;
+                        liveRefreshSec--;
+                        if (liveRefreshSec < 0) liveRefreshSec = 30;
+                    }
+                }, 1000);
 
-        // Initialize Live component
-        function initLiveComponent() {
-            stopLiveAutoRefresh();
-            liveOrdersData = [];
-            liveCurrentSearchPhone = "";
-            lastOrderIds = [];
-            removeAllHighlights();
-            fetchLiveOrders();
-            startLiveAutoRefresh();
-        }
+                // Refresh every 30 seconds
+                liveRefreshInterval = setInterval(() => {
+                    fetchLiveOrders();
+                    liveRefreshSec = 30;
+                    if (timerSpan) timerSpan.innerHTML = '<i class="fas fa-clock"></i> auto 30s';
+                }, 30000);
 
-        // Cleanup Live component
-        function cleanupLiveComponent() {
-            stopLiveAutoRefresh();
-        }
+                // Rotate every 10 seconds
+                rotateInterval = setInterval(() => {
+                    if (liveOrdersData.length > 1 && !liveCurrentSearchPhone) {
+                        rotateLiveOrders();
+                    }
+                }, 10000);
+            }
 
-        // Expose functions to window
-        window.searchLiveOrder = searchLiveOrder;
-        window.clearLiveSearch = clearLiveSearch;
-        window.fetchLiveOrders = fetchLiveOrders;
-        window.refreshLiveOrders = refreshLiveOrders;
-        window.initLiveComponent = initLiveComponent;
-        window.cleanupLiveComponent = cleanupLiveComponent;
-        
-        // Auto-initialize
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                initLiveComponent();
+            function stopLiveAutoRefresh() {
+                if (liveRefreshInterval) {
+                    clearInterval(liveRefreshInterval);
+                    liveRefreshInterval = null;
+                }
+                if (liveTimerInterval) {
+                    clearInterval(liveTimerInterval);
+                    liveTimerInterval = null;
+                }
+                if (rotateInterval) {
+                    clearInterval(rotateInterval);
+                    rotateInterval = null;
+                }
+                stopAllCountdowns();
+            }
+
+            // ================================================================
+            //  KEYBOARD SHORTCUTS
+            // ================================================================
+
+            document.addEventListener('keydown', function(e) {
+                // Enter key on search input
+                if (e.key === 'Enter' && document.activeElement === document.getElementById('liveSearchPhoneInput')) {
+                    e.preventDefault();
+                    searchLiveOrder();
+                }
+                // Escape key to clear search
+                if (e.key === 'Escape') {
+                    clearLiveSearch();
+                }
+                // 'r' key to refresh
+                if (e.key === 'r' && !e.ctrlKey && !e.metaKey) {
+                    if (document.activeElement?.tagName !== 'INPUT') {
+                        e.preventDefault();
+                        refreshLiveOrders();
+                    }
+                }
             });
-        } else {
-            initLiveComponent();
-        }
-    })();
-</script>
+
+            // ================================================================
+            //  PAGE VISIBILITY - Pause/Resume
+            // ================================================================
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    // Pause countdowns
+                    stopAllCountdowns();
+                } else {
+                    // Resume countdowns
+                    startAllCountdowns();
+                    // Refresh when tab becomes visible
+                    fetchLiveOrders();
+                }
+            });
+
+            // ================================================================
+            //  INIT & CLEANUP
+            // ================================================================
+
+            function initLiveComponent() {
+                stopLiveAutoRefresh();
+                liveOrdersData = [];
+                liveCurrentSearchPhone = '';
+                lastOrderIds = [];
+                removeAllHighlights();
+
+                // Clear search input
+                const searchInput = document.getElementById('liveSearchPhoneInput');
+                if (searchInput) searchInput.value = '';
+
+                // Start
+                fetchLiveOrders();
+                startLiveAutoRefresh();
+
+                // Update time display
+                const timeDisplay = document.getElementById('liveTimeDisplay');
+                if (timeDisplay) {
+                    const now = new Date();
+                    timeDisplay.textContent = `🕐 ${now.toLocaleTimeString()}`;
+                    setInterval(() => {
+                        const now2 = new Date();
+                        timeDisplay.textContent = `🕐 ${now2.toLocaleTimeString()}`;
+                    }, 60000);
+                }
+
+                console.log('📡 Live component initialized');
+            }
+
+            function cleanupLiveComponent() {
+                stopLiveAutoRefresh();
+                console.log('📡 Live component cleaned up');
+            }
+
+            // ================================================================
+            //  EXPOSE GLOBALS
+            // ================================================================
+
+            window.searchLiveOrder = searchLiveOrder;
+            window.clearLiveSearch = clearLiveSearch;
+            window.fetchLiveOrders = fetchLiveOrders;
+            window.refreshLiveOrders = refreshLiveOrders;
+            window.initLiveComponent = initLiveComponent;
+            window.cleanupLiveComponent = cleanupLiveComponent;
+            window.copyToClipboard = copyToClipboard;
+
+            // Auto-initialize
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initLiveComponent);
+            } else {
+                initLiveComponent();
+            }
+
+            // Cleanup on page unload
+            window.addEventListener('beforeunload', () => {
+                cleanupLiveComponent();
+            });
+
+            console.log('📡 Live orders script loaded successfully');
+
+        })();
+    </script>
+
+</body>
+</html>
