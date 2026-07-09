@@ -511,35 +511,66 @@
             color: var(--text-secondary);
         }
 
-        /* ===== DATE RANGE ===== */
+        /* ===== DATE RANGE - 50% + 50% LAYOUT ===== */
         .live-daterange-row {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 8px;
             margin-top: 8px;
-            font-size: 0.55rem;
-            background: rgba(0,212,255,0.04);
-            padding: 6px 12px;
-            border-radius: 40px;
-            border: 1px solid rgba(0,212,255,0.06);
-            flex-wrap: wrap;
-            gap: 4px;
+            padding: 0;
+            background: transparent;
+            border: none;
         }
 
         .date-range-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            flex: 1;
+            padding: 6px 10px;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 0;
+        }
+
+        .date-range-item.start {
+            background: rgba(0,212,255,0.08);
+            border: 1px solid rgba(0,212,255,0.1);
+        }
+
+        .date-range-item.end {
+            background: rgba(244,63,94,0.08);
+            border: 1px solid rgba(244,63,94,0.1);
         }
 
         .date-range-label {
+            font-size: 0.5rem;
             color: var(--text-secondary);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .date-range-label i {
+            font-size: 0.5rem;
+            margin-right: 2px;
+        }
+
+        .date-range-label.start i {
+            color: var(--cyan);
+        }
+
+        .date-range-label.end i {
+            color: var(--rose);
         }
 
         .date-range-value {
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 0.7rem;
+            display: block;
+        }
+
+        .date-range-value.start {
             color: var(--cyan);
-            font-family: monospace;
+        }
+
+        .date-range-value.end {
+            color: var(--rose);
         }
 
         /* ===== REMAINING TIME ===== */
@@ -799,11 +830,18 @@
                 padding: 4px 8px;
             }
             .live-daterange-row {
-                font-size: 0.5rem;
-                padding: 4px 8px;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 2px;
+                gap: 4px;
+                flex-direction: row;
+            }
+            .date-range-item {
+                padding: 4px 6px;
+                border-radius: 8px;
+            }
+            .date-range-label {
+                font-size: 0.45rem;
+            }
+            .date-range-value {
+                font-size: 0.6rem;
             }
             .live-remaining {
                 font-size: 0.55rem;
@@ -904,11 +942,17 @@
                 padding: 4px 8px;
             }
             .live-daterange-row {
+                gap: 6px;
+            }
+            .date-range-item {
+                padding: 5px 8px;
+                border-radius: 10px;
+            }
+            .date-range-label {
                 font-size: 0.5rem;
-                padding: 5px 10px;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 3px;
+            }
+            .date-range-value {
+                font-size: 0.65rem;
             }
             .live-remaining {
                 font-size: 0.55rem;
@@ -1005,8 +1049,17 @@
                 padding: 6px 12px;
             }
             .live-daterange-row {
-                font-size: 0.6rem;
-                padding: 6px 14px;
+                gap: 8px;
+            }
+            .date-range-item {
+                padding: 6px 12px;
+                border-radius: 12px;
+            }
+            .date-range-label {
+                font-size: 0.55rem;
+            }
+            .date-range-value {
+                font-size: 0.7rem;
             }
             .live-remaining {
                 font-size: 0.65rem;
@@ -1107,8 +1160,17 @@
                 padding: 8px 14px;
             }
             .live-daterange-row {
-                font-size: 0.65rem;
+                gap: 12px;
+            }
+            .date-range-item {
                 padding: 8px 16px;
+                border-radius: 14px;
+            }
+            .date-range-label {
+                font-size: 0.6rem;
+            }
+            .date-range-value {
+                font-size: 0.8rem;
             }
             .live-remaining {
                 font-size: 0.75rem;
@@ -1176,7 +1238,8 @@
             <!-- Search Section -->
             <div class="live-search-section">
                 <div class="live-search-title">
-                    <i class="fas fa-search"></i> အခြားသူများ သက်တမ်းစစ်ရန်                </div>
+                    <i class="fas fa-search"></i> အခြားသူများ သက်တမ်းစစ်ရန်
+                </div>
                 <div class="live-search-box">
                     <input type="tel" id="liveSearchPhoneInput" class="live-search-input" placeholder="📱 09xxxxxxxxx" maxlength="11" inputmode="numeric" pattern="[0-9]*">
                     <button class="live-search-btn" onclick="searchLiveOrder()">
@@ -1288,13 +1351,22 @@
             function formatDate(date) {
                 if (!date) return '';
                 const d = new Date(date);
-                return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                return `${day}/${month}/${year}`;
             }
 
+            // ===== 12-HOUR TIME FORMAT =====
             function formatTime(date) {
                 if (!date) return '';
                 const d = new Date(date);
-                return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                let hours = d.getHours();
+                const minutes = String(d.getMinutes()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'ညနေ' : 'မနက်';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                return `${hours}:${minutes} ${ampm}`;
             }
 
             function getPaymentInfo(method) {
@@ -1454,18 +1526,18 @@
                         }
                     }
 
-                    // Date Range
+                    // Date Range - 50% + 50% Layout
                     let dateRangeHtml = '';
                     if (startDate && endDate && o.status === 'Approved') {
                         dateRangeHtml = `
                             <div class="live-daterange-row">
-                                <div class="date-range-item">
-                                    <span class="date-range-label"><i class="fas fa-calendar-plus"></i> စတင်:</span>
-                                    <span class="date-range-value">${formatDate(startDate)}</span>
+                                <div class="date-range-item start">
+                                    <span class="date-range-label start"><i class="fas fa-calendar-plus"></i> စတင်</span>
+                                    <span class="date-range-value start">${formatDate(startDate)}</span>
                                 </div>
-                                <div class="date-range-item">
-                                    <span class="date-range-label"><i class="fas fa-calendar-times"></i> ကုန်ဆုံး:</span>
-                                    <span class="date-range-value">${formatDate(endDate)}</span>
+                                <div class="date-range-item end">
+                                    <span class="date-range-label end"><i class="fas fa-calendar-times"></i> ကုန်ဆုံး</span>
+                                    <span class="date-range-value end">${formatDate(endDate)}</span>
                                 </div>
                             </div>
                         `;
