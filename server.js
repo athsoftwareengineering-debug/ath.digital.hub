@@ -371,6 +371,7 @@ app.get('/css/notification.css', (req, res) => { res.sendFile(path.join(__dirnam
 app.get('/js/notifications.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'notifications.js')); });
 app.get('/js/sales-hours.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'sales-hours.js')); });
 app.get('/js/user-chat.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'user-chat.js')); });
+app.get('/js/translations.js', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'js', 'translations.js')); });
 app.get('/api/health', (req, res) => { res.json({ status: 'ok', timestamp: new Date().toISOString() }); });
 
 // ==================== USER REGISTRATION ====================
