@@ -2329,6 +2329,26 @@
         .hidden {
             display: none !important;
         }
+
+        /* ============================================================
+           ANIMATED BUTTON
+           ============================================================ */
+        @keyframes pulse-button {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 4px 15px rgba(0,136,204,0.3);
+            }
+            50% { 
+                transform: scale(1.02); 
+                box-shadow: 0 4px 25px rgba(0,136,204,0.5);
+            }
+        }
+        .telegram-btn {
+            animation: pulse-button 2s ease-in-out infinite;
+        }
+        .telegram-btn:hover {
+            animation-play-state: paused;
+        }
     </style>
 </head>
 <body>
@@ -2450,10 +2470,42 @@
                     <div class="user-id-badge" id="userIdDisplay" style="margin-top: 8px;"></div>
                 </div>
 
+                <!-- Welcome Card with Telegram Button & Promotion -->
                 <div style="background:linear-gradient(135deg, rgba(0,212,255,0.06), rgba(139,92,246,0.03)); border-radius:1rem; padding:18px; text-align:center; border:1px solid rgba(0,212,255,0.04);">
                     <i class="fas fa-gem" style="font-size: 2rem; color: var(--cyan); margin-bottom: 8px;"></i>
                     <h3 style="font-size: 0.95rem;">Welcome to ATH DIGITAL HUB</h3>
                     <p style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 4px;">သင့်အတွက် အကောင်းဆုံး VIP Plan များ</p>
+                    
+                    <!-- Telegram Channel Join Button -->
+                    <div style="margin-top: 16px;">
+                        <a href="https://t.me/ATHDIGITALHUBOFFICIAL" target="_blank" 
+                           class="telegram-btn"
+                           style="display: inline-flex; align-items: center; gap: 10px;
+                                  background: linear-gradient(135deg, #0088cc, #006699);
+                                  color: white; text-decoration: none; padding: 10px 24px;
+                                  border-radius: 60px; font-weight: 600; font-size: 0.85rem;
+                                  transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,136,204,0.3);">
+                            <i class="fab fa-telegram" style="font-size: 1.2rem;"></i>
+                            Join Telegram Channel
+                            <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- Promotion Text -->
+                    <div style="margin-top: 14px; padding: 12px; background: rgba(245, 158, 11, 0.08); 
+                                border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.15);">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
+                            <span style="font-size: 1.2rem;">🔥</span>
+                            <span style="font-size: 0.7rem; color: var(--amber); font-weight: 600;">
+                                လျှော့စျေးများ နှင့် အသစ်သော Plan များ သိရှိစေရန်
+                            </span>
+                            <span style="font-size: 1.2rem;">✨</span>
+                        </div>
+                        <div style="font-size: 0.55rem; color: var(--text-secondary); margin-top: 4px;">
+                            <i class="fas fa-bell" style="color: var(--amber);"></i>
+                            Telegram Channel ကို Join ထားပါ။ အထူးလျှော့စျေးများနှင့် Plan အသစ်များကို အမြန်ဆုံးရယူလိုက်ပါ။
+                        </div>
+                    </div>
                 </div>
 
                 <div class="marquee-container">
@@ -2688,6 +2740,7 @@
         let isShopOpen = true;
         let salesStatusInterval = null;
         let orderRefreshInterval = null;
+        let fullRefreshInterval = null;
 
         // ===== UTILITY FUNCTIONS =====
         function maskPhone(phone) {
@@ -2837,8 +2890,49 @@
                 salesStatusInterval = null;
             }
             loadSalesStatus();
-            salesStatusInterval = setInterval(loadSalesStatus, 5000);
-            console.log('🔄 Sales status polling started (every 5 seconds)');
+            salesStatusInterval = setInterval(loadSalesStatus, 20000);
+            console.log('🔄 Sales status polling started (every 20 seconds)');
+        }
+
+        // ===== FULL AUTO REFRESH - 20 SECONDS =====
+        function startFullRefresh() {
+            if (fullRefreshInterval) {
+                clearInterval(fullRefreshInterval);
+                fullRefreshInterval = null;
+            }
+            fullRefreshInterval = setInterval(async () => {
+                if (currentUser) {
+                    try {
+                        if (document.getElementById('ordersTab').classList.contains('active')) {
+                            await loadUserOrders();
+                            renderMyOrders();
+                        }
+                        
+                        if (document.getElementById('homeTab').classList.contains('active')) {
+                            await loadSalesStatus();
+                        }
+                        
+                        if (document.getElementById('liveTab').classList.contains('active') && 
+                            liveLoaded && typeof window.fetchLiveOrders === 'function') {
+                            window.fetchLiveOrders();
+                        }
+                        
+                        if (document.getElementById('profileTab').classList.contains('active')) {
+                            await renderProfile();
+                        }
+                        
+                        const plansIframe = document.querySelector('#plansTab iframe');
+                        if (plansIframe && document.getElementById('plansTab').classList.contains('active')) {
+                            plansIframe.src = plansIframe.src;
+                        }
+                        
+                        console.log('🔄 Auto full refresh completed at:', new Date().toLocaleTimeString());
+                    } catch (e) {
+                        console.error('Auto refresh error:', e);
+                    }
+                }
+            }, 20000);
+            console.log('🔄 Full auto refresh started (every 20 seconds)');
         }
 
         // ===== ORDER REFRESH =====
@@ -2852,8 +2946,8 @@
                     await loadUserOrders();
                     renderMyOrders();
                 }
-            }, 10000);
-            console.log('🔄 Order refresh started (every 10 seconds)');
+            }, 20000);
+            console.log('🔄 Order refresh started (every 20 seconds)');
         }
 
         // ===== CHAT WIDGET =====
@@ -2950,6 +3044,7 @@
                 await renderProfile();
                 startSalesStatusPolling();
                 startOrderRefresh();
+                startFullRefresh();
 
             } catch (e) {
                 showToast("Connection error", true);
@@ -2967,6 +3062,10 @@
                 clearInterval(orderRefreshInterval);
                 orderRefreshInterval = null;
             }
+            if (fullRefreshInterval) {
+                clearInterval(fullRefreshInterval);
+                fullRefreshInterval = null;
+            }
             closeUserChatWidget();
             localStorage.clear();
             currentUser = null;
@@ -2979,27 +3078,41 @@
             showToast("ထွက်ရန် အောင်မြင်ပါသည်။");
         }
 
-        // ===== REFRESH =====
+        // ===== REFRESH ALL DATA (Manual) =====
         async function refreshAllData() {
             const refreshBtn = document.querySelector('.refresh-btn');
             refreshBtn.classList.add('refreshing');
-            showToast('🔄 Refreshing data...');
+            showToast('🔄 Refreshing all data...');
 
-            await loadUserOrders();
-            await loadSalesStatus();
-
-            if (currentTab === 'orders') renderMyOrders();
-            if (currentTab === 'profile') await renderProfile();
-
-            if (liveLoaded && typeof window.fetchLiveOrders === 'function') {
-                window.fetchLiveOrders();
+            try {
+                await loadUserOrders();
+                await loadSalesStatus();
+                
+                const plansIframe = document.querySelector('#plansTab iframe');
+                if (plansIframe) {
+                    plansIframe.src = plansIframe.src;
+                }
+                
+                if (currentTab === 'orders') {
+                    renderMyOrders();
+                } else if (currentTab === 'profile') {
+                    await renderProfile();
+                } else if (currentTab === 'live' && liveLoaded && typeof window.fetchLiveOrders === 'function') {
+                    window.fetchLiveOrders();
+                } else if (currentTab === 'home') {
+                    await loadSalesStatus();
+                }
+                
+                showToast('✅ All data refreshed successfully!');
+                
+            } catch (error) {
+                console.error('Refresh error:', error);
+                showToast('❌ Refresh failed. Please try again.', true);
+            } finally {
+                setTimeout(() => {
+                    refreshBtn.classList.remove('refreshing');
+                }, 500);
             }
-
-            setTimeout(() => {
-                refreshBtn.classList.remove('refreshing');
-            }, 500);
-
-            showToast('✅ Data refreshed successfully');
         }
 
         // ===== EXPORT ORDERS =====
@@ -3062,7 +3175,7 @@
             }
         }
 
-        // ===== RENDER ORDERS - ORIGINAL 50/50 LAYOUT =====
+        // ===== RENDER ORDERS =====
         function renderMyOrders() {
             const container = document.getElementById('myOrdersContainer');
             if (!allOrders.length) {
@@ -3136,31 +3249,25 @@
 
                 html += `
                         <div class="order-card">
-                            <!-- ROW 1: Plan Name + Status -->
                             <div class="order-header">
                                 <div class="order-plan"><span class="plan-icon">${planIcon}</span> ${o.plan}</div>
                                 <div class="order-status ${statusClass}">${statusText}</div>
                             </div>
-                            <!-- ROW 2: Phone + Price -->
                             <div class="order-phone-price">
                                 <div class="order-phone" onclick="copyToClipboard('${o.phone}')"><i class="fas fa-phone-alt"></i> ${o.phone} 📋</div>
                                 <div class="order-price"><i class="fas fa-coins"></i> ${o.price.toLocaleString()} MMK</div>
                             </div>
-                            <!-- ROW 3: Date + Time -->
                             <div class="order-date-time">
                                 <span><i class="fas fa-calendar-day"></i> ${orderDate.toLocaleDateString()}</span>
                                 <span><i class="fas fa-clock"></i> ${orderDate.toLocaleTimeString()}</span>
                             </div>
                             ${proofHtml}
                             ${startEndHtml}
-                            <!-- ROW 6: Remaining + View Slip -->
                             <div class="order-footer">
                                 ${remainingHtml}
                                 ${slipButtonHtml}
                             </div>
-                            <!-- ===== ACTIONS - ORIGINAL 50/50 LAYOUT ===== -->
                             <div class="order-actions-wrapper">
-                                <!-- ROW 7: Detail + Screenshot (50%+50%) -->
                                 <div class="order-actions-row-1">
                                     <button class="btn-detail" onclick="window.viewOrderDetail(${o.id})">
                                         <i class="fas fa-info-circle"></i> အသေးစိတ်
@@ -3173,7 +3280,6 @@
                                         <i class="fas fa-image"></i> မရှိပါ
                                     </button>`}
                                 </div>
-                                <!-- ROW 8: Approve + Reject (50%+50%) - Pending Only -->
                                 ${o.status === 'Pending' ? `
                                 <div class="order-actions-row-2">
                                     <button class="btn-approve" onclick="window.approveOrder(${o.id})">
@@ -3184,7 +3290,6 @@
                                     </button>
                                 </div>
                                 ` : ''}
-                                <!-- ROW 9: Delete (100%) -->
                                 <div class="order-actions-row-3">
                                     <button class="btn-delete" onclick="window.deleteOrder(${o.id})">
                                         <i class="fas fa-trash"></i> ဖျက်မယ်
@@ -3572,7 +3677,6 @@
 
             const t = translations[lang] || translations['my'];
 
-            // Update Drawer Menu
             const drawerLinks = document.querySelectorAll('.drawer-menu li a');
             const drawerTextKeys = ['home', 'plans', 'orders', 'live', 'profile', 'exportOrders', 'support',
                 'logout'
@@ -3584,7 +3688,6 @@
                 }
             });
 
-            // Update Bottom Nav
             const navItems = document.querySelectorAll('.bottom-nav .nav-item');
             const navTextKeys = ['home', 'plans', 'orders', 'live', 'chat'];
             navItems.forEach((item, index) => {
@@ -3594,13 +3697,11 @@
                 }
             });
 
-            // Update Orders Tab buttons
             const selfBtn = document.querySelector('.orders-renew-btn.self');
             const otherBtn = document.querySelector('.orders-renew-btn.other');
             if (selfBtn) selfBtn.innerHTML = `<i class="fas fa-user"></i> ${t.buyForSelf}`;
             if (otherBtn) otherBtn.innerHTML = `<i class="fas fa-users"></i> ${t.buyForOther}`;
 
-            // Update Welcome Text
             const welcomeSpan = document.getElementById('welcomeText');
             if (welcomeSpan) welcomeSpan.textContent = t.welcome;
 
@@ -3651,6 +3752,7 @@
             renderProfile();
             startSalesStatusPolling();
             startOrderRefresh();
+            startFullRefresh();
 
             if (!savedId) {
                 fetch(`${API_BASE}/api/user/${savedPhone}`)
@@ -3701,6 +3803,7 @@
         window.loadUserOrders = loadUserOrders;
         window.renderMyOrders = renderMyOrders;
         window.startOrderRefresh = startOrderRefresh;
+        window.startFullRefresh = startFullRefresh;
         window.viewOrderDetail = viewOrderDetail;
         window.approveOrder = approveOrder;
         window.rejectOrder = rejectOrder;
