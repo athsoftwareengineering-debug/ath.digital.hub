@@ -2,7 +2,10 @@
 <html lang="my">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0c15">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Live Orders - ATH DIGITAL HUB</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -30,6 +33,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -40,19 +44,21 @@
             color: var(--text-primary);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans Myanmar', sans-serif;
             min-height: 100vh;
-            padding: 16px;
-            padding-bottom: 70px;
+            padding: 12px;
+            padding-bottom: 80px;
+            transition: background 0.3s;
         }
 
         .live-container {
             max-width: 600px;
             margin: 0 auto;
-            padding: 0;
+            padding: 0 4px;
         }
 
         /* ===== SCROLLBAR ===== */
         ::-webkit-scrollbar {
             width: 4px;
+            height: 4px;
         }
         ::-webkit-scrollbar-track {
             background: transparent;
@@ -68,7 +74,7 @@
             backdrop-filter: blur(10px);
             border-radius: 1.2rem;
             padding: 14px 16px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
             border: 1px solid rgba(0,212,255,0.12);
         }
 
@@ -102,6 +108,9 @@
             font-size: 0.85rem;
             outline: none;
             transition: all var(--transition);
+            min-height: 44px;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .live-search-input:focus {
@@ -116,7 +125,7 @@
         .live-search-btn {
             background: linear-gradient(135deg, #06b6d4, #0891b2);
             border: none;
-            padding: 8px 18px;
+            padding: 10px 18px;
             border-radius: 60px;
             font-weight: 600;
             cursor: pointer;
@@ -124,14 +133,22 @@
             transition: all var(--transition);
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             font-size: 0.8rem;
-            min-height: 42px;
+            min-height: 44px;
+            min-width: 60px;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
         }
 
         .live-search-btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0,212,255,0.25);
+        }
+
+        .live-search-btn:active:not(:disabled) {
+            transform: scale(0.97);
         }
 
         .live-search-btn:disabled {
@@ -142,21 +159,28 @@
         .live-clear-btn {
             background: #334155;
             border: none;
-            padding: 8px 16px;
+            padding: 10px 16px;
             border-radius: 60px;
             cursor: pointer;
             color: white;
             transition: all var(--transition);
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             font-size: 0.8rem;
-            min-height: 42px;
+            min-height: 44px;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
         }
 
         .live-clear-btn:hover {
             background: #475569;
             transform: translateY(-2px);
+        }
+
+        .live-clear-btn:active {
+            transform: scale(0.97);
         }
 
         .live-search-message {
@@ -166,6 +190,7 @@
             padding: 8px 12px;
             border-radius: 40px;
             display: none;
+            word-break: break-word;
         }
 
         .live-search-message.success {
@@ -191,7 +216,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 12px 0 8px;
+            margin: 10px 0 8px;
             flex-wrap: wrap;
             gap: 8px;
         }
@@ -209,7 +234,7 @@
         }
 
         .live-badge {
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             background: rgba(244,63,94,0.2);
             color: #f43f5e;
             padding: 3px 10px;
@@ -239,6 +264,7 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            white-space: nowrap;
         }
 
         .live-timer i {
@@ -248,10 +274,12 @@
 
         /* ===== ORDERS SCROLLABLE ===== */
         .live-orders-scrollable {
-            max-height: calc(100vh - 340px);
+            max-height: calc(100vh - 360px);
             overflow-y: auto;
+            overflow-x: hidden;
             padding-right: 4px;
-            margin-top: 12px;
+            margin-top: 10px;
+            -webkit-overflow-scrolling: touch;
         }
 
         .live-orders-scrollable::-webkit-scrollbar {
@@ -267,11 +295,15 @@
         .live-card {
             background: linear-gradient(145deg, #0f111a, #0a0c15);
             border-radius: 1.2rem;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             border: 1px solid rgba(0,212,255,0.10);
             transition: all 0.3s ease;
             overflow: hidden;
             position: relative;
+        }
+
+        .live-card:active {
+            transform: scale(0.98);
         }
 
         .live-card:hover {
@@ -338,21 +370,21 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 16px 8px 16px;
+            padding: 12px 14px 6px 14px;
             border-bottom: 1px solid rgba(0,212,255,0.06);
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 4px;
         }
 
         /* Payment Badge */
         .live-payment-badge {
-            padding: 4px 10px;
+            padding: 3px 10px;
             border-radius: 40px;
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
 
         .live-payment-badge.kpay { background: rgba(30,136,229,0.15); color: #64b5f6; }
@@ -362,10 +394,11 @@
         /* Status */
         .live-status {
             display: inline-block;
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 40px;
-            font-size: 0.65rem;
+            font-size: 0.55rem;
             font-weight: 700;
+            white-space: nowrap;
         }
 
         .live-status.pending { background: rgba(245,158,11,0.20); color: #fbbf24; }
@@ -377,14 +410,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 16px 0 16px;
+            padding: 8px 14px 0 14px;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 4px;
         }
 
         .live-plan {
             font-weight: 800;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             background: linear-gradient(135deg, var(--cyan), #7dd3fc);
             background-clip: text;
             -webkit-background-clip: text;
@@ -398,12 +431,12 @@
             color: var(--cyan);
             background: none;
             -webkit-background-clip: unset;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
         .live-price {
             font-weight: 800;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: var(--emerald);
             display: flex;
             align-items: baseline;
@@ -411,14 +444,14 @@
         }
 
         .live-price small {
-            font-size: 0.55rem;
+            font-size: 0.5rem;
             font-weight: 400;
             color: var(--text-secondary);
         }
 
         /* ===== CARD BODY ===== */
         .live-card-body {
-            padding: 12px 16px 14px 16px;
+            padding: 10px 14px 12px 14px;
         }
 
         /* Info Row - Phone + Time */
@@ -427,22 +460,25 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
         }
 
         .live-phone {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
+            gap: 6px;
+            font-size: 0.75rem;
             font-family: monospace;
             font-weight: 600;
             color: var(--cyan);
             background: rgba(0,212,255,0.08);
-            padding: 6px 14px;
+            padding: 5px 12px;
             border-radius: 40px;
             cursor: pointer;
             transition: all var(--transition);
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            user-select: none;
         }
 
         .live-phone:hover {
@@ -450,24 +486,28 @@
             transform: translateX(3px);
         }
 
+        .live-phone:active {
+            transform: scale(0.97);
+        }
+
         .live-phone i {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             color: var(--cyan);
         }
 
         .live-time {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 0.65rem;
+            gap: 4px;
+            font-size: 0.55rem;
             color: var(--text-secondary);
             background: rgba(0,0,0,0.2);
-            padding: 6px 12px;
+            padding: 5px 10px;
             border-radius: 40px;
         }
 
         .live-time i {
-            font-size: 0.6rem;
+            font-size: 0.5rem;
             color: var(--text-secondary);
         }
 
@@ -476,20 +516,20 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 10px;
-            font-size: 0.65rem;
+            margin-top: 8px;
+            font-size: 0.55rem;
             background: rgba(0,212,255,0.04);
-            padding: 8px 12px;
+            padding: 6px 12px;
             border-radius: 40px;
             border: 1px solid rgba(0,212,255,0.06);
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 4px;
         }
 
         .date-range-item {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
 
         .date-range-label {
@@ -506,28 +546,30 @@
         .live-remaining-row {
             background: rgba(0,212,255,0.06);
             border-radius: 40px;
-            padding: 8px 12px;
-            margin-top: 10px;
+            padding: 6px 12px;
+            margin-top: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             border: 1px solid rgba(0,212,255,0.12);
         }
 
         .live-remaining {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             font-weight: 600;
             color: var(--cyan);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             font-family: monospace;
             letter-spacing: 0.3px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .live-remaining i {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             color: var(--cyan);
         }
 
@@ -553,19 +595,19 @@
         .expired-badge {
             background: rgba(244,63,94,0.15);
             color: #fb7185;
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 40px;
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
 
         /* ===== EMPTY / LOADING STATES ===== */
         .live-empty {
             text-align: center;
-            padding: 60px 20px;
+            padding: 40px 20px;
             color: var(--text-secondary);
             background: rgba(0,212,255,0.03);
             border-radius: 1rem;
@@ -576,7 +618,7 @@
             font-size: 2rem;
             color: var(--text-secondary);
             display: block;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             opacity: 0.5;
         }
 
@@ -585,7 +627,7 @@
             border: none;
             padding: 8px 20px;
             border-radius: 40px;
-            margin-top: 12px;
+            margin-top: 10px;
             cursor: pointer;
             color: #030712;
             font-weight: 600;
@@ -593,6 +635,8 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            touch-action: manipulation;
+            min-height: 40px;
         }
 
         .live-empty .retry-btn:hover {
@@ -600,9 +644,13 @@
             box-shadow: 0 8px 25px rgba(0,212,255,0.25);
         }
 
+        .live-empty .retry-btn:active {
+            transform: scale(0.97);
+        }
+
         .live-loading {
             text-align: center;
-            padding: 60px 20px;
+            padding: 40px 20px;
             color: var(--text-secondary);
         }
 
@@ -616,13 +664,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 16px;
+            margin-top: 14px;
             padding-top: 10px;
             border-top: 1px solid rgba(255,255,255,0.04);
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             color: #64748b;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 4px;
         }
 
         .live-status-dot {
@@ -649,7 +697,8 @@
         .live-status-right {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .live-status-count {
@@ -662,188 +711,459 @@
         }
 
         /* ============================================================
-           RESPONSIVE
+           RESPONSIVE - ALL PHONES
            ============================================================ */
-        @media (max-width: 480px) {
+
+        /* Extra Small - Very Small Phones */
+        @media (max-width: 380px) {
             body {
-                padding: 10px;
+                padding: 6px;
                 padding-bottom: 70px;
             }
-
+            .live-container {
+                padding: 0 2px;
+            }
+            .live-search-section {
+                padding: 10px 12px;
+                border-radius: 1rem;
+            }
+            .live-search-title {
+                font-size: 0.6rem;
+            }
             .live-search-box {
                 flex-direction: column;
+                gap: 6px;
             }
-
             .live-search-input {
                 width: 100%;
                 min-width: unset;
+                padding: 8px 14px;
+                font-size: 0.8rem;
+                min-height: 38px;
             }
-
             .live-search-btn,
             .live-clear-btn {
                 width: 100%;
                 justify-content: center;
+                padding: 8px 14px;
+                font-size: 0.7rem;
+                min-height: 38px;
             }
-
-            .live-card {
-                border-radius: 1rem;
-            }
-
-            .live-card-header {
-                padding: 12px 14px 6px 14px;
-            }
-
-            .live-card-plan-row {
-                padding: 8px 14px 0 14px;
-            }
-
-            .live-card-body {
-                padding: 10px 14px 12px 14px;
-            }
-
-            .live-plan {
-                font-size: 0.8rem;
-            }
-
-            .live-price {
-                font-size: 0.8rem;
-            }
-
-            .live-phone {
-                font-size: 0.75rem;
-                padding: 4px 10px;
-            }
-
-            .live-info-row {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 6px;
-            }
-
-            .live-daterange-row {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
-            }
-
             .live-header h2 {
-                font-size: 0.9rem;
+                font-size: 0.8rem;
             }
-
+            .live-badge {
+                font-size: 0.5rem;
+                padding: 2px 8px;
+            }
             .live-timer {
+                font-size: 0.5rem;
+                padding: 3px 8px;
+            }
+            .live-card {
+                border-radius: 0.8rem;
+                margin-bottom: 8px;
+            }
+            .live-card-header {
+                padding: 8px 10px 4px 10px;
+            }
+            .live-payment-badge {
+                font-size: 0.5rem;
+                padding: 2px 8px;
+            }
+            .live-status {
+                font-size: 0.5rem;
+                padding: 2px 8px;
+            }
+            .live-card-plan-row {
+                padding: 6px 10px 0 10px;
+            }
+            .live-plan {
+                font-size: 0.7rem;
+            }
+            .live-plan i {
+                font-size: 0.7rem;
+            }
+            .live-price {
+                font-size: 0.7rem;
+            }
+            .live-card-body {
+                padding: 8px 10px 10px 10px;
+            }
+            .live-phone {
+                font-size: 0.65rem;
+                padding: 4px 8px;
+            }
+            .live-time {
+                font-size: 0.5rem;
+                padding: 4px 8px;
+            }
+            .live-daterange-row {
+                font-size: 0.5rem;
+                padding: 4px 8px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 2px;
+            }
+            .live-remaining {
                 font-size: 0.55rem;
             }
-
-            .live-remaining {
-                font-size: 0.65rem;
+            .live-remaining-row {
+                padding: 4px 8px;
             }
-
-            .live-status-bar {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 4px;
-            }
-
-            .live-status-right {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
             .live-orders-scrollable {
                 max-height: calc(100vh - 380px);
             }
-
-            .live-search-title {
-                font-size: 0.6rem;
+            .live-status-bar {
+                font-size: 0.5rem;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .live-status-right {
+                justify-content: center;
+            }
+            .live-empty {
+                padding: 30px 16px;
+            }
+            .live-empty i {
+                font-size: 1.5rem;
+            }
+            .live-search-message {
+                font-size: 0.55rem;
+                padding: 6px 10px;
             }
         }
 
-        @media (max-width: 380px) {
-            .live-card-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
+        /* Mobile Phones */
+        @media (min-width: 381px) and (max-width: 480px) {
+            body {
+                padding: 10px;
+                padding-bottom: 75px;
             }
-
-            .live-payment-badge {
-                font-size: 0.6rem;
+            .live-container {
+                padding: 0 4px;
             }
-
-            .live-status {
-                font-size: 0.55rem;
+            .live-search-section {
+                padding: 12px 14px;
+                border-radius: 1.1rem;
             }
-
-            .live-plan {
-                font-size: 0.7rem;
-            }
-
-            .live-price {
-                font-size: 0.7rem;
-            }
-
-            .live-phone {
+            .live-search-title {
                 font-size: 0.65rem;
             }
-
-            .live-remaining {
-                font-size: 0.6rem;
-                flex-wrap: wrap;
-                justify-content: center;
+            .live-search-box {
+                flex-direction: column;
+                gap: 8px;
             }
-
+            .live-search-input {
+                width: 100%;
+                min-width: unset;
+                padding: 10px 14px;
+                font-size: 0.85rem;
+                min-height: 42px;
+            }
+            .live-search-btn,
+            .live-clear-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 10px 16px;
+                font-size: 0.75rem;
+                min-height: 42px;
+            }
+            .live-card {
+                border-radius: 1rem;
+                margin-bottom: 10px;
+            }
+            .live-card-header {
+                padding: 10px 12px 4px 12px;
+            }
+            .live-payment-badge {
+                font-size: 0.55rem;
+            }
+            .live-status {
+                font-size: 0.5rem;
+            }
+            .live-card-plan-row {
+                padding: 6px 12px 0 12px;
+            }
+            .live-plan {
+                font-size: 0.75rem;
+            }
+            .live-price {
+                font-size: 0.75rem;
+            }
+            .live-card-body {
+                padding: 8px 12px 10px 12px;
+            }
+            .live-phone {
+                font-size: 0.7rem;
+                padding: 4px 10px;
+            }
+            .live-time {
+                font-size: 0.5rem;
+                padding: 4px 8px;
+            }
+            .live-daterange-row {
+                font-size: 0.5rem;
+                padding: 5px 10px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 3px;
+            }
+            .live-remaining {
+                font-size: 0.55rem;
+            }
+            .live-remaining-row {
+                padding: 5px 10px;
+            }
             .live-orders-scrollable {
                 max-height: calc(100vh - 400px);
             }
+            .live-status-bar {
+                font-size: 0.5rem;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .live-status-right {
+                justify-content: center;
+            }
+            .live-header h2 {
+                font-size: 0.9rem;
+            }
+            .live-timer {
+                font-size: 0.55rem;
+                padding: 3px 10px;
+            }
+            .live-search-message {
+                font-size: 0.6rem;
+                padding: 6px 10px;
+            }
         }
 
+        /* Tablet */
         @media (min-width: 481px) and (max-width: 768px) {
+            body {
+                padding: 16px;
+                padding-bottom: 80px;
+            }
+            .live-container {
+                padding: 0 8px;
+                max-width: 600px;
+            }
+            .live-search-section {
+                padding: 16px 20px;
+            }
             .live-search-box {
                 flex-wrap: nowrap;
             }
-
             .live-search-input {
                 min-width: 150px;
+                padding: 12px 18px;
+                font-size: 0.9rem;
+                min-height: 46px;
             }
-
+            .live-search-btn,
+            .live-clear-btn {
+                padding: 12px 20px;
+                font-size: 0.8rem;
+                min-height: 46px;
+            }
+            .live-card {
+                border-radius: 1.2rem;
+                margin-bottom: 12px;
+            }
+            .live-card-header {
+                padding: 12px 16px 6px 16px;
+            }
+            .live-payment-badge {
+                font-size: 0.65rem;
+                padding: 4px 12px;
+            }
+            .live-status {
+                font-size: 0.6rem;
+                padding: 4px 12px;
+            }
+            .live-card-plan-row {
+                padding: 8px 16px 0 16px;
+            }
+            .live-plan {
+                font-size: 0.85rem;
+            }
+            .live-price {
+                font-size: 0.85rem;
+            }
+            .live-card-body {
+                padding: 10px 16px 12px 16px;
+            }
+            .live-phone {
+                font-size: 0.8rem;
+                padding: 6px 14px;
+            }
+            .live-time {
+                font-size: 0.6rem;
+                padding: 6px 12px;
+            }
+            .live-daterange-row {
+                font-size: 0.6rem;
+                padding: 6px 14px;
+            }
+            .live-remaining {
+                font-size: 0.65rem;
+            }
+            .live-remaining-row {
+                padding: 6px 14px;
+            }
             .live-orders-scrollable {
-                max-height: calc(100vh - 350px);
+                max-height: calc(100vh - 370px);
+            }
+            .live-header h2 {
+                font-size: 1rem;
+            }
+            .live-timer {
+                font-size: 0.6rem;
+                padding: 4px 12px;
+            }
+            .live-status-bar {
+                font-size: 0.6rem;
+            }
+            .live-search-message {
+                font-size: 0.65rem;
+                padding: 8px 14px;
             }
         }
 
+        /* Desktop */
         @media (min-width: 769px) {
+            body {
+                padding: 24px;
+                padding-bottom: 90px;
+                display: flex;
+                justify-content: center;
+            }
             .live-container {
                 max-width: 700px;
+                padding: 0 12px;
             }
-
-            .live-orders-scrollable {
-                max-height: calc(100vh - 320px);
-            }
-
-            .live-card {
+            .live-search-section {
+                padding: 20px 24px;
                 border-radius: 1.5rem;
             }
-
+            .live-search-title {
+                font-size: 0.8rem;
+            }
+            .live-search-box {
+                flex-wrap: nowrap;
+                gap: 12px;
+            }
+            .live-search-input {
+                min-width: 200px;
+                padding: 14px 20px;
+                font-size: 0.95rem;
+                min-height: 50px;
+            }
+            .live-search-btn,
+            .live-clear-btn {
+                padding: 14px 24px;
+                font-size: 0.85rem;
+                min-height: 50px;
+            }
+            .live-card {
+                border-radius: 1.5rem;
+                margin-bottom: 16px;
+            }
             .live-card:hover {
                 transform: translateY(-4px);
             }
-
+            .live-card-header {
+                padding: 14px 20px 8px 20px;
+            }
+            .live-payment-badge {
+                font-size: 0.7rem;
+                padding: 4px 14px;
+            }
+            .live-status {
+                font-size: 0.65rem;
+                padding: 4px 14px;
+            }
+            .live-card-plan-row {
+                padding: 10px 20px 0 20px;
+            }
             .live-plan {
                 font-size: 1rem;
             }
-
             .live-price {
                 font-size: 1rem;
             }
-
+            .live-card-body {
+                padding: 12px 20px 16px 20px;
+            }
             .live-phone {
                 font-size: 0.9rem;
+                padding: 8px 18px;
+            }
+            .live-time {
+                font-size: 0.65rem;
+                padding: 8px 14px;
+            }
+            .live-daterange-row {
+                font-size: 0.65rem;
                 padding: 8px 16px;
             }
-
             .live-remaining {
                 font-size: 0.75rem;
             }
+            .live-remaining-row {
+                padding: 8px 16px;
+            }
+            .live-orders-scrollable {
+                max-height: calc(100vh - 360px);
+            }
+            .live-header h2 {
+                font-size: 1.1rem;
+            }
+            .live-timer {
+                font-size: 0.65rem;
+                padding: 6px 14px;
+            }
+            .live-status-bar {
+                font-size: 0.65rem;
+            }
+            .live-search-message {
+                font-size: 0.7rem;
+                padding: 8px 16px;
+            }
+            .live-empty {
+                padding: 60px 30px;
+            }
+            .live-empty i {
+                font-size: 2.5rem;
+            }
+        }
+
+        /* ============================================================
+           SAFE AREA SUPPORT
+           ============================================================ */
+        @supports (padding: max(0px)) {
+            body {
+                padding-bottom: max(80px, env(safe-area-inset-bottom) + 60px);
+            }
+        }
+
+        /* ============================================================
+           UTILITY
+           ============================================================ */
+        .text-center {
+            text-align: center;
+        }
+        .text-muted {
+            color: var(--text-secondary);
+        }
+        .text-xs {
+            font-size: 0.55rem;
+        }
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
@@ -856,10 +1176,9 @@
             <!-- Search Section -->
             <div class="live-search-section">
                 <div class="live-search-title">
-                    <i class="fas fa-search"></i> အခြားသူများ သက်တမ်းစစ်ရန်
-                </div>
+                    <i class="fas fa-search"></i> အခြားသူများ သက်တမ်းစစ်ရန်                </div>
                 <div class="live-search-box">
-                    <input type="tel" id="liveSearchPhoneInput" class="live-search-input" placeholder="📱 09xxxxxxxxx" maxlength="11">
+                    <input type="tel" id="liveSearchPhoneInput" class="live-search-input" placeholder="📱 09xxxxxxxxx" maxlength="11" inputmode="numeric" pattern="[0-9]*">
                     <button class="live-search-btn" onclick="searchLiveOrder()">
                         <i class="fas fa-search"></i> ရှာ
                     </button>
@@ -1052,7 +1371,6 @@
                         } else {
                             elem.innerHTML = `<i class="fas fa-hourglass-half"></i> <span>ကျန်ရှိ: ${remainStr}</span>`;
                             elem.classList.remove('expired');
-                            // Add blink effect
                             elem.classList.add('countdown-updating');
                             setTimeout(() => {
                                 elem.classList.remove('countdown-updating');
@@ -1069,7 +1387,6 @@
                 }
 
                 countdownInterval = setInterval(() => {
-                    // Only update if tab is visible
                     if (!document.hidden) {
                         updateAllCountdowns();
                     }
@@ -1381,7 +1698,6 @@
                             msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> ဤဖုန်းနံပါတ်အတွက် ဝယ်ယူထားခြင်းမရှိသေးပါ။';
                             setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
                         }
-                        // Show empty state
                         liveCurrentSearchPhone = phone;
                         liveOrdersData = [];
                         renderLiveOrders(false);
@@ -1392,15 +1708,12 @@
                             setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
                         }
 
-                        // Remove previous highlights
                         removeAllHighlights();
 
-                        // Update data
                         liveCurrentSearchPhone = phone;
                         liveOrdersData = orders.slice(0, 50);
                         renderLiveOrders(false);
 
-                        // Highlight matching cards
                         setTimeout(() => {
                             const cards = document.querySelectorAll('.live-card');
                             cards.forEach(card => {
@@ -1458,7 +1771,6 @@
                 liveRefreshSec = 30;
                 const timerSpan = document.getElementById('liveTimerDisplay');
 
-                // Timer countdown
                 liveTimerInterval = setInterval(() => {
                     if (timerSpan) {
                         timerSpan.innerHTML = `<i class="fas fa-clock"></i> auto ${liveRefreshSec}s`;
@@ -1467,14 +1779,12 @@
                     }
                 }, 1000);
 
-                // Refresh every 30 seconds
                 liveRefreshInterval = setInterval(() => {
                     fetchLiveOrders();
                     liveRefreshSec = 30;
                     if (timerSpan) timerSpan.innerHTML = '<i class="fas fa-clock"></i> auto 30s';
                 }, 30000);
 
-                // Rotate every 10 seconds
                 rotateInterval = setInterval(() => {
                     if (liveOrdersData.length > 1 && !liveCurrentSearchPhone) {
                         rotateLiveOrders();
@@ -1503,16 +1813,13 @@
             // ================================================================
 
             document.addEventListener('keydown', function(e) {
-                // Enter key on search input
                 if (e.key === 'Enter' && document.activeElement === document.getElementById('liveSearchPhoneInput')) {
                     e.preventDefault();
                     searchLiveOrder();
                 }
-                // Escape key to clear search
                 if (e.key === 'Escape') {
                     clearLiveSearch();
                 }
-                // 'r' key to refresh
                 if (e.key === 'r' && !e.ctrlKey && !e.metaKey) {
                     if (document.activeElement?.tagName !== 'INPUT') {
                         e.preventDefault();
@@ -1522,20 +1829,38 @@
             });
 
             // ================================================================
-            //  PAGE VISIBILITY - Pause/Resume
+            //  PAGE VISIBILITY
             // ================================================================
 
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
-                    // Pause countdowns
                     stopAllCountdowns();
                 } else {
-                    // Resume countdowns
                     startAllCountdowns();
-                    // Refresh when tab becomes visible
                     fetchLiveOrders();
                 }
             });
+
+            // ================================================================
+            //  MOBILE TOUCH HANDLING
+            // ================================================================
+
+            document.addEventListener('touchstart', function() {
+                // Ensure touch interactions work smoothly
+            }, { passive: true });
+
+            // Prevent zoom on double tap for input
+            document.addEventListener('touchend', function(e) {
+                const now = Date.now();
+                if (now - (document.lastTouch || 0) < 500) {
+                    const target = e.target;
+                    if (target && target.tagName === 'INPUT' && target.type === 'tel') {
+                        e.preventDefault();
+                        target.focus();
+                    }
+                }
+                document.lastTouch = now;
+            }, { passive: false });
 
             // ================================================================
             //  INIT & CLEANUP
@@ -1548,15 +1873,12 @@
                 lastOrderIds = [];
                 removeAllHighlights();
 
-                // Clear search input
                 const searchInput = document.getElementById('liveSearchPhoneInput');
                 if (searchInput) searchInput.value = '';
 
-                // Start
                 fetchLiveOrders();
                 startLiveAutoRefresh();
 
-                // Update time display
                 const timeDisplay = document.getElementById('liveTimeDisplay');
                 if (timeDisplay) {
                     const now = new Date();
@@ -1594,7 +1916,6 @@
                 initLiveComponent();
             }
 
-            // Cleanup on page unload
             window.addEventListener('beforeunload', () => {
                 cleanupLiveComponent();
             });
