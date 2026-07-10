@@ -887,7 +887,7 @@
             transform: scale(0.93);
         }
 
-        /* ===== ORDER ACTIONS - UPDATED (No Screenshot) ===== */
+        /* ===== ORDER ACTIONS - ORIGINAL 50/50 LAYOUT ===== */
         .order-actions-wrapper {
             width: 100%;
             display: flex;
@@ -898,6 +898,7 @@
             border-top: 1px solid rgba(255, 255, 255, 0.04);
         }
 
+        /* Row 1: Detail + Screenshot - 50%+50% */
         .order-actions-row-1 {
             display: flex;
             gap: 8px;
@@ -908,6 +909,7 @@
             min-width: 0;
         }
 
+        /* Row 2: Approve + Reject - 50%+50% (only if Pending) */
         .order-actions-row-2 {
             display: flex;
             gap: 8px;
@@ -918,6 +920,7 @@
             min-width: 0;
         }
 
+        /* Row 3: Delete - 100% */
         .order-actions-row-3 {
             display: flex;
             gap: 8px;
@@ -960,6 +963,17 @@
             background: linear-gradient(135deg, #8b5cf6, #7c3aed);
             color: white;
             border-color: #8b5cf6;
+        }
+
+        .btn-screenshot {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.25), rgba(0, 212, 255, 0.08));
+            color: #00d4ff;
+            border: 1px solid rgba(0, 212, 255, 0.25);
+        }
+        .btn-screenshot:hover {
+            background: linear-gradient(135deg, #00d4ff, #0891b2);
+            color: white;
+            border-color: #00d4ff;
         }
 
         .btn-approve {
@@ -1554,170 +1568,152 @@
         }
 
         /* ============================================================
-           TOAST NOTIFICATION - BEAUTIFUL STYLE
+           TOAST
            ============================================================ */
         .toast {
             position: fixed;
-            bottom: 80px;
+            bottom: 70px;
             left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: rgba(18, 22, 35, 0.95);
-            backdrop-filter: blur(20px) saturate(1.5);
-            border: 1px solid rgba(0, 212, 255, 0.2);
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--emerald);
             color: var(--text-primary);
-            padding: 14px 24px;
-            border-radius: 16px;
-            font-size: 0.75rem;
+            padding: 10px 18px;
+            border-radius: 60px;
+            font-size: 0.7rem;
             z-index: 1000;
             display: none;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 212, 255, 0.05);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             max-width: 90%;
-            min-width: 200px;
             text-align: center;
-            border-radius: 16px;
         }
 
-        .toast.success {
-            border-color: rgba(16, 185, 129, 0.3);
-            border-left: 4px solid #10b981;
-        }
-
-        .toast.error {
-            border-color: rgba(244, 63, 94, 0.3);
-            border-left: 4px solid #f43f5e;
-        }
-
-        .toast.info {
-            border-color: rgba(0, 212, 255, 0.3);
-            border-left: 4px solid #00d4ff;
-        }
-
-        .toast .toast-content {
+        /* ============================================================
+           IMAGE MODAL
+           ============================================================ */
+        .image-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.96);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
             display: flex;
             align-items: center;
-            gap: 10px;
             justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: all var(--transition);
         }
-
-        .toast .toast-icon {
-            font-size: 1.1rem;
-            display: inline-block;
+        .image-modal.active {
+            visibility: visible;
+            opacity: 1;
         }
-
-        .toast .toast-message {
-            font-weight: 500;
-            line-height: 1.4;
+        .image-modal-content {
+            max-width: 92%;
+            max-height: 90%;
+            background: rgba(18, 22, 35, 0.95);
+            border-radius: 20px;
+            padding: 8px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
         }
-
-        .toast .toast-close {
-            background: rgba(255, 255, 255, 0.05);
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
+        .image-modal-content img {
+            max-width: 100%;
+            max-height: 55vh;
+            border-radius: 14px;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
             font-size: 0.8rem;
-            padding: 2px 8px;
-            border-radius: 40px;
-            transition: all 0.3s ease;
-            margin-left: 8px;
         }
-
-        .toast .toast-close:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .close-modal {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
             color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all var(--transition);
+            touch-action: manipulation;
+            font-size: 1.1rem;
+        }
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: rotate(90deg);
+        }
+        .close-modal:active {
+            transform: scale(0.9);
         }
 
-        @keyframes toastSlideUp {
-            0% {
-                opacity: 0;
-                transform: translateX(-50%) translateY(30px) scale(0.95);
-            }
-            100% {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0) scale(1);
-            }
+        /* ============================================================
+           SUPPORT MODAL
+           ============================================================ */
+        #supportModal .modal-card {
+            max-width: 400px;
+            text-align: center;
         }
-
-        @keyframes toastSlideDown {
-            0% {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translateX(-50%) translateY(20px) scale(0.95);
-            }
+        #supportModal .modal-card a {
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+            touch-action: manipulation;
         }
-
-        .toast.showing {
-            animation: toastSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        #supportModal .modal-card a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
         }
-
-        .toast.hiding {
-            animation: toastSlideDown 0.3s ease-in forwards;
+        #supportModal .modal-card a:active {
+            transform: scale(0.97);
         }
-
-        /* Toast Progress Bar */
-        .toast .toast-progress {
+        #supportModal .modal-card a::after {
+            content: '';
             position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 3px;
-            border-radius: 0 0 16px 16px;
-            background: linear-gradient(90deg, var(--cyan), var(--violet));
-            animation: toastProgress 3s linear forwards;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+            transition: left 0.5s ease;
+        }
+        #supportModal .modal-card a:hover::after {
+            left: 100%;
+        }
+        .support-close-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 60px;
+            background: #334155;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            touch-action: manipulation;
+            min-height: 44px;
+        }
+        .support-close-btn:hover {
+            background: #475569;
+        }
+        .support-close-btn:active {
+            transform: scale(0.97);
         }
 
-        .toast.success .toast-progress {
-            background: linear-gradient(90deg, #10b981, #34d399);
+        /* ============================================================
+           TAB CONTENT
+           ============================================================ */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
         }
-
-        .toast.error .toast-progress {
-            background: linear-gradient(90deg, #f43f5e, #fb7185);
-        }
-
-        .toast.info .toast-progress {
-            background: linear-gradient(90deg, #00d4ff, #7dd3fc);
-        }
-
-        @keyframes toastProgress {
-            0% { width: 100%; }
-            100% { width: 0%; }
-        }
-
-        /* Responsive Toast */
-        @media (max-width: 480px) {
-            .toast {
-                bottom: 70px;
-                padding: 12px 16px;
-                font-size: 0.7rem;
-                min-width: 160px;
-                border-radius: 12px;
-                max-width: 92%;
-            }
-            .toast .toast-icon {
-                font-size: 0.9rem;
-            }
-            .toast .toast-close {
-                font-size: 0.7rem;
-                padding: 2px 6px;
-            }
-        }
-
-        @media (max-width: 380px) {
-            .toast {
-                bottom: 60px;
-                padding: 10px 12px;
-                font-size: 0.65rem;
-                min-width: 140px;
-                border-radius: 10px;
-            }
-            .toast .toast-icon {
-                font-size: 0.8rem;
-            }
-            .toast .toast-close {
-                font-size: 0.6rem;
-                padding: 1px 5px;
-            }
+        .tab-content.active {
+            display: block;
         }
 
         /* ============================================================
@@ -3072,82 +3068,18 @@
             return phone.substring(0, 5) + '***' + phone.substring(phone.length - 3);
         }
 
-        // ===== BEAUTIFUL TOAST FUNCTION =====
-        function showToast(msg, isError, duration = 3000) {
+        function showToast(msg, isError) {
             const toast = document.getElementById('toast');
-            
-            // Clear any existing timeouts
-            if (toast._hideTimer) {
-                clearTimeout(toast._hideTimer);
-                toast._hideTimer = null;
-            }
-            if (toast._progressTimer) {
-                clearTimeout(toast._progressTimer);
-                toast._progressTimer = null;
-            }
-            
-            // Remove hiding class if exists
-            toast.classList.remove('hiding');
-            toast.classList.remove('showing');
-            
-            // Set type
-            const type = isError === true ? 'error' : (isError === 'info' ? 'info' : 'success');
-            toast.className = 'toast ' + type;
-            
-            // Get icon
-            const icons = {
-                success: '✅',
-                error: '❌',
-                info: 'ℹ️'
-            };
-            
-            // Build toast content
-            toast.innerHTML = `
-                <div class="toast-content">
-                    <span class="toast-icon">${icons[type] || '📢'}</span>
-                    <span class="toast-message">${msg}</span>
-                    <button class="toast-close" onclick="hideToast()">✕</button>
-                </div>
-                <div class="toast-progress"></div>
-            `;
-            
-            // Show toast
+            toast.textContent = msg;
+            toast.style.borderColor = isError ? '#f43f5e' : '#10b981';
             toast.style.display = 'block';
-            toast.classList.add('showing');
-            
-            // Auto hide after duration
-            toast._hideTimer = setTimeout(() => {
-                hideToast();
-            }, duration);
+            clearTimeout(toast._hideTimer);
+            toast._hideTimer = setTimeout(() => { toast.style.display = 'none'; }, 2500);
         }
-
-        function hideToast() {
-            const toast = document.getElementById('toast');
-            if (!toast || toast.style.display === 'none') return;
-            
-            toast.classList.remove('showing');
-            toast.classList.add('hiding');
-            toast._hideTimer = setTimeout(() => {
-                toast.style.display = 'none';
-                toast.classList.remove('hiding');
-            }, 300);
-        }
-
-        // Quick helper functions
-        function showSuccess(msg) { showToast(msg, false); }
-        function showError(msg) { showToast(msg, true); }
-        function showInfo(msg) { showToast(msg, 'info'); }
-
-        // Expose toast functions globally
-        window.showToast = showToast;
-        window.hideToast = hideToast;
-        window.showSuccess = showSuccess;
-        window.showError = showError;
-        window.showInfo = showInfo;
 
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
-                showSuccess(`📞 ${text} ကူးယူပြီးပါပြီ`);
+                showToast(`📞 ${text} copied!`);
             }).catch(() => {
                 const input = document.createElement('input');
                 input.value = text;
@@ -3155,7 +3087,7 @@
                 input.select();
                 document.execCommand('copy');
                 document.body.removeChild(input);
-                showSuccess(`📞 ${text} ကူးယူပြီးပါပြီ`);
+                showToast(`📞 ${text} copied!`);
             });
         }
 
@@ -3380,7 +3312,7 @@
             const phone = document.getElementById('loginPhone').value.trim();
 
             if (!username || !phone || phone.length < 9) {
-                showError("Username နှင့် ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ");
+                showToast("Username နှင့် ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ", true);
                 return;
             }
 
@@ -3394,14 +3326,14 @@
                 const data = await res.json();
 
                 if (!data.success) {
-                    showError(data.error || "Login failed");
+                    showToast(data.error || "Login failed", true);
                     return;
                 }
 
                 const user = data.user;
 
                 if (user.blocked) {
-                    showError("သင့်အကောင့်အား ပိတ်ထားပါသည်။ Customer Support ကို ဆက်သွယ်ပါ။");
+                    showToast("သင့်အကောင့်အား ပိတ်ထားပါသည်။ Customer Support ကို ဆက်သွယ်ပါ။", true);
                     return;
                 }
 
@@ -3414,9 +3346,9 @@
                 localStorage.setItem('userId', user.user_id);
 
                 if (data.isNewUser) {
-                    showSuccess(`🎉 ကြိုဆိုပါသည်! သင်၏ User ID: ${user.user_id}`);
+                    showToast(`🎉 ကြိုဆိုပါသည်! သင်၏ User ID: ${user.user_id}`);
                 } else {
-                    showSuccess(`👋 ပြန်လည်ကြိုဆိုပါသည်! User ID: ${user.user_id}`);
+                    showToast(`👋 ပြန်လည်ကြိုဆိုပါသည်! User ID: ${user.user_id}`);
                 }
 
                 document.getElementById('loginScreen').style.display = 'none';
@@ -3435,7 +3367,7 @@
                 startFullRefresh();
 
             } catch (e) {
-                showError("Connection error");
+                showToast("Connection error", true);
                 console.error('Login error:', e);
             }
         }
@@ -3463,14 +3395,14 @@
 
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('mainApp').style.display = 'none';
-            showSuccess("ထွက်ရန် အောင်မြင်ပါသည်။");
+            showToast("ထွက်ရန် အောင်မြင်ပါသည်။");
         }
 
         // ===== REFRESH ALL DATA (Manual) =====
         async function refreshAllData() {
             const refreshBtn = document.querySelector('.refresh-btn');
             refreshBtn.classList.add('refreshing');
-            showInfo('🔄 ဒေတာပြန်လည်စစ်ဆေးနေပါသည်...');
+            showToast('🔄 Refreshing all data...');
 
             try {
                 await loadUserOrders();
@@ -3491,11 +3423,11 @@
                     await loadSalesStatus();
                 }
                 
-                showSuccess('✅ ဒေတာအားလုံး ပြန်လည်စစ်ဆေးပြီးပါပြီ!');
+                showToast('✅ All data refreshed successfully!');
                 
             } catch (error) {
                 console.error('Refresh error:', error);
-                showError('❌ ဒေတာပြန်လည်စစ်ဆေးရာတွင် အမှားရှိပါသည်');
+                showToast('❌ Refresh failed. Please try again.', true);
             } finally {
                 setTimeout(() => {
                     refreshBtn.classList.remove('refreshing');
@@ -3506,7 +3438,7 @@
         // ===== EXPORT ORDERS =====
         function exportMyOrders() {
             if (!allOrders.length) {
-                showError('အော်ဒါမရှိပါ');
+                showToast('No orders to export', true);
                 return;
             }
 
@@ -3528,7 +3460,7 @@
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
 
-            showSuccess('📁 Orders ကို CSV ဖိုင်အဖြစ် သိမ်းဆည်းပြီးပါပြီ');
+            showToast('📁 Orders exported to CSV');
         }
 
         // ===== LOAD LIVE CONTENT =====
@@ -3674,6 +3606,13 @@
                                     <button class="btn-detail" onclick="window.viewOrderDetail(${o.id})">
                                         <i class="fas fa-info-circle"></i> အသေးစိတ်
                                     </button>
+                                    ${o.slip_url ? `
+                                    <button class="btn-screenshot" onclick="window.openScreenshot('${o.slip_url}')">
+                                        <i class="fas fa-image"></i> ဖန်သားပြင်
+                                    </button>` : `
+                                    <button class="btn-screenshot" style="opacity:0.3; cursor:default;" disabled>
+                                        <i class="fas fa-image"></i> မရှိပါ
+                                    </button>`}
                                 </div>
                                 ${o.status === 'Pending' ? `
                                 <div class="order-actions-row-2">
@@ -3975,7 +3914,7 @@
         function openRenewModal(mode) {
             currentRenewMode = mode;
             if (mode === 'self') {
-                if (!currentUser) { showError("ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ"); return; }
+                if (!currentUser) { showToast("ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ", true); return; }
                 document.getElementById('orderPhone').value = currentUser;
                 document.getElementById('orderPhone').readOnly = true;
                 document.getElementById('orderPhoneText').value = currentUser;
@@ -4024,7 +3963,7 @@
             }
             
             // Show toast notification
-            showSuccess(`✅ ${plan} ကို ရွေးချယ်ပြီးပါပြီ`);
+            showToast(`✅ ${plan} ကို ရွေးချယ်ပြီးပါပြီ`);
             
             // Open the payment modal in 'other' mode
             openRenewModal('other');
@@ -4079,7 +4018,7 @@
                 const statusResponse = await fetch('/api/sales/status');
                 const statusData = await statusResponse.json();
                 if (!statusData.isOpen) {
-                    showError(statusData.message);
+                    showToast(statusData.message, true);
                     return;
                 }
             }
@@ -4089,15 +4028,16 @@
             if (isScreenshot) {
                 phone = document.getElementById('orderPhone').value.trim();
                 file = document.getElementById('slipImage').files[0];
-                if (!phone) { showError("ဖုန်းနံပါတ် ထည့်ပါ"); return; }
-                if (!file) { showError("ငွေလွှဲပြေစာ တင်ပါ"); return; }
+                if (!phone) { showToast("ဖုန်းနံပါတ် ထည့်ပါ", true); return; }
+                if (!file) { showToast("ငွေလွှဲပြေစာ တင်ပါ", true); return; }
             } else {
                 phone = document.getElementById('orderPhoneText').value.trim();
                 sender = document.getElementById('senderName').value.trim();
                 last5 = document.getElementById('last5Digits').value.trim();
-                if (!phone) { showError("ဖုန်းနံပါတ် ထည့်ပါ"); return; }
-                if (!sender) { showError("ငွေလွှဲသူအမည် ထည့်ပါ"); return; }
-                if (!last5 || last5.length !== 5) { showError("ငွေလွှဲပြေစာအမှတ် နောက်ဆုံး ၅ လုံး အတိအကျ ထည့်ပါ"); return; }
+                if (!phone) { showToast("ဖုန်းနံပါတ် ထည့်ပါ", true); return; }
+                if (!sender) { showToast("ငွေလွှဲသူအမည် ထည့်ပါ", true); return; }
+                if (!last5 || last5.length !== 5) { showToast("ငွေလွှဲပြေစာအမှတ် နောက်ဆုံး ၅ လုံး အတိအကျ ထည့်ပါ",
+                    true); return; }
             }
             const plan = document.getElementById('orderPlan').value;
             let price = 0;
@@ -4123,17 +4063,17 @@
                 const res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.success) {
-                    showSuccess(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${data.orderId}`);
+                    showToast(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${data.orderId}`);
                     closePaymentModal();
                     if (currentUser === phone) {
                         await loadUserOrders();
                         if (document.getElementById('ordersTab').classList.contains('active')) renderMyOrders();
                     }
                 } else {
-                    showError(data.error || "အော်ဒါတင်ရာတွင် အမှားရှိပါသည်");
+                    showToast(data.error || "အော်ဒါတင်ရာတွင် အမှားရှိပါသည်", true);
                 }
             } catch (e) {
-                showError("Connection error");
+                showToast("Connection error", true);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '✅ အော်ဒါတင်မည်';
@@ -4145,14 +4085,14 @@
             try {
                 const res = await fetch(`${API_BASE}/api/admin/orders/${id}/approve`, { method: 'PUT' });
                 if (res.ok) {
-                    showSuccess('✅ အော်ဒါအတည်ပြုပြီးပါပြီ');
+                    showToast('✅ Order approved');
                     loadUserOrders();
                     if (currentTab === 'orders') renderMyOrders();
                 } else {
-                    showError('❌ အတည်ပြုရာတွင် အမှားရှိပါသည်');
+                    showToast('❌ Failed to approve', true);
                 }
             } catch (e) {
-                showError('❌ Connection error');
+                showToast('❌ Error', true);
             }
         };
 
@@ -4160,14 +4100,14 @@
             try {
                 const res = await fetch(`${API_BASE}/api/admin/orders/${id}/reject`, { method: 'PUT' });
                 if (res.ok) {
-                    showInfo('❌ အော်ဒါပယ်ချပြီးပါပြီ');
+                    showToast('❌ Order rejected');
                     loadUserOrders();
                     if (currentTab === 'orders') renderMyOrders();
                 } else {
-                    showError('❌ ပယ်ချရာတွင် အမှားရှိပါသည်');
+                    showToast('❌ Failed to reject', true);
                 }
             } catch (e) {
-                showError('❌ Connection error');
+                showToast('❌ Error', true);
             }
         };
 
@@ -4176,14 +4116,14 @@
             try {
                 const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' });
                 if (res.ok) {
-                    showSuccess('🗑 အော်ဒါဖျက်ပြီးပါပြီ');
+                    showToast('🗑 Order deleted');
                     loadUserOrders();
                     if (currentTab === 'orders') renderMyOrders();
                 } else {
-                    showError('❌ ဖျက်ရာတွင် အမှားရှိပါသည်');
+                    showToast('❌ Failed to delete', true);
                 }
             } catch (e) {
-                showError('❌ Connection error');
+                showToast('❌ Error', true);
             }
         };
 
@@ -4226,7 +4166,7 @@
 
         function showSupport() { showSupportModal(); }
 
-        function showNotifications() { showInfo("အကြောင်းကြားစာအသစ်မရှိပါ"); }
+        function showNotifications() { showToast("No new notifications"); }
 
         // ===== LANGUAGE SWITCHER =====
         // Note: changeLanguage() is now in translations.js
@@ -4257,7 +4197,7 @@
         if (accountPhone) {
             accountPhone.addEventListener('click', () => {
                 copyToClipboard('09789999368');
-                showSuccess("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ");
+                showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ");
             });
         }
 
@@ -4322,10 +4262,6 @@
         window.closeModal = closeModal;
         window.copyToClipboard = copyToClipboard;
         window.showToast = showToast;
-        window.hideToast = hideToast;
-        window.showSuccess = showSuccess;
-        window.showError = showError;
-        window.showInfo = showInfo;
         window.getCurrentUserPhone = function() { return currentUser; };
         window.getCurrentUsername = function() { return currentUsername; };
         window.getCurrentUserId = function() { return currentUserId; };
