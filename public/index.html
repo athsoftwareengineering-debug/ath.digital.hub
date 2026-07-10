@@ -41,9 +41,10 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 100%;
             margin: 0 auto;
             padding: 0 6px;
+            width: 100%;
         }
 
         /* ============================================================
@@ -861,33 +862,8 @@
             border-radius: 40px;
             font-weight: 600;
         }
-        .view-slip-btn {
-            background: rgba(0, 212, 255, 0.1);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            padding: 5px 14px;
-            border-radius: 40px;
-            font-size: 0.6rem;
-            cursor: pointer;
-            color: var(--cyan);
-            transition: all var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 600;
-            touch-action: manipulation;
-            min-height: 32px;
-        }
-        .view-slip-btn:hover {
-            background: var(--cyan);
-            color: #030712;
-            border-color: var(--cyan);
-            transform: scale(0.97);
-        }
-        .view-slip-btn:active {
-            transform: scale(0.93);
-        }
 
-        /* ===== ORDER ACTIONS - UPDATED (No Approve/Reject) ===== */
+        /* ===== ORDER ACTIONS - UPDATED (Removed "ပြေစာကြည့်ရန်") ===== */
         .order-actions-wrapper {
             width: 100%;
             display: flex;
@@ -909,7 +885,7 @@
             min-width: 0;
         }
 
-        /* Row 2: Delete only - 100% (removed Approve/Reject) */
+        /* Row 2: Delete only - 100% */
         .order-actions-row-2 {
             display: flex;
             gap: 8px;
@@ -1041,53 +1017,133 @@
             pointer-events: none;
         }
 
-        /* ===== RENEW BUTTONS RESPONSIVE ===== */
-        @media (max-width: 380px) {
-            .orders-renew-btn {
-                white-space: normal;
-                font-size: 0.6rem;
-                padding: 10px 6px;
-                min-height: 38px;
-                border-radius: 40px;
+        /* ============================================================
+           TOAST - BEAUTIFUL STYLE
+           ============================================================ */
+        .toast-container {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 90%;
+            max-width: 420px;
+            pointer-events: none;
+        }
+
+        .toast-item {
+            background: rgba(18, 22, 35, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 14px 20px;
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            animation: toastIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            pointer-events: auto;
+            transform-origin: bottom center;
+        }
+
+        .toast-item.hiding {
+            animation: toastOut 0.3s ease forwards;
+        }
+
+        @keyframes toastIn {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
             }
-            .orders-renew-btn i {
-                font-size: 0.8rem;
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
             }
         }
 
-        @media (max-width: 480px) {
-            .orders-renew-buttons {
-                flex-direction: row !important;
-                gap: 8px !important;
+        @keyframes toastOut {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
             }
-            .orders-renew-btn {
-                flex: 1 !important;
-                width: 50% !important;
-                max-width: 50% !important;
-                padding: 10px 6px;
-                font-size: 0.65rem;
-                min-height: 40px;
-                border-radius: 40px;
-            }
-            .orders-renew-btn i {
-                font-size: 0.9rem;
+            100% {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
             }
         }
 
-        @media (min-width: 481px) {
-            .orders-renew-buttons {
-                flex-direction: row !important;
-                gap: 12px !important;
-            }
-            .orders-renew-btn {
-                flex: 1 !important;
-                width: 50% !important;
-                max-width: 50% !important;
-                padding: 14px 12px;
-                font-size: 0.8rem;
-                min-height: 46px;
-                border-radius: 60px;
-            }
+        .toast-item .toast-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .toast-item .toast-icon.success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05));
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .toast-item .toast-icon.error {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(244, 63, 94, 0.05));
+            color: #fb7185;
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+
+        .toast-item .toast-icon.info {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 212, 255, 0.05));
+            color: #00d4ff;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .toast-item .toast-icon.warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05));
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .toast-item .toast-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .toast-item .toast-content .toast-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .toast-item .toast-content .toast-message {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+
+        .toast-item .toast-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 4px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toast-item .toast-close:hover {
+            color: white;
+            transform: rotate(90deg);
         }
 
         /* ============================================================
@@ -1540,28 +1596,6 @@
         }
 
         /* ============================================================
-           TOAST
-           ============================================================ */
-        .toast {
-            position: fixed;
-            bottom: 70px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--emerald);
-            color: var(--text-primary);
-            padding: 10px 18px;
-            border-radius: 60px;
-            font-size: 0.7rem;
-            z-index: 1000;
-            display: none;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 90%;
-            text-align: center;
-        }
-
-        /* ============================================================
            IMAGE MODAL
            ============================================================ */
         .image-modal {
@@ -1998,10 +2032,18 @@
                 font-size: 0.85rem;
                 min-height: 40px;
             }
-            .toast {
+            .toast-container {
                 bottom: 60px;
-                padding: 8px 14px;
-                font-size: 0.65rem;
+                width: 92%;
+            }
+            .toast-item {
+                padding: 10px 14px;
+            }
+            .toast-item .toast-content .toast-title {
+                font-size: 0.6rem;
+            }
+            .toast-item .toast-content .toast-message {
+                font-size: 0.55rem;
             }
             .drawer {
                 width: 240px;
@@ -2144,10 +2186,18 @@
                 font-size: 0.9rem;
                 min-height: 44px;
             }
-            .toast {
+            .toast-container {
                 bottom: 70px;
-                padding: 10px 16px;
-                font-size: 0.7rem;
+                width: 92%;
+            }
+            .toast-item {
+                padding: 12px 16px;
+            }
+            .toast-item .toast-content .toast-title {
+                font-size: 0.65rem;
+            }
+            .toast-item .toast-content .toast-message {
+                font-size: 0.6rem;
             }
             .drawer-avatar {
                 width: 50px;
@@ -2320,10 +2370,18 @@
                 font-size: 1rem;
                 min-height: 48px;
             }
-            .toast {
+            .toast-container {
                 bottom: 80px;
-                padding: 12px 24px;
-                font-size: 0.8rem;
+                max-width: 400px;
+            }
+            .toast-item {
+                padding: 14px 20px;
+            }
+            .toast-item .toast-content .toast-title {
+                font-size: 0.75rem;
+            }
+            .toast-item .toast-content .toast-message {
+                font-size: 0.65rem;
             }
             .drawer {
                 width: 300px;
@@ -2487,12 +2545,19 @@
                 font-size: 1rem;
                 min-height: 52px;
             }
-            .toast {
+            .toast-container {
                 bottom: 90px;
-                padding: 14px 32px;
-                font-size: 0.85rem;
-                max-width: 80%;
-                border-radius: 60px;
+                max-width: 450px;
+            }
+            .toast-item {
+                padding: 16px 24px;
+                border-radius: 18px;
+            }
+            .toast-item .toast-content .toast-title {
+                font-size: 0.8rem;
+            }
+            .toast-item .toast-content .toast-message {
+                font-size: 0.7rem;
             }
             .drawer {
                 width: 320px;
@@ -2810,7 +2875,7 @@
                 <iframe src="plans-widget.html" style="width:100%; border:none; background:transparent; min-height: 500px; border-radius:1rem;"></iframe>
             </div>
 
-            <!-- ===== ORDERS TAB - ORIGINAL 50/50 LAYOUT (No Approve/Reject) ===== -->
+            <!-- ===== ORDERS TAB - ORIGINAL 50/50 LAYOUT (No "ပြေစာကြည့်ရန်") ===== -->
             <div id="ordersTab" class="tab-content">
                 <div class="orders-renew-buttons">
                     <button class="orders-renew-btn self" onclick="openRenewModal('self')">
@@ -3000,9 +3065,9 @@
     </div>
 
     <!-- ============================================================
-    TOAST
+    TOAST CONTAINER - Beautiful Alerts
     ============================================================ -->
-    <div id="toast" class="toast"></div>
+    <div id="toastContainer" class="toast-container"></div>
 
     <!-- ============================================================
     JAVASCRIPT - Load Translations First
@@ -3032,24 +3097,77 @@
         let orderRefreshInterval = null;
         let fullRefreshInterval = null;
 
+        // ===== BEAUTIFUL TOAST SYSTEM =====
+        function showToast(message, type = 'info', title = '') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+
+            const titles = {
+                success: 'အောင်မြင်ပါသည်',
+                error: 'အမှားရှိပါသည်',
+                warning: 'သတိပေးချက်',
+                info: 'သတင်းအချက်အလက်'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = 'toast-item';
+
+            const iconClass = type || 'info';
+            const iconEmoji = icons[iconClass] || 'ℹ️';
+            const titleText = title || titles[iconClass] || 'သတင်း';
+
+            toast.innerHTML = `
+                <div class="toast-icon ${iconClass}">${iconEmoji}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${titleText}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.closest('.toast-item').remove()">✕</button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.classList.add('hiding');
+                    setTimeout(() => {
+                        if (toast.parentNode) toast.remove();
+                    }, 300);
+                }
+            }, 3000);
+
+            // Click to dismiss
+            toast.addEventListener('click', function(e) {
+                if (e.target.closest('.toast-close')) return;
+                this.classList.add('hiding');
+                setTimeout(() => {
+                    if (this.parentNode) this.remove();
+                }, 300);
+            });
+        }
+
+        // Legacy toast function (wrapped)
+        function showToastLegacy(msg, isError) {
+            showToast(msg, isError ? 'error' : 'success');
+        }
+
         // ===== UTILITY FUNCTIONS =====
         function maskPhone(phone) {
             if (!phone || phone.length < 8) return phone || '';
             return phone.substring(0, 5) + '***' + phone.substring(phone.length - 3);
         }
 
-        function showToast(msg, isError) {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.style.borderColor = isError ? '#f43f5e' : '#10b981';
-            toast.style.display = 'block';
-            clearTimeout(toast._hideTimer);
-            toast._hideTimer = setTimeout(() => { toast.style.display = 'none'; }, 2500);
-        }
-
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
-                showToast(`📞 ${text} copied!`);
+                showToast(`📞 ${text} ကူးယူပြီးပါပြီ`, 'success', 'ကူးယူခြင်း');
             }).catch(() => {
                 const input = document.createElement('input');
                 input.value = text;
@@ -3057,7 +3175,7 @@
                 input.select();
                 document.execCommand('copy');
                 document.body.removeChild(input);
-                showToast(`📞 ${text} copied!`);
+                showToast(`📞 ${text} ကူးယူပြီးပါပြီ`, 'success', 'ကူးယူခြင်း');
             });
         }
 
@@ -3282,7 +3400,7 @@
             const phone = document.getElementById('loginPhone').value.trim();
 
             if (!username || !phone || phone.length < 9) {
-                showToast("Username နှင့် ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ", true);
+                showToast('Username နှင့် ဖုန်းနံပါတ် မှန်ကန်စွာ ထည့်ပါ', 'error', 'သတိပေးချက်');
                 return;
             }
 
@@ -3296,14 +3414,14 @@
                 const data = await res.json();
 
                 if (!data.success) {
-                    showToast(data.error || "Login failed", true);
+                    showToast(data.error || 'Login failed', 'error', 'အမှားရှိပါသည်');
                     return;
                 }
 
                 const user = data.user;
 
                 if (user.blocked) {
-                    showToast("သင့်အကောင့်အား ပိတ်ထားပါသည်။ Customer Support ကို ဆက်သွယ်ပါ။", true);
+                    showToast('သင့်အကောင့်အား ပိတ်ထားပါသည်။ Customer Support ကို ဆက်သွယ်ပါ။', 'error', 'အကောင့်ပိတ်ထားပါသည်');
                     return;
                 }
 
@@ -3316,9 +3434,9 @@
                 localStorage.setItem('userId', user.user_id);
 
                 if (data.isNewUser) {
-                    showToast(`🎉 ကြိုဆိုပါသည်! သင်၏ User ID: ${user.user_id}`);
+                    showToast(`🎉 ကြိုဆိုပါသည်! သင်၏ User ID: ${user.user_id}`, 'success', 'အကောင့်အသစ်');
                 } else {
-                    showToast(`👋 ပြန်လည်ကြိုဆိုပါသည်! User ID: ${user.user_id}`);
+                    showToast(`👋 ပြန်လည်ကြိုဆိုပါသည်! User ID: ${user.user_id}`, 'success', 'ပြန်လည်ဝင်ရောက်');
                 }
 
                 document.getElementById('loginScreen').style.display = 'none';
@@ -3337,7 +3455,7 @@
                 startFullRefresh();
 
             } catch (e) {
-                showToast("Connection error", true);
+                showToast('Connection error', 'error', 'ချိတ်ဆက်မှုအမှား');
                 console.error('Login error:', e);
             }
         }
@@ -3365,14 +3483,14 @@
 
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('mainApp').style.display = 'none';
-            showToast("ထွက်ရန် အောင်မြင်ပါသည်။");
+            showToast('ထွက်ရန် အောင်မြင်ပါသည်။', 'success', 'ထွက်ခွာခြင်း');
         }
 
         // ===== REFRESH ALL DATA (Manual) =====
         async function refreshAllData() {
             const refreshBtn = document.querySelector('.refresh-btn');
             refreshBtn.classList.add('refreshing');
-            showToast('🔄 Refreshing all data...');
+            showToast('🔄 Data အားလုံး ပြန်လည်ဆန်းသစ်နေပါသည်...', 'info', 'ဆန်းသစ်ခြင်း');
 
             try {
                 await loadUserOrders();
@@ -3393,11 +3511,11 @@
                     await loadSalesStatus();
                 }
                 
-                showToast('✅ All data refreshed successfully!');
+                showToast('✅ Data အားလုံး ဆန်းသစ်ပြီးပါပြီ!', 'success', 'အောင်မြင်ပါသည်');
                 
             } catch (error) {
                 console.error('Refresh error:', error);
-                showToast('❌ Refresh failed. Please try again.', true);
+                showToast('❌ ဆန်းသစ်ခြင်း မအောင်မြင်ပါ။ ထပ်မံကြိုးစားပါ။', 'error', 'အမှားရှိပါသည်');
             } finally {
                 setTimeout(() => {
                     refreshBtn.classList.remove('refreshing');
@@ -3408,7 +3526,7 @@
         // ===== EXPORT ORDERS =====
         function exportMyOrders() {
             if (!allOrders.length) {
-                showToast('No orders to export', true);
+                showToast('Export လုပ်ရန် အော်ဒါမရှိပါ', 'warning', 'သတိပေးချက်');
                 return;
             }
 
@@ -3430,7 +3548,7 @@
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
 
-            showToast('📁 Orders exported to CSV');
+            showToast('📁 အော်ဒါများကို CSV ဖိုင်အဖြစ် သိမ်းဆည်းပြီးပါပြီ', 'success', 'အောင်မြင်ပါသည်');
         }
 
         // ===== LOAD LIVE CONTENT =====
@@ -3462,10 +3580,11 @@
                     `<div style="text-align:center; padding:40px; color:var(--rose);">
                         <i class="fas fa-exclamation-triangle"></i> Failed to load live orders
                     </div>`;
+                showToast('Live orders များ ယူဆောင်ရန် မအောင်မြင်ပါ', 'error', 'အမှားရှိပါသည်');
             }
         }
 
-        // ===== RENDER ORDERS (UPDATED - No Approve/Reject) =====
+        // ===== RENDER ORDERS (UPDATED - No "ပြေစာကြည့်ရန်") =====
         function renderMyOrders() {
             const container = document.getElementById('myOrdersContainer');
             if (!allOrders.length) {
@@ -3537,10 +3656,18 @@
                     }
                 }
 
-                let slipButtonHtml = '';
+                // Only show screenshot button if slip exists (removed "ပြေစာကြည့်ရန်")
+                let screenshotButtonHtml = '';
                 if (o.slip_url && o.slip_url !== 'null') {
-                    slipButtonHtml =
-                        `<button class="view-slip-btn" onclick="openScreenshot('${o.slip_url}')"><i class="fas fa-image"></i> ပြေစာကြည့်ရန်</button>`;
+                    screenshotButtonHtml = `
+                        <button class="btn-screenshot" onclick="window.openScreenshot('${o.slip_url}')">
+                            <i class="fas fa-image"></i> ဖန်သားပြင်
+                        </button>`;
+                } else {
+                    screenshotButtonHtml = `
+                        <button class="btn-screenshot" style="opacity:0.3; cursor:default;" disabled>
+                            <i class="fas fa-image"></i> မရှိပါ
+                        </button>`;
                 }
 
                 html += `
@@ -3569,22 +3696,14 @@
                             ${startEndHtml}
                             <div class="order-footer">
                                 ${remainingHtml}
-                                ${slipButtonHtml}
                             </div>
                             <div class="order-actions-wrapper">
                                 <div class="order-actions-row-1">
                                     <button class="btn-detail" onclick="window.viewOrderDetail(${o.id})">
                                         <i class="fas fa-info-circle"></i> အသေးစိတ်
                                     </button>
-                                    ${o.slip_url ? `
-                                    <button class="btn-screenshot" onclick="window.openScreenshot('${o.slip_url}')">
-                                        <i class="fas fa-image"></i> ဖန်သားပြင်
-                                    </button>` : `
-                                    <button class="btn-screenshot" style="opacity:0.3; cursor:default;" disabled>
-                                        <i class="fas fa-image"></i> မရှိပါ
-                                    </button>`}
+                                    ${screenshotButtonHtml}
                                 </div>
-                                <!-- Approve/Reject buttons removed - Admin only -->
                                 <div class="order-actions-row-2">
                                     <button class="btn-delete" onclick="window.deleteOrder(${o.id})">
                                         <i class="fas fa-trash"></i> ဖျက်မယ်
@@ -3762,7 +3881,7 @@
                             justify-content: center;
                             gap: 8px;
                         " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                            <i class="fas fa-image"></i> ပြေစာကြည့်ရန်
+                            <i class="fas fa-image"></i> ဖန်သားပြင်
                         </button>
                         ` : ''}
                         <button onclick="this.closest('div[style]').parentElement.remove()" style="
@@ -3875,7 +3994,7 @@
         function openRenewModal(mode) {
             currentRenewMode = mode;
             if (mode === 'self') {
-                if (!currentUser) { showToast("ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ", true); return; }
+                if (!currentUser) { showToast('ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ', 'warning', 'သတိပေးချက်'); return; }
                 document.getElementById('orderPhone').value = currentUser;
                 document.getElementById('orderPhone').readOnly = true;
                 document.getElementById('orderPhoneText').value = currentUser;
@@ -3924,7 +4043,7 @@
             }
             
             // Show toast notification
-            showToast(`✅ ${plan} ကို ရွေးချယ်ပြီးပါပြီ`);
+            showToast(`✅ ${plan} ကို ရွေးချယ်ပြီးပါပြီ`, 'success', 'Plan ရွေးချယ်ခြင်း');
             
             // Open the payment modal in 'other' mode
             openRenewModal('other');
@@ -3979,7 +4098,7 @@
                 const statusResponse = await fetch('/api/sales/status');
                 const statusData = await statusResponse.json();
                 if (!statusData.isOpen) {
-                    showToast(statusData.message, true);
+                    showToast(statusData.message || 'ဆိုင်ပိတ်ထားပါသည်။ ကျေးဇူးပြု၍ ဆိုင်ဖွင့်ချိန်တွင် ပြန်လည်ကြိုးစားပါ။', 'warning', 'ဆိုင်ပိတ်ထားပါသည်');
                     return;
                 }
             }
@@ -3989,16 +4108,16 @@
             if (isScreenshot) {
                 phone = document.getElementById('orderPhone').value.trim();
                 file = document.getElementById('slipImage').files[0];
-                if (!phone) { showToast("ဖုန်းနံပါတ် ထည့်ပါ", true); return; }
-                if (!file) { showToast("ငွေလွှဲပြေစာ တင်ပါ", true); return; }
+                if (!phone) { showToast('ဖုန်းနံပါတ် ထည့်ပါ', 'error', 'သတိပေးချက်'); return; }
+                if (!file) { showToast('ငွေလွှဲပြေစာ တင်ပါ', 'error', 'သတိပေးချက်'); return; }
             } else {
                 phone = document.getElementById('orderPhoneText').value.trim();
                 sender = document.getElementById('senderName').value.trim();
                 last5 = document.getElementById('last5Digits').value.trim();
-                if (!phone) { showToast("ဖုန်းနံပါတ် ထည့်ပါ", true); return; }
-                if (!sender) { showToast("ငွေလွှဲသူအမည် ထည့်ပါ", true); return; }
-                if (!last5 || last5.length !== 5) { showToast("ငွေလွှဲပြေစာအမှတ် နောက်ဆုံး ၅ လုံး အတိအကျ ထည့်ပါ",
-                    true); return; }
+                if (!phone) { showToast('ဖုန်းနံပါတ် ထည့်ပါ', 'error', 'သတိပေးချက်'); return; }
+                if (!sender) { showToast('ငွေလွှဲသူအမည် ထည့်ပါ', 'error', 'သတိပေးချက်'); return; }
+                if (!last5 || last5.length !== 5) { showToast('ငွေလွှဲပြေစာအမှတ် နောက်ဆုံး ၅ လုံး အတိအကျ ထည့်ပါ',
+                    'error', 'သတိပေးချက်'); return; }
             }
             const plan = document.getElementById('orderPlan').value;
             let price = 0;
@@ -4024,40 +4143,37 @@
                 const res = await fetch(`${API_BASE}/api/orders`, { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.success) {
-                    showToast(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${data.orderId}`);
+                    showToast(`✅ အော်ဒါအောင်မြင်ပါပြီ။ Order ID: ${data.orderId}`, 'success', 'အောင်မြင်ပါသည်');
                     closePaymentModal();
                     if (currentUser === phone) {
                         await loadUserOrders();
                         if (document.getElementById('ordersTab').classList.contains('active')) renderMyOrders();
                     }
                 } else {
-                    showToast(data.error || "အော်ဒါတင်ရာတွင် အမှားရှိပါသည်", true);
+                    showToast(data.error || 'အော်ဒါတင်ရာတွင် အမှားရှိပါသည်', 'error', 'အမှားရှိပါသည်');
                 }
             } catch (e) {
-                showToast("Connection error", true);
+                showToast('Connection error', 'error', 'ချိတ်ဆက်မှုအမှား');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '✅ အော်ဒါတင်မည်';
             }
         }
 
-        // ===== ORDER ACTIONS (Approve/Reject removed - Admin only) =====
-        // Note: approveOrder and rejectOrder functions have been removed
-        // Only deleteOrder remains for users to delete their own orders
-
+        // ===== ORDER ACTIONS =====
         window.deleteOrder = async function(id) {
-            if (!confirm('Delete this order?')) return;
+            if (!confirm('ဤအော်ဒါကို ဖျက်မည်လား?')) return;
             try {
                 const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' });
                 if (res.ok) {
-                    showToast('🗑 Order deleted');
+                    showToast('🗑 အော်ဒါဖျက်ပြီးပါပြီ', 'success', 'ဖျက်ခြင်း');
                     loadUserOrders();
                     if (currentTab === 'orders') renderMyOrders();
                 } else {
-                    showToast('❌ Failed to delete', true);
+                    showToast('❌ ဖျက်ရန် မအောင်မြင်ပါ', 'error', 'အမှားရှိပါသည်');
                 }
             } catch (e) {
-                showToast('❌ Error', true);
+                showToast('❌ Error', 'error', 'အမှားရှိပါသည်');
             }
         };
 
@@ -4100,16 +4216,15 @@
 
         function showSupport() { showSupportModal(); }
 
-        function showNotifications() { showToast("No new notifications"); }
+        function showNotifications() { 
+            showToast('အသိပေးချက်အသစ် မရှိပါ', 'info', 'အသိပေးချက်'); 
+        }
 
         // ===== LANGUAGE SWITCHER =====
-        // Note: changeLanguage() is now in translations.js
-        // This is just a wrapper for backward compatibility
         window.changeLanguage = function(lang) {
             if (typeof window._changeLanguage === 'function') {
                 window._changeLanguage(lang);
             } else {
-                // Fallback - reload page to apply language
                 localStorage.setItem('app_language', lang);
                 location.reload();
             }
@@ -4131,7 +4246,6 @@
         if (accountPhone) {
             accountPhone.addEventListener('click', () => {
                 copyToClipboard('09789999368');
-                showToast("📞 ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ");
             });
         }
 
