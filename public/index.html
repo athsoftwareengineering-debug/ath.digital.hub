@@ -863,7 +863,7 @@
             font-weight: 600;
         }
 
-        /* ===== ORDER ACTIONS - UPDATED (Removed "ပြေစာကြည့်ရန်") ===== */
+        /* ===== ORDER ACTIONS - UPDATED ===== */
         .order-actions-wrapper {
             width: 100%;
             display: flex;
@@ -874,7 +874,6 @@
             border-top: 1px solid rgba(255, 255, 255, 0.04);
         }
 
-        /* Row 1: Detail + Screenshot - 50%+50% */
         .order-actions-row-1 {
             display: flex;
             gap: 8px;
@@ -885,7 +884,6 @@
             min-width: 0;
         }
 
-        /* Row 2: Delete only - 100% */
         .order-actions-row-2 {
             display: flex;
             gap: 8px;
@@ -1147,6 +1145,108 @@
         }
 
         /* ============================================================
+           CONFIRM MODAL - Custom Delete Confirmation
+           ============================================================ */
+        .confirm-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .confirm-modal-overlay.active {
+            display: flex;
+        }
+
+        .confirm-modal {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-radius: 1.5rem;
+            max-width: 380px;
+            width: 100%;
+            padding: 28px 24px;
+            border: 1px solid rgba(244, 63, 94, 0.2);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s ease;
+            text-align: center;
+        }
+
+        .confirm-modal .icon {
+            font-size: 3rem;
+            color: var(--rose);
+            margin-bottom: 12px;
+        }
+
+        .confirm-modal h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .confirm-modal p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .confirm-modal .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .confirm-modal .buttons button {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            touch-action: manipulation;
+        }
+
+        .confirm-modal .buttons button:hover {
+            transform: translateY(-2px);
+        }
+
+        .confirm-modal .buttons button:active {
+            transform: scale(0.97);
+        }
+
+        .confirm-modal .buttons .btn-cancel {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .confirm-modal .buttons .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .confirm-modal .buttons .btn-delete-confirm {
+            background: linear-gradient(135deg, #f43f5e, #dc2626);
+            color: white;
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        .confirm-modal .buttons .btn-delete-confirm:hover {
+            background: linear-gradient(135deg, #fb7185, #f43f5e);
+            box-shadow: 0 8px 30px rgba(244, 63, 94, 0.3);
+        }
+
+        /* ============================================================
            RESPONSIVE - ALL PHONES (50%+50% LAYOUT)
            ============================================================ */
         /* Very Small Phones (≤ 380px) - 50% + 50% Layout */
@@ -1210,6 +1310,24 @@
             .order-date-range .date-box .value {
                 font-size: 0.45rem;
                 white-space: nowrap;
+            }
+
+            .confirm-modal {
+                padding: 20px 16px;
+            }
+            .confirm-modal .icon {
+                font-size: 2.5rem;
+            }
+            .confirm-modal h3 {
+                font-size: 0.95rem;
+            }
+            .confirm-modal p {
+                font-size: 0.7rem;
+            }
+            .confirm-modal .buttons button {
+                padding: 10px 12px;
+                font-size: 0.7rem;
+                min-height: 38px;
             }
         }
 
@@ -2249,6 +2367,23 @@
             .drawer-language-section span {
                 font-size: 0.7rem;
             }
+            .confirm-modal {
+                padding: 24px 16px;
+            }
+            .confirm-modal .icon {
+                font-size: 2.8rem;
+            }
+            .confirm-modal h3 {
+                font-size: 1rem;
+            }
+            .confirm-modal p {
+                font-size: 0.75rem;
+            }
+            .confirm-modal .buttons button {
+                padding: 10px 14px;
+                font-size: 0.75rem;
+                min-height: 40px;
+            }
         }
 
         /* Tablet */
@@ -2875,7 +3010,7 @@
                 <iframe src="plans-widget.html" style="width:100%; border:none; background:transparent; min-height: 500px; border-radius:1rem;"></iframe>
             </div>
 
-            <!-- ===== ORDERS TAB - ORIGINAL 50/50 LAYOUT (No "ပြေစာကြည့်ရန်") ===== -->
+            <!-- ===== ORDERS TAB ===== -->
             <div id="ordersTab" class="tab-content">
                 <div class="orders-renew-buttons">
                     <button class="orders-renew-btn self" onclick="openRenewModal('self')">
@@ -3065,6 +3200,21 @@
     </div>
 
     <!-- ============================================================
+    CONFIRM MODAL - Custom Delete Confirmation
+    ============================================================ -->
+    <div id="confirmModal" class="confirm-modal-overlay">
+        <div class="confirm-modal">
+            <div class="icon">🗑️</div>
+            <h3 id="confirmTitle">အော်ဒါကို ဖျက်မည်လား?</h3>
+            <p id="confirmMessage">ဤအော်ဒါကို ဖျက်လိုက်ပါက ပြန်လည်ရယူ၍ မရနိုင်ပါ။ သေချာပါသလား?</p>
+            <div class="buttons">
+                <button class="btn-cancel" onclick="closeConfirmModal()">မဖျက်တော့ပါ</button>
+                <button class="btn-delete-confirm" id="confirmDeleteBtn">ဖျက်မည်</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
     TOAST CONTAINER - Beautiful Alerts
     ============================================================ -->
     <div id="toastContainer" class="toast-container"></div>
@@ -3096,6 +3246,7 @@
         let salesStatusInterval = null;
         let orderRefreshInterval = null;
         let fullRefreshInterval = null;
+        let pendingDeleteId = null;
 
         // ===== BEAUTIFUL TOAST SYSTEM =====
         function showToast(message, type = 'info', title = '') {
@@ -3154,9 +3305,31 @@
             });
         }
 
-        // Legacy toast function (wrapped)
-        function showToastLegacy(msg, isError) {
-            showToast(msg, isError ? 'error' : 'success');
+        // ===== CONFIRM MODAL FUNCTIONS =====
+        function showConfirmModal(title, message, onConfirm) {
+            const modal = document.getElementById('confirmModal');
+            document.getElementById('confirmTitle').textContent = title || 'အော်ဒါကို ဖျက်မည်လား?';
+            document.getElementById('confirmMessage').textContent = message || 'ဤအော်ဒါကို ဖျက်လိုက်ပါက ပြန်လည်ရယူ၍ မရနိုင်ပါ။ သေချာပါသလား?';
+            
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            
+            // Remove old event listeners
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+            
+            newBtn.addEventListener('click', function() {
+                closeConfirmModal();
+                if (typeof onConfirm === 'function') {
+                    onConfirm();
+                }
+            });
+            
+            modal.classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+            pendingDeleteId = null;
         }
 
         // ===== UTILITY FUNCTIONS =====
@@ -3584,7 +3757,7 @@
             }
         }
 
-        // ===== RENDER ORDERS (UPDATED - No "ပြေစာကြည့်ရန်") =====
+        // ===== RENDER ORDERS (UPDATED) =====
         function renderMyOrders() {
             const container = document.getElementById('myOrdersContainer');
             if (!allOrders.length) {
@@ -3656,7 +3829,6 @@
                     }
                 }
 
-                // Only show screenshot button if slip exists (removed "ပြေစာကြည့်ရန်")
                 let screenshotButtonHtml = '';
                 if (o.slip_url && o.slip_url !== 'null') {
                     screenshotButtonHtml = `
@@ -3705,7 +3877,7 @@
                                     ${screenshotButtonHtml}
                                 </div>
                                 <div class="order-actions-row-2">
-                                    <button class="btn-delete" onclick="window.deleteOrder(${o.id})">
+                                    <button class="btn-delete" onclick="window.confirmDeleteOrder(${o.id})">
                                         <i class="fas fa-trash"></i> ဖျက်မယ်
                                     </button>
                                 </div>
@@ -3716,10 +3888,25 @@
             container.innerHTML = html;
         }
 
-        // ===== VIEW ORDER DETAIL - POPUP MODAL =====
+        // ===== CONFIRM DELETE ORDER =====
+        window.confirmDeleteOrder = function(id) {
+            pendingDeleteId = id;
+            showConfirmModal(
+                'အော်ဒါကို ဖျက်မည်လား?',
+                'ဤအော်ဒါကို ဖျက်လိုက်ပါက ပြန်လည်ရယူ၍ မရနိုင်ပါ။ သေချာပါသလား?',
+                function() {
+                    window.deleteOrder(pendingDeleteId);
+                }
+            );
+        };
+
+        // ===== VIEW ORDER DETAIL - POPUP MODAL (FIXED) =====
         window.viewOrderDetail = function(orderId) {
             const order = allOrders.find(o => o.id === orderId);
-            if (!order) return;
+            if (!order) {
+                showToast('အော်ဒါမတွေ့ပါ', 'error', 'အမှားရှိပါသည်');
+                return;
+            }
             
             const startDate = order.activated_at ? new Date(order.activated_at) : null;
             const endDate = startDate ? new Date(startDate.getTime() + 30 * 86400000) : null;
@@ -4018,10 +4205,8 @@
         }
 
         function openPaymentModalFromPlan(plan, price) {
-            // Set the plan in the select dropdown
             const planSelect = document.getElementById('orderPlan');
             
-            // Try to find the exact match first
             let found = false;
             for (let i = 0; i < planSelect.options.length; i++) {
                 if (planSelect.options[i].value === plan) {
@@ -4031,7 +4216,6 @@
                 }
             }
             
-            // If not found, try partial match
             if (!found) {
                 for (let i = 0; i < planSelect.options.length; i++) {
                     if (planSelect.options[i].value.includes(plan) || plan.includes(planSelect.options[i].value)) {
@@ -4042,10 +4226,7 @@
                 }
             }
             
-            // Show toast notification
             showToast(`✅ ${plan} ကို ရွေးချယ်ပြီးပါပြီ`, 'success', 'Plan ရွေးချယ်ခြင်း');
-            
-            // Open the payment modal in 'other' mode
             openRenewModal('other');
         }
 
@@ -4055,22 +4236,17 @@
 
         // ===== LISTEN FOR PLAN BUY MESSAGES FROM IFRAME =====
         window.addEventListener('message', function(event) {
-            // Make sure the message is from our iframe
             const iframe = document.querySelector('#plansTab iframe');
             if (!iframe) return;
-            
-            // Check if the message is from the iframe
             if (event.source !== iframe.contentWindow) return;
             
             const data = event.data;
             if (data && data.type === 'buyPlan') {
                 console.log(`📦 Plan selected from widget: ${data.plan} - ${data.price} MMK`);
                 
-                // Open payment modal with the selected plan
                 if (typeof window.openPaymentModalFromPlan === 'function') {
                     window.openPaymentModalFromPlan(data.plan, data.price);
                 } else {
-                    // Fallback: try to set the plan manually
                     const planSelect = document.getElementById('orderPlan');
                     if (planSelect) {
                         for (let i = 0; i < planSelect.options.length; i++) {
@@ -4080,7 +4256,6 @@
                             }
                         }
                     }
-                    // Open the payment modal
                     if (typeof window.openRenewModal === 'function') {
                         window.openRenewModal('other');
                     }
@@ -4160,14 +4335,13 @@
             }
         }
 
-        // ===== ORDER ACTIONS =====
+        // ===== DELETE ORDER (UPDATED - uses confirm modal) =====
         window.deleteOrder = async function(id) {
-            if (!confirm('ဤအော်ဒါကို ဖျက်မည်လား?')) return;
             try {
                 const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { method: 'DELETE' });
                 if (res.ok) {
                     showToast('🗑 အော်ဒါဖျက်ပြီးပါပြီ', 'success', 'ဖျက်ခြင်း');
-                    loadUserOrders();
+                    await loadUserOrders();
                     if (currentTab === 'orders') renderMyOrders();
                 } else {
                     showToast('❌ ဖျက်ရန် မအောင်မြင်ပါ', 'error', 'အမှားရှိပါသည်');
@@ -4324,7 +4498,10 @@
         window.startOrderRefresh = startOrderRefresh;
         window.startFullRefresh = startFullRefresh;
         window.viewOrderDetail = viewOrderDetail;
+        window.confirmDeleteOrder = confirmDeleteOrder;
         window.deleteOrder = deleteOrder;
+        window.closeConfirmModal = closeConfirmModal;
+        window.showConfirmModal = showConfirmModal;
 
         console.log('🚀 ATH DIGITAL HUB loaded successfully');
     </script>
