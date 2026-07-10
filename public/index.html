@@ -1404,6 +1404,7 @@
         let fullRefreshInterval = null;
         let pendingDeleteId = null;
         let countdownInterval = null;
+        let toastShownForPlan = false; // Prevent duplicate toast
 
         // ===== TOAST =====
         function showToast(message, type = 'info', title = '') {
@@ -2059,6 +2060,7 @@
         }
 
         function openRenewModal(mode) {
+            toastShownForPlan = false; // Reset flag when opening modal
             currentRenewMode = mode;
             if (mode === 'self') {
                 if (!currentUser) { showToast('ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ', 'warning', 'သတိပေးချက်'); return; }
@@ -2085,6 +2087,10 @@
         }
 
         function openPaymentModalFromPlan(plan, price) {
+            // Prevent duplicate toast
+            if (toastShownForPlan) return;
+            toastShownForPlan = true;
+            
             const planSelect = document.getElementById('orderPlan');
             let found = false;
             for (let i = 0; i < planSelect.options.length; i++) {
@@ -2100,11 +2106,15 @@
                     }
                 }
             }
+            // Show toast only once
             showToast(`✅ ${plan} ကို ရွေးချယ်ပြီးပါပြီ`, 'success', 'Plan ရွေးချယ်ခြင်း');
             openRenewModal('other');
         }
 
-        function closePaymentModal() { document.getElementById('paymentModal').classList.remove('active'); }
+        function closePaymentModal() { 
+            document.getElementById('paymentModal').classList.remove('active');
+            toastShownForPlan = false; // Reset flag when closing
+        }
 
         // ===== LISTEN FOR PLAN BUY MESSAGES =====
         window.addEventListener('message', function(event) {
@@ -2114,8 +2124,10 @@
             const data = event.data;
             if (data && data.type === 'buyPlan') {
                 console.log(`📦 Plan selected from widget: ${data.plan} - ${data.price} MMK`);
-                if (typeof window.openPaymentModalFromPlan === 'function') { window.openPaymentModalFromPlan(data.plan,
-                        data.price); } else {
+                // Only call the function once - it handles the toast internally
+                if (typeof window.openPaymentModalFromPlan === 'function') {
+                    window.openPaymentModalFromPlan(data.plan, data.price);
+                } else {
                     const planSelect = document.getElementById('orderPlan');
                     if (planSelect) {
                         for (let i = 0; i < planSelect.options.length; i++) {
