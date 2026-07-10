@@ -630,8 +630,9 @@
         }
 
         .order-phone-price .phone-box {
-            flex: 1;
-            min-width: 0;
+            flex: 1 1 calc(50% - 4px);
+            min-width: 120px;
+            max-width: 100%;
             background: rgba(0, 212, 255, 0.08);
             border-radius: 12px;
             padding: 10px 8px;
@@ -639,6 +640,11 @@
             border: 1px solid rgba(0, 212, 255, 0.12);
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
         }
 
         .order-phone-price .phone-box:hover {
@@ -657,7 +663,7 @@
             align-items: center;
             justify-content: center;
             gap: 4px;
-            margin-bottom: 2px;
+            white-space: nowrap;
         }
 
         .order-phone-price .phone-box .label i {
@@ -674,22 +680,30 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
+            word-break: break-all;
         }
 
         .order-phone-price .phone-box .phone-number .copy-icon {
             font-size: 0.5rem;
             opacity: 0.4;
             color: var(--cyan);
+            flex-shrink: 0;
         }
 
         .order-phone-price .price-box {
-            flex: 1;
-            min-width: 0;
+            flex: 1 1 calc(50% - 4px);
+            min-width: 120px;
+            max-width: 100%;
             background: rgba(16, 185, 129, 0.08);
             border-radius: 12px;
             padding: 10px 8px;
             text-align: center;
             border: 1px solid rgba(16, 185, 129, 0.12);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
         }
 
         .order-phone-price .price-box .label {
@@ -699,7 +713,7 @@
             align-items: center;
             justify-content: center;
             gap: 4px;
-            margin-bottom: 2px;
+            white-space: nowrap;
         }
 
         .order-phone-price .price-box .label i {
@@ -711,6 +725,7 @@
             font-size: 0.75rem;
             font-weight: 800;
             color: var(--emerald);
+            white-space: nowrap;
         }
 
         /* ===== DATE RANGE - 50/50 LAYOUT (ALL PHONES) ===== */
@@ -725,11 +740,17 @@
         }
 
         .order-date-range .date-box {
-            flex: 1;
-            min-width: 0;
+            flex: 1 1 calc(50% - 4px);
+            min-width: 120px;
+            max-width: 100%;
             border-radius: 12px;
             padding: 8px 6px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
         }
 
         .order-date-range .date-box.start {
@@ -749,7 +770,7 @@
             align-items: center;
             justify-content: center;
             gap: 4px;
-            margin-bottom: 2px;
+            white-space: nowrap;
         }
 
         .order-date-range .date-box .label i {
@@ -767,6 +788,7 @@
         .order-date-range .date-box .value {
             font-size: 0.65rem;
             font-weight: 700;
+            white-space: nowrap;
         }
 
         .order-date-range .date-box .value.start {
@@ -1097,16 +1119,120 @@
         }
 
         /* ============================================================
-           RESPONSIVE - ALL PHONES
+           RESPONSIVE - ALL PHONES (50%+50% LAYOUT)
            ============================================================ */
-        @media (max-width: 480px) {
+        /* Very Small Phones (≤ 380px) - 50% + 50% Layout */
+        @media (max-width: 380px) {
             .order-phone-price {
-                flex-direction: column;
+                gap: 4px;
+            }
+            .order-phone-price .phone-box,
+            .order-phone-price .price-box {
+                flex: 1 1 calc(50% - 2px);
+                min-width: 0;
+                max-width: 50%;
+                padding: 4px 3px;
+                border-radius: 8px;
+            }
+            .order-phone-price .phone-box .label {
+                font-size: 0.35rem;
+                gap: 2px;
+            }
+            .order-phone-price .phone-box .label i {
+                font-size: 0.3rem;
+            }
+            .order-phone-price .phone-box .phone-number {
+                font-size: 0.5rem;
+                gap: 3px;
+            }
+            .order-phone-price .phone-box .phone-number .copy-icon {
+                font-size: 0.4rem;
+            }
+            .order-phone-price .price-box .label {
+                font-size: 0.35rem;
+                gap: 2px;
+            }
+            .order-phone-price .price-box .label i {
+                font-size: 0.3rem;
+            }
+            .order-phone-price .price-box .price-value {
+                font-size: 0.5rem;
+                white-space: nowrap;
+            }
+            
+            .order-date-range {
+                gap: 4px;
+                margin: 6px 0;
+                padding: 4px 0;
+            }
+            .order-date-range .date-box {
+                flex: 1 1 calc(50% - 2px);
+                min-width: 0;
+                max-width: 50%;
+                padding: 4px 3px;
+                border-radius: 8px;
+            }
+            .order-date-range .date-box .label {
+                font-size: 0.35rem;
+                gap: 2px;
+            }
+            .order-date-range .date-box .label i {
+                font-size: 0.3rem;
+            }
+            .order-date-range .date-box .value {
+                font-size: 0.45rem;
+                white-space: nowrap;
+            }
+        }
+
+        /* Ultra Small Phones (≤ 320px) - 50% + 50% Layout */
+        @media (max-width: 320px) {
+            .order-phone-price .phone-box,
+            .order-phone-price .price-box {
+                padding: 3px 2px;
+                border-radius: 6px;
+                gap: 1px;
+            }
+            .order-phone-price .phone-box .label {
+                font-size: 0.3rem;
+            }
+            .order-phone-price .phone-box .phone-number {
+                font-size: 0.4rem;
+                gap: 2px;
+            }
+            .order-phone-price .phone-box .phone-number .copy-icon {
+                font-size: 0.35rem;
+            }
+            .order-phone-price .price-box .label {
+                font-size: 0.3rem;
+            }
+            .order-phone-price .price-box .price-value {
+                font-size: 0.4rem;
+            }
+            .order-date-range .date-box {
+                padding: 3px 2px;
+                border-radius: 6px;
+            }
+            .order-date-range .date-box .label {
+                font-size: 0.3rem;
+            }
+            .order-date-range .date-box .label i {
+                font-size: 0.25rem;
+            }
+            .order-date-range .date-box .value {
+                font-size: 0.4rem;
+            }
+        }
+
+        /* Small Phones (381px - 480px) */
+        @media (min-width: 381px) and (max-width: 480px) {
+            .order-phone-price {
                 gap: 6px;
             }
             .order-phone-price .phone-box,
             .order-phone-price .price-box {
-                width: 100%;
+                flex: 1 1 calc(50% - 3px);
+                min-width: 100px;
                 padding: 8px 6px;
             }
             .order-phone-price .phone-box .phone-number {
@@ -1115,13 +1241,12 @@
             .order-phone-price .price-box .price-value {
                 font-size: 0.7rem;
             }
-            
             .order-date-range {
-                flex-direction: column;
                 gap: 6px;
             }
             .order-date-range .date-box {
-                width: 100%;
+                flex: 1 1 calc(50% - 3px);
+                min-width: 100px;
                 padding: 6px 4px;
             }
             .order-date-range .date-box .value {
@@ -1129,32 +1254,15 @@
             }
         }
 
-        @media (max-width: 380px) {
-            .order-phone-price .phone-box .phone-number {
-                font-size: 0.6rem;
-            }
-            .order-phone-price .price-box .price-value {
-                font-size: 0.65rem;
-            }
-            .order-date-range .date-box .value {
-                font-size: 0.55rem;
-            }
-            .order-phone-price .phone-box,
-            .order-phone-price .price-box {
-                padding: 6px 4px;
-            }
-            .order-date-range .date-box {
-                padding: 5px 4px;
-            }
-        }
-
+        /* Medium Phones (481px - 768px) - Tablet */
         @media (min-width: 481px) and (max-width: 768px) {
             .order-phone-price {
-                flex-direction: row;
                 gap: 10px;
             }
             .order-phone-price .phone-box,
             .order-phone-price .price-box {
+                flex: 1 1 calc(50% - 5px);
+                min-width: 140px;
                 padding: 12px 10px;
             }
             .order-phone-price .phone-box .phone-number {
@@ -1164,10 +1272,11 @@
                 font-size: 0.8rem;
             }
             .order-date-range {
-                flex-direction: row;
                 gap: 10px;
             }
             .order-date-range .date-box {
+                flex: 1 1 calc(50% - 5px);
+                min-width: 140px;
                 padding: 10px 8px;
             }
             .order-date-range .date-box .value {
@@ -1175,13 +1284,15 @@
             }
         }
 
+        /* Desktop (≥ 769px) */
         @media (min-width: 769px) {
             .order-phone-price {
-                flex-direction: row;
                 gap: 12px;
             }
             .order-phone-price .phone-box,
             .order-phone-price .price-box {
+                flex: 1 1 calc(50% - 6px);
+                min-width: 160px;
                 padding: 14px 12px;
                 border-radius: 14px;
             }
@@ -1192,10 +1303,11 @@
                 font-size: 0.85rem;
             }
             .order-date-range {
-                flex-direction: row;
                 gap: 12px;
             }
             .order-date-range .date-box {
+                flex: 1 1 calc(50% - 6px);
+                min-width: 160px;
                 padding: 12px 10px;
                 border-radius: 14px;
             }
@@ -1794,7 +1906,7 @@
         }
 
         /* ============================================================
-           RESPONSIVE (ADDITIONAL)
+           ADDITIONAL RESPONSIVE
            ============================================================ */
 
         /* Extra Small - Very Small Phones */
@@ -3443,12 +3555,12 @@
                         startEndHtml = `
                             <div class="order-date-range">
                                 <div class="date-box start">
-                                    <span class="label start"><i class="fas fa-calendar-plus"></i> စတင်</span>
-                                    <span class="value start">${startDate.toLocaleDateString()}</span>
+                                    <div class="label start"><i class="fas fa-calendar-plus"></i> စတင်</div>
+                                    <div class="value start">${startDate.toLocaleDateString()}</div>
                                 </div>
                                 <div class="date-box end">
-                                    <span class="label end"><i class="fas fa-calendar-times"></i> ကုန်ဆုံး</span>
-                                    <span class="value end">${endDate.toLocaleDateString()}</span>
+                                    <div class="label end"><i class="fas fa-calendar-times"></i> ကုန်ဆုံး</div>
+                                    <div class="value end">${endDate.toLocaleDateString()}</div>
                                 </div>
                             </div>
                         `;
